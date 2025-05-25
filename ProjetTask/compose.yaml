@@ -1,25 +1,39 @@
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+  # DB server name.
+  mysql:
+    # MySQL latest.
+    image: mysql:latest
+    # Ports mapping.
+    ports:
+      - 3306:3306
+    # User running "mysql".
+    user: root
+    # Environment variables.
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      # Password for user "root".
+      MYSQL_ROOT_PASSWORD: root
+    # Define the volumes.
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
-
+      # Bind mount the host SQL init script to the entry-point directory of the service container (read-only).
+      #- ./sql/XXX.sql:/docker-entrypoint-initdb.d/XXX.sql:ro
+      # The named volume used to persist the service data directory.
+      - dbdata:/var/lib/mysql
+  # phpMyAdmin app name.
+  phpmyadmin:
+    # phpMyAdmin latest.
+    image: phpmyadmin:latest
+    # Ports mapping. Port 8080 while 80 is already used by "apache".
+    ports:
+      - 8080:80
+    # Start after...
+    depends_on:
+      - mysql
+    # Environment variables.
+    environment:
+      # Take environment from "mysql".
+      - PMA_HOST=mysql
+# Create the needed volumes.
 volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+  # The named volume (no matter its location) used to persist the service data directory.
+  dbdata:
