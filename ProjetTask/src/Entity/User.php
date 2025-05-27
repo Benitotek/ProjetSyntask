@@ -3,37 +3,95 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 50)]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $prenom = null;
+
+    #[ORM\Column(type: Types::ARRAY)]
+    private array $statut = [];
+
+    #[ORM\Column(type: Types::ARRAY)]
+    private array $role = [];
+
+    #[ORM\Column(length: 50)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
-    #[ORM\Column]
-    private array $roles = [];
+    #[ORM\Column(length: 255)]
+    private ?string $mdp = null;
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
-    private ?string $password = null;
+    private ?bool $estActif = null;
+
+    #[ORM\Column]
+    private ?\DateTime $dateCreation = null;
+
+    #[ORM\Column]
+    private ?\DateTime $dateMaj = null;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
+
+        return $this;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function setPrenom(string $prenom): static
+    {
+        $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    public function getStatut(): array
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(array $statut): static
+    {
+        $this->statut = $statut;
+
+        return $this;
+    }
+
+    public function getRole(): array
+    {
+        return $this->role;
+    }
+
+    public function setRole(array $role): static
+    {
+        $this->role = $role;
+
+        return $this;
     }
 
     public function getEmail(): ?string
@@ -48,59 +106,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
-    public function getUserIdentifier(): string
+    public function getMdp(): ?string
     {
-        return (string) $this->email;
+        return $this->mdp;
     }
 
-    /**
-     * @see UserInterface
-     */
-    public function getRoles(): array
+    public function setMdp(string $mdp): static
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    /**
-     * @param list<string> $roles
-     */
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
+        $this->mdp = $mdp;
 
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
-    public function getPassword(): ?string
+    public function isEstActif(): ?bool
     {
-        return $this->password;
+        return $this->estActif;
     }
 
-    public function setPassword(string $password): static
+    public function setEstActif(bool $estActif): static
     {
-        $this->password = $password;
+        $this->estActif = $estActif;
 
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
-    public function eraseCredentials(): void
+    public function getDateCreation(): ?\DateTime
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        return $this->dateCreation;
+    }
+
+    public function setDateCreation(\DateTime $dateCreation): static
+    {
+        $this->dateCreation = $dateCreation;
+
+        return $this;
+    }
+
+    public function getDateMaj(): ?\DateTime
+    {
+        return $this->dateMaj;
+    }
+
+    public function setDateMaj(\DateTime $dateMaj): static
+    {
+        $this->dateMaj = $dateMaj;
+
+        return $this;
     }
 }
