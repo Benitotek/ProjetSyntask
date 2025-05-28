@@ -20,10 +20,10 @@ class User
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
-    #[ORM\Column(type: Types::ARRAY)]
+    #[ORM\Column(type: Types::JSON)]
     private array $statut = [];
 
-    #[ORM\Column(type: Types::ARRAY)]
+    #[ORM\Column(type: Types::JSON)]
     private array $role = [];
 
     #[ORM\Column(length: 50)]
