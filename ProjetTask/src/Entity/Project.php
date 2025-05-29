@@ -54,10 +54,17 @@ class Project
     #[ORM\OneToMany(targetEntity: TaskLIST::class, mappedBy: 'project')]
     private Collection $taskLISTs;
 
+    /**
+     * @var Collection<int, UserProject>
+     */
+    #[ORM\OneToMany(targetEntity: UserProject::class, mappedBy: 'project')]
+    private Collection $userProjects;
+
     public function __construct()
     {
         $this->managers = new ArrayCollection();
         $this->taskLISTs = new ArrayCollection();
+        $this->userProjects = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -234,6 +241,36 @@ class Project
             // set the owning side to null (unless already changed)
             if ($taskLIST->getProject() === $this) {
                 $taskLIST->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserProject>
+     */
+    public function getUserProjects(): Collection
+    {
+        return $this->userProjects;
+    }
+
+    public function addUserProject(UserProject $userProject): static
+    {
+        if (!$this->userProjects->contains($userProject)) {
+            $this->userProjects->add($userProject);
+            $userProject->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserProject(UserProject $userProject): static
+    {
+        if ($this->userProjects->removeElement($userProject)) {
+            // set the owning side to null (unless already changed)
+            if ($userProject->getProject() === $this) {
+                $userProject->setProject(null);
             }
         }
 
