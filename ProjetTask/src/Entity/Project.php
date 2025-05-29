@@ -48,9 +48,16 @@ class Project
     #[ORM\JoinTable(name: 'project_managers')]
     private Collection $managers;
 
+    /**
+     * @var Collection<int, TaskLIST>
+     */
+    #[ORM\OneToMany(targetEntity: TaskLIST::class, mappedBy: 'project')]
+    private Collection $taskLISTs;
+
     public function __construct()
     {
         $this->managers = new ArrayCollection();
+        $this->taskLISTs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -198,6 +205,36 @@ class Project
         $this->managers = new ArrayCollection();
         foreach ($managers as $manager) {
             $this->addManager($manager);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TaskLIST>
+     */
+    public function getTaskLISTs(): Collection
+    {
+        return $this->taskLISTs;
+    }
+
+    public function addTaskLIST(TaskLIST $taskLIST): static
+    {
+        if (!$this->taskLISTs->contains($taskLIST)) {
+            $this->taskLISTs->add($taskLIST);
+            $taskLIST->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTaskLIST(TaskLIST $taskLIST): static
+    {
+        if ($this->taskLISTs->removeElement($taskLIST)) {
+            // set the owning side to null (unless already changed)
+            if ($taskLIST->getProject() === $this) {
+                $taskLIST->setProject(null);
+            }
         }
 
         return $this;

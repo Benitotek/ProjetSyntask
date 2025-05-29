@@ -34,6 +34,9 @@ class Task
     #[ORM\Column]
     private ?\DateTime $dateReelle = null;
 
+    #[ORM\ManyToOne(inversedBy: 'tasks')]
+    private ?TaskLIST $taskLIST = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -119,6 +122,18 @@ class Task
     public function setDateReelle(\DateTime $dateReelle): static
     {
         $this->dateReelle = $dateReelle;
+
+        return $this;
+    }
+
+    public function getTaskLIST(): ?TaskLIST
+    {
+        return $this->taskLIST;
+    }
+
+    public function setTaskLIST(?TaskLIST $taskLIST): static
+    {
+        $this->taskLIST = $taskLIST;
 
         return $this;
     }
