@@ -1,5 +1,11 @@
 twig:
     file_name_pattern: '*.twig'
+    date:
+        format: "d-m-Y h:i:s"
+    number_format:
+      decimals: 2
+      decimal_point: ","
+      thousands_separator: " "
 
 when@test:
     twig:

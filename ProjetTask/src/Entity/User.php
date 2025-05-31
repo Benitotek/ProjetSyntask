@@ -7,9 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -129,6 +131,43 @@ class User
         $this->mdp = $mdp;
 
         return $this;
+    }
+
+    /**
+     * Returns the roles granted to the user.
+     */
+    public function getRoles(): array
+    {
+        // guarantee every user at least has ROLE_USER
+        $roles = $this->role;
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    /**
+     * Returns the password used to authenticate the user.
+     */
+    public function getPassword(): ?string
+    {
+        return $this->mdp;
+    }
+
+    /**
+     * Returns the identifier for this user (e.g. email).
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * Removes sensitive data from the user.
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     public function isEstActif(): ?bool

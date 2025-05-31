@@ -13,21 +13,40 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+            
         main:
             lazy: true
             provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+            logout:
+                path: app_logout
+                # target: app_login
+
+    
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
-
+    role_hierarchy:
+        ROLE_USER: [ROLE_USER]
+        ROLE_ADMIN: [ROLE_ADMIN]
+        ROLE_DIRECTEUR: [ROLE_DIRECTEUR]
+        ROLE_CHEF_PROJET: [ROLE_CHEF_PROJET]
+        ROLE_EMPLOYE: [ROLE_EMPLOYE]
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/directeur, roles: [ROLE_ADMIN, ROLE_DIRECTEUR] }
+        - { path: ^/chef-projet, roles: [ROLE_ADMIN, ROLE_DIRECTEUR, ROLE_CHEF_PROJET] }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
+# This configuration is only used in the test environment to speed up password hashing.
 
 when@test:
     security:
