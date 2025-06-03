@@ -17,7 +17,7 @@ class Project
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 30)]
+    #[ORM\Column(length: 100)]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::JSON)]
