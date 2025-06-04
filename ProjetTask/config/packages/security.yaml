@@ -1,6 +1,10 @@
 security:
+    
+
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
+        App\Entity\User:
+            algorithm: auto
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
@@ -22,6 +26,7 @@ security:
                 check_path: app_login
             logout:
                 path: app_logout
+                target: app_login
             custom_authenticator: App\Security\LoginFormAuthenticator
             entry_point: App\Security\LoginFormAuthenticator
             remember_me:
@@ -55,6 +60,7 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }
+        # - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 # This configuration is only used in the test environment to speed up password hashing.
 
 when@test:

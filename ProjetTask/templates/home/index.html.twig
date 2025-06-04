@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Mon Site Symfony!{% endblock %}
 
 {% block body %}
 <style>
@@ -9,12 +9,13 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <h1>Hello {{ message }}! ✅</h1>
 
-    This friendly message is coming from:
+    <p>Votre application Symfony fonctionne parfaitement !</p>
+    {# This friendly message is coming from:
     <ul>
         <li>Your controller at <code>C:/Users/durri/ProjetTask/ProjetTask/src/Controller/HomeController.php</code></li>
         <li>Your template at <code>C:/Users/durri/ProjetTask/ProjetTask/templates/home/index.html.twig</code></li>
-    </ul>
+    </ul> #}
 </div>
 {% endblock %}
