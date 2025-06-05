@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create User
+
+{% block stylesheets %}<link rel="stylesheet" href="{{ asset('styles/test7.css') }}" >{% endblock %}
+{% endblock %}
+
+{% block body %}
+{{form_start(form)}}
+<div class="m-auto text-xl">
+<div class="item">{{form_errors(form)}}</div>
+<div class="item">{{form_row(form.nom)}}</div>
+<div class="item">{{form_row(form.prenom)}}</div>
+<div class="item">{{form_row(form.email)}}</div>
+<div class="item">{{form_row(form.roles, {'label': 'Rôle', 'attr': {'size': 1, 'placeholder': 'Choisir le rôle'}})}}</div>
+<div class="item">{{form_row(form.pointDeVente)}}</div>
+<div class="item">{{form_row(form.password)}}</div>
+<div class="item">{{form_row(form.telephone)}}</div>
+<div class="item">{{form_row(form.estActif)}}</div>
+</div>
+
+{{form_rest(form)}}
+		<a href="/userlist">Tous les utilisateurs</a>
+{% endblock %}
