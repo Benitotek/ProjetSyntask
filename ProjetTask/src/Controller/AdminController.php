@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -11,8 +12,61 @@ final class AdminController extends AbstractController
     #[Route('/admin', name: 'app_admin')]
     public function index(): Response
     {
+        // Simuler des données utilisateurs pour l'affichage
+        $users = [
+            [
+                'id' => 1,
+                'nom' => 'Jean Dupont',
+                'email' => 'jean.dupont@example.com',
+                'role' => 'Administrateur',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 2,
+                'nom' => 'Marie Martin',
+                'email' => 'marie.martin@example.com',
+                'role' => 'Utilisateur',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 3,
+                'nom' => 'Pierre Durand',
+                'email' => 'pierre.durand@example.com',
+                'role' => 'Modérateur',
+                'status' => 'Inactif',
+                'avatar' => null
+            ]
+        ];
+
         return $this->render('admin/index.html.twig', [
             'controller_name' => 'AdminController',
+            'users' => $users,
+            'current_user' => [
+                'nom' => 'admin',
+                'role' => 'Administrateur'
+            ]
         ]);
+    }
+
+    #[Route('/admin/user/add', name: 'app_admin_user_add', methods: ['GET', 'POST'])]
+    public function addUser(Request $request): Response
+    {
+        if ($request->isMethod('POST')) {
+            // Ici vous ajouteriez la logique de création d'utilisateur
+            // Pour l'exemple, on redirige vers la page admin
+            $this->addFlash('success', 'Utilisateur ajouté avec succès !');
+            return $this->redirectToRoute('app_admin');
+        }
+
+        return $this->render('admin/add_user.html.twig');
+    }
+
+    #[Route('/admin/logout', name: 'app_admin_logout')]
+    public function logout(): Response
+    {
+        // La logique de déconnexion sera gérée par Symfony Security
+        throw new \LogicException('Cette méthode peut être vide - elle sera interceptée par la clé de déconnexion de votre pare-feu.');
     }
 }
