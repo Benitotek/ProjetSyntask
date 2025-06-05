@@ -7,10 +7,18 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
+/**
+ * @ORM\Table(name="user")
+ */
+#[ORM\Table(name: 'user')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -18,21 +26,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
+    #[NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\Length(max: 50, maxMessage: "Le nom doit contenir au plus 50 caractères")]
     #[ORM\Column(length: 50)]
     private ?string $nom = null;
 
+    #[NotBlank(message: "Le prénom est obligatoire")]
+    #[Assert\Length(max: 50, maxMessage: "Le prénom doit contenir au plus 50 caractères")]
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
     #[ORM\Column(type: Types::JSON)]
     private array $statut = [];
 
+    #Notblank(message: "Le rôle est obligatoire")
+    #[Assert\NotBlank(message: "Le rôle est obligatoire")]
     #[ORM\Column(type: Types::JSON)]
     private array $role = [];
 
-    #[ORM\Column(length: 50)]
+    #[NotBlank(message: "L'email' est obligatoire")]
+    #[Assert\Length(max: 180, maxMessage: "L'email doit contenir au plus 180 caractères")]
+    #[ORM\Column(length: 180)]
     private ?string $email = null;
 
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[Assert\Length(min: 6, minMessage: "Le mot de passe doit contenir au moins 6 caractères")]
     #[ORM\Column(length: 255)]
     private ?string $mdp = null;
 
@@ -50,6 +68,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: UserProject::class, mappedBy: 'user')]
     private Collection $userProjects;
+
+    #[ORM\Column]
+    private bool $isVerified = false;
 
     public function __construct()
     {
@@ -232,6 +253,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $userProject->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
 
         return $this;
     }
