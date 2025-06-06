@@ -15,6 +15,8 @@ class UserTypeForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $isEdit = $options['is_edit'] ?? false;
+        
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom',

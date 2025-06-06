@@ -15,7 +15,19 @@ class UserRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, User::class);
     }
-
+ /**
+     * Trouve tous les utilisateurs pour l'export
+     * 
+     * @return User[]
+     */
+    public function findAllForExport(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.deletedAt IS NULL')
+            ->orderBy('u.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

@@ -141,7 +141,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
+   
     public function getMdp(): ?string
     {
         return $this->mdp;
@@ -157,15 +157,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Returns the roles granted to the user.
      */
-    public function getRoles(): array
-    {
-        // guarantee every user at least has ROLE_USER
-        $roles = $this->role;
-        $roles[] = 'ROLE_USER';
+public function getRoles(): array
+{
+    // guarantee every user at least has ROLE_USER
+    $roles = $this->role;
+    $roles[] = 'ROLE_USER';
 
-        return array_unique($roles);
-    }
+    return array_unique($roles);
+}
 
+public function setRoles(array $roles): static
+{
+    $this->role = $roles;
+    return $this;
+}
     /**
      * Returns the password used to authenticate the user.
      */
