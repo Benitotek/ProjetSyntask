@@ -21,6 +21,16 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+ public const STATUT_ACTIF = 'ACTIF';
+    public const STATUT_INACTIF = 'INACTIF';
+    public const STATUT_EN_CONGE = 'EN_CONGE';
+    public const STATUT_ABSENT = 'ABSENT';
+
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_DIRECTEUR = 'ROLE_DIRECTEUR';
+    public const ROLE_CHEF_DE_PROJET = 'ROLE_CHEF_DE_PROJET';
+    public const ROLE_EMPLOYE = 'ROLE_EMPLOYE';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -36,8 +46,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
-    #[ORM\Column(type: Types::JSON)]
-    private array $statut = [];
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: null)]
+    #[Assert\Choice(choices: [self::STATUT_ACTIF, self::STATUT_INACTIF, self::STATUT_EN_CONGE, self::STATUT_ABSENT])]
+    private ?string $statut = self::STATUT_ACTIF;
+    // #[ORM\Column(type: Types::JSON)]
+    // private array $statut = [];
 
     #Notblank(message: "Le rôle est obligatoire")
     #[Assert\NotBlank(message: "Le rôle est obligatoire")]
@@ -75,6 +88,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->userProjects = new ArrayCollection();
+        $this->projetsGeres = new ArrayCollection();
+        $this->projetsAssignes = new ArrayCollection();
+        $this->tachesAssignees = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -106,12 +122,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getStatut(): array
+    public function getStatut(): ?string
     {
         return $this->statut;
     }
 
-    public function setStatut(array $statut): static
+    public function setStatut(string $statut): static
     {
         $this->statut = $statut;
 
@@ -208,28 +224,72 @@ public function setRoles(array $roles): static
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTime
+    public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->dateCreation;
     }
 
-    public function setDateCreation(\DateTime $dateCreation): static
+    public function setDateCreation(\DateTimeInterface $dateCreation): static
     {
         $this->dateCreation = $dateCreation;
 
         return $this;
     }
 
-    public function getDateMaj(): ?\DateTime
+    public function getDateMaj(): ?\DateTimeInterface
     {
         return $this->dateMaj;
     }
 
-    public function setDateMaj(\DateTime $dateMaj): static
+    public function setDateMaj(\DateTimeInterface $dateMaj): static
     {
         $this->dateMaj = $dateMaj;
 
         return $this;
+    }
+public function getFullName(): string
+    {
+        return $this->prenom . ' ' . $this->nom;
+    }
+    /**
+     * @var Collection<int, Project>
+     */
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'gerant')]
+    private Collection $projetsGeres;
+
+    /**
+     * @return Collection<int, Project>
+     */
+    public function getProjetsGeres(): Collection
+    {
+        return $this->projetsGeres;
+    }
+    /**
+     * @var Collection<int, Project>
+     */
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'assigne')]
+    private Collection $projetsAssignes;
+
+    /**
+     * @return Collection<int, Project>
+     */
+    public function getProjetsAssignes(): Collection
+    {
+        return $this->projetsAssignes;
+    }
+
+    /**
+     * @var Collection<int, Task>
+     */
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'assignee')]
+    private Collection $tachesAssignees;
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getTachesAssignees(): Collection
+    {
+        return $this->tachesAssignees;
     }
 
     /**
@@ -274,3 +334,4 @@ public function setRoles(array $roles): static
         return $this;
     }
 }
+

@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -15,19 +17,70 @@ class UserRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, User::class);
     }   
- /**
-     * Trouve tous les utilisateurs pour l'export
-     * 
-     * @return User[]
-     */
-    public function findAllForExport(): array
+    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
+    {
+        if (!$user instanceof User) {
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
+        }
+
+        $user->setMdp($newHashedPassword);
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+    }
+
+    public function findByRole(string $role): array
     {
         return $this->createQueryBuilder('u')
-            ->where('u.deletedAt IS NULL')
-            ->orderBy('u.createdAt', 'DESC')
+            ->where('u.roles LIKE :role')
+            ->setParameter('role', '%"' . $role . '"%')
+            ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();
     }
+
+    public function findActiveUsers(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.estActif = true')
+            ->orderBy('u.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countActive(): int
+    {
+        return $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.estActif = true')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function findChefsProjets(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.roles LIKE :role')
+            ->andWhere('u.estActif = true')
+            ->setParameter('role', '%ROLE_CHEF_DE_PROJET%')
+            ->orderBy('u.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+}
+
+//  /**
+//      * Trouve tous les utilisateurs pour l'export
+//      * 
+//      * @return User[]
+//      */
+//     public function findAllForExport(): array
+//     {
+//         return $this->createQueryBuilder('u')
+//             ->where('u.deletedAt IS NULL')
+//             ->orderBy('u.createdAt', 'DESC')
+//             ->getQuery()
+//             ->getResult();
+//     }
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
@@ -52,4 +105,4 @@ class UserRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
-}
+
