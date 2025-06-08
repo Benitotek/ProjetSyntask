@@ -3,3 +3,20 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+app_dashboard:
+    path: /
+    controller: App\Controller\DashboardController::index
+    methods: [GET]
+
+app_user_index:
+    path: /user
+    controller: App\Controller\UserController::index
+    methods: [GET]
+
+app_user_show:
+    path: /user/{id}
+    controller: App\Controller\UserController::show
+    methods: [GET]
+    requirements:
+        id: '\d+'
+

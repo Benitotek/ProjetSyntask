@@ -18,8 +18,13 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
+    #[Route('/user', name: 'app_user_index', methods: ['GET'])]
+public function index(): Response
+{
+    return new Response('Liste des utilisateurs');
+}
     #[Route('/', name: 'app_user_index', methods: ['GET'])]
-    public function index(UserRepository $userRepository): Response
+    public function indexRepositories(UserRepository $userRepository): Response
     {
         return $this->render('user/index.html.twig', [
             'users' => $userRepository->findAll(),
