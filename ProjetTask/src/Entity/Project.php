@@ -52,28 +52,29 @@ class Project
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $budget = null;
 
-    #[ORM\ManyToMany(targetEntity: User::class)]
-    #[ORM\JoinTable(name: 'project_managers')]
-    private Collection $managers;
+   #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $chefDeProjet = null;
 
-    /**
-     * @var Collection<int, TaskLIST>
-     */
-    #[ORM\OneToMany(targetEntity: TaskLIST::class, mappedBy: 'project')]
-    private Collection $taskLISTs;
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
+    #[ORM\JoinTable(name: 'project_user')]
+    private Collection $membres;
 
-    /**
-     * @var Collection<int, UserProject>
-     */
-    #[ORM\OneToMany(targetEntity: UserProject::class, mappedBy: 'project')]
-    private Collection $userProjects;
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: TaskList::class, cascade: ['persist', 'remove'])]
+    private Collection $taskLists;
+
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, cascade: ['persist', 'remove'])]
+    private Collection $tasks;
 
     public function __construct()
     {
-        $this->managers = new ArrayCollection();
-        $this->taskLISTs = new ArrayCollection();
-        $this->userProjects = new ArrayCollection();
+        $this->membres = new ArrayCollection();
+        $this->taskLists = new ArrayCollection();
+        $this->tasks = new ArrayCollection();
+        $this->dateCreation = new \DateTime();
+        $this->dateMaj = new \DateTime();
     }
+
 
     public function getId(): ?int
     {
@@ -188,100 +189,107 @@ class Project
         return $this;
     }
 
+    public function getChefDeProjet(): ?User
+    {
+        return $this->chefDeProjet;
+    }
+
+    public function setChefDeProjet(?User $chefDeProjet): static
+    {
+        $this->chefDeProjet = $chefDeProjet;
+        return $this;
+    }
+
     /**
      * @return Collection<int, User>
      */
-    public function getManagers(): Collection
+    public function getMembres(): Collection
     {
-        return $this->managers;
+        return $this->membres;
     }
 
-    public function addManager(User $manager): static
+    public function addMembre(User $membre): static
     {
-        if (!$this->managers->contains($manager)) {
-            $this->managers[] = $manager;
+        if (!$this->membres->contains($membre)) {
+            $this->membres->add($membre);
         }
-
         return $this;
     }
 
-    public function removeManager(User $manager): static
+    public function removeMembre(User $membre): static
     {
-        $this->managers->removeElement($manager);
-
+        $this->membres->removeElement($membre);
         return $this;
     }
 
     /**
-     * Remplace tous les managers (à utiliser avec précaution)
+     * @return Collection<int, TaskList>
      */
-    public function setManagers(iterable $managers): static
+    public function getTaskLists(): Collection
     {
-        $this->managers = new ArrayCollection();
-        foreach ($managers as $manager) {
-            $this->addManager($manager);
-        }
+        return $this->taskLists;
+    }
 
+    public function addTaskList(TaskList $taskList): static
+    {
+        if (!$this->taskLists->contains($taskList)) {
+            $this->taskLists->add($taskList);
+            $taskList->setProject($this);
+        }
         return $this;
     }
 
-    /**
-     * @return Collection<int, TaskLIST>
-     */
-    public function getTaskLISTs(): Collection
+    public function removeTaskList(TaskList $taskList): static
     {
-        return $this->taskLISTs;
-    }
-
-    public function addTaskLIST(TaskLIST $taskLIST): static
-    {
-        if (!$this->taskLISTs->contains($taskLIST)) {
-            $this->taskLISTs->add($taskLIST);
-            $taskLIST->setProject($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTaskLIST(TaskLIST $taskLIST): static
-    {
-        if ($this->taskLISTs->removeElement($taskLIST)) {
-            // set the owning side to null (unless already changed)
-            if ($taskLIST->getProject() === $this) {
-                $taskLIST->setProject(null);
+        if ($this->taskLists->removeElement($taskList)) {
+            if ($taskList->getProject() === $this) {
+                $taskList->setProject(null);
             }
         }
-
         return $this;
     }
 
     /**
-     * @return Collection<int, UserProject>
+     * @return Collection<int, Task>
      */
-    public function getUserProjects(): Collection
+    public function getTasks(): Collection
     {
-        return $this->userProjects;
+        return $this->tasks;
     }
 
-    public function addUserProject(UserProject $userProject): static
+    public function getTasksByStatus(): array
     {
-        if (!$this->userProjects->contains($userProject)) {
-            $this->userProjects->add($userProject);
-            $userProject->setProject($this);
-        }
+        $tasks = $this->tasks->toArray();
+        return [
+            'EN-ATTENTE' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN-ATTENTE'),
+            'EN-COURS' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN-COURS'),
+            'TERMINE' => array_filter($tasks, fn($t) => $t->getStatut() === 'TERMINE'),
+        ];
+    }
 
+    public function getProgress(): float
+    {
+        $totalTasks = $this->tasks->count();
+        if ($totalTasks === 0) {
+            return 0;
+        }
+        
+        $completedTasks = $this->tasks->filter(fn($task) => $task->getStatut() === 'TERMINE')->count();
+        return ($completedTasks / $totalTasks) * 100;
+    }
+
+    public function addTask(Task $task): static
+    {
+        if (!$this->tasks->contains($task)) {
+            $this->tasks->add($task);
+           
+        }
         return $this;
     }
 
-    public function removeUserProject(UserProject $userProject): static
-    {
-        if ($this->userProjects->removeElement($userProject)) {
-            // set the owning side to null (unless already changed)
-            if ($userProject->getProject() === $this) {
-                $userProject->setProject(null);
-            }
-        }
 
-        return $this;
+    public function __toString(): string
+    {
+        return $this->titre ?: 'Nouveau Projet';
     }
 }
