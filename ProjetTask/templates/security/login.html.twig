@@ -1,14 +1,4 @@
 {% extends 'base.html.twig' %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('js/login.js') }}"></script>
-{% endblock %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -16,16 +6,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token('app') }}">
         <title>{% block title %}ProjetSyntask{% endblock %}</title>
-        
         {% block stylesheets %}
+            {{ parent() }}
+            <link rel="stylesheet" href="{{ asset('styles/login.css') }}">
             {{ encore_entry_link_tags('app') }}
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-        
-
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
         {% endblock %}
-
 
 {# {% block title %}Connexion - SYNTASK
 {% endblock %} #}
