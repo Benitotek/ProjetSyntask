@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
- public const STATUT_ACTIF = 'ACTIF';
+    public const STATUT_ACTIF = 'ACTIF';
     public const STATUT_INACTIF = 'INACTIF';
     public const STATUT_EN_CONGE = 'EN_CONGE';
     public const STATUT_ABSENT = 'ABSENT';
@@ -85,13 +85,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isVerified = false;
 
-    public function __construct()
-    {
-        $this->userProjects = new ArrayCollection();
-        $this->projetsGeres = new ArrayCollection();
-        $this->projetsAssignes = new ArrayCollection();
-        $this->tachesAssignees = new ArrayCollection();
-    }
+    // Removed duplicate constructor
 
     public function getId(): ?int
     {
@@ -157,7 +151,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-   
+
     public function getMdp(): ?string
     {
         return $this->mdp;
@@ -173,20 +167,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Returns the roles granted to the user.
      */
-public function getRoles(): array
-{
-    // guarantee every user at least has ROLE_USER
-    $roles = $this->role;
-    $roles[] = 'ROLE_USER';
+    public function getRoles(): array
+    {
+        // guarantee every user at least has ROLE_USER
+        $roles = $this->role;
+        $roles[] = 'ROLE_USER';
 
-    return array_unique($roles);
-}
+        return array_unique($roles);
+    }
 
-public function setRoles(array $roles): static
-{
-    $this->role = $roles;
-    return $this;
-}
+    public function setRoles(array $roles): static
+    {
+        $this->role = $roles;
+        return $this;
+    }
     /**
      * Returns the password used to authenticate the user.
      */
@@ -247,7 +241,7 @@ public function setRoles(array $roles): static
 
         return $this;
     }
-public function getFullName(): string
+    public function getFullName(): string
     {
         return $this->prenom . ' ' . $this->nom;
     }
@@ -284,12 +278,14 @@ public function getFullName(): string
     #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'assignee')]
     private Collection $tachesAssignees;
 
-    /**
-     * @return Collection<int, Task>
-     */
-    public function getTachesAssignees(): Collection
+    public function __construct()
     {
-        return $this->tachesAssignees;
+        $this->userProjects = new ArrayCollection();
+        $this->projetsGeres = new ArrayCollection();
+        $this->projetsAssignes = new ArrayCollection();
+        $this->tachesAssignees = new ArrayCollection();
+        $this->dateCreation = new \DateTime();
+        $this->dateMaj = new \DateTime();
     }
 
     /**
@@ -334,4 +330,3 @@ public function getFullName(): string
         return $this;
     }
 }
-

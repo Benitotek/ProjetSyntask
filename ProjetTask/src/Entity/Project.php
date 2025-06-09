@@ -8,10 +8,17 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 class Project
 {
+    public const STATUT_EN_ATTENTE = 'EN-ATTENTE';
+    public const STATUT_EN_COURS = 'EN-COURS';
+    public const STATUT_TERMINE = 'TERMINE';
+    public const STATUT_EN_PAUSE = 'EN_PAUSE';
+    public const STATUT_ARRETE = 'ARRETER';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -20,8 +27,9 @@ class Project
     #[ORM\Column(length: 100)]
     private ?string $titre = null;
 
-    #[ORM\Column(type: Types::JSON)]
-    private array $statut = [];
+    #[ORM\Column(type: Types::STRING, length: 20)]
+    #[Assert\Choice(choices: [self::STATUT_EN_ATTENTE, self::STATUT_EN_COURS, self::STATUT_TERMINE, self::STATUT_EN_PAUSE, self::STATUT_ARRETE])]
+    private ?string $statut = self::STATUT_EN_ATTENTE;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
@@ -84,12 +92,12 @@ class Project
         return $this;
     }
 
-    public function getStatut(): array
+    public function getStatut(): ?string
     {
         return $this->statut;
     }
 
-    public function setStatut(array $statut): static
+    public function setStatut(string $statut): static
     {
         $this->statut = $statut;
 
