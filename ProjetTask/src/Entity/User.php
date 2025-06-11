@@ -128,17 +128,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRole(): array
-    {
-        return $this->role;
-    }
-
-    public function setRole(array $role): static
-    {
-        $this->role = $role;
-
-        return $this;
-    }
+    // Removed duplicate getRole() and setRole() methods above; see unified version below.
 
     public function getEmail(): ?string
     {
@@ -167,18 +157,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Returns the roles granted to the user.
      */
-    public function getRoles(): array
+    public function getRole(): array
     {
         // guarantee every user at least has ROLE_USER
-        $roles = $this->role;
-        $roles[] = 'ROLE_USER';
+        $role = $this->role;
+        $role[] = 'ROLE_USER';
 
-        return array_unique($roles);
+        return array_unique($role);
     }
 
-    public function setRoles(array $roles): static
+    /**
+     * Returns the roles granted to the user.
+     */
+    public function getRoles(): array
     {
-        $this->role = $roles;
+        return $this->getRole();
+    }
+
+    public function setRole(array $role): static
+    {
+        $this->role = $role;
         return $this;
     }
     /**
