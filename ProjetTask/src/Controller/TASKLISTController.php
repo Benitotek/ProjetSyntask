@@ -12,7 +12,7 @@ final class TaskListController extends AbstractController
     public function index(): Response
     {
         return $this->render('tasklist/index.html.twig', [
-            'controller_name' => 'TASKLISTController',
+            'controller_name' => 'TaskListController',
         ]);
     }
 }

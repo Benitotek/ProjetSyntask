@@ -68,7 +68,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $mdp = null;
 
     #[ORM\Column]
-    private ?bool $estActif = null;
+    private ?bool $estActif = true;
 
     #[ORM\Column]
     private ?\DateTime $dateCreation = null;
@@ -83,7 +83,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $userProjects;
 
     #[ORM\Column]
-    private bool $isVerified = false;
+    private bool $isVerified = true;
 
     // Removed duplicate constructor
 

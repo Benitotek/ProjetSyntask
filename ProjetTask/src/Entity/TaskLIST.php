@@ -24,13 +24,13 @@ class TaskList
     #[ORM\Column]
     private ?float $position = null;
 
-    #[ORM\ManyToOne(inversedBy: 'taskLISTs')]
+    #[ORM\ManyToOne(inversedBy: 'TaskLists')]
     private ?Project $project = null;
 
     /**
      * @var Collection<int, Task>
      */
-    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'taskLIST')]
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'TaskList')]
     private Collection $tasks;
 
     public function __construct()
@@ -103,7 +103,7 @@ class TaskList
     {
         if (!$this->tasks->contains($task)) {
             $this->tasks->add($task);
-            $task->setTaskLIST($this);
+            $task->setTaskList($this);
         }
 
         return $this;
@@ -113,8 +113,8 @@ class TaskList
     {
         if ($this->tasks->removeElement($task)) {
             // set the owning side to null (unless already changed)
-            if ($task->getTaskLIST() === $this) {
-                $task->setTaskLIST(null);
+            if ($task->getTaskList() === $this) {
+                $task->setTaskList(null);
             }
         }
 
