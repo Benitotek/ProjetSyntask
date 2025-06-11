@@ -9,7 +9,7 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ message }}! ✅</h1>
+    <h1>Hello {{ message|default('') }}! ✅</h1>
 
     <p>Votre application Symfony fonctionne parfaitement !</p>
     {# This friendly message is coming from:
