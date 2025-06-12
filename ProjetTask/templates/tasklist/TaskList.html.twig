@@ -1,0 +1,286 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Kanban - {{ project.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px;
+            min-height: 80vh;
+        }
+        
+        .kanban-column {
+            min-width: 300px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .column-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #495057;
+        }
+        
+        .column-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .task-list {
+            min-height: 400px;
+        }
+        
+        .task-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .add-column-btn {
+            min-width: 300px;
+            height: 60px;
+            background: #e9ecef;
+            border: 2px dashed #6c757d;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .add-column-btn:hover {
+            background: #dee2e6;
+            color: #495057;
+            text-decoration: none;
+        }
+        
+        .modal-backdrop {
+            z-index: 1040;
+        }
+        
+        .modal {
+            z-index: 1050;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1>{{ project.name }} - Kanban</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('project_index') }}">Projets</a></li>
+                    <li class="breadcrumb-item active">{{ project.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="kanban-board">
+        {% for taskList in project.taskLists %}
+            <div class="kanban-column" data-column-id="{{ taskList.id }}">
+                <div class="column-header">
+                    <span class="column-title">{{ taskList.name }}</span>
+                    {% if is_granted('ROLE_CHEF_PROJET') and is_granted('PROJECT_EDIT', project) %}
+                        <div class="column-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editColumn({{ taskList.id }}, '{{ taskList.name }}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteColumn({{ taskList.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="task-list">
+                    {% for task in taskList.tasks %}
+                        <div class="task-item">
+                            <h6>{{ task.title }}</h6>
+                            <p class="mb-1 text-muted small">{{ task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description }}</p>
+                            <small class="text-muted">
+                                {% if task.assignedUser %}
+                                    Assigné à: {{ task.assignedUser.email }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    {% endfor %}
+                    
+                    {% if is_granted('ROLE_USER') %}
+                        <button class="btn btn-sm btn-outline-success w-100" onclick="addTask({{ taskList.id }})">
+                            <i class="fas fa-plus"></i> Ajouter une tâche
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        
+        {% if is_granted('ROLE_CHEF_PROJET') and is_granted('PROJECT_EDIT', project) %}
+            <div class="add-column-btn" onclick="addColumn()">
+                <i class="fas fa-plus me-2"></i> Ajouter une colonne
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal pour ajouter/éditer une colonne -->
+<div class="modal fade" id="columnModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="columnModalLabel">Ajouter une colonne</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="columnForm">
+                <div class="modal-body">
+                    <input type="hidden" id="column-id" name="column_id" value="">
+                    <input type="hidden" name="project_id" value="{{ project.id }}">
+                    
+                    <div class="mb-3">
+                        <label for="column-name" class="form-label">Nom de la colonne</label>
+                        <input type="text" class="form-control" id="column-name" name="task_list[name]" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour supprimer -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cette colonne ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        let currentColumnId = null;
+        
+        // Ajouter une nouvelle colonne
+        function addColumn() {
+            document.getElementById('columnModalLabel').textContent = 'Ajouter une colonne';
+            document.getElementById('column-id').value = '';
+            document.getElementById('column-name').value = '';
+            document.getElementById('columnForm').action = '{{ path('column_new') }}';
+            new bootstrap.Modal(document.getElementById('columnModal')).show();
+        }
+        
+        // Éditer une colonne
+        function editColumn(id, name) {
+            document.getElementById('columnModalLabel').textContent = 'Modifier la colonne';
+            document.getElementById('column-id').value = id;
+            document.getElementById('column-name').value = name;
+            document.getElementById('columnForm').action = '/column/' + id + '/edit';
+            new bootstrap.Modal(document.getElementById('columnModal')).show();
+        }
+        
+        // Supprimer une colonne
+        function deleteColumn(id) {
+            currentColumnId = id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+        
+        // Ajouter une tâche (placeholder)
+        function addTask(columnId) {
+            // Rediriger vers la création de tâche ou ouvrir un modal
+            alert('Fonction d\'ajout de tâche à implémenter pour la colonne ' + columnId);
+        }
+        
+        // Gérer la soumission du formulaire de colonne
+        document.getElementById('columnForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const url = this.action;
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de l\'enregistrement');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'enregistrement');
+            });
+        });
+        
+        // Confirmer la suppression
+        document.getElementById('confirmDelete').addEventListener('click', function() {
+            if (currentColumnId) {
+                const formData = new FormData();
+                formData.append('_token', '{{ csrf_token('delete' ~ '') }}' + currentColumnId);
+                
+                fetch('/column/' + currentColumnId + '/delete', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de la suppression');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la suppression');
+                });
+            }
+        });
+    </script>
+{% endblock %}
