@@ -19,6 +19,7 @@
         "symfony/framework-bundle": "7.2.*",
         "symfony/mailer": "7.2.*",
         "symfony/maker-bundle": "^1.63",
+        "symfony/monolog-bundle": "^3.10",
         "symfony/runtime": "7.2.*",
         "symfony/security-bundle": "7.2.*",
         "symfony/translation": "7.2.*",

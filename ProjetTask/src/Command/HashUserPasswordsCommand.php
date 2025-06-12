@@ -35,7 +35,11 @@ class HashUserPasswordsCommand extends Command
         foreach ($users as $user) {
             $plainPassword = $user->getMdp(); // ou getPassword()
 
-            if (!preg_match('/^$2[aby]$/', $plainPassword)) {
+            if (!preg_match('/^\$2[aby]\$/', $plainPassword)) {
+                $hashed = $this->passwordHasher->hashPassword($user, $plainPassword);
+                $user->setMdp($hashed);
+                $output->writeln("Haché pour {$user->getEmail()}");
+            } elseif ($this->passwordHasher->needsRehash($user)) {
                 $hashed = $this->passwordHasher->hashPassword($user, $plainPassword);
                 $user->setMdp($hashed);
                 $output->writeln("Haché pour {$user->getEmail()}");
