@@ -62,7 +62,7 @@ class ProjectTypeForm extends AbstractType
                 ],
                 'attr' => ['class' => 'form-select']
             ])
-            ->add('chefDeProjet', EntityType::class, [
+            ->add('chefProjet', EntityType::class, [
                 'label' => 'Chef de projet',
                 'class' => User::class,
                 'choice_label' => 'fullName',
@@ -70,7 +70,7 @@ class ProjectTypeForm extends AbstractType
                     return $repo->createQueryBuilder('u')
                         ->where('u.roles LIKE :role')
                         ->andWhere('u.estActif = true')
-                        ->setParameter('role', '%ROLE_CHEF_DE_PROJET%')
+                        ->setParameter('role', '%ROLE_CHEF_PROJET%')
                         ->orderBy('u.nom', 'ASC');
                 },
                 'required' => false,
