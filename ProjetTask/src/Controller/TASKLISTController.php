@@ -13,17 +13,43 @@ use App\Entity\Project;
 use App\Entity\TaskList;
 use App\Form\TaskListTypeForm;
 
-    #[Route('/column')]
+#[Route('/column')]
 #[IsGranted('ROLE_USER')]
 class TaskListController extends AbstractController
 {
+    #[Route('/{id}', name: 'tasklist_show', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function show(TaskList $taskList): Response
+    {
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $taskList->getProject());
+
+        return $this->render('task_list/show.html.twig', [
+            'taskList' => $taskList,
+            'project' => $taskList->getProject(),
+            'tasks' => $taskList->getTasks(),
+        ]);
+    }
+
+    #[Route('/{id}/tasks', name: 'tasklist_tasks', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function tasks(TaskList $taskList): Response
+    {
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $taskList->getProject());
+
+        return $this->render('task_list/tasks.html.twig', [
+            'taskList' => $taskList,
+            'project' => $taskList->getProject(),
+            'tasks' => $taskList->getTasks(),
+        ]);
+    }
+
     #[Route('/new', name: 'column_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CHEF_PROJET')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $projectId = $request->request->get('project_id');
         $project = $entityManager->getRepository(Project::class)->find($projectId);
-        
+
         if (!$project) {
             throw $this->createNotFoundException('Projet non trouvé');
         }
@@ -35,13 +61,13 @@ class TaskListController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-        $taskList->setProject($project);
-        $taskList->setPositionColumn($project->getTaskLists()->count());
-        $taskList->setDateTime(new \DateTime());
-// Calculer la position
+            $taskList->setProject($project);
+            $taskList->setPositionColumn($project->getTaskLists()->count());
+            $taskList->setDateTime(new \DateTime());
+            // Calculer la position
             $maxPosition = $entityManager->getRepository(TaskList::class)
                 ->findMaxPositionByProject($project);
-            $taskList->setPositionColumn($maxPosition + 1);            
+            $taskList->setPositionColumn($maxPosition + 1);
             $entityManager->persist($taskList);
             $entityManager->flush();
 
@@ -50,18 +76,18 @@ class TaskListController extends AbstractController
             }
 
             $this->addFlash('success', 'Colonne créée avec succès');
-    }
+        }
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
-    }
+        if ($form->isSubmitted() && $form->isValid()) {
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
+        }
 
-    return $this->render('task_list/new.html.twig', [
-        'task_list' => $taskList,
-        'project' => $project,
-        'form' => $form,
-    ]);
-}
+        return $this->render('task_list/new.html.twig', [
+            'task_list' => $taskList,
+            'project' => $project,
+            'form' => $form,
+        ]);
+    }
 
     #[Route('/{id}/edit', name: 'column_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CHEF_PROJET')]
@@ -72,22 +98,23 @@ class TaskListController extends AbstractController
         $form = $this->createForm(TaskListTypeForm::class, $taskList);
         $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
 
-        if ($request->isXmlHttpRequest()) {
-            return new JsonResponse(['success' => true]);
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
+
+            $this->addFlash('success', 'Colonne modifiée avec succès');
+            return $this->redirectToRoute('app_project_kanban', ['id' => $taskList->getProject()->getId()]);
         }
 
-        $this->addFlash('success', 'Colonne modifiée avec succès');
-        return $this->redirectToRoute('app_project_kanban', ['id' => $taskList->getProject()->getId()]);
+        return $this->render('task_list/edit.html.twig', [
+            'task_list' => $taskList,
+            'form' => $form,
+        ]);
     }
-
-    return $this->render('task_list/edit.html.twig', [
-        'task_list' => $taskList,
-        'form' => $form,
-    ]);
-}#[Route('/{id}', name: 'app_task_list_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'app_task_list_delete', methods: ['DELETE'])]
     #[IsGranted('ROLE_CHEF_DE_PROJET')]
     public function delete(TaskList $taskList, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -117,10 +144,10 @@ class TaskListController extends AbstractController
     //             return new JsonResponse(['success' => true]);
     //         }
 
-            // $this->addFlash('success', 'Colonne supprimée');
-// return $this->redirectToRoute('project_kanban', ['id' => $project->getId()]);
+    // $this->addFlash('success', 'Colonne supprimée');
+    // return $this->redirectToRoute('project_kanban', ['id' => $project->getId()]);
 
-        }
+}
 
         
     
@@ -133,4 +160,3 @@ class TaskListController extends AbstractController
     //         'controller_name' => 'TaskListController',
     //     ]);
     // }
-

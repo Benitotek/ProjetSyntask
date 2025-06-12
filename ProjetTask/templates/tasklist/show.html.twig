@@ -1,0 +1,403 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ taskList.name }}
+	-
+	{{ project.name }}
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<style>
+		.task-column {
+			background: #f8f9fa;
+			border-radius: 8px;
+			padding: 20px;
+			min-height: 70vh;
+		}
+
+		.column-header {
+			border-bottom: 3px solid #007bff;
+			padding-bottom: 15px;
+			margin-bottom: 20px;
+		}
+
+		.task-card {
+			background: white;
+			border: 1px solid #dee2e6;
+			border-radius: 8px;
+			padding: 15px;
+			margin-bottom: 15px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			transition: all 0.3s;
+		}
+
+		.task-card:hover {
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+			transform: translateY(-2px);
+		}
+
+		.task-priority {
+			font-size: 0.85em;
+			font-weight: bold;
+		}
+
+		.priority-high {
+			color: #dc3545;
+		}
+		.priority-medium {
+			color: #ffc107;
+		}
+		.priority-low {
+			color: #28a745;
+		}
+
+		.task-status {
+			font-size: 0.8em;
+		}
+
+		.task-meta {
+			border-top: 1px solid #e9ecef;
+			padding-top: 10px;
+			margin-top: 10px;
+		}
+
+		.add-task-btn {
+			border: 2px dashed #6c757d;
+			background: transparent;
+			color: #6c757d;
+			padding: 20px;
+			text-align: center;
+			border-radius: 8px;
+			transition: all 0.3s;
+		}
+
+		.add-task-btn:hover {
+			border-color: #007bff;
+			color: #007bff;
+			background: rgba(0, 123, 255, 0.05);
+		}
+	</style>
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container-fluid">
+		<!-- Breadcrumb -->
+		<nav aria-label="breadcrumb" class="mb-4">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="{{ path('project_index') }}">Projets</a>
+				</li>
+				<li class="breadcrumb-item">
+					<a href="{{ path('project_kanban', {id: project.id}) }}">{{ project.name }}</a>
+				</li>
+				<li class="breadcrumb-item active">{{ taskList.name }}</li>
+			</ol>
+		</nav>
+
+		<div class="row">
+			<div class="col-md-8">
+				<div
+					class="task-column">
+					<!-- En-tête de la colonne -->
+					<div class="column-header">
+						<div class="d-flex justify-content-between align-items-center">
+							<div>
+								<h2 class="mb-1">{{ taskList.name }}</h2>
+								<p class="text-muted mb-0">
+									{{ tasks|length }}
+									tâche{{ tasks|length > 1 ? 's' : '' }}
+									{% if taskList.project.name %}
+										dans
+										<strong>{{ taskList.project.name }}</strong>
+									{% endif %}
+								</p>
+							</div>
+
+							{% if is_granted('ROLE_CHEF_PROJET') and is_granted('PROJECT_EDIT', project) %}
+								<div class="btn-group">
+									<button class="btn btn-outline-primary btn-sm" onclick="editColumn()">
+										<i class="fas fa-edit"></i>
+										Modifier
+									</button>
+									<button class="btn btn-outline-danger btn-sm" onclick="deleteColumn()">
+										<i class="fas fa-trash"></i>
+										Supprimer
+									</button>
+								</div>
+							{% endif %}
+						</div>
+					</div>
+
+					<!-- Liste des tâches -->
+					<div class="tasks-container">
+						{% for task in tasks %}
+							<div class="task-card" data-task-id="{{ task.id }}">
+								<div class="d-flex justify-content-between align-items-start mb-2">
+									<h5 class="mb-1">
+										<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
+											{{ task.title }}
+										</a>
+									</h5>
+
+									{% if task.priority %}
+										<span class="badge task-priority priority-{{ task.priority|lower }}">
+											{{ task.priority|upper }}
+										</span>
+									{% endif %}
+								</div>
+
+								{% if task.description %}
+									<p class="text-muted mb-2">
+										{{ task.description|length > 120 ? task.description|slice(0, 120) ~ '...' : task.description }}
+									</p>
+								{% endif %}
+
+								<div class="task-meta">
+									<div class="row">
+										<div class="col-sm-6">
+											{% if task.assignedUser %}
+												<small class="text-muted">
+													<i class="fas fa-user"></i>
+													{{ task.assignedUser.email }}
+												</small>
+											{% else %}
+												<small class="text-muted">
+													<i class="fas fa-user-slash"></i>
+													Non assigné
+												</small>
+											{% endif %}
+										</div>
+										<div class="col-sm-6 text-end">
+											{% if task.dueDate %}
+												<small class="text-muted">
+													<i class="fas fa-calendar"></i>
+													{{ task.dueDate|date('d/m/Y') }}
+												</small>
+											{% endif %}
+										</div>
+									</div>
+
+									{% if task.status %}
+										<div class="mt-2">
+											<span class="badge bg-info task-status">{{ task.status }}</span>
+										</div>
+									{% endif %}
+								</div>
+							</div>
+						{% else %}
+							<div class="text-center py-5">
+								<i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+								<h4 class="text-muted">Aucune tâche</h4>
+								<p class="text-muted">Cette colonne ne contient pas encore de tâches.</p>
+							</div>
+						{% endfor %}
+
+						<!-- Bouton d'ajout de tâche -->
+						{% if is_granted('ROLE_USER') %}
+							<div class="add-task-btn" onclick="addTask()">
+								<i class="fas fa-plus fa-2x mb-2"></i>
+								<br>
+								<strong>Ajouter une tâche</strong>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+
+			<!-- Sidebar avec informations -->
+			<div class="col-md-4">
+				<div class="card">
+					<div class="card-header">
+						<h5 class="mb-0">
+							<i class="fas fa-info-circle"></i>
+							Informations</h5>
+					</div>
+					<div class="card-body">
+						<dl class="row">
+							<dt class="col-sm-4">Projet :</dt>
+							<dd class="col-sm-8">
+								<a href="{{ path('project_show', {id: project.id}) }}">{{ project.name }}</a>
+							</dd>
+
+							<dt class="col-sm-4">Position :</dt>
+							<dd class="col-sm-8">{{ taskList.positionColumn ?? 'Non définie' }}</dd>
+
+							<dt class="col-sm-4">Tâches :</dt>
+							<dd class="col-sm-8">{{ tasks|length }}</dd>
+
+							{% if project.taskLists|length > 1 %}
+								<dt class="col-sm-4">Autres colonnes :</dt>
+								<dd class="col-sm-8">
+									{% for otherTaskList in project.taskLists %}
+										{% if otherTaskList.id != taskList.id %}
+											<a href="{{ path('tasklist_show', {id: otherTaskList.id}) }}" class="badge bg-secondary text-decoration-none me-1">
+												{{ otherTaskList.name }}
+											</a>
+										{% endif %}
+									{% endfor %}
+								</dd>
+							{% endif %}
+						</dl>
+					</div>
+				</div>
+
+				<!-- Actions rapides -->
+				<div class="card mt-3">
+					<div class="card-header">
+						<h5 class="mb-0">
+							<i class="fas fa-lightning-bolt"></i>
+							Actions rapides</h5>
+					</div>
+					<div class="card-body">
+						<div class="d-grid gap-2">
+							<a href="{{ path('project_kanban', {id: project.id}) }}" class="btn btn-outline-primary btn-sm">
+								<i class="fas fa-columns"></i>
+								Vue Kanban
+							</a>
+
+							{% if is_granted('ROLE_USER') %}
+								<button class="btn btn-outline-success btn-sm" onclick="addTask()">
+									<i class="fas fa-plus"></i>
+									Nouvelle tâche
+								</button>
+							{% endif %}
+
+							{% if is_granted('ROLE_CHEF_PROJET') and is_granted('PROJECT_EDIT', project) %}
+								<button class="btn btn-outline-warning btn-sm" onclick="editColumn()">
+									<i class="fas fa-edit"></i>
+									Modifier colonne
+								</button>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modals (repris du template précédent) -->
+	<!-- Modal pour éditer la colonne -->
+	<div class="modal fade" id="editColumnModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Modifier la colonne</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<form id="editColumnForm" action="{{ path('column_edit', {id: taskList.id}) }}" method="post">
+					<div class="modal-body">
+						<div class="mb-3">
+							<label for="column-name" class="form-label">Nom de la colonne</label>
+							<input type="text" class="form-control" id="column-name" name="task_list[name]" value="{{ taskList.name }}" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<button type="submit" class="btn btn-primary">Enregistrer</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal de suppression -->
+	<div class="modal fade" id="deleteColumnModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title text-danger">Supprimer la colonne</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert alert-warning">
+						<i class="fas fa-exclamation-triangle"></i>
+						<strong>Attention !</strong>
+						Cette action supprimera la colonne
+						<strong>"{{ taskList.name }}"</strong>
+						et toutes ses tâches ({{ tasks|length }}
+						tâche{{ tasks|length > 1 ? 's' : '' }}).
+					</div>
+					<p>Cette action est
+						<strong>irréversible</strong>. Êtes-vous sûr de vouloir continuer ?</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-danger" id="confirmDeleteColumn">
+						<i class="fas fa-trash"></i>
+						Supprimer définitivement
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		// Éditer la colonne
+function editColumn() {
+new bootstrap.Modal(document.getElementById('editColumnModal')).show();
+}
+
+// Supprimer la colonne
+function deleteColumn() {
+new bootstrap.Modal(document.getElementById('deleteColumnModal')).show();
+}
+
+// Ajouter une tâche
+function addTask() { // Rediriger vers la création de tâche avec la TaskList pré-sélectionnée
+window.location.href = '{{ path("task_new") }}?task_list= {{ taskList.id }}';
+}
+
+// Gérer l'édition de colonne
+document.getElementById('editColumnForm').addEventListener('submit', function (e) {
+e.preventDefault();
+
+const formData = new FormData(this);
+
+fetch(this.action, {
+method: 'POST',
+body: formData,
+headers: {
+'X-Requested-With': 'XMLHttpRequest'
+}
+}).then(response => response.json()).then(data => {
+if (data.success) {
+location.reload();
+} else {
+alert('Erreur lors de la modification');
+}
+}).catch(error => {
+console.error('Erreur:', error);
+// Fallback: soumission normale du formulaire
+this.submit();
+});
+});
+
+// Confirmer la suppression
+document.getElementById('confirmDeleteColumn').addEventListener('click', function () {
+const formData = new FormData();
+formData.append('_token', '{{ csrf_token('delete' ~ taskList.id) }}');
+
+fetch('{{ path("column_delete", {id: taskList.id}) }}', {
+method: 'POST',
+body: formData,
+headers: {
+'X-Requested-With': 'XMLHttpRequest'
+}
+}).then(response => response.json()).then(data => {
+if (data.success) { // Rediriger vers le kanban du projet
+window.location.href = '{{ path("project_kanban", {id: project.id}) }}';
+} else {
+alert('Erreur lors de la suppression');
+}
+}).catch(error => {
+console.error('Erreur:', error);
+alert('Erreur lors de la suppression');
+});
+});
+	</script>
+{% endblock %}
