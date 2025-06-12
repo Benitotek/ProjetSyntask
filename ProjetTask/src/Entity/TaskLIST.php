@@ -6,6 +6,7 @@ use App\Repository\TaskLISTRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: TaskLISTRepository::class)]
 class TaskList
@@ -24,18 +25,24 @@ class TaskList
     #[ORM\Column]
     private ?float $position = null;
 
-    #[ORM\ManyToOne(inversedBy: 'TaskLists')]
+    #[ORM\Column(type: Types::INTEGER)]
+    private ?int $positionColumn = null;
+
+    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'taskLists')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Project $project = null;
 
     /**
      * @var Collection<int, Task>
      */
-    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'TaskList')]
+    #[ORM\OneToMany(mappedBy: 'taskList', targetEntity: Task::class, cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $tasks;
 
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
+        $this->dateTime = new \DateTime();
     }
 
     public function getId(): ?int
@@ -67,12 +74,15 @@ class TaskList
         return $this;
     }
 
-    public function getPosition(): ?float
+     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateTime = null;
+
+    public function getPosition(): ?int
     {
         return $this->position;
     }
 
-    public function setPosition(float $position): static
+    public function setPosition(int $position): static
     {
         $this->position = $position;
 
@@ -80,8 +90,6 @@ class TaskList
     }
 
 // ... other properties and methods ...
-
-private ?int $positionColumn = null;
 
 public function getPositionColumn(): ?int
 {
@@ -93,6 +101,16 @@ public function setPositionColumn(int $positionColumn): self
     $this->positionColumn = $positionColumn;
     return $this;
 }
+public function getDateTime(): ?\DateTimeInterface
+    {
+        return $this->dateTime;
+    }
+
+    public function setDateTime(\DateTimeInterface $dateTime): static
+    {
+        $this->dateTime = $dateTime;
+        return $this;
+    }
     public function getProject(): ?Project
     {
         return $this->project;
