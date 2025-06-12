@@ -10,7 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<TaskLIST>
  */
-class TaskLISTRepository extends ServiceEntityRepository
+class TaskListRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
