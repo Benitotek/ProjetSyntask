@@ -20,4 +20,7 @@ app_user_show:
     methods: [GET]
     requirements:
         id: '\d+'
-
+project_kanban:
+  path: /project/kanban
+  controller: App\Controller\ProjectController::kanban
+  methods: [GET]

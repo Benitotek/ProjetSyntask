@@ -79,6 +79,20 @@ class TaskList
         return $this;
     }
 
+// ... other properties and methods ...
+
+private ?int $positionColumn = null;
+
+public function getPositionColumn(): ?int
+{
+    return $this->positionColumn;
+}
+
+public function setPositionColumn(int $positionColumn): self
+{
+    $this->positionColumn = $positionColumn;
+    return $this;
+}
     public function getProject(): ?Project
     {
         return $this->project;

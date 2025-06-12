@@ -66,6 +66,11 @@ class Project
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, cascade: ['persist', 'remove'])]
     private Collection $tasks;
 
+    /**
+     * @var Collection<int, User>
+     */
+    private Collection $users;
+
     public function __construct()
     {
         $this->membres = new ArrayCollection();
@@ -73,6 +78,8 @@ class Project
         $this->tasks = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
+        $this->users = new ArrayCollection();
+        // ... other constructor code
     }
 
 
@@ -287,9 +294,43 @@ class Project
         return $this;
     }
 
-
     public function __toString(): string
     {
         return $this->titre ?: 'Nouveau Projet';
+    }
+
+    private bool $estArchive = false;
+
+    public function isEstArchive(): bool
+    {
+        return $this->estArchive;
+    }
+
+    public function setEstArchive(bool $estArchive): self
+    {
+        $this->estArchive = $estArchive;
+        return $this;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser($user): self
+    {
+        if (!$this->users->contains($user)) {
+            $this->users[] = $user;
+        }
+        return $this;
+    }
+
+    public function removeUser($user): self
+    {
+        $this->users->removeElement($user);
+        return $this;
     }
 }

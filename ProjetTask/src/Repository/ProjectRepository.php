@@ -94,8 +94,25 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findArchivedProjects(): array
+{
+return $this->createQueryBuilder('p')
+->andWhere('p.estArchive = :val')
+->setParameter('val', true)
+->orderBy('p.updatedAt', 'DESC') // optionnel si tu as un champ updatedAt
+->getQuery()
+->getResult();
 }
 
+    public function findByReference(string $reference): ?Project
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.reference = :ref')
+            ->setParameter('ref', $reference)
+            ->getQuery()
+            ->getOneOrNullResult();
+}
+}
     //    /**
     //     * @return Project[] Returns an array of Project objects
     //     */
