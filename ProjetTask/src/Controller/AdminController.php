@@ -16,28 +16,60 @@ final class AdminController extends AbstractController
         $users = [
             [
                 'id' => 1,
-                'nom' => 'Jean Dupont',
-                'email' => 'jean.dupont@example.com',
-                'role' => 'Administrateur',
+                'nom' => 'Bernard Martin',
+                'email' => 'bernard.martin@free.fr ',
+                'role' => 'Directeur',
                 'status' => 'Actif',
                 'avatar' => null
             ],
             [
                 'id' => 2,
-                'nom' => 'Marie Martin',
-                'email' => 'marie.martin@example.com',
-                'role' => 'Utilisateur',
+                'nom' => 'Clara Lefèvre',
+                'email' => 'clara.lefevre@orange.fr',
+                'role' => 'Chefs de Projet ',
                 'status' => 'Actif',
                 'avatar' => null
             ],
             [
                 'id' => 3,
-                'nom' => 'Pierre Durand',
-                'email' => 'pierre.durand@example.com',
-                'role' => 'Modérateur',
+                'nom' => 'David  Moreau',
+                'email' => 'david.moreau@orange.fr',
+                'role' => 'Chefs de Projet',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 4,
+                'nom' => 'François Girard',
+                'email' => 'francois.girard@gmail.com',
+                'role' => 'Employés',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 5,
+                'nom' => 'Hélène Bernard',
+                'email' => 'helene.bernard@gmail.com',
+                'role' => 'Employés',
+                'status' => 'Actif',
+                'avatar' => null
+            ],   
+            [
+                'id' => 6,
+                'nom' => 'Julien Fontaine',
+                'email' => 'julien.fontaine@example.com',
+                'role' => 'Employés',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 7,
+                'nom' => 'Karine Roche',
+                'email' => 'karine.roche@gmail.com',
+                'role' => 'Employés',
                 'status' => 'Inactif',
                 'avatar' => null
-            ]
+            ]            
         ];
 
         return $this->render('admin/index.html.twig', [
