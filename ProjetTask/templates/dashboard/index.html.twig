@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - SYNTASK{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-home"></i> Tableau de bord</h1>
+        <p class="text-muted">Bienvenue, {{ app.user.fullName }}</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5>Projets</h5>
+                        <h2>{{ stats.total_projects }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-project-diagram fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5>Projets actifs</h5>
+                        <h2>{{ stats.active_projects }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-play fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5>Mes tâches</h5>
+                        <h2>{{ stats.total_tasks }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tasks fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5>En retard</h5>
+                        <h2>{{ stats.overdue_tasks }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-project-diagram"></i> Projets récents</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_projects is empty %}
+                    <p class="text-muted">Aucun projet récent.</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Projet</th>
+                                    <th>Statut</th>
+                                    <th>Chef de projet</th>
+                                    <th>Progression</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in recent_projects %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ project.titre }}</strong>
+                                        {% if project.ref %}<small class="text-muted">({{ project.ref }})</small>{% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ project.statut == 'EN-COURS' ? 'success' : (project.statut == 'TERMINE' ? 'primary' : 'warning') }}">
+                                            {{ project.statut }}
+                                        </span>
+                                    </td>
+                                    <td>{{ project.chefDeProjet ? project.chefDeProjet.fullName : 'Non assigné' }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: {{ project.progress }}%">{{ project.progress|round }}%</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('app_project_show', {id: project.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_project_kanban', {id: project.id}) }}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-columns"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-tasks"></i> Mes tâches récentes</h5>
+            </div>
+            <div class="card-body">
+                {% if user_tasks is empty %}
+                    <p class="text-muted">Aucune tâche assignée.</p>
+                {% else %}
+                    {% for task in user_tasks %}
+                    <div class="card mb-2 kanban-card {{ task.priorityClass }} {{ task.statusClass }} {{ task.isOverdue ? 'task-overdue' : '' }}">
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-1">{{ task.titre }}</h6>
+                            <p class="card-text small text-muted mb-1">{{ task.project.titre }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-{{ task.statut == 'EN-COURS' ? 'primary' : (task.statut == 'TERMINE' ? 'success' : 'secondary') }}">
+                                    {{ task.statut }}
+                                </span>
+                                {% if task.dateDeFin %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> {{ task.dateDeFin|date('d/m/Y') }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
