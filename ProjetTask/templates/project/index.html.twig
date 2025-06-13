@@ -1,20 +1,114 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProjectController!{% endblock %}
+{% block title %}Mes Projets
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+	<div class="container mt-4">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="d-flex justify-content-between align-items-center mb-4">
+					<h1>Mes Projets</h1>
+					{% if is_granted('ROLE_DIRECTEUR') %}
+						<a href="{{ path('project_new') }}" class="btn btn-primary">
+							<i class="fas fa-plus"></i>
+							Nouveau Projet
+						</a>
+					{% endif %}
+				</div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+				{# Filtres par statut #}
+				<div class="mb-3">
+					<div class="btn-group" role="group">
+						<a href="{{ path('project_index') }}" class="btn {% if current_status is null %}btn-primary{% else %}btn-outline-primary{% endif %}">
+							Tous
+						</a>
+						<a href="{{ path('project_index', {status: 'en_cours'}) }}" class="btn {% if current_status == 'en_cours' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+							En cours
+						</a>
+						<a href="{{ path('project_index', {status: 'termine'}) }}" class="btn {% if current_status == 'termine' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+							Terminés
+						</a>
+						<a href="{{ path('project_index', {status: 'en_attente'}) }}" class="btn {% if current_status == 'en_attente' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+							En attente
+						</a>
+					</div>
+				</div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/durri/ProjetTask/ProjetTask/src/Controller/ProjectController.php</code></li>
-        <li>Your template at <code>C:/Users/durri/ProjetTask/ProjetTask/templates/project/index.html.twig</code></li>
-    </ul>
-</div>
+				{# Liste des projets #}
+				{% if projects is empty %}
+					<div class="alert alert-info">
+						<i class="fas fa-info-circle"></i>
+						Aucun projet trouvé.
+						{% if is_granted('ROLE_DIRECTEUR') %}
+							<a href="{{ path('project_new') }}">Créer le premier projet</a>
+						{% endif %}
+					</div>
+				{% else %}
+					<div class="row">
+						{% for project in projects %}
+							<div class="col-md-6 col-lg-4 mb-4">
+								<div class="card h-100">
+									<div class="card-header d-flex justify-content-between align-items-center">
+										<h5 class="card-title mb-0">{{ project.titre }}</h5>
+										<span class="badge badge-{{ project.statut == 'termine' ? 'success' : (project.statut == 'en_cours' ? 'primary' : 'secondary') }}">
+											{{ project.statut|replace({'_': ' '})|title }}
+										</span>
+									</div>
+									<div class="card-body">
+										<p class="card-text">{{ project.description|slice(0, 100) }}
+											{% if project.description|length > 100 %}...
+											{% endif %}
+										</p>
+
+										<div class="row text-muted small mb-3">
+											{% if project.dateButoir %}
+												<div class="col-6">
+													<i class="fas fa-calendar-start"></i>
+													{{ project.dateButoir|date('d/m/Y') }}
+												</div>
+											{% endif %}
+											{% if project.dateReelle %}
+												<div class="col-6">
+													<i class="fas fa-calendar-end"></i>
+													{{ project.dateReelle|date('d/m/Y') }}
+												</div>
+											{% endif %}
+										</div>
+
+										{% if project.chefDeProjet %}
+											<p class="small text-muted">
+												<i class="fas fa-user"></i>
+												Chef:
+												{{ project.chefDeProjet.nom }}
+												{{ project.chefDeProjet.prenom }}
+											</p>
+										{% endif %}
+									</div>
+									<div class="card-footer">
+										<div class="btn-group w-100" role="group">
+											<a href="{{ path('project_show', {id: project.id}) }}" class="btn btn-outline-primary btn-sm">
+												<i class="fas fa-eye"></i>
+												Voir
+											</a>
+											<a href="{{ path('project_kanban', {id: project.id}) }}" class="btn btn-outline-info btn-sm">
+												<i class="fas fa-columns"></i>
+												Kanban
+											</a>
+											{% if is_granted('ROLE_DIRECTEUR') or project.chefDeProjet == app.user %}
+												<a href="{{ path('project_edit', {id: project.id}) }}" class="btn btn-outline-warning btn-sm">
+													<i class="fas fa-edit"></i>
+													Modifier
+												</a>
+											{% endif %}
+										</div>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
 {% endblock %}
