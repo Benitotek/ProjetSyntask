@@ -79,6 +79,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, UserProject>
      */
+    // Projets gérés (OneToMany, inversé de chefDeProjet)
+    // #[ORM\OneToMany(mappedBy: 'chefDeProjet', targetEntity: Project::class)]
+    // private Collection $projetsGeres;
+
+    // Projets assignés (ManyToMany, inversé de membres)
+    // #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
+    // private Collection $projetsAssignes;
+
+    // Tâches assignées (OneToMany, inversé de assignedUser)
+    // #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
+    // private Collection $tachesAssignees;
     #[ORM\OneToMany(targetEntity: UserProject::class, mappedBy: 'user')]
     private Collection $userProjects;
 
@@ -246,9 +257,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Project>
      */
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'gerant')]
+    // Projets gérés (chef de projet)
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'chefDeProjet')]
     private Collection $projetsGeres;
-
     /**
      * @return Collection<int, Project>
      */
@@ -259,9 +270,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Project>
      */
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'assigne')]
+    // Projets où le user est membre
+    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
     private Collection $projetsAssignes;
-
     /**
      * @return Collection<int, Project>
      */
@@ -273,9 +284,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Task>
      */
-    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'assignee')]
+    // Tâches où ce user est assigné (OneToMany, inversé de assignedUser)
+    // Tâches où ce user est assigné
+    #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
     private Collection $tachesAssignees;
-
+    
     public function __construct()
     {
         $this->userProjects = new ArrayCollection();

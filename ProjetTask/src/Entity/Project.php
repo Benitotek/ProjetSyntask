@@ -52,13 +52,19 @@ class Project
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $budget = null;
 
-   #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?User $chefDeProjet = null;
+// Chef de projet : Un User peut gérer plusieurs projets
+#[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
+#[ORM\JoinColumn(nullable: true)]
+private ?User $chefDeProjet = null;
 
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
-    #[ORM\JoinTable(name: 'project_user')]
-    private Collection $membres;
+// Membres : ManyToMany
+#[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
+#[ORM\JoinTable(name: 'project_user')]
+private Collection $membres;
+
+// Pour UserProject (si relation OneToMany)
+#[ORM\OneToMany(mappedBy: 'project', targetEntity: UserProject::class)]
+private Collection $userProjects;
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: TaskList::class, cascade: ['persist', 'remove'])]
     private Collection $taskLists;

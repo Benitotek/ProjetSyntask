@@ -15,12 +15,10 @@ class UserProject
 
     #[ORM\Column(length: 255)]
     private ?string $role = null;
-
+#[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'userProjects')]
+private ?Project $project = null;
     #[ORM\ManyToOne(inversedBy: 'userProjects')]
     private ?User $user = null;
-
-    #[ORM\ManyToOne(inversedBy: 'userProjects')]
-    private ?Project $project = null;
 
     public function getId(): ?int
     {

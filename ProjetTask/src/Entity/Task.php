@@ -3,11 +3,17 @@
 namespace App\Entity;
 
 use App\Repository\TaskRepository;
-use Doctrine\ORM\Mapping as ORM;
-
 use App\Enum\TaskStatut;
 use App\Enum\TaskPriority;
+use App\Entity\Project;
+use App\Entity\User;
+use App\Entity\TaskList;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\Table(name: 'task')]
 class Task
 {
     public const PRIORITE_URGENT = 'urgent';
@@ -18,8 +24,6 @@ class Task
     public const STATUT_EN_COURS = 'en_cours';
     public const STATUT_TERMINE = 'termine';
 
-#[ORM\Entity(repositoryClass: TaskRepository::class)]
-#[ORM\Table(name: 'task')]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -38,18 +42,16 @@ class Task
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    // Removed duplicate priorite property of type string.
-
     #[ORM\Column(length: 20, enumType: TaskStatut::class)]
     private TaskStatut $statut = TaskStatut::EN_ATTENTE;
 
     #[ORM\Column]
     private ?\DateTime $dateCreation = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $dateButoir = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $dateReelle = null;
 
     #[ORM\Column(length: 20, enumType: TaskPriority::class)]
@@ -59,35 +61,26 @@ class Task
     private int $position = 0;
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
-    private ?TaskList $TaskList = null;
+    private ?TaskList $taskList = null;
 
-    #[ORM\ManyToOne(inversedBy: 'tasks')]
-    private ?User $assignedUser = null;
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Project $project = null;
-
+    
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tachesAssignees')]
+    private ?User $assignedUser = null;
     /**
-     * @var \Doctrine\Common\Collections\Collection<int, User>
+     * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class)]
-    private $assignedUsers;
+    private Collection $assignedUsers;
 
     public function __construct()
     {
         $this->dateCreation = new \DateTime();
-        $this->assignedUsers = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-    public function setProject(Project $project): self
-    {
-        $this->project = $project;
-        return $this;
+        $this->assignedUsers = new ArrayCollection();
     }
 
-    public function getProject(): ?Project
-    {
-        return $this->project;
-    }
     public function getId(): ?int
     {
         return $this->id;
@@ -101,7 +94,6 @@ class Task
     public function setTitle(string $title): static
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -110,15 +102,12 @@ class Task
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
-
-    // Removed duplicate getPriorite() and setPriorite() methods for string type.
     public function getStatut(): TaskStatut
     {
         return $this->statut;
@@ -127,9 +116,9 @@ class Task
     public function setStatut(TaskStatut $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
+
     public function getDateCreation(): ?\DateTime
     {
         return $this->dateCreation;
@@ -138,7 +127,6 @@ class Task
     public function setDateCreation(\DateTime $dateCreation): static
     {
         $this->dateCreation = $dateCreation;
-
         return $this;
     }
 
@@ -147,10 +135,9 @@ class Task
         return $this->dateButoir;
     }
 
-    public function setDateButoir(\DateTime $dateButoir): static
+    public function setDateButoir(?\DateTime $dateButoir): static
     {
         $this->dateButoir = $dateButoir;
-
         return $this;
     }
 
@@ -159,19 +146,17 @@ class Task
         return $this->dateReelle;
     }
 
-    public function setDateReelle(\DateTime $dateReelle): static
+    public function setDateReelle(?\DateTime $dateReelle): static
     {
         $this->dateReelle = $dateReelle;
-
         return $this;
     }
-    // Removed duplicate getStatut() method to resolve duplicate symbol error.
-    // Removed duplicate setStatut() method to resolve duplicate symbol error.
 
     public function getPriorite(): TaskPriority
     {
         return $this->priorite;
     }
+
     public function setPriorite(TaskPriority $priorite): static
     {
         $this->priorite = $priorite;
@@ -182,6 +167,7 @@ class Task
     {
         return $this->position;
     }
+
     public function setPosition(int $position): static
     {
         $this->position = $position;
@@ -190,24 +176,34 @@ class Task
 
     public function getTaskList(): ?TaskList
     {
-        return $this->TaskList;
+        return $this->taskList;
     }
 
-    public function setTaskList(?TaskList $TaskList): static
+    public function setTaskList(?TaskList $taskList): static
     {
-        $this->TaskList = $TaskList;
-
+        $this->taskList = $taskList;
         return $this;
     }
+
     public function getAssignedUser(): ?User
     {
         return $this->assignedUser;
     }
+
     public function setAssignedUser(?User $assignedUser): static
     {
         $this->assignedUser = $assignedUser;
         return $this;
     }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getAssignedUsers(): Collection
+    {
+        return $this->assignedUsers;
+    }
+
     public function addAssignedUser(User $assignedUser): static
     {
         if (!$this->assignedUsers->contains($assignedUser)) {
@@ -221,6 +217,18 @@ class Task
         $this->assignedUsers->removeElement($assignedUser);
         return $this;
     }
+
+    public function getProject(): ?Project
+    {
+        return $this->project;
+    }
+
+    public function setProject(?Project $project): static
+    {
+        $this->project = $project;
+        return $this;
+    }
+
     public function isOverdue(): bool
     {
         if (!$this->dateButoir || $this->statut === TaskStatut::TERMINE) {
