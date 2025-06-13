@@ -5,25 +5,43 @@ namespace App\Entity;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: TaskRepository::class)]
+use App\Enum\TaskStatut;
+use App\Enum\TaskPriority;
+
 class Task
 {
+    public const PRIORITE_URGENT = 'urgent';
+    public const PRIORITE_NORMAL = 'normal';
+    public const PRIORITE_EN_ATTENTE = 'en_attente';
+
+    public const STATUT_EN_ATTENTE = 'en_attente';
+    public const STATUT_EN_COURS = 'en_cours';
+    public const STATUT_TERMINE = 'termine';
+
+#[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\Table(name: 'task')]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    /**
+     * @Symfony\Component\Validator\Constraints\NotBlank(message="Le titre est requis")
+     * @Symfony\Component\Validator\Constraints\Length(
+     *      max=100,
+     *      maxMessage="Le titre ne peut pas dépasser 100 caractères"
+     * )
+     */
     private ?string $title = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 30)]
-    private ?string $priorite = null;
+    // Removed duplicate priorite property of type string.
 
-    #[ORM\Column]
-    private array $statut = [];
+    #[ORM\Column(length: 20, enumType: TaskStatut::class)]
+    private TaskStatut $statut = TaskStatut::EN_ATTENTE;
 
     #[ORM\Column]
     private ?\DateTime $dateCreation = null;
@@ -34,9 +52,42 @@ class Task
     #[ORM\Column]
     private ?\DateTime $dateReelle = null;
 
-    #[ORM\ManyToOne(inversedBy: 'tasks')]
-    private ?TaskLIST $taskLIST = null;
+    #[ORM\Column(length: 20, enumType: TaskPriority::class)]
+    private TaskPriority $priorite = TaskPriority::NORMAL;
 
+    #[ORM\Column]
+    private int $position = 0;
+
+    #[ORM\ManyToOne(inversedBy: 'tasks')]
+    private ?TaskList $TaskList = null;
+
+    #[ORM\ManyToOne(inversedBy: 'tasks')]
+    private ?User $assignedUser = null;
+
+    #[ORM\ManyToOne(inversedBy: 'tasks')]
+    private ?Project $project = null;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    private $assignedUsers;
+
+    public function __construct()
+    {
+        $this->dateCreation = new \DateTime();
+        $this->assignedUsers = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    public function setProject(Project $project): self
+    {
+        $this->project = $project;
+        return $this;
+    }
+
+    public function getProject(): ?Project
+    {
+        return $this->project;
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -66,30 +117,19 @@ class Task
         return $this;
     }
 
-    public function getPriorite(): ?string
-    {
-        return $this->priorite;
-    }
 
-    public function setPriorite(string $priorite): static
-    {
-        $this->priorite = $priorite;
-
-        return $this;
-    }
-
-    public function getStatut(): array
+    // Removed duplicate getPriorite() and setPriorite() methods for string type.
+    public function getStatut(): TaskStatut
     {
         return $this->statut;
     }
 
-    public function setStatut(array $statut): static
+    public function setStatut(TaskStatut $statut): static
     {
         $this->statut = $statut;
 
         return $this;
     }
-
     public function getDateCreation(): ?\DateTime
     {
         return $this->dateCreation;
@@ -125,16 +165,67 @@ class Task
 
         return $this;
     }
+    // Removed duplicate getStatut() method to resolve duplicate symbol error.
+    // Removed duplicate setStatut() method to resolve duplicate symbol error.
 
-    public function getTaskLIST(): ?TaskLIST
+    public function getPriorite(): TaskPriority
     {
-        return $this->taskLIST;
+        return $this->priorite;
+    }
+    public function setPriorite(TaskPriority $priorite): static
+    {
+        $this->priorite = $priorite;
+        return $this;
     }
 
-    public function setTaskLIST(?TaskLIST $taskLIST): static
+    public function getPosition(): int
     {
-        $this->taskLIST = $taskLIST;
+        return $this->position;
+    }
+    public function setPosition(int $position): static
+    {
+        $this->position = $position;
+        return $this;
+    }
+
+    public function getTaskList(): ?TaskList
+    {
+        return $this->TaskList;
+    }
+
+    public function setTaskList(?TaskList $TaskList): static
+    {
+        $this->TaskList = $TaskList;
 
         return $this;
+    }
+    public function getAssignedUser(): ?User
+    {
+        return $this->assignedUser;
+    }
+    public function setAssignedUser(?User $assignedUser): static
+    {
+        $this->assignedUser = $assignedUser;
+        return $this;
+    }
+    public function addAssignedUser(User $assignedUser): static
+    {
+        if (!$this->assignedUsers->contains($assignedUser)) {
+            $this->assignedUsers->add($assignedUser);
+        }
+        return $this;
+    }
+
+    public function removeAssignedUser(User $assignedUser): static
+    {
+        $this->assignedUsers->removeElement($assignedUser);
+        return $this;
+    }
+    public function isOverdue(): bool
+    {
+        if (!$this->dateButoir || $this->statut === TaskStatut::TERMINE) {
+            return false;
+        }
+        return $this->dateButoir < new \DateTime();
     }
 }
