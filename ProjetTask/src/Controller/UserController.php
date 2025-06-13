@@ -1,3 +1,4 @@
+
 <?php
 
 namespace App\Controller;
@@ -18,11 +19,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
-    #[Route('/user', name: 'app_user_index', methods: ['GET'])]
-public function index(): Response
-{
-    return new Response('Liste des utilisateurs');
-}
     #[Route('/', name: 'app_user_index', methods: ['GET'])]
     public function indexRepositories(UserRepository $userRepository): Response
     {
@@ -99,15 +95,3 @@ public function index(): Response
         return $this->redirectToRoute('app_user_index');
     }
 }
-//     // Route qui va lister tous les utilisateurs
-//     #[Route('/userlist', name: 'userlist', methods: ['GET'])]
-//     public function userlist(EntityManagerInterface $entityManager): Response
-//     {
-//        $users = $entityManager->getRepository(User::class)->findBy([], ['nom' => 'ASC']);
-//        $projects = $entityManager->getRepository(Project::class)->findBy([], ['nom' => 'ASC']);
-//        return $this->render('user/userlist.html.twig', [
-//         'users' => $users, 
-//         'projects' => $projects,
-//         ]);
-//     }
-// }
