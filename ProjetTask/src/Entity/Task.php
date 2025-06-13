@@ -42,8 +42,8 @@ class Task
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 20, enumType: TaskStatut::class)]
-    private TaskStatut $statut = TaskStatut::EN_ATTENTE;
+    #[ORM\Column(type: 'string', length: 20)]
+    private string $statut = 'en_attente';
 
     #[ORM\Column]
     private ?\DateTime $dateCreation = null;
@@ -54,8 +54,8 @@ class Task
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateReelle = null;
 
-    #[ORM\Column(length: 20, enumType: TaskPriority::class)]
-    private TaskPriority $priorite = TaskPriority::NORMAL;
+    #[ORM\Column(type: 'string', length: 20)]
+    private string $priorite = 'normal';
 
     #[ORM\Column]
     private int $position = 0;
@@ -66,7 +66,7 @@ class Task
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Project $project = null;
-    
+
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tachesAssignees')]
     private ?User $assignedUser = null;
     /**
@@ -110,12 +110,12 @@ class Task
 
     public function getStatut(): TaskStatut
     {
-        return $this->statut;
+        return TaskStatut::from($this->statut);
     }
 
     public function setStatut(TaskStatut $statut): static
     {
-        $this->statut = $statut;
+        $this->statut = $statut->value;
         return $this;
     }
 
@@ -154,12 +154,12 @@ class Task
 
     public function getPriorite(): TaskPriority
     {
-        return $this->priorite;
+        return TaskPriority::from($this->priorite);
     }
 
     public function setPriorite(TaskPriority $priorite): static
     {
-        $this->priorite = $priorite;
+        $this->priorite = $priorite->value;
         return $this;
     }
 
