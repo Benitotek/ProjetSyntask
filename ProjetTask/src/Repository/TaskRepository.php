@@ -44,11 +44,11 @@ class TaskRepository extends ServiceEntityRepository
     public function findOverdue(): array
     {
         return $this->createQueryBuilder('t')
-            ->where('t.dateDeFin < :now')
+            ->where('t.dateButoir < :now')
             ->andWhere('t.statut != :completed')
             ->setParameter('now', new \DateTime())
             ->setParameter('completed', Task::STATUT_TERMINE)
-            ->orderBy('t.dateDeFin', 'ASC')
+            ->orderBy('t.dateButoir', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -59,7 +59,7 @@ class TaskRepository extends ServiceEntityRepository
             ->select('COUNT(t.id)')
             ->join('t.assignedUsers', 'u')
             ->where('u = :user')
-            ->andWhere('t.dateDeFin < :now')
+            ->andWhere('t.dateButoir < :now')
             ->andWhere('t.statut != :completed')
             ->setParameter('user', $user)
             ->setParameter('now', new \DateTime())
@@ -103,12 +103,12 @@ class TaskRepository extends ServiceEntityRepository
         $deadline->modify("+{$days} days");
 
         return $this->createQueryBuilder('t')
-            ->where('t.dateDeFin BETWEEN :now AND :deadline')
+            ->where('t.dateButoir BETWEEN :now AND :deadline')
             ->andWhere('t.statut != :completed')
             ->setParameter('now', new \DateTime())
             ->setParameter('deadline', $deadline)
             ->setParameter('completed', Task::STATUT_TERMINE)
-            ->orderBy('t.dateDeFin', 'ASC')
+            ->orderBy('t.dateReelle', 'ASC')
             ->getQuery()
             ->getResult();
     }

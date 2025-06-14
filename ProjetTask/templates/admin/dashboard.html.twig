@@ -1,0 +1,18 @@
+{# templates/admin/dashboard.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block body %}
+    <h1>Dashboard Administration</h1>
+    
+    <div class="admin-panel">
+        <h2>Gestion des utilisateurs</h2>
+        <a href="{{ path('app_user_index') }}" class="btn">Liste des utilisateurs</a>
+        
+        <h2>Gestion des rôles</h2>
+        <a href="{{ path('app_role_index') }}" class="btn">Gérer les rôles</a>
+        
+        {# Autres fonctionnalités administratives #}
+    </div>
+{% endblock %}

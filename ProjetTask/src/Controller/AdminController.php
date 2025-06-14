@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class AdminController extends AbstractController
 {
@@ -53,7 +54,7 @@ final class AdminController extends AbstractController
                 'role' => 'Employés',
                 'status' => 'Actif',
                 'avatar' => null
-            ],   
+            ],
             [
                 'id' => 6,
                 'nom' => 'Julien Fontaine',
@@ -69,7 +70,7 @@ final class AdminController extends AbstractController
                 'role' => 'Employés',
                 'status' => 'Inactif',
                 'avatar' => null
-            ]            
+            ]
         ];
 
         return $this->render('admin/index.html.twig', [
@@ -100,5 +101,18 @@ final class AdminController extends AbstractController
     {
         // La logique de déconnexion sera gérée par Symfony Security
         throw new \LogicException('Cette méthode peut être vide - elle sera interceptée par la clé de déconnexion de votre pare-feu.');
+    }
+    #[IsGranted('ROLE_ADMIN')]
+
+
+    #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
+    public function dashboard(): Response
+    {
+        // Logique spécifique pour le dashboard admin
+
+        return $this->render('admin/dashboard.html.twig', [
+            'controller_name' => 'AdminDashboardController',
+            // Autres variables
+        ]);
     }
 }

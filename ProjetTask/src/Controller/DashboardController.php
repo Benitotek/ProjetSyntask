@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\Attribute\Security;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
@@ -13,14 +14,14 @@ use App\Repository\UserRepository;
 final class DashboardController extends AbstractController
 {
     #[Route('/', name: 'app_dashboard')]
-    #[IsGranted('ROLE_EMPLOYE')]
+    #[IsGranted("ROLE_EMPLOYE", message: "Accès réservé aux employés et administrateurs")]
     public function index(
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository,
         UserRepository $userRepository
     ): Response {
         $user = $this->getUser();
-        
+
         $stats = [
             'total_projects' => 0,
             'active_projects' => 0,
@@ -59,6 +60,14 @@ final class DashboardController extends AbstractController
             'stats' => $stats,
             'recent_projects' => $recentProjects ?? [],
             'user_tasks' => array_slice($userTasks ?? [], 0, 10),
+        ]);
+    }
+    // Ajoutez cette méthode pour créer la route manquante
+    #[Route('/employe/dashboard', name: 'app_employe_dashboard')]
+    public function employeDashboard(): Response
+    {
+        return $this->render('dashboard/employe_dashboard.html.twig', [
+            'controller_name' => 'DashboardController',
         ]);
     }
 }

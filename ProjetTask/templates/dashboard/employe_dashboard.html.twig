@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Employé{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Dashboard Employé</h1>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Mes tâches
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Tâches assignées</h5>
+                    <p class="card-text">Visualisez et gérez vos tâches en cours.</p>
+                    <a href="{{ path('app_task_index') }}" class="btn btn-primary">Voir mes tâches</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Mes projets
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Projets en cours</h5>
+                    <p class="card-text">Accédez aux projets auxquels vous participez.</p>
+                    <a href="{{ path('app_project_index') }}" class="btn btn-primary">Voir mes projets</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Mon profil
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Informations personnelles</h5>
+                    <p class="card-text">Consultez et modifiez vos informations.</p>
+                    <a href="{{ path('app_profile') }}" class="btn btn-primary">Mon profil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,11 +1,9 @@
 security:
-    
-
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         App\Entity\User:
             algorithm: auto
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         # used to reload user from session & other features (e.g. switch_user)
@@ -17,7 +15,7 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-            
+
         main:
             lazy: true
             provider: app_user_provider
@@ -26,8 +24,8 @@ security:
                 check_path: app_login
                 enable_csrf: true
                 csrf_parameter: _token
-                csrf_token_id: authenticate  # ← Important : doit correspondre au template
-                username_parameter: email    # ou 'username'
+                csrf_token_id: authenticate # ← Important : doit correspondre au template
+                username_parameter: email # ou 'username'
                 password_parameter: mdp # ou 'password'
             logout:
                 path: app_logout
@@ -35,7 +33,7 @@ security:
             # custom_authenticator: App\Security\LoginFormAuthenticator
             # entry_point: App\Security\LoginFormAuthenticator
             remember_me:
-                secret: '%kernel.secret%'
+                secret: "%kernel.secret%"
                 lifetime: 604800
                 path: /
                 # by default, the feature is enabled by checking a checkbox in the
@@ -43,25 +41,30 @@ security:
                 #always_remember_me: true
                 # target: app_login
 
-    
-
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
     role_hierarchy:
-        ROLE_USER: [ROLE_USER]
-        ROLE_ADMIN: [ROLE_ADMIN]
-        ROLE_DIRECTEUR: [ROLE_DIRECTEUR]
-        ROLE_CHEF_PROJET: [ROLE_CHEF_PROJET]
-        ROLE_EMPLOYE: [ROLE_EMPLOYE]
-    # Easy way to control access for large sections of your site
+        ROLE_CHEF_PROJET: ROLE_EMPLOYE
+        ROLE_DIRECTEUR: ROLE_CHEF_PROJET
+        ROLE_ADMIN: [ROLE_DIRECTEUR, ROLE_ALLOWED_TO_SWITCH]
+
+    #     ROLE_USER: [ROLE_USER]
+    #     ROLE_ADMIN: [ROLE_ADMIN]
+    #     ROLE_DIRECTEUR: [ROLE_DIRECTEUR]
+    #     ROLE_CHEF_PROJET: [ROLE_CHEF_PROJET]
+    #     ROLE_EMPLOYE: [ROLE_EMPLOYE]
+    # # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/directeur, roles: [ROLE_ADMIN, ROLE_DIRECTEUR] }
-        - { path: ^/chef-projet, roles: [ROLE_ADMIN, ROLE_DIRECTEUR, ROLE_CHEF_PROJET] }
+        - {
+              path: ^/chef-projet,
+              roles: [ROLE_ADMIN, ROLE_DIRECTEUR, ROLE_CHEF_PROJET],
+          }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }
