@@ -11,6 +11,7 @@ use App\Entity\TaskList;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Table(name: 'task')]
@@ -45,14 +46,14 @@ class Task
     #[ORM\Column(type: 'string', length: 20)]
     private string $statut = 'en_attente';
 
-    #[ORM\Column]
-    private ?\DateTime $dateCreation = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateCreation = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $dateButoir = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateButoir = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $dateReelle = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateReelle = null;
 
     #[ORM\Column(type: 'string', length: 20)]
     private string $priorite = 'normal';

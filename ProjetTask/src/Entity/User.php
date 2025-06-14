@@ -70,31 +70,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $estActif = true;
 
-    #[ORM\Column]
-    private ?\DateTime $dateCreation = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateCreation = null;
 
-    #[ORM\Column]
-    private ?\DateTime $dateMaj = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateMaj = null;
 
     /**
      * @var Collection<int, UserProject>
      */
     // Projets gérés (OneToMany, inversé de chefDeProjet)
-    // #[ORM\OneToMany(mappedBy: 'chefDeProjet', targetEntity: Project::class)]
-    // private Collection $projetsGeres;
+
+    // Removed duplicate declaration of $projetsGeres
 
     // Projets assignés (ManyToMany, inversé de membres)
-    // #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
-    // private Collection $projetsAssignes;
+
+    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
+    // private Collection $projetsAssignes; // Removed duplicate declaration
 
     // Tâches assignées (OneToMany, inversé de assignedUser)
-    // #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
-    // private Collection $tachesAssignees;
-    #[ORM\OneToMany(targetEntity: UserProject::class, mappedBy: 'user')]
-    private Collection $userProjects;
 
-    #[ORM\Column]
-    private bool $isVerified = true;
+    #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
+    // private Collection $tachesAssignees; // Removed duplicate declaration
+    /**
+     * @var Collection<int, UserProject>
+     */
+
+    // Removed duplicate or conflicting declaration of $isVerified
 
     // Removed duplicate constructor
 
@@ -271,8 +273,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Project>
      */
     // Projets où le user est membre
+    // The property $projetsAssignes is already declared above.
+    /**
+     * @var Collection<int, Project>
+     */
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
     private Collection $projetsAssignes;
+
     /**
      * @return Collection<int, Project>
      */
@@ -288,45 +295,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // Tâches où ce user est assigné
     #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
     private Collection $tachesAssignees;
-    
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getTachesAssignees(): Collection
+    {
+        return $this->tachesAssignees;
+    }
+
+    public function addTacheAssignee(Task $task): static
+    {
+        if (!$this->tachesAssignees->contains($task)) {
+            $this->tachesAssignees->add($task);
+            $task->setAssignedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTacheAssignee(Task $task): static
+    {
+        if ($this->tachesAssignees->removeElement($task)) {
+            // set the owning side to null (unless already changed)
+            if ($task->getAssignedUser() === $this) {
+                $task->setAssignedUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
+
     public function __construct()
     {
-        $this->userProjects = new ArrayCollection();
+
         $this->projetsGeres = new ArrayCollection();
         $this->projetsAssignes = new ArrayCollection();
         $this->tachesAssignees = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
-    }
-
-    /**
-     * @return Collection<int, UserProject>
-     */
-    public function getUserProjects(): Collection
-    {
-        return $this->userProjects;
-    }
-
-    public function addUserProject(UserProject $userProject): static
-    {
-        if (!$this->userProjects->contains($userProject)) {
-            $this->userProjects->add($userProject);
-            $userProject->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUserProject(UserProject $userProject): static
-    {
-        if ($this->userProjects->removeElement($userProject)) {
-            // set the owning side to null (unless already changed)
-            if ($userProject->getUser() === $this) {
-                $userProject->setUser(null);
-            }
-        }
-
-        return $this;
     }
 
     public function isVerified(): bool

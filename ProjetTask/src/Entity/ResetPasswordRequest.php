@@ -10,6 +10,7 @@ use SymfonyCasts\Bundle\ResetPassword\Model\ResetPasswordRequestTrait;
 #[ORM\Entity(repositoryClass: ResetPasswordRequestRepository::class)]
 class ResetPasswordRequest implements ResetPasswordRequestInterface
 {
+    // Utilise le trait qui définit déjà les propriétés requestedAt et expiresAt
     use ResetPasswordRequestTrait;
 
     #[ORM\Id]
@@ -21,9 +22,14 @@ class ResetPasswordRequest implements ResetPasswordRequestInterface
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    public function __construct(User $user, \DateTimeInterface $expiresAt, string $selector, string $hashedToken)
+    // NE PAS définir à nouveau les propriétés requestedAt et expiresAt ici
+    // SUPPRIMER ces propriétés si elles sont présentes dans votre classe
+
+    public function __construct(object $user, \DateTimeInterface $expiresAt, string $selector, string $hashedToken)
     {
         $this->user = $user;
+
+        // Initialise les propriétés du trait
         $this->initialize($expiresAt, $selector, $hashedToken);
     }
 
@@ -32,7 +38,7 @@ class ResetPasswordRequest implements ResetPasswordRequestInterface
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getUser(): object
     {
         return $this->user;
     }

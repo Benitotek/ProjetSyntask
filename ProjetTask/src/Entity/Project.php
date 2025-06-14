@@ -31,16 +31,16 @@ class Project
     #[Assert\Choice(choices: [self::STATUT_EN_ATTENTE, self::STATUT_EN_COURS, self::STATUT_TERMINE, self::STATUT_EN_PAUSE, self::STATUT_ARRETE])]
     private ?string $statut = self::STATUT_EN_ATTENTE;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateMaj = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateButoir = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateReelle = null;
 
     #[ORM\Column(length: 255)]
@@ -52,19 +52,18 @@ class Project
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $budget = null;
 
-// Chef de projet : Un User peut gérer plusieurs projets
-#[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
-#[ORM\JoinColumn(nullable: true)]
-private ?User $chefDeProjet = null;
+    // Chef de projet : Un User peut gérer plusieurs projets
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $chefDeProjet = null;
 
-// Membres : ManyToMany
-#[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
-#[ORM\JoinTable(name: 'project_user')]
-private Collection $membres;
+    // Membres : ManyToMany
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
+    
+    private Collection $membres;
 
-// Pour UserProject (si relation OneToMany)
-#[ORM\OneToMany(mappedBy: 'project', targetEntity: UserProject::class)]
-private Collection $userProjects;
+
+ 
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: TaskList::class, cascade: ['persist', 'remove'])]
     private Collection $taskLists;
@@ -286,7 +285,7 @@ private Collection $userProjects;
         if ($totalTasks === 0) {
             return 0;
         }
-        
+
         $completedTasks = $this->tasks->filter(fn($task) => $task->getStatut() === 'TERMINE')->count();
         return ($completedTasks / $totalTasks) * 100;
     }
@@ -295,7 +294,6 @@ private Collection $userProjects;
     {
         if (!$this->tasks->contains($task)) {
             $this->tasks->add($task);
-           
         }
         return $this;
     }
