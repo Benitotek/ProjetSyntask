@@ -32,6 +32,8 @@ class TaskList
     #[ORM\JoinColumn(nullable: false)]
     private ?Project $project = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateTime = null;
     /**
      * @var Collection<int, Task>
      */
@@ -74,8 +76,7 @@ class TaskList
         return $this;
     }
 
-     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $dateTime = null;
+
 
     public function getPosition(): ?int
     {
@@ -89,19 +90,19 @@ class TaskList
         return $this;
     }
 
-// ... other properties and methods ...
+    // ... other properties and methods ...
 
-public function getPositionColumn(): ?int
-{
-    return $this->positionColumn;
-}
+    public function getPositionColumn(): ?int
+    {
+        return $this->positionColumn;
+    }
 
-public function setPositionColumn(int $positionColumn): self
-{
-    $this->positionColumn = $positionColumn;
-    return $this;
-}
-public function getDateTime(): ?\DateTimeInterface
+    public function setPositionColumn(int $positionColumn): self
+    {
+        $this->positionColumn = $positionColumn;
+        return $this;
+    }
+    public function getDateTime(): ?\DateTimeInterface
     {
         return $this->dateTime;
     }
