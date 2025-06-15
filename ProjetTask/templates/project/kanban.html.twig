@@ -222,14 +222,14 @@ card.classList.add('status-progress');
  else if (newStatus === 'TERMINE') 
 card.classList.add('status-completed');
 
+
 } else {
 alert('Erreur lors de la mise à jour du statut');
 }
 });
 });
 });
-});{% if is_granted('edit', project) %}
-function addColumn() {
+});{% if is_granted('edit', project) %}function addColumn() {
 const form = document.getElementById('addColumnForm');
 const formData = new FormData(form);
 

@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/projects')]
-#[IsGranted('ROLE_USER')]
+// #[IsGranted('ROLE_USER')]
 class ProjectController extends AbstractController
 {
     #[Route('/', name: 'project_index', methods: ['GET'])]

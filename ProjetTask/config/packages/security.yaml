@@ -65,9 +65,18 @@ security:
               path: ^/chef-projet,
               roles: [ROLE_ADMIN, ROLE_DIRECTEUR, ROLE_CHEF_PROJET],
           }
+        - {
+              path: ^/employe,
+              roles:
+                  [ROLE_ADMIN, ROLE_DIRECTEUR, ROLE_CHEF_PROJET, ROLE_EMPLOYE],
+          }
+        - { path: ^/api, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/public, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: ROLE_USER }
+        # - {path: ^/public, roles: IS_AUTHENTICATED_ANONYMOUSLY}
+        # - { path: ^/user,roles: ROLE_USER }
         # - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 # This configuration is only used in the test environment to speed up password hashing.
 
