@@ -70,6 +70,35 @@ final class DashboardController extends AbstractController
             'controller_name' => 'DashboardController',
         ]);
     }
+    #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
+    public function adminDashboard(): Response
+    {
+        return $this->render('dashboard/admin_dashboard.html.twig', [
+            'controller_name' => 'DashboardController',
+        ]);
+    }
+    #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
+    public function directeurDashboard(): Response
+    {
+        return $this->render('dashboard/directeur_dashboard.html.twig', [
+            'controller_name' => 'DashboardController',
+        ]);
+    }
+    #[Route('/chef-de-projet/dashboard', name: 'app_chef_de_projet_dashboard')]
+    public function chefDeProjetDashboard(): Response
+    {
+        return $this->render('dashboard/chef_de_projet_dashboard.html.twig', [
+            'controller_name' => 'DashboardController',
+        ]);
+    }
+    // debug rapide a modifier et revoir
+    #[Route('/chef-projet/dashboard', name: 'app_chef_projet_dashboard')]
+    public function chefProjetDashboard(): Response
+    {
+        return $this->render('dashboard/index.html.twig', [
+            'message' => 'Dashboard Chef de Projet - En cours de développement',
+        ]);
+    }
 }
 
 // This code is a Symfony controller for a dashboard that displays statistics and recent projects/tasks for users based on their roles.

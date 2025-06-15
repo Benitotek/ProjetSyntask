@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 // #[IsGranted('ROLE_USER')]
 class ProjectController extends AbstractController
 {
-    #[Route('/', name: 'project_index', methods: ['GET'])]
+    #[Route('/project', name: 'project_index', methods: ['GET'])]
     public function index(Request $request, ProjectRepository $projectRepository): Response
     {
         $user = $this->getUser();
@@ -41,7 +41,7 @@ class ProjectController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'project_new', methods: ['GET', 'POST'])]
+    #[Route('/newproject', name: 'project_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_DIRECTEUR')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -74,7 +74,7 @@ class ProjectController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'project_show', methods: ['GET'])]
+    #[Route('/project/{id}', name: 'app_project_show', methods: ['GET'])]
     public function show(Project $project): Response
     {
         // Vérification simple en attendant les voters
@@ -93,7 +93,7 @@ class ProjectController extends AbstractController
             'project' => $project,
         ]);
     }
-
+ #[Route('/project/kanban', name: 'app_project_kanban', methods: ['GET'])]
     public function kanban(Project $project): Response
     {
         // Même vérification que show
