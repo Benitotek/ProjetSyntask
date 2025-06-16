@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Controller;
+
 use App\Entity\Project;
 use App\Entity\TaskList;
 use App\Entity\User;
@@ -14,15 +16,33 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/projects')]
-// #[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_EMPLOYE')]
 class ProjectController extends AbstractController
 {
-    #[Route('/project', name: 'project_index', methods: ['GET'])]
-    public function index(Request $request, ProjectRepository $projectRepository): Response
+    #[Route('/project', name: 'app_project_index', methods: ['GET'])]
+    public function Projetindex(Request $request, ProjectRepository $projectRepository): Response
     {
         $user = $this->getUser();
         $status = $request->query->get('status');
+        // Récupération des projets
+        // Pour tous les employés, afficher tous les projets
+        $projects = $projectRepository->findAll();
 
+        // OU si vous souhaitez filtrer les projets en fonction du rôle
+        // Par exemple, si les chefs de projet peuvent voir tous les projets
+        // mais les employés ordinaires ne voient que leurs projets
+
+        if ($this->isGranted('ROLE_CHEF_PROJET') || $this->isGranted('ROLE_DIRECTEUR') || $this->isGranted('ROLE_ADMIN')) {
+            $projects = $projectRepository->findAll();
+        } else {
+            // Supposons que vous avez une relation entre Project et User
+            $projects = $projectRepository->findByUser($this->getUser());
+        }
+
+
+        return $this->render('project/index.html.twig', [
+            'projects' => $projects,
+        ]);
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
             // Utilise les méthodes qui existent vraiment
             $projects = $status ? $projectRepository->findByStatus(is_array($status) ? $status : [$status]) : $projectRepository->findAll();
@@ -93,7 +113,7 @@ class ProjectController extends AbstractController
             'project' => $project,
         ]);
     }
- #[Route('/project/kanban', name: 'app_project_kanban', methods: ['GET'])]
+    #[Route('/project/kanban', name: 'app_project_kanban', methods: ['GET'])]
     public function kanban(Project $project): Response
     {
         // Même vérification que show

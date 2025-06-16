@@ -13,6 +13,7 @@ use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\TaskList;
 use App\Form\TaskType;
+use App\Repository\TaskRepository;
 
 #[Route('/tasks')]
 class TaskController extends AbstractController
@@ -122,6 +123,20 @@ class TaskController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['success' => true]);
+    }
+    #[IsGranted('ROLE_EMPLOYE')]
+
+
+    #[Route('/task', name: 'app_task_index', methods: ['GET'])]
+    public function Task(TaskRepository $taskRepository): Response
+    {
+        // Récupérer toutes les tâches ou filtrer par utilisateur connecté
+        $tasks = $taskRepository->findBy(['assignedTo' => $this->getUser()]);
+        // Ou pour toutes les tâches : $tasks = $taskRepository->findAll();
+
+        return $this->render('task/index.html.twig', [
+            'tasks' => $tasks,
+        ]);
     }
 }
 
