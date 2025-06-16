@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du projet - SYNTASK{% endblock %}
+
+{% block body %}
+<div class="dashboard-container">
+    <div class="row">
+        <div class="col-12 dashboard-header">
+            <h1>
+                <i class="fas fa-project-diagram"></i>
+                {{ project.titre }}
+            </h1>
+            <p class="text-muted">
+                {% if project.reference is defined and project.reference is not null %}
+                    Référence: {{ project.reference }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('app_project_index') }}">Projets</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ project.titre }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card content-card">
+                <div class="card-header">
+                    <h5>
+                        <i class="fas fa-info-circle"></i>
+                        Informations du projet
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Statut:</strong> 
+                                <span class="badge bg-{{ project.statut == 'EN-COURS' ? 'success' : (project.statut == 'TERMINE' ? 'primary' : 'warning') }}">
+                                    {{ project.statut }}
+                                </span>
+                            </p>
+                            <p><strong>Chef de projet:</strong> {{ project.chefDeProjet ? project.chefDeProjet.fullName : 'Non assigné' }}</p>
+                            <p><strong>Date de début:</strong> 
+                                {% if project.dateDeDebut is defined and project.dateDeDebut is not null %}
+                                    {{ project.dateDeDebut|date('d/m/Y') }}
+                                {% else %}
+                                    Non définie
+                                {% endif %}
+                            </p>
+                            <p><strong>Date de fin:</strong> 
+                                {% if project.dateDeFin is defined and project.dateDeFin is not null %}
+                                    {{ project.dateDeFin|date('d/m/Y') }}
+                                {% else %}
+                                    Non définie
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Progression:</strong></p>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" style="width: {{ project.progress ?? 0 }}%">{{ (project.progress ?? 0)|round }}%</div>
+                            </div>
+                            
+                            {% if project.description is defined and project.description is not null %}
+                                <p><strong>Description:</strong></p>
+                                <p>{{ project.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card content-card">
+                <div class="card-header">
+                    <h5>
+                        <i class="fas fa-tasks"></i>
+                        Résumé des tâches
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around text-center mb-3">
+                        <div>
+                            <h3>{{ project.totalTasks ?? 0 }}</h3>
+                            <p class="text-muted">Total</p>
+                        </div>
+                        <div>
+                            <h3>{{ project.completedTasks ?? 0 }}</h3>
+                            <p class="text-muted">Terminées</p>
+                        </div>
+                        <div>
+                            <h3>{{ project.pendingTasks ?? 0 }}</h3>
+                            <p class="text-muted">En cours</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn btn-primary">
+                            <i class="fas fa-columns"></i> Voir le Kanban
+                        </a>
+                        {% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_DIRECTEUR') or is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Modifier le projet
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Liste des tâches du projet -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card content-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>
+                        <i class="fas fa-list"></i>
+                        Tâches du projet
+                    </h5>
+                    {% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_DIRECTEUR') or is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_task_new', {'project': project.id}) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Nouvelle tâche
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Statut</th>
+                                    <th>Priorité</th>
+                                    <th>Assignée à</th>
+                                    <th>Date d'échéance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if project.tasks is defined and project.tasks is not empty %}
+                                    {% for task in project.tasks %}
+                                        <tr>
+                                            <td>{{ task.titre }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ task.statut == 'EN-COURS' ? 'primary' : (task.statut == 'TERMINE' ? 'success' : 'secondary') }}">
+                                                    {{ task.statut }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ task.priorite == 'HAUTE' ? 'bg-danger' : (task.priorite == 'MOYENNE' ? 'bg-warning' : 'bg-info') }}">
+                                                    {{ task.priorite }}
+                                                </span>
+                                            </td>
+                                            <td>{{ task.assignedTo ? task.assignedTo.fullName : 'Non assignée' }}</td>
+                                            <td>
+                                                {% if task.dateDeFin %}
+                                                    {{ task.dateDeFin|date('d/m/Y') }}
+                                                    {% if task.isOverdue %}
+                                                        <span class="text-danger">
+                                                            <i class="fas fa-exclamation-circle"></i>
+                                                        </span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    Non définie
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">Aucune tâche pour ce projet.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
