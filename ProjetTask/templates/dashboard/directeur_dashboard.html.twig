@@ -1,0 +1,225 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Directeur - SYNTASK
+{% endblock %}
+
+{% block body %}
+	<div class="dashboard-container">
+		<div class="row">
+			<div class="col-12 dashboard-header">
+				<h1>
+					<i class="fas fa-chart-line"></i>
+					Dashboard Directeur
+				</h1>
+				<p class="text-muted">Bienvenue,
+					{{ app.user.fullName }}</p>
+			</div>
+		</div>
+
+		<nav class="dashboard-nav">
+			<ul>
+				{% if is_granted('ROLE_EMPLOYE') %}
+					<li>
+						<a href="{{ path('app_employe_dashboard') }}">Dashboard Employé</a>
+					</li>
+				{% endif %}
+
+				{% if is_granted('ROLE_CHEF_PROJET') %}
+					<li>
+						<a href="{{ path('app_chef_projet_dashboard') }}">Dashboard Chef de Projet</a>
+					</li>
+				{% endif %}
+
+				{% if is_granted('ROLE_DIRECTEUR') %}
+					<li>
+						<a href="{{ path('app_directeur_dashboard') }}" class="active">Dashboard Directeur</a>
+					</li>
+				{% endif %}
+
+				{% if is_granted('ROLE_ADMIN') %}
+					<li>
+						<a href="{{ path('app_admin_dashboard') }}">Administration</a>
+					</li>
+				{% endif %}
+			</ul>
+		</nav>
+
+		<div class="row mb-4">
+			<div class="col-md-3">
+				<div class="card stats-card bg-primary text-white">
+					<div class="card-body">
+						<div class="d-flex justify-content-between">
+							<div>
+								<h5>Projets totaux</h5>
+								<h2>{{ stats.total_projects ?? '0' }}</h2>
+							</div>
+							<div class="align-self-center">
+								<i class="fas fa-project-diagram fa-2x"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3">
+				<div class="card stats-card bg-success text-white">
+					<div class="card-body">
+						<div class="d-flex justify-content-between">
+							<div>
+								<h5>Projets actifs</h5>
+								<h2>{{ stats.active_projects ?? '0' }}</h2>
+							</div>
+							<div class="align-self-center">
+								<i class="fas fa-play fa-2x"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3">
+				<div class="card stats-card bg-info text-white">
+					<div class="card-body">
+						<div class="d-flex justify-content-between">
+							<div>
+								<h5>Employés</h5>
+								<h2>{{ stats.total_employees ?? '0' }}</h2>
+							</div>
+							<div class="align-self-center">
+								<i class="fas fa-users fa-2x"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3">
+				<div class="card stats-card bg-warning text-white">
+					<div class="card-body">
+						<div class="d-flex justify-content-between">
+							<div>
+								<h5>Budget total</h5>
+								<h2>{{ stats.total_budget ?? '0' }}
+									€</h2>
+							</div>
+							<div class="align-self-center">
+								<i class="fas fa-euro-sign fa-2x"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-8">
+				<div class="card content-card">
+					<div class="card-header">
+						<h5>
+							<i class="fas fa-chart-bar"></i>
+							Vue d'ensemble des projets
+						</h5>
+					</div>
+					<div class="card-body">
+						<div class="table-responsive">
+							<table class="table table-hover">
+								<thead>
+									<tr>
+										<th>Projet</th>
+										<th>Statut</th>
+										<th>Chef de projet</th>
+										<th>Progression</th>
+										<th>Budget</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% if projects is defined and projects is not empty %}
+										{% for project in projects %}
+											<tr>
+												<td>
+													<strong>{{ project.titre }}</strong>
+													{% if project.reference %}
+														<small class="text-muted">({{ project.reference }})</small>
+													{% endif %}
+												</td>
+												<td>
+													<span class="badge bg-{{ project.statut == 'EN-COURS' ? 'success' : (project.statut == 'TERMINE' ? 'primary' : 'warning') }}">
+														{{ project.statut }}
+													</span>
+												</td>
+												<td>{{ project.chefDeProjet ? project.chefDeProjet.fullName : 'Non assigné' }}</td>
+												<td>
+													<div class="progress">
+														<div class="progress-bar" style="width: {{ project.progress ?? 0 }}%">{{ (project.progress ?? 0)|round }}%</div>
+													</div>
+												</td>
+												<td>{{ project.budget ?? 'N/A' }}</td>
+												<td>
+													<a href="{{ path('app_project_show', {id: project.id}) }}" class="btn btn-sm btn-outline-primary">
+														<i class="fas fa-eye"></i>
+													</a>
+													<a href="{{ path('app_project_kanban', {id: project.id}) }}" class="btn btn-sm btn-outline-success">
+														<i class="fas fa-columns"></i>
+													</a>
+												</td>
+											</tr>
+										{% endfor %}
+									{% else %}
+										<tr>
+											<td colspan="6" class="text-center">Aucun projet disponible</td>
+										</tr>
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-4">
+				<div class="card content-card">
+					<div class="card-header">
+						<h5>
+							<i class="fas fa-chart-pie"></i>
+							Distribution des projets
+						</h5>
+					</div>
+					<div class="card-body">
+						<div class="mb-4">
+							<h6>Statut des projets</h6>
+							<div class="progress mb-2" style="height: 25px;">
+								<div class="progress-bar bg-warning" style="width: {{ stats.percent_pending ?? 0 }}%" role="progressbar">
+									À faire ({{ stats.percent_pending ?? 0 }}%)
+								</div>
+								<div class="progress-bar bg-success" style="width: {{ stats.percent_active ?? 0 }}%" role="progressbar">
+									En cours ({{ stats.percent_active ?? 0 }}%)
+								</div>
+								<div class="progress-bar bg-primary" style="width: {{ stats.percent_completed ?? 0 }}%" role="progressbar">
+									Terminés ({{ stats.percent_completed ?? 0 }}%)
+								</div>
+							</div>
+						</div>
+
+						<div>
+							<h6>Équipes et performance</h6>
+							<ul class="list-group">
+								{% if teams is defined and teams is not empty %}
+									{% for team in teams %}
+										<li class="list-group-item d-flex justify-content-between align-items-center">
+											{{ team.name }}
+											<span class="badge bg-primary rounded-pill">{{ team.project_count ?? 0 }}
+												projets</span>
+										</li>
+									{% endfor %}
+								{% else %}
+									<li class="list-group-item">Aucune équipe disponible</li>
+								{% endif %}
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

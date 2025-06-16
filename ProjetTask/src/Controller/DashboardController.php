@@ -78,12 +78,70 @@ final class DashboardController extends AbstractController
         ]);
     }
     #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
-    public function directeurDashboard(): Response
+    public function directeurDashboardStats(ProjectRepository $projectRepository, UserRepository $userRepository): Response
     {
+        // Récupérer tous les projets
+        $projects = $projectRepository->findAll();
+        
+        // Calculer les statistiques
+        $totalProjects = count($projects);
+        $activeProjects = 0;
+        $pendingProjects = 0;
+        $completedProjects = 0;
+        
+        foreach ($projects as $project) {
+            if ($project->getStatut() === 'EN-COURS') {
+                $activeProjects++;
+            } elseif ($project->getStatut() === 'TERMINE') {
+                $completedProjects++;
+            } else {
+                $pendingProjects++;
+            }
+        }
+        
+        // Calculer les pourcentages
+        $percentActive = $totalProjects > 0 ? round(($activeProjects / $totalProjects) * 100) : 0;
+        $percentCompleted = $totalProjects > 0 ? round(($completedProjects / $totalProjects) * 100) : 0;
+        $percentPending = $totalProjects > 0 ? round(($pendingProjects / $totalProjects) * 100) : 0;
+        
+        // Nombre total d'employés
+        $totalEmployees = $userRepository->count([]);
+        
+        // Budget total (ceci est un exemple, adaptez selon votre modèle de données)
+        $totalBudget = 0;
+        foreach ($projects as $project) {
+            // Assurez-vous que votre entité Project a un getter pour le budget
+            // Si ce n'est pas le cas, vous pouvez omettre cette partie
+            if (method_exists($project, 'getBudget')) {
+                $totalBudget += $project->getBudget() ?? 0;
+            }
+        }
+        
+        // Statistiques pour le dashboard
+        $stats = [
+            'total_projects' => $totalProjects,
+            'active_projects' => $activeProjects,
+            'total_employees' => $totalEmployees,
+            'total_budget' => $totalBudget,
+            'percent_active' => $percentActive,
+            'percent_completed' => $percentCompleted,
+            'percent_pending' => $percentPending,
+        ];
+        
         return $this->render('dashboard/directeur_dashboard.html.twig', [
-            'controller_name' => 'DashboardController',
+            'stats' => $stats,
+            'projects' => $projects,
+            // Si vous avez une entité Team, vous pouvez les ajouter ici
+            // 'teams' => $teamRepository->findAll(),
         ]);
     }
+    // #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
+    // public function directeurDashboard(): Response
+    // {
+    //     return $this->render('dashboard/directeur_dashboard.html.twig', [
+    //         'controller_name' => 'DashboardController',
+    //     ]);
+    // }
     #[Route('/chef-de-projet/dashboard', name: 'app_chef_de_projet_dashboard')]
     public function chefDeProjetDashboard(): Response
     {
