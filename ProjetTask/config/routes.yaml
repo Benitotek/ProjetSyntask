@@ -62,7 +62,7 @@ project_kanban:
         path: /dashboard
         controller: App\Controller\DashboardController::index
 
-employe_dashboard:
+employe_dashboard_employe:
     path: /employe/dashboard
     controller: App\Controller\DashboardController::employeDashboard
 
