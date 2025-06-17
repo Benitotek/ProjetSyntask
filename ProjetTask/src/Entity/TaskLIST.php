@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\TaskLISTRepository;
+use App\Enum\TaskListColor;
+use App\Repository\TaskListRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: TaskLISTRepository::class)]
+#[ORM\Entity(repositoryClass: TaskListRepository::class)]
 class TaskList
 {
     #[ORM\Id]

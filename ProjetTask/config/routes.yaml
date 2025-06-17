@@ -25,9 +25,10 @@ project_kanban:
     controller: App\Controller\ProjectController::kanban
     methods: [GET]
 
-    dashboard:
-        path: /dashboard
-        controller: App\Controller\DashboardController::index
+dashboard:
+    path: /dashboard
+    controller: App\Controller\DashboardController::index
+    methods: [GET]
 
 employe_dashboard:
     path: /employe/dashboard

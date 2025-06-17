@@ -9,7 +9,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use App\Enum\TaskListColor;
 
 /**
- * @extends ServiceEntityRepository<TaskLIST>
  * @extends ServiceEntityRepository<TaskList>
  */
 class TaskListRepository extends ServiceEntityRepository
@@ -18,11 +17,6 @@ class TaskListRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, TaskList::class);
     }
-
-
-
-
-    // NOUVELLES MÉTHODES pour améliorer l'expérience Kanban
 
     /**
      * Crée les colonnes par défaut pour un nouveau projet
@@ -44,7 +38,6 @@ class TaskListRepository extends ServiceEntityRepository
             $taskList->setPositionColumn($index + 1);
             $taskList->setProject($project);
 
-            // Utilisation correcte de l'enum pour la couleur
             $couleurEnum = TaskListColor::from($columnData['couleur']);
             $taskList->setCouleur($couleurEnum);
 
@@ -227,27 +220,45 @@ class TaskListRepository extends ServiceEntityRepository
         return $mostDelayed;
     }
 }
-//    /**
-//     * @return TaskLIST[] Returns an array of TaskLIST objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('t')
-//            ->andWhere('t.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('t.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
 
-//    public function findOneBySomeField($value): ?TaskLIST
-//    {
-//        return $this->createQueryBuilder('t')
-//            ->andWhere('t.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
