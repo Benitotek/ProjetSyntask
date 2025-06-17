@@ -3,40 +3,211 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
-
-app_dashboard:
-    path: /
+# Route pour le dashboard employé
+employe_dashboard:
+    path: /dashboard
     controller: App\Controller\DashboardController::index
     methods: [GET]
 
-app_user_index:
-    path: /user
-    controller: App\Controller\UserController::index
+# Route pour le dashboard directeur
+directeur_dashboard:
+    path: /directeur/dashboard
+    controller: App\Controller\DirecteurDashboardController::index
     methods: [GET]
 
-app_user_show:
-    path: /user/{id}
-    controller: App\Controller\UserController::show
+# Routes pour les projets
+project_index:
+    path: /projects
+    controller: App\Controller\ProjectController::index
+    methods: [GET]
+
+mes_projets:
+    path: /mes-projets
+    controller: App\Controller\ProjectController::mesProjet
+    methods: [GET]
+
+project_show:
+    path: /project/{id}
+    controller: App\Controller\ProjectController::show
     methods: [GET]
     requirements:
         id: '\d+'
+
+project_new:
+    path: /project/new
+    controller: App\Controller\ProjectController::new
+    methods: [GET, POST]
+
+project_edit:
+    path: /project/{id}/edit
+    controller: App\Controller\ProjectController::edit
+    methods: [GET, POST]
+    requirements:
+        id: '\d+'
+
+project_delete:
+    path: /project/{id}/delete
+    controller: App\Controller\ProjectController::delete
+    methods: [POST]
+    requirements:
+        id: '\d+'
+
+# CORRECTION : Route Kanban sans clé "dashboard"
 project_kanban:
-    path: /project/kanban
+    path: /project/{id}/kanban
     controller: App\Controller\ProjectController::kanban
     methods: [GET]
+    requirements:
+        id: '\d+'
 
-    dashboard:
-        path: /dashboard
-        controller: App\Controller\DashboardController::index
+# Routes pour les tâches
+task_index:
+    path: /tasks
+    controller: App\Controller\TaskController::index
+    methods: [GET]
 
-employe_dashboard:
-    path: /employe/dashboard
-    controller: App\Controller\DashboardController::employeDashboard
+task_show:
+    path: /task/{id}
+    controller: App\Controller\TaskController::show
+    methods: [GET]
+    requirements:
+        id: '\d+'
 
-statistiques:
-    path: /statistiques
-    controller: App\Controller\DashboardController::index
+task_new:
+    path: /task/new
+    controller: App\Controller\TaskController::new
+    methods: [GET, POST]
+
+task_edit:
+    path: /task/{id}/edit
+    controller: App\Controller\TaskController::edit
+    methods: [GET, POST]
+    requirements:
+        id: '\d+'
+
+task_delete:
+    path: /task/{id}/delete
+    controller: App\Controller\TaskController::delete
+    methods: [POST]
+    requirements:
+        id: '\d+'
+
+# Routes API pour le drag & drop Kanban
+api_task_move:
+    path: /api/task/{id}/move
+    controller: App\Controller\TaskController::moveTask
+    methods: [POST]
+    requirements:
+        id: '\d+'
+
+api_task_update_position:
+    path: /api/task/{id}/position
+    controller: App\Controller\TaskController::updatePosition
+    methods: [PATCH]
+    requirements:
+        id: '\d+'
+
+# Routes pour les TaskList (colonnes Kanban)
+tasklist_index:
+    path: /tasklists
+    controller: App\Controller\TaskListController::index
+    methods: [GET]
+
+tasklist_new:
+    path: /tasklist/new
+    controller: App\Controller\TaskListController::new
+    methods: [GET, POST]
+
+tasklist_edit:
+    path: /tasklist/{id}/edit
+    controller: App\Controller\TaskListController::edit
+    methods: [GET, POST]
+    requirements:
+        id: '\d+'
+
+tasklist_delete:
+    path: /tasklist/{id}/delete
+    controller: App\Controller\TaskListController::delete
+    methods: [POST]
+    requirements:
+        id: '\d+'
+
+# Routes API pour les colonnes Kanban
+api_tasklist_reorder:
+    path: /api/project/{projectId}/tasklists/reorder
+    controller: App\Controller\TaskListController::reorder
+    methods: [POST]
+    requirements:
+        projectId: '\d+'
+
+api_tasklist_update_color:
+    path: /api/tasklist/{id}/color
+    controller: App\Controller\TaskListController::updateColor
+    methods: [PATCH]
+    requirements:
+        id: '\d+'
+
+# Routes pour les utilisateurs
+user_profile:
+    path: /profile
+    controller: App\Controller\UserController::profile
+    methods: [GET]
 
 mon_profil:
-    path: /profil
-    controller: App\Controller\UserController::show
+    path: /mon-profil
+    controller: App\Controller\UserController::monProfil
+    methods: [GET, POST]
+
+# Routes pour les statistiques
+statistiques:
+    path: /statistiques
+    controller: App\Controller\StatistiquesController::index
+    methods: [GET]
+
+# Route de déconnexion
+app_logout:
+    path: /logout
+    methods: [GET]
+
+# Route racine
+app_home:
+    path: /
+    controller: App\Controller\HomeController::index
+    methods: [GET]
+
+# app_dashboard:
+#     path: /
+#     controller: App\Controller\DashboardController::index
+#     methods: [GET]
+
+# app_user_index:
+#     path: /user
+#     controller: App\Controller\UserController::index
+#     methods: [GET]
+
+# app_user_show:
+#     path: /user/{id}
+#     controller: App\Controller\UserController::show
+#     methods: [GET]
+#     requirements:
+#         id: '\d+'
+# project_kanban:
+#     path: /project/kanban
+#     controller: App\Controller\ProjectController::kanban
+#     methods: [GET]
+
+#     dashboard:
+#         path: /dashboard
+#         controller: App\Controller\DashboardController::index
+
+# employe_dashboard:
+#     path: /employe/dashboard
+#     controller: App\Controller\DashboardController::employeDashboard
+
+# statistiques:
+#     path: /statistiques
+#     controller: App\Controller\DashboardController::index
+
+# mon_profil:
+#     path: /profil
+#     controller: App\Controller\UserController::show

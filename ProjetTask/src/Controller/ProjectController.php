@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Form\ProjectTypeForm;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
+use App\Repository\TaskListRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -143,6 +144,27 @@ class ProjectController extends AbstractController
 
         return $this->render('project/mes_projets.html.twig', [
             'projects' => $projects,
+        ]);
+    }
+     /**
+     * Vue Kanban d'un projet
+     */
+    public function kanban(
+        Project $project,
+        TaskListRepository $taskListRepository
+    ): Response {
+        // Vérifier les permissions
+        $this->denyAccessUnlessGranted('VIEW', $project);
+
+        // Récupérer les colonnes avec leurs tâches
+        $taskLists = $taskListRepository->findByProjectWithTasks($project);
+
+        // Mettre à jour automatiquement les couleurs
+        $taskListRepository->updateAutoColorsForProject($project);
+
+        return $this->render('project/kanban.html.twig', [
+            'project' => $project,
+            'taskLists' => $taskLists,
         ]);
     }
 }
