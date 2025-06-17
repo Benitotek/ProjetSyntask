@@ -45,8 +45,13 @@ class TaskListRepository extends ServiceEntityRepository
             $taskList->setProject($project);
 
             // Utilisation correcte de l'enum pour la couleur
-            $couleurEnum = TaskListColor::from($columnData['couleur']);
-            $taskList->setCouleur($couleurEnum);
+          try {
+                $couleurEnum = TaskListColor::from($columnData['couleur']);
+                $taskList->setCouleur($couleurEnum);
+            } catch (\ValueError $e) {
+                // Fallback en cas d'erreur
+                $taskList->setCouleur(TaskListColor::VERT);
+            }
 
             $em->persist($taskList);
         }

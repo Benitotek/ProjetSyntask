@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use App\Enum\TaskListColor;
+use App\Enum\TaskListColor as EnumTaskListColor;
 
 #[ORM\Entity(repositoryClass: TaskLISTRepository::class)]
 class TaskList
@@ -35,8 +37,8 @@ class TaskList
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateTime = null;
 
-    #[ORM\Column(type: 'string', enumType: TaskListColor::class, nullable: true)]
-    private ?TaskListColor $couleur = null;
+    #[ORM\Column(type: 'string', enumType: EnumTaskListColor::class, nullable: true)]
+    private ?EnumTaskListColor $couleur = null;
     /**
      * @var Collection<int, Task>
      */
@@ -174,18 +176,7 @@ class TaskList
     /**
      * Calcule automatiquement la couleur basée sur les retards des tâches
      */
-    private $color;
-
-    public function setColor(string $color): self
-    {
-        $this->color = $color;
-        return $this;
-    }
-
-    public function getColor(): ?string
-    {
-        return $this->color;
-    }
+  
     public function calculateAutoColor(): TaskListColor
     {
         $tasks = $this->getTasks();
@@ -198,8 +189,8 @@ class TaskList
         $now = new \DateTime();
 
         foreach ($tasks as $task) {
-            if ($task->getDateButoir() && $task->getStatut() !== 'TERMINE') {
-                $delay = $now->diff($task->getDateButoir());
+            if ($task->getdateButoir() && $task->getStatut() !== 'TERMINE') {
+                $delay = $now->diff($task->getdateButoir());
                 $delayDays = $delay->invert ? $delay->days : 0;
                 $maxDelay = max($maxDelay, $delayDays);
             }
@@ -271,9 +262,9 @@ class TaskList
 
         foreach ($this->getTasks() as $task) {
             if (
-                $task->getDateButoir() &&
+                $task->getdateButoir() &&
                 $task->getStatut() !== 'TERMINE' &&
-                $task->getDateButoir() < $now
+                $task->getdateButoir() < $now
             ) {
                 $overdueTasks[] = $task;
             }
@@ -311,7 +302,7 @@ class TaskList
 
         $mostOverdue = $overdueTasks[0];
         foreach ($overdueTasks as $task) {
-            if ($task->getDateButoir() < $mostOverdue->getDateButoir()) {
+            if ($task->getdateButoir() < $mostOverdue->getdateButoir()) {
                 $mostOverdue = $task;
             }
         }
@@ -333,12 +324,12 @@ class TaskList
         ];
 
         foreach ($this->getTasks() as $task) {
-            if (!$task->getDateButoir() || $task->getStatut() === 'TERMINE') {
+            if (!$task->getdateButoir() || $task->getStatut() === 'TERMINE') {
                 $delays['on_time']++;
                 continue;
             }
 
-            $diff = $now->diff($task->getDateButoir());
+            $diff = $now->diff($task->getdateButoir());
             $delayDays = $diff->invert ? $diff->days : 0;
 
             if ($delayDays === 0) {
