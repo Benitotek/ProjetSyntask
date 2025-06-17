@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
+use App\Entity\TaskList;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,7 +41,87 @@ class TaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    // NOUVELLES MÉTHODES pour optimiser Kanban
 
+    /**
+     * Déplace une tâche d'une colonne à une autre
+     */
+    public function moveTaskToColumn(Task $task, TaskList $newColumn, int $newPosition): void
+    {
+        $em = $this->getEntityManager();
+
+        // Réorganiser les positions dans l'ancienne colonne
+        if ($task->getTaskList() && $task->getTaskList() !== $newColumn) {
+            $this->reorganizePositionsInColumn($task->getTaskList(), $task->getPosition());
+        }
+
+        // Faire de la place dans la nouvelle colonne
+        $this->makeSpaceInColumn($newColumn, $newPosition);
+
+        // Déplacer la tâche
+        $task->setTaskList($newColumn);
+        $task->setPosition($newPosition);
+
+        $em->persist($task);
+        $em->flush();
+    }
+
+    /**
+     * Réorganise les positions dans une colonne après suppression
+     */
+    private function reorganizePositionsInColumn(TaskList $column, int $removedPosition): void
+    {
+        $tasks = $this->createQueryBuilder('t')
+            ->where('t.taskList = :column')
+            ->andWhere('t.position > :position')
+            ->setParameter('column', $column)
+            ->setParameter('position', $removedPosition)
+            ->orderBy('t.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $em = $this->getEntityManager();
+        foreach ($tasks as $task) {
+            $task->setPosition($task->getPosition() - 1);
+            $em->persist($task);
+        }
+    }
+
+    /**
+     * Fait de la place dans une colonne pour insérer une tâche
+     */
+    private function makeSpaceInColumn(TaskList $column, int $position): void
+    {
+        $tasks = $this->createQueryBuilder('t')
+            ->where('t.taskList = :column')
+            ->andWhere('t.position >= :position')
+            ->setParameter('column', $column)
+            ->setParameter('position', $position)
+            ->orderBy('t.position', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $em = $this->getEntityManager();
+        foreach ($tasks as $task) {
+            $task->setPosition($task->getPosition() + 1);
+            $em->persist($task);
+        }
+    }
+
+    /**
+     * Trouve la prochaine position disponible dans une colonne
+     */
+    public function findNextPositionInColumn(TaskList $column): int
+    {
+        $result = $this->createQueryBuilder('t')
+            ->select('MAX(t.position)')
+            ->where('t.taskList = :column')
+            ->setParameter('column', $column)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return ($result ?? 0) + 1;
+    }
     public function findOverdue(): array
     {
         return $this->createQueryBuilder('t')

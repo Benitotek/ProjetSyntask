@@ -37,6 +37,50 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findWithKanbanData(int $projectId): ?Project
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.taskLists', 'tl')
+            ->leftJoin('tl.tasks', 't')
+            ->leftJoin('t.assignedUsers', 'au')
+            ->addSelect('tl', 't', 'au')
+            ->where('p.id = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->orderBy('tl.positionColumn', 'ASC')
+            ->addOrderBy('t.position', 'ASC')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Trouve les projets récents d'un utilisateur avec leurs statistiques
+     */
+    public function findRecentWithStats(User $user, int $limit = 5): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.tasks', 't')
+            ->leftJoin('p.membres', 'm')
+            ->addSelect('COUNT(t.id) as taskCount')
+            ->where('m = :user OR p.chefDeProjet = :user')
+            ->setParameter('user', $user)
+            ->groupBy('p.id')
+            ->orderBy('p.dateCreation', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Statistiques pour le dashboard directeur
+     */
+    public function getProjectsWithBudgetStats(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.statut', 'COUNT(p.id) as count', 'SUM(COALESCE(p.budget, 0)) as totalBudget')
+            ->groupBy('p.statut')
+            ->getQuery()
+            ->getResult();
+    }
 
     public function findByStatus(array $statuses): array
     {
@@ -95,14 +139,14 @@ class ProjectRepository extends ServiceEntityRepository
             ->getResult();
     }
     public function findArchivedProjects(): array
-{
-return $this->createQueryBuilder('p')
-->andWhere('p.estArchive = :val')
-->setParameter('val', true)
-->orderBy('p.updatedAt', 'DESC') // optionnel si tu as un champ updatedAt
-->getQuery()
-->getResult();
-}
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.estArchive = :val')
+            ->setParameter('val', true)
+            ->orderBy('p.updatedAt', 'DESC') // optionnel si tu as un champ updatedAt
+            ->getQuery()
+            ->getResult();
+    }
 
     public function findByReference(string $reference): ?Project
     {
@@ -111,7 +155,7 @@ return $this->createQueryBuilder('p')
             ->setParameter('ref', $reference)
             ->getQuery()
             ->getOneOrNullResult();
-}
+    }
 }
     //    /**
     //     * @return Project[] Returns an array of Project objects
@@ -137,4 +181,3 @@ return $this->createQueryBuilder('p')
     //            ->getOneOrNullResult()
     //        ;
     //    }
-

@@ -1,96 +1,255 @@
-{# templates/project/index.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des projets - SYNTASK{% endblock %}
+{% block title %}Tous les Projets
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
 
 {% block body %}
-<div class="dashboard-container">
-    <div class="row">
-        <div class="col-12 dashboard-header">
-            <h1>
-                <i class="fas fa-project-diagram"></i>
-                Liste des projets
-            </h1>
-            <p class="text-muted">Gérez vos projets</p>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <div class="card content-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>
-                        <i class="fas fa-list"></i>
-                        Projets
-                    </h5>
-                    {% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_DIRECTEUR') or is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_project_new') }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus"></i> Nouveau projet
-                    </a>
-                    {% endif %}
+	<div
+		class="app-container">
+		<!-- Sidebar identique -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<div class="app-logo">
+					<div class="logo-placeholder">
+						<i class="icon-image"></i>
+					</div>
+					<span class="logo-text">logo de l'application</span>
+				</div>
+
+				<div class="user-profile">
+					<div class="profile-avatar">
+						<i class="icon-user"></i>
+					</div>
+					<div class="user-info">
+						<div class="user-name">{{ app.user.username|default('salarié') }}</div>
+						<div class="user-role">{{ app.user.roles|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Titre</th>
-                                    <th>Référence</th>
-                                    <th>Statut</th>
-                                    <th>Chef de projet</th>
-                                    <th>Progression</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if projects is empty %}
-                                    <tr>
-                                        <td colspan="6" class="text-center">Aucun projet disponible.</td>
-                                    </tr>
-                                {% else %}
-                                    {% for project in projects %}
-                                        <tr>
-                                            <td>{{ project.titre }}</td>
-                                            <td>
-                                                {% if project.reference is defined and project.reference is not null %}
-                                                    {{ project.reference }}
-                                                {% else %}
-                                                    -
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-{{ project.statut == 'EN-COURS' ? 'success' : (project.statut == 'TERMINE' ? 'primary' : 'warning') }}">
-                                                    {{ project.statut }}
-                                                </span>
-                                            </td>
-                                            <td>{{ project.chefDeProjet ? project.chefDeProjet.fullName : 'Non assigné' }}</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar" style="width: {{ project.progress ?? 0 }}%">{{ (project.progress ?? 0)|round }}%</div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-columns"></i>
-                                                </a>
-                                                {% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_DIRECTEUR') or is_granted('ROLE_ADMIN') %}
-                                                <a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn btn-sm btn-outline-warning">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+                <div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
+					</div>
+				</div>
+
+				<nav class="sidebar-nav">
+					<ul class="nav-menu">
+						<li class="nav-item">
+							<a href="{{ path('employe_dashboard') }}" class="nav-link">
+								<i class="icon-dashboard"></i>
+								Tableau de bord
+							</a>
+						</li>
+						<li class="nav-item active">
+							<a href="{{ path('projects') }}" class="nav-link">
+								<i class="icon-projects"></i>
+								Projets
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('statistiques') }}" class="nav-link">
+								<i class="icon-stats"></i>
+								Statistiques
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('mon_profil') }}" class="nav-link">
+								<i class="icon-profile"></i>
+								Mon profil
+							</a>
+						</li>
+					</ul>
+				</nav>
+
+				<div class="sidebar-footer">
+					<a href="{{ path('app_logout') }}" class="logout-btn">
+						<i class="icon-logout"></i>
+						bouton de déconnexion
+					</a>
+				</div>
+			</aside>
+
+			<!-- Contenu principal -->
+			<main class="main-content">
+				<div class="content-header">
+					<h1 class="page-title">Gestion des Projets</h1>
+					<div class="header-actions">
+						{% if is_granted('ROLE_DIRECTEUR') %}
+							<a href="{{ path('project_new') }}" class="btn btn-primary">
+								<i class="icon-plus"></i>
+								Nouveau Projet
+							</a>
+						{% endif %}
+					</div>
+				</div>
+
+				<!-- Statistiques rapides -->
+				<div class="stats-cards">
+					<div class="stat-card">
+						<div class="stat-icon">📊</div>
+						<div class="stat-content">
+							<div class="stat-number">{{ projects|length }}</div>
+							<div class="stat-label">Total Projets</div>
+						</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-icon">🚀</div>
+						<div class="stat-content">
+							<div class="stat-number">{{ projects|filter(p => p.statut == 'EN-COURS')|length }}</div>
+							<div class="stat-label">En Cours</div>
+						</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-icon">✅</div>
+						<div class="stat-content">
+							<div class="stat-number">{{ projects|filter(p => p.statut == 'TERMINE')|length }}</div>
+							<div class="stat-label">Terminés</div>
+						</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-icon">⏳</div>
+						<div class="stat-content">
+							<div class="stat-number">{{ projects|filter(p => p.statut == 'EN-ATTENTE')|length }}</div>
+							<div class="stat-label">En Attente</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Filtres et recherche -->
+				<div class="filters-section">
+					<div class="search-filters">
+						<div class="search-box">
+							<input type="text" placeholder="Rechercher un projet..." class="search-input">
+							<i class="icon-search"></i>
+						</div>
+						<div class="filter-tabs">
+							<a href="{{ path('projects') }}" class="filter-tab {% if current_status is not defined %}active{% endif %}">
+								Tous
+							</a>
+							<a href="{{ path('projects', {'status': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_status == 'EN-ATTENTE' %}active{% endif %}">
+								En attente
+							</a>
+							<a href="{{ path('projects', {'status': 'EN-COURS'}) }}" class="filter-tab {% if current_status == 'EN-COURS' %}active{% endif %}">
+								En cours
+							</a>
+							<a href="{{ path('projects', {'status': 'TERMINE'}) }}" class="filter-tab {% if current_status == 'TERMINE' %}active{% endif %}">
+								Terminés
+							</a>
+						</div>
+					</div>
+				</div>
+
+				<!-- Tableau des projets -->
+				<div class="projects-table-container">
+					<table class="projects-table">
+						<thead>
+							<tr>
+								<th>Projet</th>
+								<th>Statut</th>
+								<th>Chef de Projet</th>
+								<th>Équipe</th>
+								<th>Progression</th>
+								<th>Échéance</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for project in projects %}
+								<tr class="project-row">
+									<td class="project-cell">
+										<div class="project-info">
+											<h4 class="project-name">{{ project.nom }}</h4>
+											{% if project.reference %}
+												<span class="project-ref">{{ project.reference }}</span>
+											{% endif %}
+										</div>
+									</td>
+									<td>
+										<span class="status-badge status-{{ project.statut|lower|replace({'-': '_'}) }}">
+											{{ project.statut|replace({'-': ' '})|title }}
+										</span>
+									</td>
+									<td>
+										{% if project.chefDeProjet %}
+											<div class="user-info-cell">
+												<div class="user-avatar">{{ project.chefDeProjet.username|slice(0, 2)|upper }}</div>
+												{{ project.chefDeProjet.username }}
+											</div>
+										{% else %}
+											<span class="text-muted">Non assigné</span>
+										{% endif %}
+									</td>
+									<td>
+										<div class="team-avatars-small">
+											{% for membre in project.membres|slice(0, 3) %}
+												<div class="team-avatar-small" title="{{ membre.username }}">
+													{{ membre.username|slice(0, 2)|upper }}
+												</div>
+											{% endfor %}
+											{% if project.membres|length > 3 %}
+												<span class="team-count">+{{ project.membres|length - 3 }}</span>
+											{% endif %}
+										</div>
+									</td>
+									<td>
+										{% if project.tasks is defined and project.tasks|length > 0 %}
+											{% set totalTasks = project.tasks|length %}
+											{% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINE')|length %}
+											{% set progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100)|round : 0 %}
+
+											<div class="progress-cell">
+												<div class="progress-bar-small">
+													<div class="progress-fill-small" style="width: {{ progressPercent }}%"></div>
+												</div>
+												<span class="progress-text-small">{{ progressPercent }}%</span>
+											</div>
+										{% else %}
+											<span class="text-muted">Aucune tâche</span>
+										{% endif %}
+									</td>
+									<td>
+										{% if project.dateButoir %}
+											<div class="date-cell">
+												{{ project.dateButoir|date('d/m/Y') }}
+												{% if project.dateButoir < date() and project.statut != 'TERMINE' %}
+													<span class="overdue-badge">En retard</span>
+												{% endif %}
+											</div>
+										{% else %}
+											<span class="text-muted">Non définie</span>
+										{% endif %}
+									</td>
+									<td>
+										<div class="action-buttons">
+											<a href="{{ path('project_kanban', {'id': project.id}) }}" class="btn-icon" title="Vue Kanban">
+												<i class="icon-kanban"></i>
+											</a>
+											<a href="{{ path('project_show', {'id': project.id}) }}" class="btn-icon" title="Voir détails">
+												<i class="icon-eye"></i>
+											</a>
+											{% if is_granted('ROLE_DIRECTEUR') or project.chefDeProjet == app.user %}
+												<a href="{{ path('project_edit', {'id': project.id}) }}" class="btn-icon" title="Modifier">
+													<i class="icon-edit"></i>
+												</a>
+											{% endif %}
+										</div>
+									</td>
+								</tr>
+							{% else %}
+								<tr>
+									<td colspan="7" class="empty-table">
+										<div class="empty-state">
+											<div class="empty-icon">📁</div>
+											<h3>Aucun projet trouvé</h3>
+											<p>Aucun projet ne correspond aux critères sélectionnés.</p>
+										</div>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</main>
+		</div>
+	{% endblock %}

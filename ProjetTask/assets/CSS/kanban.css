@@ -1,0 +1,274 @@
+/* Styles généraux Kanban */
+.kanban-main {
+    padding: 0;
+    overflow: hidden;
+}
+
+.kanban-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #4a90e2 0%, #5ba3f5 100%);
+    color: white;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.project-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.project-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.kanban-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Tableau Kanban */
+.kanban-board {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    height: calc(100vh - 140px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: #f8f9fa;
+}
+
+/* Colonnes Kanban */
+.kanban-column {
+    min-width: 300px;
+    width: 300px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+.column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+}
+
+.column-title-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.column-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+    border: none;
+    background: transparent;
+    min-width: 120px;
+}
+
+.column-title:focus {
+    outline: 2px solid #4a90e2;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.task-count {
+    background: #e9ecef;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.column-actions {
+    display: flex;
+    gap: 5px;
+}
+
+/* Container des tâches */
+.tasks-container {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    min-height: 200px;
+}
+
+/* Cartes de tâches */
+.task-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.task-card:active {
+    cursor: grabbing;
+}
+
+.task-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+    z-index: 1000;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.task-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+    line-height: 1.3;
+    flex: 1;
+}
+
+.priority-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.priority-faible { background: #d4edda; color: #155724; }
+.priority-normale { background: #d1ecf1; color: #0c5460; }
+.priority-haute { background: #fff3cd; color: #856404; }
+.priority-urgente { background: #f8d7da; color: #721c24; }
+
+.task-description {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    margin: 8px 0;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.task-due-date {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #666;
+    padding: 2px 6px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.task-due-date.overdue {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.task-assignees {
+    display: flex;
+    gap: -8px;
+}
+
+.assignee-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #4a90e2;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+.assignee-avatar.more {
+    background: #6c757d;
+}
+
+.task-indicators {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.indicator {
+    font-size: 11px;
+    color: #666;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Zone de drop */
+.task-drop-zone {
+    min-height: 50px;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 12px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.task-drop-zone.drag-over {
+    border-color: #4a90e2;
+    background: rgba(74, 144, 226, 0.1);
+    color: #4a90e2;
+}
+
+/* Ajout de colonne */
+.add-column-placeholder {
+    min-width: 300px;
+    width: 300px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 20px;
+}
+
+.add-column-btn {
+    width: 100%;
+    height: 100px;
+    border: 2px dashed #4a90e2;
+    border-radius: 12px;
+    background: rgba(74, 144, 226, 0.1);
+    display: flex;
+}

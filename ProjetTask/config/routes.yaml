@@ -3,7 +3,7 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
-    
+
 app_dashboard:
     path: /
     controller: App\Controller\DashboardController::index
@@ -21,6 +21,22 @@ app_user_show:
     requirements:
         id: '\d+'
 project_kanban:
-  path: /project/kanban
-  controller: App\Controller\ProjectController::kanban
-  methods: [GET]
+    path: /project/kanban
+    controller: App\Controller\ProjectController::kanban
+    methods: [GET]
+
+    dashboard:
+        path: /dashboard
+        controller: App\Controller\DashboardController::index
+
+employe_dashboard:
+    path: /employe/dashboard
+    controller: App\Controller\DashboardController::employeDashboard
+
+statistiques:
+    path: /statistiques
+    controller: App\Controller\DashboardController::index
+
+mon_profil:
+    path: /profil
+    controller: App\Controller\UserController::show

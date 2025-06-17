@@ -1,50 +1,207 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard Employé{% endblock %}
+{% block title %}Détail du projet -
+	{{ project.name ?? 'Nouveau projet' }}
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('CSS/employe.css') }}">
+{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1>Dashboard Employé</h1>
-    
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    Mes tâches
+	<div
+		class="app-container">
+		<!-- Sidebar -->
+		<aside
+			class="sidebar">
+			<!-- Header avec logo et profil -->
+			<div class="sidebar-header">
+				<div class="app-logo">
+					<div class="logo-placeholder">
+						<i class="icon-image"></i>
+					</div>
+					<span class="logo-text">logo de l'application</span>
+				</div>
+
+				<div class="user-profile">
+					<div class="profile-avatar">
+						<i class="icon-user"></i>
+					</div>
+					<div class="user-info">
+						<div class="user-name">{{ app.user.username|default('salarié') }}</div>
+						<div class="user-role">{{ app.user.role|default('rôle de l\'utilisateur') }}</div>
                 </div>
-                <div class="card-body">
-                    <h5 class="card-title">Tâches assignées</h5>
-                    <p class="card-text">Visualisez et gérez vos tâches en cours.</p>
-                    <a href="{{ path('app_task_index') }}" class="btn btn-primary">Voir mes tâches</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    Mes projets
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Projets en cours</h5>
-                    <p class="card-text">Accédez aux projets auxquels vous participez.</p>
-                    <a href="{{ path('app_project_index') }}" class="btn btn-primary">Voir mes projets</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    Mon profil
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Informations personnelles</h5>
-                    <p class="card-text">Consultez et modifiez vos informations.</p>
-                    {# <a href="{{ path('app_profile') }}" class="btn btn-primary">Mon profil</a> #}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+                <div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
+					</div>
+				</div>
+
+				<!-- Navigation -->
+				<nav class="sidebar-nav">
+					<ul class="nav-menu">
+						<li class="nav-item">
+							<a href="{{ path('dashboard') }}" class="nav-link">
+								<i class="icon-dashboard"></i>
+								Tableau de bord
+							</a>
+						</li>
+						<li class="nav-item active">
+							<a href="{{ path('projects') }}" class="nav-link">
+								<i class="icon-projects"></i>
+								Mes projets
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('statistics') }}" class="nav-link">
+								<i class="icon-stats"></i>
+								Statistiques
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('profile') }}" class="nav-link">
+								<i class="icon-profile"></i>
+								Mon profil
+							</a>
+						</li>
+					</ul>
+				</nav>
+
+				<!-- Bouton de déconnexion -->
+				<div class="sidebar-footer">
+					<a href="{{ path('app_logout') }}" class="logout-btn">
+						<i class="icon-logout"></i>
+						bouton de déconnexion
+					</a>
+				</div>
+			</aside>
+
+			<!-- Contenu principal -->
+			<main class="main-content">
+				<div class="content-header">
+					<h1 class="page-title">Détail de tâches</h1>
+				</div>
+
+				<div class="project-detail-card">
+					<form method="post" action="{{ path('project_save', {'id': project.id|default(0)}) }}">
+						<div class="form-group">
+							<label for="project_name">nom du projet</label>
+							<input type="text" id="project_name" name="project[name]" value="{{ project.name|default('') }}" class="form-input">
+						</div>
+
+						<div class="form-row">
+							<div class="form-group">
+								<label for="project_status">Statut</label>
+								<select id="project_status" name="project[status]" class="form-select">
+									<option value="draft" {% if project.status|default('') == 'draft' %} selected {% endif %}>Brouillon</option>
+									<option value="active" {% if project.status|default('') == 'active' %} selected {% endif %}>Actif</option>
+									<option value="completed" {% if project.status|default('') == 'completed' %} selected {% endif %}>Terminé</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-row">
+							<div class="form-group">
+								<label for="project_assignee">Assignée à</label>
+								<select id="project_assignee" name="project[assignee]" class="form-select">
+									<option value="">Sélectionner un utilisateur</option>
+									{% if users is defined %}
+										{% for user in users %}
+											<option value="{{ user.id }}" {% if project.assignee is defined and project.assignee.id == user.id %} selected {% endif %}>
+												{{ user.username }}
+											</option>
+										{% endfor %}
+									{% endif %}
+								</select>
+							</div>
+
+							<div class="form-group">
+								<label for="project_created_date">Date de création</label>
+								<input type="date" id="project_created_date" name="project[createdDate]" value="{% if project.createdAt is defined %}{{ project.createdAt|date('Y-m-d') }}{% endif %}" class="form-input" readonly>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="project_due_date">Date butoire</label>
+							<input type="date" id="project_due_date" name="project[dueDate]" value="{% if project.dueDate is defined %}{{ project.dueDate|date('Y-m-d') }}{% endif %}" class="form-input">
+						</div>
+
+						<div class="form-group">
+							<label for="project_description">Description</label>
+							<textarea id="project_description" name="project[description]" class="form-textarea" rows="4">{{ project.description|default('') }}</textarea>
+						</div>
+
+						<div class="comment-section">
+							<div class="comment-input-wrapper">
+								<input type="text" class="comment-input" placeholder="Ajouter un commentaire pour les chefs du projet">
+								<button type="button" class="comment-submit-btn">Envoyer</button>
+							</div>
+							<div class="comment-help-text">
+								Ajouter un commentaire pour les chefs du projet
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<button type="submit" class="btn btn-primary">Sauvegarder</button>
+							<a href="{{ path('projects') }}" class="btn btn-secondary">Annuler</a>
+						</div>
+
+						<input type="hidden" name="_token" value="{{ csrf_token('project') }}">
+					</form>
+				</div>
+			</main>
+		</div>
+	{% endblock %}
+
+
+	{# version Testemploye #}
+
+	{# {% extends 'base.html.twig' %}
+	
+	{% block title %}Dashboard Employé{% endblock %}
+	
+	{% block body %}
+	<div class="container mt-4">
+	    <h1>Dashboard Employé</h1>
+	    
+	    <div class="row">
+	        <div class="col-md-4 mb-4">
+	            <div class="card">
+	                <div class="card-header">
+	                    Mes tâches
+	                </div>
+	                <div class="card-body">
+	                    <h5 class="card-title">Tâches assignées</h5>
+	                    <p class="card-text">Visualisez et gérez vos tâches en cours.</p>
+	                    <a href="{{ path('app_task_index') }}" class="btn btn-primary">Voir mes tâches</a>
+	                </div>
+	            </div>
+	        </div>
+	        
+	        <div class="col-md-4 mb-4">
+	            <div class="card">
+	                <div class="card-header">
+	                    Mes projets
+	                </div>
+	                <div class="card-body">
+	                    <h5 class="card-title">Projets en cours</h5>
+	                    <p class="card-text">Accédez aux projets auxquels vous participez.</p>
+	                    <a href="{{ path('app_project_index') }}" class="btn btn-primary">Voir mes projets</a>
+	                </div>
+	            </div>
+	        </div>
+	        
+	        <div class="col-md-4 mb-4">
+	            <div class="card">
+	                <div class="card-header">
+	                    Mon profil
+	                </div>
+	                <div class="card-body">
+	                    <h5 class="card-title">Informations personnelles</h5>
+	                    <p class="card-text">Consultez et modifiez vos informations.</p>
+	                    <a href="{{ path('app_profile') }}" class="btn btn-primary">Mon profil</a>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	{% endblock %} #}

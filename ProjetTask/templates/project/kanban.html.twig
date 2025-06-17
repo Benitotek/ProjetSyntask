@@ -1,278 +1,286 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Kanban - {{ project.titre }} - SYNTASK{% endblock %}
+{% block title %}
+	{{ project.nom }}
+	- Kanban
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+	<link rel="stylesheet" href="{{ asset('CSS/kanban.css') }}">
+{% endblock %}
 
 {% block body %}
-<div class="dashboard-container">
-    <div class="row">
-        <div class="col-12 dashboard-header">
-            <h1>
-                <i class="fas fa-columns"></i>
-                Kanban: {{ project.titre }}
-            </h1>
-            <p class="text-muted">
-                {% if project.reference is defined and project.reference is not null %}
-                    Référence: {{ project.reference }}
-                {% endif %}
-            </p>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Tableau de bord</a></li>
-                    <li class="breadcrumb-item"><a href="{{ path('app_project_index') }}">Projets</a></li>
-                    <li class="breadcrumb-item"><a href="{{ path('app_project_show', {'id': project.id}) }}">{{ project.titre }}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Kanban</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card content-card h-100">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">À faire</h5>
-                </div>
-                <div class="card-body">
-                    {% set todoTasks = project.tasks|filter(task => task.statut == 'A-FAIRE') %}
-                    {% if todoTasks is empty %}
-                        <p class="text-center text-muted my-3">Aucune tâche</p>
-                    {% else %}
-                        {% for task in todoTasks %}
-                            <div class="card mb-2 kanban-card 
-                                {{ task.priorite == 'HAUTE' ? 'priority-high' : (task.priorite == 'MOYENNE' ? 'priority-medium' : 'priority-low') }} 
-                                status-todo
-                                {{ task.isOverdue ? 'task-overdue' : '' }}">
-                                <div class="card-body p-2">
-                                    <h6 class="card-title mb-1">{{ task.titre }}</h6>
-                                    <p class="card-text small mb-1">
-                                        {% if task.assignedTo %}
-                                            <span class="text-muted">
-                                                <i class="fas fa-user"></i> {{ task.assignedTo.fullName }}
-                                            </span>
-                                        {% endif %}
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="badge {{ task.priorite == 'HAUTE' ? 'bg-danger' : (task.priorite == 'MOYENNE' ? 'bg-warning' : 'bg-info') }}">
-                                            {{ task.priorite }}
-                                        </span>
-                                        {% if task.dateDeFin %}
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar-alt"></i> {{ task.dateDeFin|date('d/m/Y') }}
-                                            </small>
-                                        {% endif %}
-                                    </div>
-                                    <div class="mt-2">
-                                        <a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card content-card h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">En cours</h5>
-                </div>
-                <div class="card-body">
-                    {% set inProgressTasks = project.tasks|filter(task => task.statut == 'EN-COURS') %}
-                    {% if inProgressTasks is empty %}
-                        <p class="text-center text-muted my-3">Aucune tâche</p>
-                    {% else %}
-                        {% for task in inProgressTasks %}
-                            <div class="card mb-2 kanban-card 
-                                {{ task.priorite == 'HAUTE' ? 'priority-high' : (task.priorite == 'MOYENNE' ? 'priority-medium' : 'priority-low') }} 
-                                status-inprogress
-                                {{ task.isOverdue ? 'task-overdue' : '' }}">
-                                <div class="card-body p-2">
-                                    <h6 class="card-title mb-1">{{ task.titre }}</h6>
-                                    <p class="card-text small mb-1">
-                                        {% if task.assignedTo %}
-                                            <span class="text-muted">
-                                                <i class="fas fa-user"></i> {{ task.assignedTo.fullName }}
-                                            </span>
-                                        {% endif %}
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="badge {{ task.priorite == 'HAUTE' ? 'bg-danger' : (task.priorite == 'MOYENNE' ? 'bg-warning' : 'bg-info') }}">
-                                            {{ task.priorite }}
-                                        </span>
-                                        {% if task.dateDeFin %}
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar-alt"></i> {{ task.dateDeFin|date('d/m/Y') }}
-                                            </small>
-                                        {% endif %}
-                                    </div>
-                                    <div class="mt-2">
-                                        <a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card content-card h-100">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Terminé</h5>
-                </div>
-                <div class="card-body">
-                    {% set doneTasks = project.tasks|filter(task => task.statut == 'TERMINE') %}
-                    {% if doneTasks is empty %}
-                        <p class="text-center text-muted my-3">Aucune tâche</p>
-                    {% else %}
-                        {% for task in doneTasks %}
-                            <div class="card mb-2 kanban-card 
-                                {{ task.priorite == 'HAUTE' ? 'priority-high' : (task.priorite == 'MOYENNE' ? 'priority-medium' : 'priority-low') }} 
-                                status-done">
-                                <div class="card-body p-2">
-                                    <h6 class="card-title mb-1">{{ task.titre }}</h6>
-                                    <p class="card-text small mb-1">
-                                        {% if task.assignedTo %}
-                                            <span class="text-muted">
-                                                <i class="fas fa-user"></i> {{ task.assignedTo.fullName }}
-                                            </span>
-                                        {% endif %}
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="badge {{ task.priorite == 'HAUTE' ? 'bg-danger' : (task.priorite == 'MOYENNE' ? 'bg-warning' : 'bg-info') }}">
-                                            {{ task.priorite }}
-                                        </span>
-                                        {% if task.dateDeFin %}
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar-alt"></i> {{ task.dateDeFin|date('d/m/Y') }}
-                                            </small>
-                                        {% endif %}
-                                    </div>
-                                    <div class="mt-2">
-                                        <a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+	<div
+		class="app-container">
+		<!-- Sidebar -->
+		<aside class="sidebar sidebar-collapsed" id="sidebar">
+			<div class="sidebar-toggle" id="sidebarToggle">
+				<i class="icon-menu"></i>
+			</div>
 
-<style>
-/* Ajoutez ces styles spécifiques au kanban si nécessaire */
-.kanban-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-.kanban-card:hover {
-    transform: translateY(-5px);
-}
-</style>
+			<div class="sidebar-header">
+				<div class="app-logo">
+					<div class="logo-placeholder">
+						<i class="icon-image"></i>
+					</div>
+					<span class="logo-text">logo de l'application</span>
+				</div>
+			</div>
+
+			<nav class="sidebar-nav">
+				<ul class="nav-menu">
+					<li class="nav-item">
+						<a href="{{ path('employe_dashboard') }}" class="nav-link">
+							<i class="icon-dashboard"></i>
+							<span class="nav-text">Tableau de bord</span>
+						</a>
+					</li>
+					<li class="nav-item active">
+						<a href="{{ path('mes_projets') }}" class="nav-link">
+							<i class="icon-projects"></i>
+							<span class="nav-text">Mes projets</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="{{ path('statistiques') }}" class="nav-link">
+							<i class="icon-stats"></i>
+							<span class="nav-text">Statistiques</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="{{ path('mon_profil') }}" class="nav-link">
+							<i class="icon-profile"></i>
+							<span class="nav-text">Mon profil</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</aside>
+
+		<!-- Contenu principal Kanban -->
+		<main
+			class="main-content kanban-main">
+			<!-- Header du projet -->
+			<div class="kanban-header">
+				<div class="project-info">
+					<h1 class="project-title">{{ project.nom }}</h1>
+					<span class="project-status project-status-{{ project.statut|lower|replace({'-': '_'}) }}">
+						{{ project.statut|replace({'-': ' '})|title }}
+					</span>
+				</div>
+
+				<div class="kanban-actions">
+					<button class="btn btn-secondary btn-sm" id="addColumnBtn">
+						<i class="icon-plus"></i>
+						Ajouter colonne
+					</button>
+					<button class="btn btn-primary btn-sm" id="addTaskBtn">
+						<i class="icon-plus"></i>
+						Nouvelle tâche
+					</button>
+					<a href="{{ path('project_show', {'id': project.id}) }}" class="btn btn-outline btn-sm">
+						<i class="icon-settings"></i>
+						Paramètres
+					</a>
+				</div>
+			</div>
+
+			<!-- Tableau Kanban -->
+			<div class="kanban-board" id="kanbanBoard">
+				{% for taskList in project.taskLists %}
+					<div class="kanban-column" data-column-id="{{ taskList.id }}">
+						<div class="column-header">
+							<div class="column-title-container">
+								<h3 class="column-title" contenteditable="true" data-column-id="{{ taskList.id }}">
+									{{ taskList.nom }}
+								</h3>
+								<span class="task-count">{{ taskList.tasks|length }}</span>
+							</div>
+							<div class="column-actions">
+								<button class="btn-icon" onclick="addTask({{ taskList.id }})" title="Ajouter une tâche">
+									<i class="icon-plus"></i>
+								</button>
+								<div class="dropdown">
+									<button class="btn-icon dropdown-toggle" title="Options">
+										<i class="icon-more"></i>
+									</button>
+									<div class="dropdown-menu">
+										<a href="#" onclick="editColumn({{ taskList.id }})">Modifier</a>
+										<a href="#" onclick="deleteColumn({{ taskList.id }})">Supprimer</a>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="tasks-container" data-column-id="{{ taskList.id }}">
+							{% for task in taskList.tasks %}
+								<div class="task-card" data-task-id="{{ task.id }}" data-column-id="{{ taskList.id }}" draggable="true">
+									<div class="task-header">
+										<h4 class="task-title">{{ task.titre }}</h4>
+										{% if task.priorite %}
+											<span class="priority-badge priority-{{ task.priorite|lower }}">
+												{{ task.priorite }}
+											</span>
+										{% endif %}
+									</div>
+
+									{% if task.description %}
+										<p class="task-description">
+											{{ task.description|slice(0, 100) }}
+											{% if task.description|length > 100 %}...
+											{% endif %}
+										</p>
+									{% endif %}
+
+									<div class="task-meta">
+										{% if task.dateButoir %}
+											<div class="task-due-date {% if task.dateButoir < date() and task.statut != 'TERMINE' %}overdue{% endif %}">
+												<i class="icon-calendar"></i>
+												{{ task.dateButoir|date('d/m') }}
+											</div>
+										{% endif %}
+
+										{% if task.assignedUsers|length > 0 %}
+											<div class="task-assignees">
+												{% for user in task.assignedUsers|slice(0, 3) %}
+													<div class="assignee-avatar" title="{{ user.username }}">
+														{{ user.username|slice(0, 2)|upper }}
+													</div>
+												{% endfor %}
+												{% if task.assignedUsers|length > 3 %}
+													<div class="assignee-avatar more">
+														+{{ task.assignedUsers|length - 3 }}
+													</div>
+												{% endif %}
+											</div>
+										{% endif %}
+									</div>
+
+									{% if task.commentaires is defined and task.commentaires|length > 0 %}
+										<div class="task-indicators">
+											<span class="indicator">
+												<i class="icon-comment"></i>
+												{{ task.commentaires|length }}
+											</span>
+										</div>
+									{% endif %}
+								</div>
+							{% endfor %}
+
+							<!-- Zone de drop pour les tâches -->
+							<div class="task-drop-zone" data-column-id="{{ taskList.id }}">
+								Glisser une tâche ici
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+
+				<!-- Bouton pour ajouter une colonne -->
+				<div class="add-column-placeholder" id="addColumnPlaceholder">
+					<button class="add-column-btn" onclick="showAddColumnForm()">
+						<i class="icon-plus"></i>
+						Ajouter une colonne
+					</button>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<!-- Modal pour ajouter/modifier une tâche -->
+	<div class="modal" id="taskModal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 id="taskModalTitle">Nouvelle tâche</h3>
+				<button class="modal-close" onclick="closeTaskModal()">×</button>
+			</div>
+			<form id="taskForm">
+				<div class="form-group">
+					<label for="taskTitle">Titre de la tâche</label>
+					<input type="text" id="taskTitle" name="titre" class="form-input" required>
+				</div>
+
+				<div class="form-group">
+					<label for="taskDescription">Description</label>
+					<textarea id="taskDescription" name="description" class="form-textarea" rows="3"></textarea>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label for="taskPriority">Priorité</label>
+						<select id="taskPriority" name="priorite" class="form-select">
+							<option value="">Aucune</option>
+							<option value="FAIBLE">Faible</option>
+							<option value="NORMALE">Normale</option>
+							<option value="HAUTE">Haute</option>
+							<option value="URGENTE">Urgente</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="taskDueDate">Date d'échéance</label>
+						<input type="date" id="taskDueDate" name="dateButoir" class="form-input">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="taskAssignees">Assigné à</label>
+					<select id="taskAssignees" name="assignedUsers[]" class="form-select" multiple>
+						{% for membre in project.membres %}
+							<option value="{{ membre.id }}">{{ membre.username }}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="modal-actions">
+					<button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Annuler</button>
+					<button type="submit" class="btn btn-primary">Sauvegarder</button>
+				</div>
+
+				<input type="hidden" id="taskId" name="id">
+				<input type="hidden" id="taskColumnId" name="taskListId">
+			</form>
+		</div>
+	</div>
+
+	<!-- Modal pour ajouter une colonne -->
+	<div class="modal" id="columnModal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Nouvelle colonne</h3>
+				<button class="modal-close" onclick="closeColumnModal()">×</button>
+			</div>
+			<form id="columnForm">
+				<div class="form-group">
+					<label for="columnName">Nom de la colonne</label>
+					<input type="text" id="columnName" name="nom" class="form-input" required>
+				</div>
+
+				<div class="modal-actions">
+					<button type="button" class="btn btn-secondary" onclick="closeColumnModal()">Annuler</button>
+					<button type="submit" class="btn btn-primary">Créer</button>
+				</div>
+			</form>
+		</div>
+	</div>
 {% endblock %}
 
 {% block javascripts %}
-	<script>
-		// Initialiser Sortable pour le drag & drop
-document.addEventListener('DOMContentLoaded', function () {
-const columns = document.querySelectorAll('.kanban-tasks');
-
-columns.forEach(column => {
-new Sortable(column, {
-group: 'kanban',
-animation: 150,
-onEnd: function (evt) {
-const taskId = evt.item.getAttribute('data-task-id');
-const newColumnId = evt.to.getAttribute('data-column-id');
-const newPosition = evt.newIndex;
-
-// Envoyer la mise à jour au serveur
-fetch (`/tasks/${taskId}/move`, {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(
-{columnId: newColumnId, position: newPosition}
-)
-}).then(response => response.json()).then(data => {
-if (!data.success) {
-console.error('Erreur lors du déplacement de la tâche');
-// Remettre l'élément à sa position originale
-evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
-}
-});
-}
-});
-});
-
-// Gestion du changement de statut des tâches
-document.querySelectorAll('.task-status-select').forEach(select => {
-select.addEventListener('change', function () {
-const taskId = this.getAttribute('data-task-id');
-const newStatus = this.value;
-
-fetch (`/tasks/${taskId}/update-status`, {
-method: 'POST',
-headers: {
-'Content-Type': 'application/x-www-form-urlencoded'
-},
-body: `status=${newStatus}`
-}).then(response => response.json()).then(data => {
-if (data.success) { // Mettre à jour la classe CSS de la carte
-const card = this.closest('.kanban-card');
-card.className = card.className.replace(/status-\w+/g, '');
-
-if (newStatus === 'EN-ATTENTE') 
-card.classList.add('status-pending');
- else if (newStatus === 'EN-COURS') 
-card.classList.add('status-progress');
- else if (newStatus === 'TERMINE') 
-card.classList.add('status-completed');
+	{{ parent() }}
+	<script src="{{ asset('js/kanban.js') }}"></script>
+{% endblock %}
 
 
-} else {
-alert('Erreur lors de la mise à jour du statut');
-}
-});
-});
-});
-});{% if is_granted('edit', project) %}function addColumn() {
-const form = document.getElementById('addColumnForm');
-const formData = new FormData(form);
-
-fetch(`/task-lists/new/{{ project.id }}`, {
-method: 'POST',
-body: formData
-}).then(response => response.json()).then(data => {
-if (data.success) {
-location.reload();
-} else {
-alert('Erreur lors de la création de la colonne');
-}
-});
-}
-{% endif %}
-	</script>
+<style>
+	/* Ajoutez ces styles spécifiques au kanban si nécessaire */
+	.kanban-card {
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+	.kanban-card:hover {
+		transform: translateY(-5px);
+	}
+</style>{% endblock %}{% block javascripts %}
+<script>
 {% endblock %}

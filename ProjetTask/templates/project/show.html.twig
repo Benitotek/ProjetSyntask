@@ -1,200 +1,313 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détails du projet - SYNTASK{% endblock %}
+{% block title %}{{ project.nom }} - Détails{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('CSS/project-management.css') }}">
+{% endblock %}
 
 {% block body %}
-<div class="dashboard-container">
-    <div class="row">
-        <div class="col-12 dashboard-header">
-            <h1>
-                <i class="fas fa-project-diagram"></i>
-                {{ project.titre }}
-            </h1>
-            <p class="text-muted">
-                {% if project.reference is defined and project.reference is not null %}
-                    Référence: {{ project.reference }}
-                {% endif %}
-            </p>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ path('app_dashboard') }}">Tableau de bord</a></li>
-                    <li class="breadcrumb-item"><a href="{{ path('app_project_index') }}">Projets</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ project.titre }}</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="card content-card">
-                <div class="card-header">
-                    <h5>
-                        <i class="fas fa-info-circle"></i>
-                        Informations du projet
-                    </h5>
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="app-logo">
+                <div class="logo-placeholder">
+                    <i class="icon-image"></i>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Statut:</strong> 
-                                <span class="badge bg-{{ project.statut == 'EN-COURS' ? 'success' : (project.statut == 'TERMINE' ? 'primary' : 'warning') }}">
-                                    {{ project.statut }}
-                                </span>
-                            </p>
-                            <p><strong>Chef de projet:</strong> {{ project.chefDeProjet ? project.chefDeProjet.fullName : 'Non assigné' }}</p>
-                            <p><strong>Date de début:</strong> 
-                                {% if project.dateDeDebut is defined and project.dateDeDebut is not null %}
-                                    {{ project.dateDeDebut|date('d/m/Y') }}
-                                {% else %}
-                                    Non définie
-                                {% endif %}
-                            </p>
-                            <p><strong>Date de fin:</strong> 
-                                {% if project.dateDeFin is defined and project.dateDeFin is not null %}
-                                    {{ project.dateDeFin|date('d/m/Y') }}
-                                {% else %}
-                                    Non définie
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Progression:</strong></p>
-                            <div class="progress mb-3">
-                                <div class="progress-bar" style="width: {{ project.progress ?? 0 }}%">{{ (project.progress ?? 0)|round }}%</div>
-                            </div>
-                            
-                            {% if project.description is defined and project.description is not null %}
-                                <p><strong>Description:</strong></p>
-                                <p>{{ project.description }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
+                <span class="logo-text">logo de l'application</span>
+            </div>
+            
+            <div class="user-profile">
+                <div class="profile-avatar">
+                    <i class="icon-user"></i>
                 </div>
+                <div class="user-info">
+                    <div class="user-name">{{ app.user.username|default('salarié') }}</div>
+                    <div class="user-role">{{ app.user.roles|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
+                </div>
+                <div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
             </div>
         </div>
-        
-        <div class="col-md-4">
-            <div class="card content-card">
-                <div class="card-header">
-                    <h5>
-                        <i class="fas fa-tasks"></i>
-                        Résumé des tâches
-                    </h5>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ path('employe_dashboard') }}" class="nav-link">
+                        <i class="icon-dashboard"></i>
+                        Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="{{ path('mes_projets') }}" class="nav-link">
+                        <i class="icon-projects"></i>
+                        Mes projets
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('statistiques') }}" class="nav-link">
+                        <i class="icon-stats"></i>
+                        Statistiques
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('mon_profil') }}" class="nav-link">
+                        <i class="icon-profile"></i>
+                        Mon profil
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ path('app_logout') }}" class="logout-btn">
+                <i class="icon-logout"></i>
+                bouton de déconnexion
+            </a>
+        </div>
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+        <!-- Header du projet -->
+        <div class="content-header">
+            <div class="header-main">
+                <div class="breadcrumb">
+                    <a href="{{ path('mes_projets') }}">Mes Projets</a>
+                    <span class="separator">></span>
+                    <span>{{ project.nom }}</span>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-around text-center mb-3">
-                        <div>
-                            <h3>{{ project.totalTasks ?? 0 }}</h3>
-                            <p class="text-muted">Total</p>
+                <h1 class="page-title">{{ project.nom }}</h1>
+                <span class="project-status project-status-{{ project.statut|lower|replace({'-': '_'}) }}">
+                    {{ project.statut|replace({'-': ' '})|title }}
+                </span>
+            </div>
+            
+            <div class="header-actions">
+                <a href="{{ path('project_kanban', {'id': project.id}) }}" class="btn btn-primary">
+                    <i class="icon-kanban"></i>
+                    Vue Kanban
+                </a>
+                {% if is_granted('ROLE_DIRECTEUR') or project.chefDeProjet == app.user %}
+                    <a href="{{ path('project_edit', {'id': project.id}) }}" class="btn btn-secondary">
+                        <i class="icon-edit"></i>
+                        Modifier
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="project-detail-layout">
+            <!-- Informations principales -->
+            <div class="project-main-info">
+                <div class="info-card">
+                    <h2 class="card-title">Informations générales</h2>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Nom du projet</label>
+                            <div class="info-value">{{ project.nom }}</div>
                         </div>
-                        <div>
-                            <h3>{{ project.completedTasks ?? 0 }}</h3>
-                            <p class="text-muted">Terminées</p>
+                        
+                        {% if project.reference %}
+                            <div class="info-item">
+                                <label>Référence</label>
+                                <div class="info-value">{{ project.reference }}</div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="info-item">
+                            <label>Statut</label>
+                            <div class="info-value">
+                                <span class="status-badge status-{{ project.statut|lower|replace({'-': '_'}) }}">
+                                    {{ project.statut|replace({'-': ' '})|title }}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <h3>{{ project.pendingTasks ?? 0 }}</h3>
-                            <p class="text-muted">En cours</p>
+                        
+                        <div class="info-item">
+                            <label>Date de création</label>
+                            <div class="info-value">{{ project.dateCreation|date('d/m/Y à H:i') }}</div>
                         </div>
+                        
+                        {% if project.dateButoir %}
+                            <div class="info-item">
+                                <label>Date d'échéance</label>
+                                <div class="info-value">
+                                    {{ project.dateButoir|date('d/m/Y') }}
+                                    {% if project.dateButoir < date() and project.statut != 'TERMINE' %}
+                                        <span class="overdue-badge">En retard</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if project.budget %}
+                            <div class="info-item">
+                                <label>Budget</label>
+                                <div class="info-value">{{ project.budget|number_format(2, ',', ' ') }} €</div>
+                            </div>
+                        {% endif %}
                     </div>
                     
-                    <div class="d-grid gap-2">
-                        <a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn btn-primary">
-                            <i class="fas fa-columns"></i> Voir le Kanban
+                    {% if project.description %}
+                        <div class="info-item full-width">
+                            <label>Description</label>
+                            <div class="info-value description">{{ project.description|nl2br }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Équipe du projet -->
+                <div class="info-card">
+                    <h2 class="card-title">Équipe du projet</h2>
+                    
+                    {% if project.chefDeProjet %}
+                        <div class="team-section">
+                            <h3 class="team-role">Chef de projet</h3>
+                            <div class="team-member chef">
+                                <div class="member-avatar">{{ project.chefDeProjet.username|slice(0, 2)|upper }}</div>
+                                <div class="member-info">
+                                    <div class="member-name">{{ project.chefDeProjet.username }}</div>
+                                    <div class="member-email">{{ project.chefDeProjet.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if project.membres|length > 0 %}
+                        <div class="team-section">
+                            <h3 class="team-role">Membres de l'équipe ({{ project.membres|length }})</h3>
+                            <div class="team-grid">
+                                {% for membre in project.membres %}
+                                    <div class="team-member">
+                                        <div class="member-avatar">{{ membre.username|slice(0, 2)|upper }}</div>
+                                        <div class="member-info">
+                                            <div class="member-name">{{ membre.username }}</div>
+                                            <div class="member-email">{{ membre.email }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar avec statistiques -->
+            <div class="project-sidebar">
+                <!-- Progression -->
+                <div class="sidebar-card">
+                    <h3 class="card-title">Progression</h3>
+                    {% if project.tasks is defined and project.tasks|length > 0 %}
+                        {% set totalTasks = project.tasks|length %}
+                        {% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINE')|length %}
+                        {% set inProgressTasks = project.tasks|filter(t => t.statut == 'EN-COURS')|length %}
+                        {% set pendingTasks = project.tasks|filter(t => t.statut == 'EN-ATTENTE')|length %}
+                        {% set progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100)|round : 0 %}
+                        
+                        <div class="progress-stats">
+                            <div class="progress-circle">
+                                <div class="progress-value">{{ progressPercent }}%</div>
+                            </div>
+                            
+                            <div class="task-breakdown">
+                                <div class="task-stat">
+                                    <span class="stat-dot completed"></span>
+                                    <span class="stat-label">Terminées</span>
+                                    <span class="stat-count">{{ completedTasks }}</span>
+                                </div>
+                                <div class="task-stat">
+                                    <span class="stat-dot in-progress"></span>
+                                    <span class="stat-label">En cours</span>
+                                    <span class="stat-count">{{ inProgressTasks }}</span>
+                                </div>
+                                <div class="task-stat">
+                                    <span class="stat-dot pending"></span>
+                                    <span class="stat-label">En attente</span>
+                                    <span class="stat-count">{{ pendingTasks }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="no-data">Aucune tâche créée</p>
+                    {% endif %}
+                </div>
+
+                <!-- Activité récente -->
+                <div class="sidebar-card">
+                    <h3 class="card-title">Activité récente</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">✅</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Projet créé</div>
+                                <div class="activity-date">{{ project.dateCreation|date('d/m/Y') }}</div>
+                            </div>
+                        </div>
+                        
+                        {% if project.tasks is defined %}
+                            {% for task in project.tasks|slice(0, 5) %}
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        {% if task.statut == 'TERMINE' %}
+                                            ✅
+                                        {% elseif task.statut == 'EN-COURS' %}
+                                            🔄
+                                        {% else %}
+                                            📝
+                                        {% endif %}
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-text">{{ task.titre }}</div>
+                                        <div class="activity-date">{{ task.dateCreation|date('d/m/Y') }}</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="sidebar-card">
+                    <h3 class="card-title">Actions rapides</h3>
+                    <div class="quick-actions">
+                        <a href="{{ path('project_kanban', {'id': project.id}) }}" class="quick-action">
+                            <i class="icon-kanban"></i>
+                            <span>Vue Kanban</span>
                         </a>
-                        {% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_DIRECTEUR') or is_granted('ROLE_ADMIN') %}
-                            <a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn btn-warning">
-                                <i class="fas fa-edit"></i> Modifier le projet
+                        <a href="#" class="quick-action" onclick="exportProject()">
+                            <i class="icon-download"></i>
+                            <span>Exporter</span>
+                        </a>
+                        {% if is_granted('ROLE_DIRECTEUR') %}
+                            <a href="#" class="quick-action" onclick="archiveProject()">
+                                <i class="icon-archive"></i>
+                                <span>Archiver</span>
                             </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Liste des tâches du projet -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card content-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>
-                        <i class="fas fa-list"></i>
-                        Tâches du projet
-                    </h5>
-                    {% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_DIRECTEUR') or is_granted('ROLE_ADMIN') %}
-                        <a href="{{ path('app_task_new', {'project': project.id}) }}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus"></i> Nouvelle tâche
-                        </a>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Titre</th>
-                                    <th>Statut</th>
-                                    <th>Priorité</th>
-                                    <th>Assignée à</th>
-                                    <th>Date d'échéance</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if project.tasks is defined and project.tasks is not empty %}
-                                    {% for task in project.tasks %}
-                                        <tr>
-                                            <td>{{ task.titre }}</td>
-                                            <td>
-                                                <span class="badge bg-{{ task.statut == 'EN-COURS' ? 'primary' : (task.statut == 'TERMINE' ? 'success' : 'secondary') }}">
-                                                    {{ task.statut }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge {{ task.priorite == 'HAUTE' ? 'bg-danger' : (task.priorite == 'MOYENNE' ? 'bg-warning' : 'bg-info') }}">
-                                                    {{ task.priorite }}
-                                                </span>
-                                            </td>
-                                            <td>{{ task.assignedTo ? task.assignedTo.fullName : 'Non assignée' }}</td>
-                                            <td>
-                                                {% if task.dateDeFin %}
-                                                    {{ task.dateDeFin|date('d/m/Y') }}
-                                                    {% if task.isOverdue %}
-                                                        <span class="text-danger">
-                                                            <i class="fas fa-exclamation-circle"></i>
-                                                        </span>
-                                                    {% endif %}
-                                                {% else %}
-                                                    Non définie
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-warning">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="6" class="text-center">Aucune tâche pour ce projet.</td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </main>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function exportProject() {
+            // Logique d'export
+            alert('Fonctionnalité d\'export en cours de développement');
+        }
+        
+        function archiveProject() {
+            if (confirm('Êtes-vous sûr de vouloir archiver ce projet ?')) {
+                // Logique d'archivage
+                window.location.href = '{{ path("project_archive", {"id": project.id}) }}';
+            }
+        }
+    </script>
 {% endblock %}

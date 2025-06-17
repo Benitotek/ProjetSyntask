@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Projets
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+	<div
+		class="app-container">
+		<!-- Sidebar -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<div class="app-logo">
+					<div class="logo-placeholder">
+						<i class="icon-image"></i>
+					</div>
+					<span class="logo-text">logo de l'application</span>
+				</div>
+
+				<div class="user-profile">
+					<div class="profile-avatar">
+						<i class="icon-user"></i>
+					</div>
+					<div class="user-info">
+						<div class="user-name">{{ app.user.username|default('salarié') }}</div>
+						<div class="user-role">{{ app.user.roles|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
+                </div>
+                <div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
+					</div>
+				</div>
+
+				<nav class="sidebar-nav">
+					<ul class="nav-menu">
+						<li class="nav-item">
+							<a href="{{ path('employe_dashboard') }}" class="nav-link">
+								<i class="icon-dashboard"></i>
+								Tableau de bord
+							</a>
+						</li>
+						<li class="nav-item active">
+							<a href="{{ path('mes_projets') }}" class="nav-link">
+								<i class="icon-projects"></i>
+								Mes projets
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('statistiques') }}" class="nav-link">
+								<i class="icon-stats"></i>
+								Statistiques
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('mon_profil') }}" class="nav-link">
+								<i class="icon-profile"></i>
+								Mon profil
+							</a>
+						</li>
+					</ul>
+				</nav>
+
+				<div class="sidebar-footer">
+					<a href="{{ path('app_logout') }}" class="logout-btn">
+						<i class="icon-logout"></i>
+						bouton de déconnexion
+					</a>
+				</div>
+			</aside>
+
+			<!-- Contenu principal -->
+			<main class="main-content">
+				<div class="content-header">
+					<h1 class="page-title">Mes Projets</h1>
+					<div class="header-actions">
+						{% if is_granted('ROLE_DIRECTEUR') %}
+							<a href="{{ path('project_new') }}" class="btn btn-primary">
+								<i class="icon-plus"></i>
+								Nouveau Projet
+							</a>
+						{% endif %}
+					</div>
+				</div>
+
+				<!-- Filtres -->
+				<div class="filters-section">
+					<div class="filter-tabs">
+						<a href="{{ path('mes_projets') }}" class="filter-tab {% if current_status is not defined %}active{% endif %}">
+							Tous
+						</a>
+						<a href="{{ path('mes_projets', {'status': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_status == 'EN-ATTENTE' %}active{% endif %}">
+							En attente
+						</a>
+						<a href="{{ path('mes_projets', {'status': 'EN-COURS'}) }}" class="filter-tab {% if current_status == 'EN-COURS' %}active{% endif %}">
+							En cours
+						</a>
+						<a href="{{ path('mes_projets', {'status': 'TERMINE'}) }}" class="filter-tab {% if current_status == 'TERMINE' %}active{% endif %}">
+							Terminés
+						</a>
+					</div>
+				</div>
+
+				<!-- Liste des projets -->
+				<div class="projects-grid">
+					{% for project in projects %}
+						<div class="project-card">
+							<div class="project-header">
+								<h3 class="project-title">{{ project.nom }}</h3>
+								<span class="project-status project-status-{{ project.statut|lower|replace({'-': '_'}) }}">
+									{{ project.statut|replace({'-': ' '})|title }}
+								</span>
+							</div>
+
+							<div class="project-meta">
+								{% if project.description %}
+									<p class="project-description">{{ project.description|slice(0, 100) }}
+										{% if project.description|length > 100 %}...
+										{% endif %}
+									</p>
+								{% endif %}
+
+								<div class="project-dates">
+									<div class="project-date">
+										<i class="icon-calendar"></i>
+										<span>Créé le
+											{{ project.dateCreation|date('d/m/Y') }}</span>
+									</div>
+									{% if project.dateButoir %}
+										<div class="project-date">
+											<i class="icon-clock"></i>
+											<span>Échéance:
+												{{ project.dateButoir|date('d/m/Y') }}</span>
+										</div>
+									{% endif %}
+								</div>
+
+								<div class="project-team">
+									<div class="team-avatars">
+										{% if project.chefDeProjet %}
+											<div class="team-avatar chef" title="Chef de projet: {{ project.chefDeProjet.username }}">
+												{{ project.chefDeProjet.username|slice(0, 2)|upper }}
+											</div>
+										{% endif %}
+										{% for membre in project.membres|slice(0, 3) %}
+											<div class="team-avatar" title="{{ membre.username }}">
+												{{ membre.username|slice(0, 2)|upper }}
+											</div>
+										{% endfor %}
+										{% if project.membres|length > 3 %}
+											<div class="team-avatar more">
+												+{{ project.membres|length - 3 }}
+											</div>
+										{% endif %}
+									</div>
+								</div>
+
+								{% if project.tasks is defined and project.tasks|length > 0 %}
+									<div class="project-progress">
+										{% set totalTasks = project.tasks|length %}
+										{% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINE')|length %}
+										{% set progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100)|round : 0 %}
+
+										<div class="progress-bar">
+											<div class="progress-fill" style="width: {{ progressPercent }}%"></div>
+										</div>
+										<span class="progress-text">{{ completedTasks }}/{{ totalTasks }}
+											tâches</span>
+									</div>
+								{% endif %}
+							</div>
+
+							<div class="project-actions">
+								<a href="{{ path('project_kanban', {'id': project.id}) }}" class="btn btn-primary btn-sm">
+									<i class="icon-kanban"></i>
+									Kanban
+								</a>
+								<a href="{{ path('project_show', {'id': project.id}) }}" class="btn btn-secondary btn-sm">
+									<i class="icon-eye"></i>
+									Détails
+								</a>
+							</div>
+						</div>
+					{% else %}
+						<div class="empty-state">
+							<div class="empty-icon">📁</div>
+							<h3>Aucun projet trouvé</h3>
+							<p>Vous n'avez pas encore de projets assignés.</p>
+							{% if is_granted('ROLE_DIRECTEUR') %}
+								<a href="{{ path('project_new') }}" class="btn btn-primary">
+									Créer un nouveau projet
+								</a>
+							{% endif %}
+						</div>
+					{% endfor %}
+				</div>
+			</main>
+		</div>
+	{% endblock %}

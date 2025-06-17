@@ -11,7 +11,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'app_admin')]
-    public function index(): Response
+    public function UserList(): Response
     {
         // Simuler des données utilisateurs pour l'affichage
         $users = [
