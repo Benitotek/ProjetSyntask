@@ -8,9 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Enum\TaskListColor;
 
-/**
- * @extends ServiceEntityRepository<TaskList>
- */
+
 class TaskListRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
