@@ -57,108 +57,15 @@ project_kanban:
     path: /project/{id}/kanban
     controller: App\Controller\ProjectController::kanban
     methods: [GET]
-    requirements:
-        id: '\d+'
 
-# Routes pour les tâches
-task_index:
-    path: /tasks
-    controller: App\Controller\TaskController::index
-    methods: [GET]
+    dashboard:
+        path: /dashboard
+        controller: App\Controller\DashboardController::index
 
-task_show:
-    path: /task/{id}
-    controller: App\Controller\TaskController::show
-    methods: [GET]
-    requirements:
-        id: '\d+'
+employe_dashboard:
+    path: /employe/dashboard
+    controller: App\Controller\DashboardController::employeDashboard
 
-task_new:
-    path: /task/new
-    controller: App\Controller\TaskController::new
-    methods: [GET, POST]
-
-task_edit:
-    path: /task/{id}/edit
-    controller: App\Controller\TaskController::edit
-    methods: [GET, POST]
-    requirements:
-        id: '\d+'
-
-task_delete:
-    path: /task/{id}/delete
-    controller: App\Controller\TaskController::delete
-    methods: [POST]
-    requirements:
-        id: '\d+'
-
-# Routes API pour le drag & drop Kanban
-api_task_move:
-    path: /api/task/{id}/move
-    controller: App\Controller\TaskController::moveTask
-    methods: [POST]
-    requirements:
-        id: '\d+'
-
-api_task_update_position:
-    path: /api/task/{id}/position
-    controller: App\Controller\TaskController::updatePosition
-    methods: [PATCH]
-    requirements:
-        id: '\d+'
-
-# Routes pour les TaskList (colonnes Kanban)
-tasklist_index:
-    path: /tasklists
-    controller: App\Controller\TaskListController::index
-    methods: [GET]
-
-tasklist_new:
-    path: /tasklist/new
-    controller: App\Controller\TaskListController::new
-    methods: [GET, POST]
-
-tasklist_edit:
-    path: /tasklist/{id}/edit
-    controller: App\Controller\TaskListController::edit
-    methods: [GET, POST]
-    requirements:
-        id: '\d+'
-
-tasklist_delete:
-    path: /tasklist/{id}/delete
-    controller: App\Controller\TaskListController::delete
-    methods: [POST]
-    requirements:
-        id: '\d+'
-
-# Routes API pour les colonnes Kanban
-api_tasklist_reorder:
-    path: /api/project/{projectId}/tasklists/reorder
-    controller: App\Controller\TaskListController::reorder
-    methods: [POST]
-    requirements:
-        projectId: '\d+'
-
-api_tasklist_update_color:
-    path: /api/tasklist/{id}/color
-    controller: App\Controller\TaskListController::updateColor
-    methods: [PATCH]
-    requirements:
-        id: '\d+'
-
-# Routes pour les utilisateurs
-user_profile:
-    path: /profile
-    controller: App\Controller\UserController::profile
-    methods: [GET]
-
-mon_profil:
-    path: /mon-profil
-    controller: App\Controller\UserController::monProfil
-    methods: [GET, POST]
-
-# Routes pour les statistiques
 statistiques:
     path: /statistiques
     controller: App\Controller\StatistiquesController::index
