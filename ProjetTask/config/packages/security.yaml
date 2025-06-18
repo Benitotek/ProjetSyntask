@@ -1,24 +1,33 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+
+    #  Partie ou on configure le hashages des password ou mdp; attention au nom utiliser
+
     password_hashers:
         App\Entity\User:
             algorithm: auto
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+
+    #   partie fournisseurs d'utilisateurs
+
     providers:
         # used to reload user from session & other features (e.g. switch_user)
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
+
+                # Firewall pour les outils de développement
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-
+        # Firewall principal
         main:
             lazy: true
             provider: app_user_provider
+            # partie ou je vais configurer le formulaire de connexion
             form_login:
                 login_path: app_login
                 check_path: app_login
@@ -27,15 +36,28 @@ security:
                 csrf_token_id: authenticate # ← Important : doit correspondre au template
                 username_parameter: email # ou 'username'
                 password_parameter: mdp # ou 'password'
+                default_target_path: /dashboard # Redirection après connexion
+                failure_path: app_login
+                use_referer: true # Retourne à la page précédente si possible
+            # Configuration de la déconnexion
             logout:
                 path: app_logout
                 target: app_login
+                invalidate_session: true
+                delete_cookies:
+                    REMEMBERME: { path: /, domain: ~ }
             # custom_authenticator: App\Security\LoginFormAuthenticator
             # entry_point: App\Security\LoginFormAuthenticator
+
+            # Fonction "Se souvenir de moi"
             remember_me:
                 secret: "%kernel.secret%"
-                lifetime: 604800
+                lifetime: 604800 # 1 semaine
                 path: /
+                name: REMEMBERME
+                httponly: true
+                secure: auto
+                samesite: lax
                 # by default, the feature is enabled by checking a checkbox in the
                 # login form, uncomment the following line to always enable it.
                 #always_remember_me: true
@@ -46,38 +68,63 @@ security:
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
+
+    # Hiérarchie des rôles
     role_hierarchy:
-        ROLE_CHEF_PROJET: ROLE_EMPLOYE
-        ROLE_DIRECTEUR: ROLE_CHEF_PROJET
+        ROLE_EMPLOYE: []
+        ROLE_CHEF_PROJET: [ROLE_EMPLOYE]
+        ROLE_DIRECTEUR: [ROLE_CHEF_PROJET]
         ROLE_ADMIN: [ROLE_DIRECTEUR, ROLE_ALLOWED_TO_SWITCH]
 
-    #     ROLE_USER: [ROLE_USER]
-    #     ROLE_ADMIN: [ROLE_ADMIN]
-    #     ROLE_DIRECTEUR: [ROLE_DIRECTEUR]
-    #     ROLE_CHEF_PROJET: [ROLE_CHEF_PROJET]
-    #     ROLE_EMPLOYE: [ROLE_EMPLOYE]
     # # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
+
+    # Contrôle d'accès
     access_control:
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/directeur, roles: [ROLE_ADMIN, ROLE_DIRECTEUR] }
-        - {
-              path: ^/chef-projet,
-              roles: [ROLE_ADMIN, ROLE_DIRECTEUR, ROLE_CHEF_PROJET],
-          }
-        - {
-              path: ^/employe,
-              roles:
-                  [ROLE_ADMIN, ROLE_DIRECTEUR, ROLE_CHEF_PROJET, ROLE_EMPLOYE],
-          }
-        - { path: ^/api, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/public, roles: PUBLIC_ACCESS }
+        # Pages publiques (ordre important !)
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
-        # - {path: ^/public, roles: IS_AUTHENTICATED_ANONYMOUSLY}
-        # - { path: ^/user,roles: ROLE_USER }
-        # - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/public, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS } # Page d'accueil
+
+        # API publique
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/public, roles: PUBLIC_ACCESS }
+
+        # Administration
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Dashboards spécifiques
+        - { path: ^/directeur, roles: ROLE_DIRECTEUR }
+        - { path: ^/chef-projet, roles: ROLE_CHEF_PROJET }
+        - { path: ^/employe, roles: ROLE_EMPLOYE }
+
+        # Routes des projets (accessibles selon les rôles)
+        - { path: ^/projects, roles: ROLE_EMPLOYE }
+        - { path: ^/mes-projets, roles: ROLE_EMPLOYE }
+        - { path: ^/project, roles: ROLE_EMPLOYE }
+
+        # Routes des tâches
+        - { path: ^/tasks, roles: ROLE_EMPLOYE }
+        - { path: ^/task, roles: ROLE_EMPLOYE }
+        - { path: ^/tasklist, roles: ROLE_CHEF_PROJET } # Seuls les chefs peuvent gérer les colonnes
+
+        # API authentifiée
+        - { path: ^/api, roles: ROLE_EMPLOYE }
+
+        # Profil utilisateur
+        - { path: ^/profile, roles: ROLE_EMPLOYE }
+        - { path: ^/mon-profil, roles: ROLE_EMPLOYE }
+
+        # Statistiques
+        - { path: ^/statistiques, roles: ROLE_CHEF_PROJET }
+
+        # Dashboard par défaut (accessible à tous les utilisateurs connectés)
+        - { path: ^/dashboard, roles: ROLE_EMPLOYE }
+
+        # Toutes les autres routes nécessitent une authentification
+        - { path: ^/, roles: ROLE_EMPLOYE }
+
 # This configuration is only used in the test environment to speed up password hashing.
 
 when@test:

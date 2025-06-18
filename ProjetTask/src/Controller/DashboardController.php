@@ -13,7 +13,7 @@ use App\Repository\UserRepository;
 
 final class DashboardController extends AbstractController
 {
-    #[Route('/', name: 'app_dashboard')]
+    #[Route('/dashboard', name: 'employe_dashboard', methods: ['GET'])]
     #[IsGranted("ROLE_EMPLOYE", message: "Accès réservé aux employés et administrateurs")]
     public function index(
         ProjectRepository $projectRepository,
@@ -68,7 +68,7 @@ final class DashboardController extends AbstractController
     }
 
     // Ajout des données nécessaires pour le template
-    #[Route('/employe/dashboard', name: 'employe_dashboard')]
+    #[Route('/employe/dashboard', name: 'employe_dashboard_employe', methods: ['GET'])]
     #[IsGranted('ROLE_EMPLOYE')]
     public function employeDashboard(
         ProjectRepository $projectRepository,

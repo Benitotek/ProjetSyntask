@@ -3,84 +3,86 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
-# Route pour le dashboard employé
-employe_dashboard:
-    path: /dashboard
-    controller: App\Controller\DashboardController::index
-    methods: [GET]
 
-# Route pour le dashboard directeur
-directeur_dashboard:
-    path: /directeur/dashboard
-    controller: App\Controller\DirecteurDashboardController::index
-    methods: [GET]
 
-# Routes pour les projets
-project_index:
-    path: /projects
-    controller: App\Controller\ProjectController::index
-    methods: [GET]
+# # Route pour le dashboard employé
+# employe_dashboard:
+#     path: /dashboard
+#     controller: App\Controller\DashboardController::index
+#     methods: [GET]
 
-mes_projets:
-    path: /mes-projets
-    controller: App\Controller\ProjectController::mesProjet
-    methods: [GET]
+# # Route pour le dashboard directeur
+# directeur_dashboard:
+#     path: /directeur/dashboard
+#     controller: App\Controller\DirecteurDashboardController::index
+#     methods: [GET]
 
-project_show:
-    path: /project/{id}
-    controller: App\Controller\ProjectController::show
-    methods: [GET]
-    requirements:
-        id: '\d+'
+# # Routes pour les projets
+# project_index:
+#     path: /projects
+#     controller: App\Controller\ProjectController::index
+#     methods: [GET]
 
-project_new:
-    path: /project/new
-    controller: App\Controller\ProjectController::new
-    methods: [GET, POST]
+# mes_projets:
+#     path: /mes-projets
+#     controller: App\Controller\ProjectController::mesProjet
+#     methods: [GET]
 
-project_edit:
-    path: /project/{id}/edit
-    controller: App\Controller\ProjectController::edit
-    methods: [GET, POST]
-    requirements:
-        id: '\d+'
+# project_show:
+#     path: /project/{id}
+#     controller: App\Controller\ProjectController::show
+#     methods: [GET]
+#     requirements:
+#         id: '\d+'
 
-project_delete:
-    path: /project/{id}/delete
-    controller: App\Controller\ProjectController::delete
-    methods: [POST]
-    requirements:
-        id: '\d+'
+# project_new:
+#     path: /project/new
+#     controller: App\Controller\ProjectController::new
+#     methods: [GET, POST]
 
-# CORRECTION : Route Kanban sans clé "dashboard"
-project_kanban:
-    path: /project/{id}/kanban
-    controller: App\Controller\ProjectController::kanban
-    methods: [GET]
+# project_edit:
+#     path: /project/{id}/edit
+#     controller: App\Controller\ProjectController::edit
+#     methods: [GET, POST]
+#     requirements:
+#         id: '\d+'
 
-    dashboard:
-        path: /dashboard
-        controller: App\Controller\DashboardController::index
+# project_delete:
+#     path: /project/{id}/delete
+#     controller: App\Controller\ProjectController::delete
+#     methods: [POST]
+#     requirements:
+#         id: '\d+'
 
-employe_dashboard_employe:
-    path: /employe/dashboard
-    controller: App\Controller\DashboardController::employeDashboard
+# # CORRECTION : Route Kanban sans clé "dashboard"
+# project_kanban:
+#     path: /project/{id}/kanban
+#     controller: App\Controller\ProjectController::kanban
+#     methods: [GET]
 
-statistiques:
-    path: /statistiques
-    controller: App\Controller\StatistiquesController::index
-    methods: [GET]
+#     dashboard:
+#         path: /dashboard
+#         controller: App\Controller\DashboardController::index
 
-# Route de déconnexion
-app_logout:
-    path: /logout
-    methods: [GET]
+# employe_dashboard_employe:
+#     path: /employe/dashboard
+#     controller: App\Controller\DashboardController::employeDashboard
 
-# Route racine
-app_home:
-    path: /
-    controller: App\Controller\HomeController::index
-    methods: [GET]
+# statistiques:
+#     path: /statistiques
+#     controller: App\Controller\StatistiquesController::index
+#     methods: [GET]
+
+# # Route de déconnexion
+# app_logout:
+#     path: /logout
+#     methods: [GET]
+
+# # Route racine
+# app_home:
+#     path: /
+#     controller: App\Controller\HomeController::index
+#     methods: [GET]
 
 # app_dashboard:
 #     path: /
