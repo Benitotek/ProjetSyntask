@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
-use App\Enum\TaskListColor as EnumTaskListColor;
+// use App\Enum\TaskListColor as EnumTaskListColor;
 
 #[ORM\Entity(repositoryClass: TaskListRepository::class)]
 class TaskList
@@ -21,11 +21,12 @@ class TaskList
     #[ORM\Column(length: 30)]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column]
-    private ?float $position = null;
+    // Position dans l'ordre des colonnes(changer le float pour un int)
+    #[ORM\Column(nullable: true)]
+    private ?int $position = null;
 
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $positionColumn = null;
@@ -37,8 +38,12 @@ class TaskList
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateTime = null;
 
-    #[ORM\Column(type: 'string', enumType: EnumTaskListColor::class, nullable: true)]
-    private ?EnumTaskListColor $couleur = null;
+    // Correction du mapping de l'enum
+    #[ORM\Column(type: 'string', length: 10, nullable: true)]
+    private ?string $couleur = null;
+
+    // #[ORM\Column(type: 'string', enumType: EnumTaskListColor::class, nullable: true)]
+    // private ?EnumTaskListColor $couleur = null;
     /**
      * @var Collection<int, Task>
      */
@@ -50,7 +55,7 @@ class TaskList
     {
         $this->tasks = new ArrayCollection();
         $this->dateTime = new \DateTime();
-        $this->couleur = TaskListColor::VERT; // Couleur par défaut
+        $this->couleur = TaskListColor::VERT->value; // Stocke la valeur string, pas l'enum
     }
 
     public function getId(): ?int
@@ -89,14 +94,12 @@ class TaskList
         return $this->position;
     }
 
-    public function setPosition(int $position): static
+    public function setPosition(?int $position): static
     {
         $this->position = $position;
 
         return $this;
     }
-
-    // ... other properties and methods ...
 
     public function getPositionColumn(): ?int
     {
@@ -118,17 +121,28 @@ class TaskList
         $this->dateTime = $dateTime;
         return $this;
     }
-
+    // Correction des méthodes pour l'enum
     public function getCouleur(): ?TaskListColor
     {
-        return $this->couleur;
+        return $this->couleur ? TaskListColor::tryFrom($this->couleur) : null;
     }
 
     public function setCouleur(?TaskListColor $couleur): static
     {
-        $this->couleur = $couleur;
+        $this->couleur = $couleur?->value;
         return $this;
     }
+
+    // public function getCouleur(): ?TaskListColor
+    // {
+    //     return $this->couleur;
+    // }
+
+    // public function setCouleur(?TaskListColor $couleur): static
+    // {
+    //     $this->couleur = $couleur;
+    //     return $this;
+    // }
 
     public function getProject(): ?Project
     {
@@ -176,7 +190,7 @@ class TaskList
     /**
      * Calcule automatiquement la couleur basée sur les retards des tâches
      */
-  
+
     public function calculateAutoColor(): TaskListColor
     {
         $tasks = $this->getTasks();
@@ -204,7 +218,8 @@ class TaskList
      */
     public function updateAutoColor(): void
     {
-        $this->couleur = $this->calculateAutoColor();
+        $this->setCouleur($this->calculateAutoColor());
+        // $this->couleur = $this->calculateAutoColor();
     }
 
     /**

@@ -22,10 +22,10 @@ class TaskListRepository extends ServiceEntityRepository
     public function createDefaultColumns(Project $project): void
     {
         $defaultColumns = [
-            ['nom' => 'À faire', 'couleur' => 'VERT'],
-            ['nom' => 'En cours', 'couleur' => 'JAUNE'],
-            ['nom' => 'En révision', 'couleur' => 'ORANGE'],
-            ['nom' => 'Terminé', 'couleur' => 'VERT']
+            ['nom' => 'À faire', 'couleur' => 'VERT', 'description' => 'Tâches à réaliser'],
+            ['nom' => 'En cours', 'couleur' => 'JAUNE', 'description' => 'Tâches en cours de réalisation'],
+            ['nom' => 'En révision', 'couleur' => 'ORANGE', 'description' => 'Tâches à vérifier'],
+            ['nom' => 'Terminé', 'couleur' => 'VERT', 'description' => 'Tâches complétées']
         ];
 
         $em = $this->getEntityManager();
@@ -36,7 +36,7 @@ class TaskListRepository extends ServiceEntityRepository
             $taskList->setPositionColumn($index + 1);
             $taskList->setProject($project);
 
-            $couleurEnum = TaskListColor::from($columnData['couleur']);
+            $couleurEnum = TaskListColor::tryfrom($columnData['couleur']);
             $taskList->setCouleur($couleurEnum);
 
             $em->persist($taskList);
@@ -218,45 +218,3 @@ class TaskListRepository extends ServiceEntityRepository
         return $mostDelayed;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
