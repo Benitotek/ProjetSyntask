@@ -1,0 +1,221 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Administrateur
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid mt-4">
+		<h1 class="mb-4">Dashboard Administrateur</h1>
+
+		<div
+			class="row">
+			<!-- Menu latéral -->
+			<div class="col-md-3 col-lg-2">
+				<div class="card mb-4">
+					<div class="card-header bg-dark text-white">
+						<i class="fas fa-user-shield me-2"></i>
+						Navigation Admin
+					</div>
+					<div class="list-group list-group-flush">
+						<a href="{{ path('app_home') }}" class="list-group-item list-group-item-action">
+							<i class="fas fa-tachometer-alt me-2"></i>
+							Dashboard Principal
+						</a>
+						{# <a href="{{ path('employe_dashboard') }}" class="list-group-item list-group-item-action">
+													<i class="fas fa-tachometer-alt me-2"></i> #}
+						Dashboard Principal
+					</a>
+					<a href="{{ path('app_directeur_dashboard') }}" class="list-group-item list-group-item-action">
+						<i class="fas fa-user-tie me-2"></i>
+						Dashboard Directeur
+					</a>
+					<a href="#" class="list-group-item list-group-item-action active">
+						<i class="fas fa-user-shield me-2"></i>
+						Dashboard Admin
+					</a>
+					<a href="{{ path('app_project_index') }}" class="list-group-item list-group-item-action">
+						<i class="fas fa-project-diagram me-2"></i>
+						Projets
+					</a>
+					{# statistiques? #}
+					<a href="{{ path('app_employe_dashboard') }}" class="list-group-item list-group-item-action">
+						<i class="fas fa-chart-bar me-2"></i>
+						Statistiques
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Contenu principal -->
+		<div class="col-md-9 col-lg-10">
+			<div
+				class="row">
+				<!-- Cartes statistiques -->
+				<div class="col-md-4 mb-4">
+					<div class="card border-left-primary shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+										Utilisateurs</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users|default(0) }}</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-users fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-4 mb-4">
+					<div class="card border-left-success shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+										Projets</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_projects|default(0) }}</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-project-diagram fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-4 mb-4">
+					<div class="card border-left-info shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+										Tâches</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_tasks|default(0) }}</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-tasks fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Gestionnaire d'utilisateurs -->
+			<div class="card shadow mb-4">
+				<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+					<h6 class="m-0 font-weight-bold text-primary">Gestion des utilisateurs</h6>
+					<a href="#" class="btn btn-sm btn-primary">
+						<i class="fas fa-user-plus fa-sm"></i>
+						Nouvel utilisateur
+					</a>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-bordered" width="100%" cellspacing="0">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Nom complet</th>
+									<th>Email</th>
+									<th>Rôle</th>
+									<th>Date inscription</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% if users is defined %}
+									{% for user in users %}
+										<tr>
+											<td>{{ user.id }}</td>
+											<td>{{ user.nom }}
+												{{ user.prenom }}</td>
+											<td>{{ user.email }}</td>
+											<td>
+												{% if 'ROLE_ADMIN' in user.roles %}
+													<span class="badge bg-danger">Admin</span>
+												{% elseif 'ROLE_DIRECTEUR' in user.roles %}
+													<span class="badge bg-warning">Directeur</span>
+												{% elseif 'ROLE_CHEF_PROJET' in user.roles %}
+													<span class="badge bg-info">Chef Projet</span>
+												{% else %}
+													<span class="badge bg-secondary">Employé</span>
+												{% endif %}
+											</td>
+											<td>{{ user.createdAt|date('d/m/Y') }}</td>
+											<td>
+												<a href="#" class="btn btn-sm btn-info">
+													<i class="fas fa-edit"></i>
+												</a>
+												<a href="#" class="btn btn-sm btn-danger">
+													<i class="fas fa-trash"></i>
+												</a>
+											</td>
+										</tr>
+									{% endfor %}
+								{% else %}
+									<tr>
+										<td colspan="6" class="text-center">Aucun utilisateur trouvé</td>
+									</tr>
+								{% endif %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<!-- Configuration système -->
+			<div class="card shadow mb-4">
+				<div class="card-header py-3">
+					<h6 class="m-0 font-weight-bold text-primary">Configuration système</h6>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Nom de l'application</label>
+								<input type="text" class="form-control" value="ProjetTask" disabled>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Version</label>
+								<input type="text" class="form-control" value="1.0.0" disabled>
+							</div>
+						</div>
+					</div>
+					<div class="row mt-3">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Mode maintenance</label>
+								<select class="form-control">
+									<option selected>Désactivé</option>
+									<option>Activé</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label>Niveaux de journalisation</label>
+								<select class="form-control">
+									<option>Erreur uniquement</option>
+									<option selected>Erreur et avertissement</option>
+									<option>Tout</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="row mt-3">
+						<div class="col-12 text-right">
+							<button type="button" class="btn btn-primary">
+								Sauvegarder les paramètres
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>{% endblock %}

@@ -13,11 +13,13 @@ use App\Entity\Project;
 use App\Entity\TaskList;
 use App\Form\TaskListTypeForm;
 
-#[Route('/column')]
+
+#[Route('/task_list')]
+// #[Route('/column')]
 #[IsGranted('ROLE_USER')]
 class TaskListController extends AbstractController
 {
-    #[Route('/{id}', name: 'tasklist_show', methods: ['GET'])]
+    #[Route('task_list/{id}', name: 'app_tasklist_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function show(TaskList $taskList): Response
     {
@@ -30,7 +32,7 @@ class TaskListController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/tasks', name: 'tasklist_tasks', methods: ['GET'])]
+    #[Route('task_list/{id}/tasks', name: 'app_tasklist_tasks', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function tasks(TaskList $taskList): Response
     {
@@ -43,7 +45,7 @@ class TaskListController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'column_new', methods: ['GET', 'POST'])]
+    #[Route('task_list/new', name: 'app_column_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CHEF_PROJET')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -89,7 +91,7 @@ class TaskListController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'column_edit', methods: ['GET', 'POST'])]
+    #[Route('task_list/{id}/edit', name: 'app_column_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CHEF_PROJET')]
     public function edit(Request $request, TaskList $taskList, EntityManagerInterface $entityManager): Response
     {
@@ -114,7 +116,7 @@ class TaskListController extends AbstractController
             'form' => $form,
         ]);
     }
-    #[Route('/{id}', name: 'app_task_list_delete', methods: ['DELETE'])]
+    #[Route('task_list/{id}', name: 'app_task_list_delete', methods: ['DELETE'])]
     #[IsGranted('ROLE_CHEF_DE_PROJET')]
     public function delete(TaskList $taskList, EntityManagerInterface $entityManager): JsonResponse
     {

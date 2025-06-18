@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_EMPLOYE')]
 class ProjectController extends AbstractController
 {
-    #[Route('/projects', name: 'project_index', methods: ['GET'])]
+    #[Route('/projects', name: 'app_project_index', methods: ['GET'])]
     public function index(Request $request, ProjectRepository $projectRepository): Response
     {
         $user = $this->getUser();
@@ -49,7 +49,7 @@ class ProjectController extends AbstractController
         ]);
     }
 
-    #[Route('project/newproject', name: 'project_new', methods: ['GET', 'POST'])]
+    #[Route('project/newproject', name: 'app_project_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_DIRECTEUR')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -82,7 +82,7 @@ class ProjectController extends AbstractController
         ]);
     }
 
-    #[Route('/project/{id}', name: 'project_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/project/{id}', name: 'app_project_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Project $project): Response
     {
         /** @var User|null $user */
@@ -95,13 +95,13 @@ class ProjectController extends AbstractController
         ) {
             throw $this->createAccessDeniedException();
         }
-    
+
         return $this->render('project/show.html.twig', [
             'project' => $project,
         ]);
     }
 
-    #[Route('/project/{id}/save', name: 'project_save', methods: ['POST'])]
+    #[Route('/project/{id}/save', name: 'app_project_save', methods: ['POST'])]
     public function save(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         // Logique de sauvegarde du projet
@@ -125,13 +125,13 @@ class ProjectController extends AbstractController
         return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
     }
 
-    #[Route('/project/{id}/update', name: 'project_update', methods: ['POST'])]
+    #[Route('/project/{id}/update', name: 'app_project_update', methods: ['POST'])]
     public function update(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         return $this->save($request, $project, $entityManager);
     }
 
-     #[Route('/mes-projets', name: 'mes_projets', methods: ['GET'])]
+    #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
     public function mesProjets(ProjectRepository $projectRepository): Response
     {
         $user = $this->getUser();
@@ -146,10 +146,10 @@ class ProjectController extends AbstractController
             'projects' => $projects,
         ]);
     }
-     /**
+    /**
      * Vue Kanban d'un projet
      */
-    #[Route('/project/{id}/kanban', name: 'project_kanban', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/project/{id}/kanban', name: 'app_project_kanban', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function kanban(
         Project $project,
         TaskListRepository $taskListRepository
