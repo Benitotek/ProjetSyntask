@@ -32,8 +32,8 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
-                csrf_parameter: _token
-                csrf_token_id: authenticate # ← Important : doit correspondre au template
+                csrf_parameter: _token # ← Nom du paramètre dans le formulaire faire attention à ce nom dans le template
+                csrf_token_id: authenticate # ← Important : doit correspondre au template # ← ID du token (utilisé dans csrf_token('authenticate')
                 username_parameter: email # ou 'username'
                 password_parameter: mdp # ou 'password'
                 default_target_path: /dashboard # Redirection après connexion
