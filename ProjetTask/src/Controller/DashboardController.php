@@ -70,7 +70,7 @@ final class DashboardController extends AbstractController
     // Ajout des données nécessaires pour le template
     // #[Route('/employe/dashboard', name: 'app_employe_dashboard_employe', methods: ['GET'])]
     // #[IsGranted('ROLE_EMPLOYE')]
-     #[Route('/dashboard', name: 'app_dashboard')]
+    #[Route('/dashboard', name: 'app_dashboard')]
     public function userverifindex(): Response
     {
         // Vérifier que l'utilisateur est connecté
@@ -78,12 +78,12 @@ final class DashboardController extends AbstractController
 
         // Récupérer l'utilisateur connecté
         $user = $this->getUser();
-        
+
         return $this->render('dashboard/index.html.twig', [
             'user' => $user,
         ]);
     }
-    
+
     /**
      * Route spécifique pour le dashboard employé
      * Cette route est ajoutée explicitement pour résoudre les erreurs
@@ -94,7 +94,7 @@ final class DashboardController extends AbstractController
     {
         // Protection de la route
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        
+
         // Rediriger vers le dashboard principal
         return $this->redirectToRoute('dashboard');
     }
@@ -174,13 +174,23 @@ final class DashboardController extends AbstractController
             'percent_pending' => $percentPending,
         ];
 
+        // Assign current user and initialize missing variables if needed
+        $currentUser = $this->getUser();
+        $projectSummary = null; // Replace with actual summary data if available
+        $managersPerformance = null; // Replace with actual data if available
+        $criticalProjectsList = null; // Replace with actual data if available
+
         return $this->render('dashboard/directeur_dashboard.html.twig', [
             'stats' => $stats,
             'projects' => $projects,
+            'user' => $currentUser,
+            'summary' => $projectSummary,
+            'project_managers' => $managersPerformance,
+            'critical_projects' => $criticalProjectsList
         ]);
     }
 
-    #[Route('/chef-de-projet/dashboard', name: 'app_chef_de_projet_dashboard')]
+    #[Route('/chef-de-projet/dashboard', name: 'app_Chef_Projects_dashboard')]
     #[IsGranted('ROLE_CHEF_DE_PROJET')]
     public function chefDeProjetDashboard(): Response
     {
