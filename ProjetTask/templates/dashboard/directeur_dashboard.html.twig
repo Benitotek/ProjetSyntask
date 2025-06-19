@@ -2,7 +2,10 @@
 
 {% block title %}Dashboard Directeur - SYNTASK
 {% endblock %}
-
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('CSS/directeur.css') }}">
+{% endblock %}
 {% block body %}
 	 <!-- Header avec logo -->
     <header class="app-header">
