@@ -46,6 +46,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
+    #[Assert\NotBlank(message: "Le statut est obligatoire")]
+
     #[ORM\Column(type: Types::STRING, length: 20, enumType: null)]
     #[Assert\Choice(choices: [self::STATUT_ACTIF, self::STATUT_INACTIF, self::STATUT_EN_CONGE, self::STATUT_ABSENT])]
     private ?string $statut = self::STATUT_ACTIF;
