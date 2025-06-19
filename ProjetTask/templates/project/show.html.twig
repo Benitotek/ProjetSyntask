@@ -34,25 +34,25 @@
         <nav class="sidebar-nav">
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="{{ path('employe_dashboard') }}" class="nav-link">
+                    <a href="{{ path('app_employe_dashboard') }}" class="nav-link">
                         <i class="icon-dashboard"></i>
                         Tableau de bord
                     </a>
                 </li>
                 <li class="nav-item active">
-                    <a href="{{ path('mes_projets') }}" class="nav-link">
+                    <a href="{{ path('app_mes_projets') }}" class="nav-link">
                         <i class="icon-projects"></i>
                         Mes projets
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ path('statistiques') }}" class="nav-link">
+                    <a href="{{ path('app_statistiques') }}" class="nav-link">
                         <i class="icon-stats"></i>
                         Statistiques
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ path('mon_profil') }}" class="nav-link">
+                    <a href="{{ path('app_mon_profil') }}" class="nav-link">
                         <i class="icon-profile"></i>
                         Mon profil
                     </a>
@@ -74,7 +74,7 @@
         <div class="content-header">
             <div class="header-main">
                 <div class="breadcrumb">
-                    <a href="{{ path('mes_projets') }}">Mes Projets</a>
+                    <a href="{{ path('app_mes_projets') }}">Mes Projets</a>
                     <span class="separator">></span>
                     <span>{{ project.nom }}</span>
                 </div>
@@ -85,12 +85,12 @@
             </div>
             
             <div class="header-actions">
-                <a href="{{ path('project_kanban', {'id': project.id}) }}" class="btn btn-primary">
+                <a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn btn-primary">
                     <i class="icon-kanban"></i>
                     Vue Kanban
                 </a>
                 {% if is_granted('ROLE_DIRECTEUR') or project.chefDeProjet == app.user %}
-                    <a href="{{ path('project_edit', {'id': project.id}) }}" class="btn btn-secondary">
+                    <a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn btn-secondary">
                         <i class="icon-edit"></i>
                         Modifier
                     </a>
@@ -273,7 +273,7 @@
                 <div class="sidebar-card">
                     <h3 class="card-title">Actions rapides</h3>
                     <div class="quick-actions">
-                        <a href="{{ path('project_kanban', {'id': project.id}) }}" class="quick-action">
+                        <a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="quick-action">
                             <i class="icon-kanban"></i>
                             <span>Vue Kanban</span>
                         </a>

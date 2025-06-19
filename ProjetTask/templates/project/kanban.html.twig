@@ -32,13 +32,13 @@
 			<nav class="sidebar-nav">
 				<ul class="nav-menu">
 					<li class="nav-item">
-						<a href="{{ path('employe_dashboard') }}" class="nav-link">
+						<a href="{{ path('app_employe_dashboard') }}" class="nav-link">
 							<i class="icon-dashboard"></i>
 							<span class="nav-text">Tableau de bord</span>
 						</a>
 					</li>
 					<li class="nav-item active">
-						<a href="{{ path('mes_projets') }}" class="nav-link">
+						<a href="{{ path('app_mes_projets') }}" class="nav-link">
 							<i class="icon-projects"></i>
 							<span class="nav-text">Mes projets</span>
 						</a>
@@ -80,7 +80,7 @@
 						<i class="icon-plus"></i>
 						Nouvelle tâche
 					</button>
-					<a href="{{ path('project_show', {'id': project.id}) }}" class="btn btn-outline btn-sm">
+					<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-outline btn-sm">
 						<i class="icon-settings"></i>
 						Paramètres
 					</a>

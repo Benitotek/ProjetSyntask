@@ -68,8 +68,36 @@ final class DashboardController extends AbstractController
     }
 
     // Ajout des données nécessaires pour le template
-    #[Route('/employe/dashboard', name: 'app_employe_dashboard_employe', methods: ['GET'])]
-    #[IsGranted('ROLE_EMPLOYE')]
+    // #[Route('/employe/dashboard', name: 'app_employe_dashboard_employe', methods: ['GET'])]
+    // #[IsGranted('ROLE_EMPLOYE')]
+     #[Route('/dashboard', name: 'app_dashboard')]
+    public function userverifindex(): Response
+    {
+        // Vérifier que l'utilisateur est connecté
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        // Récupérer l'utilisateur connecté
+        $user = $this->getUser();
+        
+        return $this->render('dashboard/index.html.twig', [
+            'user' => $user,
+        ]);
+    }
+    
+    /**
+     * Route spécifique pour le dashboard employé
+     * Cette route est ajoutée explicitement pour résoudre les erreurs
+     * et maintenir la compatibilité avec les liens existants
+     */
+    #[Route('task/employe/dashboard', name: 'app_employe_dashboard')]
+    public function taskemployeDashboard(): Response
+    {
+        // Protection de la route
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        
+        // Rediriger vers le dashboard principal
+        return $this->redirectToRoute('dashboard');
+    }
     public function employeDashboard(
         ProjectRepository $projectRepository,
         UserRepository $userRepository

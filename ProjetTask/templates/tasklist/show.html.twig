@@ -90,7 +90,7 @@
 					<a href="{{ path('project_index') }}">Projets</a>
 				</li>
 				<li class="breadcrumb-item">
-					<a href="{{ path('project_kanban', {id: project.id}) }}">{{ project.name }}</a>
+					<a href="{{ path('app_project_kanban', {id: project.id}) }}">{{ project.name }}</a>
 				</li>
 				<li class="breadcrumb-item active">{{ taskList.name }}</li>
 			</ol>
@@ -136,7 +136,7 @@
 							<div class="task-card" data-task-id="{{ task.id }}">
 								<div class="d-flex justify-content-between align-items-start mb-2">
 									<h5 class="mb-1">
-										<a href="{{ path('task_show', {id: task.id}) }}" class="text-decoration-none">
+										<a href="{{ path('app_task_show', {id: task.id}) }}" class="text-decoration-none">
 											{{ task.title }}
 										</a>
 									</h5>
@@ -218,7 +218,7 @@
 						<dl class="row">
 							<dt class="col-sm-4">Projet :</dt>
 							<dd class="col-sm-8">
-								<a href="{{ path('project_show', {id: project.id}) }}">{{ project.name }}</a>
+								<a href="{{ path('app_project_show', {id: project.id}) }}">{{ project.name }}</a>
 							</dd>
 
 							<dt class="col-sm-4">Position :</dt>
@@ -232,7 +232,7 @@
 								<dd class="col-sm-8">
 									{% for otherTaskList in project.taskLists %}
 										{% if otherTaskList.id != taskList.id %}
-											<a href="{{ path('tasklist_show', {id: otherTaskList.id}) }}" class="badge bg-secondary text-decoration-none me-1">
+											<a href="{{ path('app_tasklist_show', {id: otherTaskList.id}) }}" class="badge bg-secondary text-decoration-none me-1">
 												{{ otherTaskList.name }}
 											</a>
 										{% endif %}
@@ -286,7 +286,7 @@
 					<h5 class="modal-title">Modifier la colonne</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
-				<form id="editColumnForm" action="{{ path('column_edit', {id: taskList.id}) }}" method="post">
+				<form id="editColumnForm" action="{{ path('app_column_edit', {id: taskList.id}) }}" method="post">
 					<div class="modal-body">
 						<div class="mb-3">
 							<label for="column-name" class="form-label">Nom de la colonne</label>
@@ -349,7 +349,7 @@ new bootstrap.Modal(document.getElementById('deleteColumnModal')).show();
 
 // Ajouter une tâche
 function addTask() { // Rediriger vers la création de tâche avec la TaskList pré-sélectionnée
-window.location.href = '{{ path("task_new") }}?task_list= {{ taskList.id }}';
+window.location.href = '{{ path("app_task_new") }}?task_list= {{ taskList.id }}';
 }
 
 // Gérer l'édition de colonne
@@ -390,7 +390,7 @@ headers: {
 }
 }).then(response => response.json()).then(data => {
 if (data.success) { // Rediriger vers le kanban du projet
-window.location.href = '{{ path("project_kanban", {id: project.id}) }}';
+window.location.href = '{{ path("app_project_kanban", {id: project.id}) }}';
 } else {
 alert('Erreur lors de la suppression');
 }

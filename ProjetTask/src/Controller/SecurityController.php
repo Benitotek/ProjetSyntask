@@ -8,14 +8,20 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class SecurityController extends AbstractController
-{
+{/**
+     * @Route("/login", name="app_login")
+     */
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        // Si l'utilisateur est déjà connecté, NE PAS rediriger automatiquement
+        // Cette redirection peut causer des problèmes
+        // Laissez l'utilisateur décider s'il veut naviguer ailleurs
+
         // Rediriger si déjà connecté
-        if ($this->getUser()) {
-            return $this->redirectToRoute('employe_dashboard');
-        }
+        // if ($this->getUser()) {
+        //     return $this->redirectToRoute('app_home');
+        // }
         // Récupérer les erreurs de connexion
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
@@ -29,7 +35,8 @@ final class SecurityController extends AbstractController
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void
     {
-        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+        // pas mettre d'exeption ici, Symfony gère la déconnexion
+        // throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
     #[Route(path: '/register', name: 'app_register')]
     public function register(): Response

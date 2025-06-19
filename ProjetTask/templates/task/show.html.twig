@@ -53,13 +53,13 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('task_index') }}">Tâches</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_task_index') }}">Tâches</a></li>
             {% if task.taskList %}
                 <li class="breadcrumb-item">
-                    <a href="{{ path('project_kanban', {id: task.taskList.project.id}) }}">{{ task.taskList.project.name }}</a>
+                    <a href="{{ path('app_project_kanban', {id: task.taskList.project.id}) }}">{{ task.taskList.project.name }}</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{{ path('tasklist_show', {id: task.taskList.id}) }}">{{ task.taskList.name }}</a>
+                    <a href="{{ path('app_tasklist_show', {id: task.taskList.id}) }}">{{ task.taskList.name }}</a>
                 </li>
             {% endif %}
             <li class="breadcrumb-item active">{{ task.title }}</li>
@@ -94,7 +94,7 @@
             <!-- Actions -->
             <div class="action-buttons">
                 {% if is_granted('TASK_EDIT', task) %}
-                    <a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-light">
+                    <a href="{{ path('app_task_edit', {id: task.id}) }}" class="btn btn-light">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
                 {% endif %}
@@ -218,7 +218,7 @@
                         <div class="mb-3">
                             <div class="info-label">Projet</div>
                             <div class="info-value">
-                                <a href="{{ path('project_show', {id: task.taskList.project.id}) }}">
+                                <a href="{{ path('app_project_show', {id: task.taskList.project.id}) }}">
                                     {{ task.taskList.project.name }}
                                 </a>
                             </div>
@@ -227,14 +227,14 @@
                         <div class="mb-3">
                             <div class="info-label">Colonne</div>
                             <div class="info-value">
-                                <a href="{{ path('tasklist_show', {id: task.taskList.id}) }}">
+                                <a href="{{ path('app_tasklist_show', {id: task.taskList.id}) }}">
                                     {{ task.taskList.name }}
                                 </a>
                             </div>
                         </div>
                         
                         <div class="d-grid">
-                            <a href="{{ path('project_kanban', {id: task.taskList.project.id}) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ path('app_project_kanban', {id: task.taskList.project.id}) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-columns"></i> Voir le Kanban
                             </a>
                         </div>

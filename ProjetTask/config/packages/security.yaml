@@ -41,11 +41,16 @@ security:
                 use_referer: true # Retourne à la page précédente si possible
             # Configuration de la déconnexion
             logout:
-                path: app_logout
-                target: app_login
-                invalidate_session: true
+                path: app_logout # Route utilisée pour se déconnecter
+                target: app_login # Redirection après déconnexion
+                invalidate_session: true # Invalider la session après déconnexion
                 delete_cookies:
-                    REMEMBERME: { path: /, domain: ~ }
+                    PHPSESSID: ~ # Supprimer le cookie de session
+                    REMEMBERME: ~ # Supprimer le cookie "Se souvenir de moi"
+                # Note: Symfony gère la déconnexion automatiquement, pas besoin de logique ici
+                # Enable CSRF protection for logout
+                enable_csrf: true  
+              
             # custom_authenticator: App\Security\LoginFormAuthenticator
             # entry_point: App\Security\LoginFormAuthenticator
 

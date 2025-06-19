@@ -5,7 +5,7 @@
 
 {% block stylesheets %}
 	{{ parent() }}
-	<link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+	<link rel="stylesheet" href="{{ asset('CSS/project-management.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -36,25 +36,25 @@
 				<nav class="sidebar-nav">
 					<ul class="nav-menu">
 						<li class="nav-item">
-							<a href="{{ path('employe_dashboard') }}" class="nav-link">
+							<a href="{{ path('app_employe_dashboard') }}" class="nav-link">
 								<i class="icon-dashboard"></i>
 								Tableau de bord
 							</a>
 						</li>
 						<li class="nav-item active">
-							<a href="{{ path('mes_projets') }}" class="nav-link">
+							<a href="{{ path('app_mes_projets') }}" class="nav-link">
 								<i class="icon-projects"></i>
 								Mes projets
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ path('statistiques') }}" class="nav-link">
+							<a href="{{ path('app_statistiques') }}" class="nav-link">
 								<i class="icon-stats"></i>
 								Statistiques
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ path('mon_profil') }}" class="nav-link">
+							<a href="{{ path('app_mon_profil') }}" class="nav-link">
 								<i class="icon-profile"></i>
 								Mon profil
 							</a>
@@ -76,7 +76,7 @@
 					<h1 class="page-title">Mes Projets</h1>
 					<div class="header-actions">
 						{% if is_granted('ROLE_DIRECTEUR') %}
-							<a href="{{ path('project_new') }}" class="btn btn-primary">
+							<a href="{{ path('app_project_new') }}" class="btn btn-primary">
 								<i class="icon-plus"></i>
 								Nouveau Projet
 							</a>
@@ -87,16 +87,16 @@
 				<!-- Filtres -->
 				<div class="filters-section">
 					<div class="filter-tabs">
-						<a href="{{ path('mes_projets') }}" class="filter-tab {% if current_status is not defined %}active{% endif %}">
+						<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_status is not defined %}active{% endif %}">
 							Tous
 						</a>
-						<a href="{{ path('mes_projets', {'status': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_status == 'EN-ATTENTE' %}active{% endif %}">
+						<a href="{{ path('app_mes_projets', {'status': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_status == 'EN-ATTENTE' %}active{% endif %}">
 							En attente
 						</a>
-						<a href="{{ path('mes_projets', {'status': 'EN-COURS'}) }}" class="filter-tab {% if current_status == 'EN-COURS' %}active{% endif %}">
+						<a href="{{ path('app_mes_projets', {'status': 'EN-COURS'}) }}" class="filter-tab {% if current_status == 'EN-COURS' %}active{% endif %}">
 							En cours
 						</a>
-						<a href="{{ path('mes_projets', {'status': 'TERMINE'}) }}" class="filter-tab {% if current_status == 'TERMINE' %}active{% endif %}">
+						<a href="{{ path('app_mes_projets', {'status': 'TERMINE'}) }}" class="filter-tab {% if current_status == 'TERMINE' %}active{% endif %}">
 							Terminés
 						</a>
 					</div>
@@ -172,11 +172,11 @@
 							</div>
 
 							<div class="project-actions">
-								<a href="{{ path('project_kanban', {'id': project.id}) }}" class="btn btn-primary btn-sm">
+								<a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn btn-primary btn-sm">
 									<i class="icon-kanban"></i>
 									Kanban
 								</a>
-								<a href="{{ path('project_show', {'id': project.id}) }}" class="btn btn-secondary btn-sm">
+								<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-secondary btn-sm">
 									<i class="icon-eye"></i>
 									Détails
 								</a>
@@ -188,7 +188,7 @@
 							<h3>Aucun projet trouvé</h3>
 							<p>Vous n'avez pas encore de projets assignés.</p>
 							{% if is_granted('ROLE_DIRECTEUR') %}
-								<a href="{{ path('project_new') }}" class="btn btn-primary">
+								<a href="{{ path('app_project_new') }}" class="btn btn-primary">
 									Créer un nouveau projet
 								</a>
 							{% endif %}

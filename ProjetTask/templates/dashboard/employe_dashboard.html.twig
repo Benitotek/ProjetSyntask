@@ -40,13 +40,13 @@
 				<nav class="sidebar-nav">
 					<ul class="nav-menu">
 						<li class="nav-item">
-							<a href="{{ path('dashboard') }}" class="nav-link">
+							<a href="{{ path('app_dashboard') }}" class="nav-link">
 								<i class="icon-dashboard"></i>
 								Tableau de bord
 							</a>
 						</li>
 						<li class="nav-item active">
-							<a href="{{ path('projects') }}" class="nav-link">
+							<a href="{{ path('app_projects') }}" class="nav-link">
 								<i class="icon-projects"></i>
 								Mes projets
 							</a>
@@ -58,7 +58,7 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ path('profile') }}" class="nav-link">
+							<a href="{{ path('app_profile') }}" class="nav-link">
 								<i class="icon-profile"></i>
 								Mon profil
 							</a>
@@ -82,7 +82,7 @@
 				</div>
 
 				<div class="project-detail-card">
-					<form method="post" action="{{ path('project_save', {'id': project.id|default(0)}) }}">
+					<form method="post" action="{{ path('app_project_save', {'id': project.id|default(0)}) }}">
 						<div class="form-group">
 							<label for="project_name">nom du projet</label>
 							<input type="text" id="project_name" name="project[name]" value="{{ project.name|default('') }}" class="form-input">
@@ -142,7 +142,7 @@
 
 						<div class="form-actions">
 							<button type="submit" class="btn btn-primary">Sauvegarder</button>
-							<a href="{{ path('projects') }}" class="btn btn-secondary">Annuler</a>
+							<a href="{{ path('app_projects') }}" class="btn btn-secondary">Annuler</a>
 						</div>
 
 						<input type="hidden" name="_token" value="{{ csrf_token('project') }}">

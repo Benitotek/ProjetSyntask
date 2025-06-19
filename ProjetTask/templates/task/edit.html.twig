@@ -6,8 +6,8 @@
 <div class="container">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('task_index') }}">Tâches</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('task_show', {id: task.id}) }}">{{ task.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_task_index') }}">Tâches</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_task_show', {id: task.id}) }}">{{ task.title }}</a></li>
             <li class="breadcrumb-item active">Modification</li>
         </ol>
     </nav>
@@ -79,7 +79,7 @@
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-secondary">
+                        <a href="{{ path('app_task_show', {id: task.id}) }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Retour
                         </a>
                         
@@ -117,7 +117,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form method="post" action="{{ path('task_delete', {id: task.id}) }}" style="display: inline;">
+                <form method="post" action="{{ path('app_task_delete', {id: task.id}) }}" style="display: inline;">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
                     <button type="submit" class="btn btn-danger">
                         <i class="fas fa-trash"></i> Supprimer

@@ -15,7 +15,7 @@
 			</div>
 
 			{% if is_granted('ROLE_USER') %}
-				<a href="{{ path('task_new') }}?task_list={{ taskList.id }}" class="btn btn-primary">
+				<a href="{{ path('app_task_new') }}?task_list={{ taskList.id }}" class="btn btn-primary">
 					<i class="fas fa-plus"></i>
 					Nouvelle tâche
 				</a>
@@ -40,7 +40,7 @@
 						{% for task in tasks %}
 							<tr>
 								<td>
-									<a href="{{ path('task_show', {id: task.id}) }}">{{ task.title }}</a>
+									<a href="{{ path('app_task_show', {id: task.id}) }}">{{ task.title }}</a>
 								</td>
 								<td>{{ task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description }}</td>
 								<td>{{ task.assignedUser ? task.assignedUser.email : 'Non assigné' }}</td>
@@ -56,11 +56,11 @@
 								</td>
 								<td>{{ task.dueDate ? task.dueDate|date('d/m/Y') : '-' }}</td>
 								<td>
-									<a href="{{ path('task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-primary">
+									<a href="{{ path('app_task_show', {id: task.id}) }}" class="btn btn-sm btn-outline-primary">
 										<i class="fas fa-eye"></i>
 									</a>
 									{% if is_granted('TASK_EDIT', task) %}
-										<a href="{{ path('task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning">
+										<a href="{{ path('app_task_edit', {id: task.id}) }}" class="btn btn-sm btn-outline-warning">
 											<i class="fas fa-edit"></i>
 										</a>
 									{% endif %}
@@ -75,7 +75,7 @@
 				<i class="fas fa-info-circle"></i>
 				Aucune tâche dans cette colonne.
 				{% if is_granted('ROLE_USER') %}
-					<a href="{{ path('task_new') }}?task_list={{ taskList.id }}" class="btn btn-primary ms-2">
+					<a href="{{ path('app_task_new') }}?task_list={{ taskList.id }}" class="btn btn-primary ms-2">
 						Créer la première tâche
 					</a>
 				{% endif %}
