@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250618082653 extends AbstractMigration
+final class Version20250620091001 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,7 +21,7 @@ final class Version20250618082653 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE task_list ADD couleur VARCHAR(10) DEFAULT NULL, CHANGE description description VARCHAR(255) DEFAULT NULL, CHANGE position position INT DEFAULT NULL
+            ALTER TABLE task_list CHANGE description description VARCHAR(255) DEFAULT NULL, CHANGE position position INT DEFAULT NULL, CHANGE couleur couleur VARCHAR(10) DEFAULT NULL
         SQL);
     }
 
@@ -29,7 +29,7 @@ final class Version20250618082653 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE task_list DROP couleur, CHANGE description description VARCHAR(255) NOT NULL, CHANGE position position DOUBLE PRECISION NOT NULL
+            ALTER TABLE task_list CHANGE description description VARCHAR(255) NOT NULL, CHANGE position position DOUBLE PRECISION NOT NULL, CHANGE couleur couleur VARCHAR(255) DEFAULT NULL
         SQL);
     }
 }

@@ -1,4 +1,4 @@
-* {
+/* * {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -42,7 +42,7 @@ body {
 	object-fit: contain;
 	border-radius: 3px;
 	/* si vous voulez garder le même style que le carré précédent */
-}
+/* } */
 
 /* .logo::before {
 			content: '';
@@ -52,7 +52,7 @@ body {
 			clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 		} */
 
-.brand-name {
+/* .brand-name {
 	font-size: 24px;
 	font-weight: bold;
 	color: #333;
@@ -213,4 +213,84 @@ body {
 	.login-title {
 		font-size: 28px;
 	}
+} */ */
+ body {
+    background: linear-gradient(to bottom right, #00c6ff, #0072ff);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+/* Centrage et apparence de la carte */
+.card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+}
+
+/* En-tête de carte */
+.card-header {
+    background-color: #343a40;
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Corps du formulaire */
+.card-body {
+    padding: 2rem;
+}
+
+/* Pied de carte */
+.card-footer {
+    background-color: transparent;
+    border-top: none;
+}
+
+/* Champs de formulaire */
+.form-control {
+    border-radius: 6px;
+    padding: 10px;
+}
+
+/* Bouton de connexion */
+.btn-primary {
+    background-color: #343a40;
+    border: none;
+    padding: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #212529;
+}
+
+/* Bouton "Retour" */
+.btn-outline-secondary {
+    border-radius: 6px;
+}
+
+/* Lien d'inscription */
+.card-footer a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.card-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Messages d'alerte */
+.alert {
+    border-radius: 6px;
 }
