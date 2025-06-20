@@ -1,4 +1,4 @@
-/* * {
+* {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -42,9 +42,10 @@ body {
 	object-fit: contain;
 	border-radius: 3px;
 	/* si vous voulez garder le même style que le carré précédent */
-/* } */
+	/* background: linear-gradient(45deg, #fff 0%, #ddd 100%); */
+	/* clip-path: polygon(50% 0%, 0% 100%, 100% 100%); */}
 
-/* .logo::before {
+.logo::before {
 			content: '';
 			width: 20px;
 			height: 20px;
@@ -213,7 +214,10 @@ body {
 	.login-title {
 		font-size: 28px;
 	}
-} */ */
+
+} 
+/* Login Page Styles */
+  
  body {
     background: linear-gradient(to bottom right, #00c6ff, #0072ff);
     min-height: 100vh;
