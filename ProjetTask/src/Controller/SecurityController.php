@@ -6,31 +6,42 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\HttpFoundation\Request;
 
 final class SecurityController extends AbstractController
-{/**
-     * @Route("/login", name="app_login")
-     */
+{
     #[Route(path: '/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
-        // Si l'utilisateur est déjà connecté, NE PAS rediriger automatiquement
-        // Cette redirection peut causer des problèmes
-        // Laissez l'utilisateur décider s'il veut naviguer ailleurs
-
-        // Rediriger si déjà connecté
-        // if ($this->getUser()) {
-        //     return $this->redirectToRoute('app_home');
-        // }
-        // Récupérer les erreurs de connexion
         $error = $authenticationUtils->getLastAuthenticationError();
-        $lastUsername = $authenticationUtils->getLastUsername();
+        $lastUsername = $authenticationUtils->getLastUsername() ?? '';
 
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'referer' => $request->headers->get('referer')
         ]);
     }
+    // public function login(\Symfony\Component\HttpFoundation\Request $request, AuthenticationUtils $authenticationUtils): Response
+    // {
+    // Si l'utilisateur est déjà connecté, NE PAS rediriger automatiquement
+    // Cette redirection peut causer des problèmes
+    // Laissez l'utilisateur décider s'il veut naviguer ailleurs
+
+    // Rediriger si déjà connecté
+    // if ($this->getUser()) {
+    //     return $this->redirectToRoute('app_home');
+    // }
+    // Récupérer les erreurs de connexion
+    //     $error = $authenticationUtils->getLastAuthenticationError();
+    //     $lastUsername = $authenticationUtils->getLastUsername();
+
+    //     return $this->render('security/login.html.twig', [
+    //         'last_username' => $lastUsername,
+    //         'error' => $error,
+    //         'referer' => $request->headers->get('referer')
+    //     ]);
+    // }
 
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void

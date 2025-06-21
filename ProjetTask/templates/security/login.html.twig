@@ -1,74 +1,177 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Connexion{% endblock %}
+{% block title %}Connexion
+{% endblock %}
+
 {% block stylesheet %}
-<link rel="stylesheet" href="{{ asset('CSS/login.css') }}">
+	<link rel="stylesheet" href="{{ asset('CSS/login.css') }}">
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-5">
+		<div class="row">
+			<div
+				class="col-md-6 offset-md-3">
+				{# Bouton retour si défini #}
+				{% if referer is defined and referer is not empty %}
+					<div class="mb-3">
+						<a href="{{ referer }}" class="btn btn-outline-secondary">
+							<i class="fas fa-arrow-left"></i>
+							Retour
+						</a>
+					</div>
+				{% endif %}
+
+				<div class="card shadow">
+					<div class="card-header bg-primary text-white">
+						<h4 class="mb-0">Connexion</h4>
+					</div>
+					<div
+						class="card-body">
+
+						{# Gestion des erreurs de login #}
+						{% if error %}
+							<div class="alert alert-danger">
+								{{ error.messageKey|trans(error.messageData, 'security') }}
+							</div>
+						{% endif %}
+
+						{# Affichage si utilisateur déjà connecté #}
+						{% if app.user %}
+							<div class="alert alert-info">
+								Vous êtes connecté en tant que
+								{{ app.user.email|default('') }}.
+								<form action="{{ path('app_logout') }}" method="post" style="display:inline;">
+									<input
+									type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+									{# <input type="hidden" name="_token" value="{{ csrf_token('logout') }}"> #}
+									<button type="submit" class="btn btn-link">Déconnexion</button>
+								</form>
+							</div>
+						{% else %}
+							<form method="post">
+								<div class="mb-3">
+									<label for="inputEmail" class="form-label">Email</label>
+									<input type="email" value="{{ last_username|default('') }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+								</div>
+
+								<div class="mb-3">
+									<label for="inputPassword" class="form-label">Mot de passe</label>
+									<input type="password" name="mdp" id="inputPassword" class="form-control" autocomplete="current-password" required>
+								</div>
+
+								<input type="hidden" name="_token" value="{{ csrf_token('authenticate') }}">
+
+								<div class="mb-3 form-check">
+									<input type="checkbox" class="form-check-input" name="_remember_me" id="remember_me">
+									<label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+								</div>
+
+								<div class="d-grid gap-2">
+									<button class="btn btn-primary" type="submit">
+										Se connecter
+									</button>
+								</div>
+							</form>
+						{% endif %}
+					</div>
+					<div class="card-footer text-center">
+						<p class="mb-0">
+							Vous n'avez pas de compte ?
+							<a href="{{ path('app_register') }}">S'inscrire</a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+{# {% extends 'base.html.twig' %}
+
+{% block title %}Connexion
+{% endblock %}
+{% block stylesheet %}
+	<link rel="stylesheet" href="{{ asset('CSS/login.css') }}">
 {% endblock %}
 
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            {% if referer is defined and referer is not empty %}
-                <div class="mb-3">
-                    <a href="{{ referer }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Retour
-                    </a>
-                </div>
-            {% endif %}
-            
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Connexion</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% if error %}
-                            <div class="alert alert-danger">
-                                {{ error.messageKey|trans(error.messageData, 'security') }}
-                            </div>
-                        {% endif %}
+	<div class="container mt-5">
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				{% if referer is defined and referer is not empty %}
+					<div class="mb-3">
+						<a href="{{ referer }}" class="btn btn-outline-secondary">
+							<i class="fas fa-arrow-left"></i>
+							Retour
+						</a>
+					</div>
+				{% endif %}
 
-                        {% if app.user %}
-                            <div class="alert alert-info">
-                                Vous êtes connecté en tant que {{ app.user.email }}.
-                                <a href="{{ path('app_logout') }}">Déconnexion</a>
-                            </div>
-                        {% endif %}
+				<div class="card shadow">
+					<div class="card-header bg-primary text-white">
+						<h4 class="mb-0">Connexion</h4>
+					</div>
+					<div class="card-body">
+						<form method="post">
+							{% if error %}
+								<div class="alert alert-danger">
+									{{ error.messageKey|trans(error.messageData, 'security') }}
+								</div>
+							{% endif %}
 
-                        <div class="mb-3">
-                            <label for="inputEmail" class="form-label">Email</label>
-                            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-                        </div>
+							{% if app.user %}
+								{# <div class="alert alert-info">
+																	Vous êtes connecté en tant que
+																	{{ app.user.email }}. #}
+{# <a href="{{ path('app_logout') }}">Déconnexion</a> #}
+{# ancienne ligne de deconnnexion si pas csrf token regler marcherais mais du coup faire autre methode #}
+{# <form action="{{ path('app_logout') }}" method="post" style="display:inline;"> <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+																		<button type="submit" class="btn btn-link nav-link" style="display:inline; padding:0;">Déconnexion</button>
+																	</form> #}
+{# {% if app.user %}
+										<div class="alert alert-info"> Vous êtes connecté en tant que
+										{{ app.user.email }}.
+										<form action="{{ path('app_logout') }}" method="post" style="display:inline;">
+											<input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+											<button type="submit" class="btn btn-link">Déconnexion</button>
+										</form>
+									</div>
+								{% endif %}
+							</div>
+						{% endif %}
 
-                        <div class="mb-3">
-                            <label for="inputPassword" class="form-label">Mot de passe</label>
-                            <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-                        </div>
+						<div class="mb-3">
+							<label for="inputEmail" class="form-label">Email</label>
+							<input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+						</div>
 
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+						<div class="mb-3">
+							<label for="inputPassword" class="form-label">Mot de passe</label>
+							<input type="password" name="mdp" id="inputPassword" class="form-control" autocomplete="current-password" required>
+						</div>
 
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" name="_remember_me" id="remember_me">
-                            <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
-                        </div>
+						<input type="hidden" name="_token" value="{{ csrf_token('authenticate') }}">
 
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary" type="submit">
-                                Se connecter
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer text-center">
-                    <p class="mb-0">
-                        Vous n'avez pas de compte ? 
-                        <a href="{{ path('app_register') }}">S'inscrire</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+						<div class="mb-3 form-check">
+							<input type="checkbox" class="form-check-input" name="_remember_me" id="remember_me">
+							<label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+						</div>
+
+						<div class="d-grid gap-2">
+							<button class="btn btn-primary" type="submit">
+								Se connecter
+							</button>
+						</div>
+					</form>
+				</div>
+				<div class="card-footer text-center">
+					<p class="mb-0">
+						Vous n'avez pas de compte ?
+						<a href="{{ path('app_register') }}">S'inscrire</a>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>{% endblock %} #}
