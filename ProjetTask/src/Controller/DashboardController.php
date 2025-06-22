@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Project;
+use App\Entity\Task;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -10,12 +13,126 @@ use Symfony\Bundle\FrameworkBundle\Controller\Attribute\Security;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security as SecurityBundleSecurity;
 
-final class DashboardController extends AbstractController
+class DashboardController extends AbstractController
 {
+    private $security;
+
+    public function __construct(SecurityBundleSecurity $security)
+    {
+        $this->security = $security;
+    }
+
+    #[Route('/dashboard', name: 'app_dashboard')]
+    public function index(EntityManagerInterface $entityManager): Response
+    {       // Récupérer les projets
+        $projects = $entityManager->getRepository(Project::class)->findAll();
+
+        // Récupérer les utilisateurs
+        $users = $entityManager->getRepository(User::class)->findAll();
+
+        // Récupérer les tâches
+        $tasks = $entityManager->getRepository(Task::class)->findAll();
+
+        // Création d'un tableau de stats TRÈS SIMPLE pour éviter l'erreur
+        $stats = [
+            'totalProjects' => count($projects),
+            'totalTasks' => count($tasks),
+            'totalUsers' => count($users),
+            'activeProjects' => 0,
+            'completedProjects' => 0,
+            'tasksByStatus' => [
+                'À faire' => 0,
+                'En cours' => 0,
+                'En revue' => 0,
+                'Terminé' => 0
+            ],
+            'projectCompletionRate' => 0,
+            'taskCompletionRate' => 0,
+            'projectsByPriority' => [
+                'Basse' => 0,
+                'Moyenne' => 0,
+                'Haute' => 0,
+                'Urgente' => 0
+            ]
+        ];
+
+        // Compter les projets actifs et terminés (si ces propriétés existent)
+        foreach ($projects as $project) {
+            if (method_exists($project, 'getStatus')) {
+                $status = $project->getStatus();
+                if ($status === 'En cours') {
+                    $stats['activeProjects']++;
+                } elseif ($status === 'Terminé') {
+                    $stats['completedProjects']++;
+                }
+            }
+
+            // Compter les projets par priorité
+            if (method_exists($project, 'getPriority')) {
+                $priority = $project->getPriority();
+                if (isset($stats['projectsByPriority'][$priority])) {
+                    $stats['projectsByPriority'][$priority]++;
+                }
+            }
+        }
+
+        // Compter les tâches par statut
+        foreach ($tasks as $task) {
+            if (method_exists($task, 'getStatus')) {
+                $status = $task->getStatus();
+                if (isset($stats['tasksByStatus'][$status])) {
+                    $stats['tasksByStatus'][$status]++;
+                }
+            }
+        }
+
+        // Calculer les taux de complétion
+        if (count($projects) > 0 && isset($stats['completedProjects'])) {
+            $stats['projectCompletionRate'] = round(($stats['completedProjects'] / count($projects)) * 100, 1);
+        }
+
+        if (count($tasks) > 0 && isset($stats['tasksByStatus']['Terminé'])) {
+            $stats['taskCompletionRate'] = round(($stats['tasksByStatus']['Terminé'] / count($tasks)) * 100, 1);
+        }
+
+        return $this->render('dashboard/index.html.twig', [
+            'controller_name' => 'DashboardController',
+            'projects' => $projects,
+            'users' => $users,
+            'tasks' => $tasks,
+            'stats' => $stats, // ✅ Passer les stats au template
+        ]);
+    }
+
+    #[Route('/dashboard/project/{id}', name: 'dashboard_project_details')]
+    public function projectDetails(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $project = $entityManager->getRepository(Project::class)->find($id);
+
+        if (!$project) {
+            throw $this->createNotFoundException('Projet non trouvé');
+        }
+
+        // Vérifier si l'utilisateur a le droit de voir ce projet
+        $user = $this->getUser();
+        if (!$this->isGranted('ROLE_DIRECTEUR') && !$this->isGranted('ROLE_ADMIN')) {
+            if ($this->isGranted('ROLE_CHEF_PROJET') && $project->getChefProjet() !== $user) {
+                throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce projet');
+            } elseif (!$project->getMembers()->contains($user)) {
+                throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce projet');
+            }
+        }
+
+        return $this->render('dashboard/project_details.html.twig', [
+            'project' => $project
+        ]);
+    }
     #[Route('/dashboard', name: 'app_employe_dashboard', methods: ['GET'])]
     #[IsGranted("ROLE_EMPLOYE", message: "Accès réservé aux employés et administrateurs")]
-    public function index(
+    public function indexEmploye(
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository,
         UserRepository $userRepository
@@ -207,7 +324,8 @@ final class DashboardController extends AbstractController
             'message' => 'Dashboard Chef de Projet - En cours de développement',
         ]);
     }
-}
+} // End of DashboardController class
+
 
     
     // #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]

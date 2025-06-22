@@ -1,4 +1,411 @@
 {% extends 'base.html.twig' %}
+{% block title %}Dashboard
+{% endblock %}
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('CSS/dashboard.css') }}">
+{% endblock %}
+{% block body %}
+	<div class="container-fluid py-4">
+		<h1 class="mb-4">Dashboard</h1>
+
+		{# STATISTIQUES SIMPLES #}
+		<div class="row mb-4">
+			<div class="col-md-4">
+				<div class="card bg-primary text-white">
+					<div class="card-body">
+						<h5 class="card-title">Projets</h5>
+						<h2 class="card-text">{{ stats.totalProjects }}</h2>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="card bg-success text-white">
+					<div class="card-body">
+						<h5 class="card-title">Tâches</h5>
+						<h2 class="card-text">{{ stats.totalTasks }}</h2>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="card bg-info text-white">
+					<div class="card-body">
+						<h5 class="card-title">Utilisateurs</h5>
+						<h2 class="card-text">{{ stats.totalUsers }}</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{# LISTE DES PROJETS #}
+		<div class="card mb-4">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">Mes projets</h5>
+				{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
+					<a href="{{ path('project_new') }}" class="btn btn-sm btn-primary">
+						<i class="fas fa-plus"></i>
+						Nouveau projet
+					</a>
+				{% endif %}
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover">
+						<thead>
+							<tr>
+								<th>Nom</th>
+								<th>Description</th>
+								{% if projects|length > 0 and projects[0].startDate is defined %}
+									<th>Date de début</th>
+								{% endif %}
+								{% if projects|length > 0 and projects[0].endDate is defined %}
+									<th>Date de fin</th>
+								{% endif %}
+								{% if projects|length > 0 and projects[0].status is defined %}
+									<th>Statut</th>
+								{% endif %}
+								{% if projects|length > 0 and projects[0].priority is defined %}
+									<th>Priorité</th>
+								{% endif %}
+								<th>Chef de projet</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for project in projects %}
+								<tr>
+									<td>{{ project.name }}</td>
+									<td>
+										{% if project.description is defined %}
+											{{ project.description|slice(0, 50) }}
+											{% if project.description|length > 50 %}...
+											{% endif %}
+										{% endif %}
+									</td>
+									{% if project.startDate is defined %}
+										<td>{{ project.startDate ? project.startDate|date('d/m/Y') : 'N/A' }}</td>
+									{% endif %}
+									{% if project.endDate is defined %}
+										<td>{{ project.endDate ? project.endDate|date('d/m/Y') : 'N/A' }}</td>
+									{% endif %}
+									{% if project.status is defined %}
+										<td>
+											{% if project.status == 'En cours' %}
+												<span class="badge bg-primary">{{ project.status }}</span>
+											{% elseif project.status == 'Terminé' %}
+												<span class="badge bg-success">{{ project.status }}</span>
+											{% elseif project.status == 'En pause' %}
+												<span class="badge bg-warning">{{ project.status }}</span>
+											{% else %}
+												<span class="badge bg-secondary">{{ project.status }}</span>
+											{% endif %}
+										</td>
+									{% endif %}
+									{% if project.priority is defined %}
+										<td>
+											{% if project.priority == 'Basse' %}
+												<span class="badge bg-success">{{ project.priority }}</span>
+											{% elseif project.priority == 'Moyenne' %}
+												<span class="badge bg-info">{{ project.priority }}</span>
+											{% elseif project.priority == 'Haute' %}
+												<span class="badge bg-warning">{{ project.priority }}</span>
+											{% elseif project.priority == 'Urgente' %}
+												<span class="badge bg-danger">{{ project.priority }}</span>
+											{% endif %}
+										</td>
+									{% endif %}
+									<td>
+										{% if project.chefProjet is defined and project.chefProjet %}
+											{% if project.chefProjet.firstName is defined and project.chefProjet.lastName is defined %}
+												{{ project.chefProjet.firstName }}
+												{{ project.chefProjet.lastName }}
+											{% else %}
+												{{ project.chefProjet }}
+											{% endif %}
+										{% else %}
+											<span class="text-muted">Non assigné</span>
+										{% endif %}
+									</td>
+									<td>
+										<a href="{{ path('dashboard_project_details', {'id': project.id}) }}" class="btn btn-sm btn-info">
+											<i class="fas fa-eye"></i>
+										</a>
+										{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
+											<a href="{{ path('project_edit', {'id': project.id}) }}" class="btn btn-sm btn-warning">
+												<i class="fas fa-edit"></i>
+											</a>
+										{% endif %}
+									</td>
+								</tr>
+							{% else %}
+								<tr>
+									<td colspan="8" class="text-center">Aucun projet trouvé</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.card {
+			border-radius: 10px;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			margin-bottom: 20px;
+		}
+		.badge {
+			font-size: 0.85rem;
+			padding: 5px 10px;
+		}
+	</style>
+{% endblock %}
+
+
+{# Version 2 DashBoard OPTI avec STATS* a revoir #}
+{# {% block title %}Dashboard
+{% endblock %}
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('CSS/dashboard.css') }}">
+{% endblock %}
+{% block body %}
+	<div class="container-fluid py-4">
+		<h1 class="mb-4">Dashboard</h1>
+
+		{# STATISTIQUES GLOBALES #}
+{# <div class="row mb-4">
+			<div class="col-md-3">
+				<div class="card bg-primary text-white">
+					<div class="card-body">
+						<h5 class="card-title">Projets</h5>
+						<h2 class="card-text">{{ stats.totalProjects }}</h2>
+						<p>{{ stats.activeProjects }}
+							en cours</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card bg-success text-white">
+					<div class="card-body">
+						<h5 class="card-title">Tâches</h5>
+						<h2 class="card-text">{{ stats.totalTasks }}</h2>
+						<p>{{ stats.tasksByStatus['Terminé'] }}
+							terminées</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card bg-info text-white">
+					<div class="card-body">
+						<h5 class="card-title">Utilisateurs</h5>
+						<h2 class="card-text">{{ stats.totalUsers }}</h2>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3">
+				<div class="card bg-warning text-white">
+					<div class="card-body">
+						<h5 class="card-title">Complétion</h5>
+						<h2 class="card-text">{{ stats.projectCompletionRate }}%</h2>
+						<p>des projets terminés</p>
+					</div>
+				</div>
+			</div>
+		</div> #}
+
+{# GRAPHIQUES ET STATISTIQUES DÉTAILLÉES #}
+{# <div class="row mb-4">
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header">
+						<h5 class="card-title">Tâches par statut</h5>
+					</div>
+					<div class="card-body">
+						<div class="progress mb-3">
+							{% set todoPercent = (stats.tasksByStatus['À faire'] / stats.totalTasks * 100)|round %}
+							{% set inProgressPercent = (stats.tasksByStatus['En cours'] / stats.totalTasks * 100)|round %}
+							{% set reviewPercent = (stats.tasksByStatus['En revue'] / stats.totalTasks * 100)|round %}
+							{% set donePercent = (stats.tasksByStatus['Terminé'] / stats.totalTasks * 100)|round %}
+
+							<div class="progress-bar bg-secondary" style="width: {{ todoPercent }}%" title="À faire: {{ stats.tasksByStatus['À faire'] }}">
+								{{ todoPercent }}%
+							</div>
+							<div class="progress-bar bg-primary" style="width: {{ inProgressPercent }}%" title="En cours: {{ stats.tasksByStatus['En cours'] }}">
+								{{ inProgressPercent }}%
+							</div>
+							<div class="progress-bar bg-warning" style="width: {{ reviewPercent }}%" title="En revue: {{ stats.tasksByStatus['En revue'] }}">
+								{{ reviewPercent }}%
+							</div>
+							<div class="progress-bar bg-success" style="width: {{ donePercent }}%" title="Terminé: {{ stats.tasksByStatus['Terminé'] }}">
+								{{ donePercent }}%
+							</div>
+						</div>
+						<div class="row text-center">
+							<div class="col">
+								<span class="badge bg-secondary">À faire:
+									{{ stats.tasksByStatus['À faire'] }}</span>
+							</div>
+							<div class="col">
+								<span class="badge bg-primary">En cours:
+									{{ stats.tasksByStatus['En cours'] }}</span>
+							</div>
+							<div class="col">
+								<span class="badge bg-warning">En revue:
+									{{ stats.tasksByStatus['En revue'] }}</span>
+							</div>
+							<div class="col">
+								<span class="badge bg-success">Terminé:
+									{{ stats.tasksByStatus['Terminé'] }}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header">
+						<h5 class="card-title">Projets par priorité</h5>
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col-md-3 text-center">
+								<div class="circle-stat bg-success">
+									<span>{{ stats.projectsByPriority['Basse'] }}</span>
+								</div>
+								<p>Basse</p>
+							</div>
+							<div class="col-md-3 text-center">
+								<div class="circle-stat bg-info">
+									<span>{{ stats.projectsByPriority['Moyenne'] }}</span>
+								</div>
+								<p>Moyenne</p>
+							</div>
+							<div class="col-md-3 text-center">
+								<div class="circle-stat bg-warning">
+									<span>{{ stats.projectsByPriority['Haute'] }}</span>
+								</div>
+								<p>Haute</p>
+							</div>
+							<div class="col-md-3 text-center">
+								<div class="circle-stat bg-danger">
+									<span>{{ stats.projectsByPriority['Urgente'] }}</span>
+								</div>
+								<p>Urgente</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> #}
+
+{# LISTE DES PROJETS #}
+{# <div class="card mb-4">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">Mes projets</h5>
+				<a href="{{ path('project_new') }}" class="btn btn-sm btn-primary">
+					<i class="fas fa-plus"></i>
+					Nouveau projet
+				</a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover">
+						<thead>
+							<tr>
+								<th>Nom</th>
+								<th>Description</th>
+								<th>Date de début</th>
+								<th>Date de fin</th>
+								<th>Statut</th>
+								<th>Priorité</th>
+								<th>Chef de projet</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for project in projects %}
+								<tr>
+									<td>{{ project.name }}</td>
+									<td>{{ project.description|slice(0, 50) }}
+										{% if project.description|length > 50 %}...
+										{% endif %}
+									</td>
+									<td>{{ project.startDate ? project.startDate|date('d/m/Y') : 'N/A' }}</td>
+									<td>{{ project.endDate ? project.endDate|date('d/m/Y') : 'N/A' }}</td>
+									<td>
+										{% if project.status == 'En cours' %}
+											<span class="badge bg-primary">{{ project.status }}</span>
+										{% elseif project.status == 'Terminé' %}
+											<span class="badge bg-success">{{ project.status }}</span>
+										{% elseif project.status == 'En pause' %}
+											<span class="badge bg-warning">{{ project.status }}</span>
+										{% else %}
+											<span class="badge bg-secondary">{{ project.status }}</span>
+										{% endif %}
+									</td>
+									<td>
+										{% if project.priority == 'Basse' %}
+											<span class="badge bg-success">{{ project.priority }}</span>
+										{% elseif project.priority == 'Moyenne' %}
+											<span class="badge bg-info">{{ project.priority }}</span>
+										{% elseif project.priority == 'Haute' %}
+											<span class="badge bg-warning">{{ project.priority }}</span>
+										{% elseif project.priority == 'Urgente' %}
+											<span class="badge bg-danger">{{ project.priority }}</span>
+										{% endif %}
+									</td>
+									<td>
+										{% if project.chefProjet %}
+											{{ project.chefProjet.firstName }}
+											{{ project.chefProjet.lastName }}
+										{% else %}
+											<span class="text-muted">Non assigné</span>
+										{% endif %}
+									</td>
+									<td>
+										<a href="{{ path('dashboard_project_details', {'id': project.id}) }}" class="btn btn-sm btn-info">
+											<i class="fas fa-eye"></i>
+										</a>
+										{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
+											<a href="{{ path('project_edit', {'id': project.id}) }}" class="btn btn-sm btn-warning">
+												<i class="fas fa-edit"></i>
+											</a>
+										{% endif %}
+									</td>
+								</tr>
+							{% else %}
+								<tr>
+									<td colspan="8" class="text-center">Aucun projet trouvé</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		.circle-stat {
+			width: 60px;
+			height: 60px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 0 auto;
+			color: white;
+			font-size: 1.2rem;
+			font-weight: bold;
+		}
+	</style> #}
+{# {% endblock %}  #}
+
+
+{# Premier Test DashboardVue
 
 {% block title %}Tableau de bord - SYNTASK
 {% endblock %}
@@ -204,4 +611,4 @@
 			</div>
 		</div>
 	</div>
-{% endblock %}
+{% endblock %} #}
