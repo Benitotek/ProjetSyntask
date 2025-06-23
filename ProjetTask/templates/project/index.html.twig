@@ -5,7 +5,7 @@
 
 {% block stylesheets %}
 	{{ parent() }}
-	<link rel="stylesheet" href="{{ asset('CSS/project-management.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/project-management.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -54,9 +54,8 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ path('app_user_toggle_status') }}" class="nav-link">
-								<i class="icon-profile"></i>
-								Mon profil
+							<a href="#" class="nav-link">
+								<i class="icon-profile"></i>Mon profil
 							</a>
 						</li>
 					</ul>
@@ -124,16 +123,16 @@
 							<i class="icon-search"></i>
 						</div>
 						<div class="filter-tabs">
-							<a href="{{ path('projects') }}" class="filter-tab {% if current_status is not defined %}active{% endif %}">
+							<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_status is not defined %}active{% endif %}">
 								Tous
 							</a>
-							<a href="{{ path('projects', {'status': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_status == 'EN-ATTENTE' %}active{% endif %}">
+							<a href="{{ path('app_mes_projets', {'status': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_status == 'EN-ATTENTE' %}active{% endif %}">
 								En attente
 							</a>
-							<a href="{{ path('projects', {'status': 'EN-COURS'}) }}" class="filter-tab {% if current_status == 'EN-COURS' %}active{% endif %}">
+							<a href="{{ path('app_mes_projets', {'status': 'EN-COURS'}) }}" class="filter-tab {% if current_status == 'EN-COURS' %}active{% endif %}">
 								En cours
 							</a>
-							<a href="{{ path('projects', {'status': 'TERMINE'}) }}" class="filter-tab {% if current_status == 'TERMINE' %}active{% endif %}">
+							<a href="{{ path('app_mes_projets', {'status': 'TERMINE'}) }}" class="filter-tab {% if current_status == 'TERMINE' %}active{% endif %}">
 								Terminés
 							</a>
 						</div>
