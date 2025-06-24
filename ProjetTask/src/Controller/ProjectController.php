@@ -90,7 +90,7 @@ class ProjectController extends AbstractController
         if (
             !$this->isGranted('ROLE_ADMIN') &&
             !$this->isGranted('ROLE_DIRECTEUR') &&
-            $project->getChefDeProjet() !== $user &&
+            $project->getChef_Projet() !== $user &&
             !$project->getMembres()->contains($user)
         ) {
             throw $this->createAccessDeniedException();

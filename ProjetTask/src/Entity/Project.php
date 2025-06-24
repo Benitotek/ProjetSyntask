@@ -55,20 +55,21 @@ class Project
     // Chef de projet : Un User peut gérer plusieurs projets
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $chefDeProjet = null;
+    #[ORM\JoinColumn(name: "chef_projet_id", referencedColumnName: "id", nullable: true)]
+    private ?User $Chef_Projet = null;
 
     // Membres : ManyToMany
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
-    
+
     private Collection $membres;
 
 
- 
+
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: TaskList::class, cascade: ['persist', 'remove'])]
     private Collection $taskLists;
 
-    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $tasks;
 
     /**
@@ -201,14 +202,14 @@ class Project
         return $this;
     }
 
-    public function getChefDeProjet(): ?User
+    public function getChef_Projet(): ?User
     {
-        return $this->chefDeProjet;
+        return $this->Chef_Projet;
     }
 
-    public function setChefDeProjet(?User $chefDeProjet): static
+    public function setChef_Projet(?User $Chef_Projet): static
     {
-        $this->chefDeProjet = $chefDeProjet;
+        $this->Chef_Projet = $Chef_Projet;
         return $this;
     }
 
@@ -297,7 +298,17 @@ class Project
         }
         return $this;
     }
+    public function removeTask(Task $task): self
+    {
+        if ($this->tasks->removeElement($task)) {
+            // set the owning side to null (unless already changed)
+            if ($task->getProject() === $this) {
+                $task->setProject(null);
+            }
+        }
 
+        return $this;
+    }
     public function __toString(): string
     {
         return $this->titre ?: 'Nouveau Projet';
