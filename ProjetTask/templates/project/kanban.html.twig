@@ -1,6 +1,239 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
+	{{ project.titre }}
+	| Kanban
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<style>
+		.kanban-container {
+			overflow-x: auto;
+			min-height: calc(100vh - 250px);
+		}
+
+		.kanban-board {
+			display: flex;
+			min-height: 500px;
+		}
+
+		.kanban-column {
+			min-width: 300px;
+			max-width: 300px;
+			margin-right: 1rem;
+			border-radius: 0.25rem;
+			background-color: #f8f9fa;
+		}
+
+		.kanban-column-header {
+			padding: 0.75rem;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+		}
+
+		.kanban-column-body {
+			padding: 0.5rem;
+			min-height: 200px;
+			max-height: calc(100vh - 350px);
+			overflow-y: auto;
+		}
+
+		.kanban-task {
+			margin-bottom: 0.5rem;
+			cursor: grab;
+		}
+
+		.kanban-task:active {
+			cursor: grabbing;
+		}
+
+		.task-priority-urgent {
+			border-left: 4px solid #dc3545;
+		}
+
+		.task-priority-normal {
+			border-left: 4px solid #007bff;
+		}
+
+		.task-priority-en_attente {
+			border-left: 4px solid #6c757d;
+		}
+
+		.column-color-VERT {
+			border-top: 3px solid #28a745;
+		}
+
+		.column-color-JAUNE {
+			border-top: 3px solid #ffc107;
+		}
+
+		.column-color-ORANGE {
+			border-top: 3px solid #fd7e14;
+		}
+
+		.column-color-ROUGE {
+			border-top: 3px solid #dc3545;
+		}
+	</style>
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid py-4">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<div>
+				<h1 class="mb-0">{{ project.titre }}</h1>
+				<p class="text-muted">
+					<span class="badge {% if project.statut == 'EN-COURS' %}bg-primary{% elseif project.statut == 'TERMINE' %}bg-success{% else %}bg-warning{% endif %}">
+						{{ project.statut }}
+					</span>
+					{% if project.dateButoir %}
+						<span class="ms-2">
+							<i class="far fa-calendar-alt me-1"></i>
+							Échéance:
+							{{ project.dateButoir|date('d/m/Y') }}
+						</span>
+					{% endif %}
+				</p>
+			</div>
+
+			<div>
+				<div class="btn-group">
+					<a href="{{ path('app_project_show', {id: project.id}) }}" class="btn btn-outline-secondary">
+						<i class="fas fa-info-circle me-1"></i>
+						Détails
+					</a>
+					<a href="{{ path('app_project_view_tasks', {id: project.id}) }}" class="btn btn-outline-primary">
+						<i class="fas fa-tasks me-1"></i>
+						Toutes les tâches
+					</a>
+					{% if is_granted('EDIT', project) %}
+						<a href="{{ path('app_task_list_new', {projectId: project.id}) }}" class="btn btn-primary">
+							<i class="fas fa-plus me-1"></i>
+							Nouvelle colonne
+						</a>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		<div class="kanban-container">
+			<div class="kanban-board" id="kanban-board">
+				{% for taskList in taskLists %}
+					<div class="kanban-column column-color-{{ taskList.couleur ? taskList.couleur.value : 'VERT' }}" data-column-id="{{ taskList.id }}">
+						<div class="kanban-column-header d-flex justify-content-between align-items-center">
+							<h5 class="mb-0">{{ taskList.nom }}</h5>
+							<div class="dropdown">
+								<button class="btn btn-sm btn-link text-dark" type="button" data-bs-toggle="dropdown">
+									<i class="fas fa-ellipsis-v"></i>
+								</button>
+								<div class="dropdown-menu dropdown-menu-end">
+									{% if is_granted('EDIT', project) %}
+										<a href="{{ path('app_task_new', {projectId: project.id, taskListId: taskList.id}) }}" class="dropdown-item">
+											<i class="fas fa-plus me-2"></i>
+											Nouvelle tâche
+										</a>
+										<a href="{{ path('app_task_list_edit', {projectId: project.id, id: taskList.id}) }}" class="dropdown-item">
+											<i class="fas fa-edit me-2"></i>
+											Modifier la colonne
+										</a>
+										<div class="dropdown-divider"></div>
+										<form action="{{ path('app_task_list_delete', {projectId: project.id, id: taskList.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette colonne ?');">
+											<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ taskList.id) }}">
+											<button type="submit" class="dropdown-item text-danger">
+												<i class="fas fa-trash me-2"></i>
+												Supprimer
+											</button>
+										</form>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+
+						<div class="kanban-column-body" data-column-id="{{ taskList.id }}">
+							{% if taskList.tasks|length > 0 %}
+								{% for task in taskList.tasks %}
+									<div class="card kanban-task task-priority-{{ task.priorite.value }}" data-task-id="{{ task.id }}">
+										<div class="card-body p-2">
+											<div class="d-flex justify-content-between align-items-start">
+												<h6 class="card-title mb-1">{{ task.title }}</h6>
+												<div class="dropdown">
+													<button class="btn btn-sm btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+														<i class="fas fa-ellipsis-v"></i>
+													</button>
+													<div class="dropdown-menu dropdown-menu-end">
+														{% if is_granted('EDIT', project) %}
+															<a href="{{ path('app_task_edit', {projectId: project.id, id: task.id}) }}" class="dropdown-item">
+																<i class="fas fa-edit me-2"></i>
+																Modifier
+															</a>
+															<div class="dropdown-divider"></div>
+															<form action="{{ path('app_task_delete', {projectId: project.id, id: task.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?');">
+																<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+																<button type="submit" class="dropdown-item text-danger">
+																	<i class="fas fa-trash me-2"></i>
+																	Supprimer
+																</button>
+															</form>
+														{% endif %}
+													</div>
+												</div>
+											</div>
+
+											{% if task.description %}
+												<p class="card-text small text-muted mb-2">
+													{{ task.description|length > 100 ? task.description|slice(0, 100) ~ '...' : task.description }}
+												</p>
+											{% endif %}
+
+											<div class="d-flex justify-content-between align-items-center">
+												<div>
+													{% if task.dateButoir %}
+														<small class="text-{% if task.isOverdue %}danger{% else %}muted{% endif %}">
+															<i class="far fa-calendar-alt"></i>
+															{{ task.dateButoir|date('d/m/Y') }}
+														</small>
+													{% endif %}
+												</div>
+
+												<div>
+													{% if task.assignedUser %}
+														<span class="badge bg-info text-white" title="{{ task.assignedUser.fullName }}">
+															{{ task.assignedUser.prenom|first }}{{ task.assignedUser.nom|first }}
+														</span>
+													{% endif %}
+
+													<span class="badge {% if task.priorite.value == 'urgent' %}bg-danger{% elseif task.priorite.value == 'normal' %}bg-primary{% else %}bg-secondary{% endif %}">
+														{{ task.priorite.value }}
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							{% else %}
+								<div class="text-center p-3 text-muted">
+									<em>Aucune tâche</em>
+								</div>
+							{% endif %}
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+// Pour une version avec drag-and-drop, il faudrait ajouter du JavaScript ici
+// avec une bibliothèque comme SortableJS ou jQuery UI Sortable
+});
+	</script>
+{% endblock %}
+
+{# {% block title %}
 	{{ project.nom }}
 	- Kanban
 {% endblock %}
@@ -283,4 +516,4 @@
 	}
 </style>{% endblock %}{% block javascripts %}
 <script>
-{% endblock %}
+{% endblock %} #}
