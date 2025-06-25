@@ -18,312 +18,130 @@ use Symfony\Bundle\SecurityBundle\Security as SecurityBundleSecurity;
 
 class DashboardController extends AbstractController
 {
-    private $security;
-
-    public function __construct(SecurityBundleSecurity $security)
-    {
-        $this->security = $security;
-    }
-
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(EntityManagerInterface $entityManager): Response
-    {       // Récupérer les projets
-        $projects = $entityManager->getRepository(Project::class)->findAll();
-
-        // Récupérer les utilisateurs
-        $users = $entityManager->getRepository(User::class)->findAll();
-
-        // Récupérer les tâches
-        $tasks = $entityManager->getRepository(Task::class)->findAll();
-
-        // Création d'un tableau de stats TRÈS SIMPLE pour éviter l'erreur
-        $stats = [
-            'totalProjects' => count($projects),
-            'totalTasks' => count($tasks),
-            'totalUsers' => count($users),
-            'activeProjects' => 0,
-            'completedProjects' => 0,
-            'tasksByStatus' => [
-                'À faire' => 0,
-                'En cours' => 0,
-                'En revue' => 0,
-                'Terminé' => 0
-            ],
-            'projectCompletionRate' => 0,
-            'taskCompletionRate' => 0,
-            'projectsByPriority' => [
-                'Basse' => 0,
-                'Moyenne' => 0,
-                'Haute' => 0,
-                'Urgente' => 0
-            ]
-        ];
-
-        // Compter les projets actifs et terminés (si ces propriétés existent)
-        foreach ($projects as $project) {
-            if (method_exists($project, 'getStatus')) {
-                $status = $project->getStatus();
-                if ($status === 'En cours') {
-                    $stats['activeProjects']++;
-                } elseif ($status === 'Terminé') {
-                    $stats['completedProjects']++;
-                }
-            }
-
-            // Compter les projets par priorité
-            if (method_exists($project, 'getPriority')) {
-                $priority = $project->getPriority();
-                if (isset($stats['projectsByPriority'][$priority])) {
-                    $stats['projectsByPriority'][$priority]++;
-                }
-            }
-        }
-
-        // Compter les tâches par statut
-        foreach ($tasks as $task) {
-            if (method_exists($task, 'getStatus')) {
-                $status = $task->getStatus();
-                if (isset($stats['tasksByStatus'][$status])) {
-                    $stats['tasksByStatus'][$status]++;
-                }
-            }
-        }
-
-        // Calculer les taux de complétion
-        if (count($projects) > 0 && isset($stats['completedProjects'])) {
-            $stats['projectCompletionRate'] = round(($stats['completedProjects'] / count($projects)) * 100, 1);
-        }
-
-        if (count($tasks) > 0 && isset($stats['tasksByStatus']['Terminé'])) {
-            $stats['taskCompletionRate'] = round(($stats['tasksByStatus']['Terminé'] / count($tasks)) * 100, 1);
-        }
-
-        return $this->render('dashboard/index.html.twig', [
-            'controller_name' => 'DashboardController',
-            'projects' => $projects,
-            'users' => $users,
-            'tasks' => $tasks,
-            'stats' => $stats, // ✅ Passer les stats au template
-        ]);
-    }
-
-    #[Route('/dashboard/project/{id}', name: 'dashboard_project_details')]
-    public function projectDetails(int $id, EntityManagerInterface $entityManager): Response
-    {
-        $project = $entityManager->getRepository(Project::class)->find($id);
-
-        if (!$project) {
-            throw $this->createNotFoundException('Projet non trouvé');
-        }
-
-        // Vérifier si l'utilisateur a le droit de voir ce projet
-        $user = $this->getUser();
-        if (!$this->isGranted('ROLE_DIRECTEUR') && !$this->isGranted('ROLE_ADMIN')) {
-            if ($this->isGranted('ROLE_CHEF_PROJET') && $project->getChefProjet() !== $user) {
-                throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce projet');
-            } elseif (!$project->getMembers()->contains($user)) {
-                throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce projet');
-            }
-        }
-
-        return $this->render('dashboard/project_details.html.twig', [
-            'project' => $project
-        ]);
-    }
-    #[Route('/dashboard', name: 'app_employe_dashboard', methods: ['GET'])]
-    #[IsGranted("ROLE_EMPLOYE", message: "Accès réservé aux employés et administrateurs")]
-    public function indexEmploye(
+    public function index(
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository,
         UserRepository $userRepository
     ): Response {
         $user = $this->getUser();
 
-        $stats = [
-            'total_projects' => 0,
-            'active_projects' => 0,
-            'total_tasks' => 0,
-            'pending_tasks' => 0,
-            'in_progress_tasks' => 0,
-            'completed_tasks' => 0,
-            'overdue_tasks' => 0,
-        ];
-
+        // Différentes vues selon le rôle
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-            $stats['total_projects'] = $projectRepository->countAll();
-            $stats['active_projects'] = $projectRepository->countByStatus(['EN-COURS']);
-            $stats['total_users'] = $userRepository->countActive();
-            $recentProjects = $projectRepository->findRecent(5);
-        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
-            $userProjects = $projectRepository->findByChef_Projet($user);
-            $stats['total_projects'] = count($userProjects);
-            $stats['active_projects'] = count(array_filter($userProjects, fn($p) => $p->getStatut() === 'EN-COURS'));
-            $recentProjects = array_slice($userProjects, 0, 5);
+            // Vue administrateur/directeur
+            return $this->adminDashboard($projectRepository, $taskRepository, $userRepository);
+        } elseif ($this->isGranted('ROLE_CHEF_DE_PROJET')) {
+            // Vue chef de projet
+            return $this->chefProjetDashboard($projectRepository, $taskRepository, $user);
         } else {
-            $userProjects = $projectRepository->findByAssignedUser($user);
-            $stats['total_projects'] = count($userProjects);
-            $recentProjects = array_slice($userProjects, 0, 5);
+            // Vue employé
+            return $this->employeDashboard($projectRepository, $taskRepository, $user);
         }
-
-        // Statistiques des tâches pour l'utilisateur
-        if (method_exists($taskRepository, 'findByAssignedUser')) {
-            $userTasks = $taskRepository->findByAssignedUser($user);
-            $stats['total_tasks'] = count($userTasks);
-            $stats['pending_tasks'] = count(array_filter($userTasks, fn($t) => $t->getStatut() === 'EN-ATTENTE'));
-            $stats['in_progress_tasks'] = count(array_filter($userTasks, fn($t) => $t->getStatut() === 'EN-COURS'));
-            $stats['completed_tasks'] = count(array_filter($userTasks, fn($t) => $t->getStatut() === 'TERMINE'));
-            $stats['overdue_tasks'] = method_exists($taskRepository, 'countOverdueByUser') ? $taskRepository->countOverdueByUser($user) : 0;
-        } else {
-            $userTasks = [];
-        }
-
-        return $this->render('dashboard/index.html.twig', [
-            'stats' => $stats,
-            'recent_projects' => $recentProjects ?? [],
-            'user_tasks' => array_slice($userTasks ?? [], 0, 10),
-        ]);
     }
 
-    // Ajout des données nécessaires pour le template
-    // #[Route('/employe/dashboard', name: 'app_employe_dashboard_employe', methods: ['GET'])]
-    // #[IsGranted('ROLE_EMPLOYE')]
-    #[Route('/dashboard', name: 'app_dashboard')]
-    public function userverifindex(): Response
-    {
-        // Vérifier que l'utilisateur est connecté
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+    /**
+     * Tableau de bord pour admin et directeur
+     */
+    private function adminDashboard(
+        ProjectRepository $projectRepository,
+        TaskRepository $taskRepository,
+        UserRepository $userRepository
+    ): Response {
+        // Statistiques globales
+        $stats = [
+            'projets' => [
+                'total' => $projectRepository->countAll(),
+                'en_cours' => $projectRepository->countByStatus([Project::STATUT_EN_COURS]),
+                'en_attente' => $projectRepository->countByStatus([Project::STATUT_EN_ATTENTE]),
+                'termines' => $projectRepository->countByStatus([Project::STATUT_TERMINE]),
+            ],
+            'utilisateurs' => [
+                'actifs' => $userRepository->countActive(),
+                'chefs_projet' => count($userRepository->findChefsProjets()),
+            ],
+        ];
 
-        // Récupérer l'utilisateur connecté
-        $user = $this->getUser();
+        // Projets récents
+        $projetsRecents = $projectRepository->findRecent(5);
 
-        return $this->render('dashboard/index.html.twig', [
-            'user' => $user,
+        // Tâches en retard
+        $tachesRetard = $taskRepository->findOverdue();
+
+        // Projets avec statistiques budgétaires
+        $projetsBudget = $projectRepository->getProjectsWithBudgetStats();
+
+        return $this->render('dashboard/admin.html.twig', [
+            'stats' => $stats,
+            'projets_recents' => $projetsRecents,
+            'taches_retard' => $tachesRetard,
+            'projets_budget' => $projetsBudget,
         ]);
     }
 
     /**
-     * Route spécifique pour le dashboard employé
-     * Cette route est ajoutée explicitement pour résoudre les erreurs
-     * et maintenir la compatibilité avec les liens existants
+     * Tableau de bord pour chef de projet
      */
-    #[Route('task/employe/dashboard', name: 'app_employe_dashboard')]
-    public function taskemployeDashboard(): Response
-    {
-        // Protection de la route
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        // Rediriger vers le dashboard principal
-        return $this->redirectToRoute('dashboard');
-    }
-    public function employeDashboard(
+    private function chefProjetDashboard(
         ProjectRepository $projectRepository,
-        UserRepository $userRepository
+        TaskRepository $taskRepository,
+        User $user
     ): Response {
-        $user = $this->getUser();
+        // Projets où l'utilisateur est chef
+        $projetsDiriges = $projectRepository->findByChefDeProjet($user);
 
-        // Récupérer un projet pour l'exemple (ou null)
-        $project = null;
-        if (method_exists($projectRepository, 'findByAssignedUser')) {
-            $userProjects = $projectRepository->findByAssignedUser($user);
-            $project = !empty($userProjects) ? $userProjects[0] : null;
-        }
+        // Projets récents avec stats
+        $projetsRecents = $projectRepository->findRecentWithStats($user, 5);
 
-        // Récupérer tous les utilisateurs pour le select
-        $users = $userRepository->findAll();
-
-        return $this->render('dashboard/employe_dashboard.html.twig', [
-            'project' => $project,
-            'users' => $users,
-            'controller_name' => 'DashboardController',
-        ]);
-    }
-
-    #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
-    #[IsGranted('ROLE_ADMIN')]
-    public function adminDashboard(): Response
-    {
-        return $this->render('dashboard/admin_dashboard.html.twig', [
-            'controller_name' => 'DashboardController',
-        ]);
-    }
-
-    #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
-    #[IsGranted('ROLE_DIRECTEUR')]
-    public function directeurDashboardStats(ProjectRepository $projectRepository, UserRepository $userRepository): Response
-    {
-        $projects = $projectRepository->findAll();
-
-        $totalProjects = count($projects);
-        $activeProjects = 0;
-        $pendingProjects = 0;
-        $completedProjects = 0;
-
-        foreach ($projects as $project) {
-            if ($project->getStatut() === 'EN-COURS') {
-                $activeProjects++;
-            } elseif ($project->getStatut() === 'TERMINE') {
-                $completedProjects++;
-            } else {
-                $pendingProjects++;
+        // Tâches en retard dans les projets gérés
+        $tachesRetard = [];
+        foreach ($projetsDiriges as $projet) {
+            $tachesProjet = $taskRepository->findOverdue();
+            foreach ($tachesProjet as $tache) {
+                if ($tache->getProject() && $tache->getProject()->getChef_Projet() === $user) {
+                    $tachesRetard[] = $tache;
+                }
             }
         }
 
-        $percentActive = $totalProjects > 0 ? round(($activeProjects / $totalProjects) * 100) : 0;
-        $percentCompleted = $totalProjects > 0 ? round(($completedProjects / $totalProjects) * 100) : 0;
-        $percentPending = $totalProjects > 0 ? round(($pendingProjects / $totalProjects) * 100) : 0;
-
-        $totalEmployees = $userRepository->count([]);
-
-        $totalBudget = 0;
-        foreach ($projects as $project) {
-            if (method_exists($project, 'getBudget')) {
-                $totalBudget += $project->getBudget() ?? 0;
-            }
-        }
-
-        $stats = [
-            'total_projects' => $totalProjects,
-            'active_projects' => $activeProjects,
-            'total_employees' => $totalEmployees,
-            'total_budget' => $totalBudget,
-            'percent_active' => $percentActive,
-            'percent_completed' => $percentCompleted,
-            'percent_pending' => $percentPending,
-        ];
-
-        // Assign current user and initialize missing variables if needed
-        $currentUser = $this->getUser();
-        $projectSummary = null; // Replace with actual summary data if available
-        $managersPerformance = null; // Replace with actual data if available
-        $criticalProjectsList = null; // Replace with actual data if available
-
-        return $this->render('dashboard/directeur_dashboard.html.twig', [
-            'stats' => $stats,
-            'projects' => $projects,
-            'user' => $currentUser,
-            'summary' => $projectSummary,
-            'project_managers' => $managersPerformance,
-            'critical_projects' => $criticalProjectsList
+        return $this->render('dashboard/chef_projet.html.twig', [
+            'projets_diriges' => $projetsDiriges,
+            'projets_recents' => $projetsRecents,
+            'taches_retard' => $tachesRetard,
         ]);
     }
 
-    #[Route('/Chef_Projet/dashboard', name: 'app_Chef_Projects_dashboard')]
-    #[IsGranted('ROLE_CHEF_PROJET')]
-    public function Chef_ProjetDashboard(): Response
-    {
-        return $this->render('dashboard/Chef_Projet_dashboard.html.twig', [
-            'controller_name' => 'DashboardController',
+    /**
+     * Tableau de bord pour employé
+     */
+    private function employeDashboard(
+        ProjectRepository $projectRepository,
+        TaskRepository $taskRepository,
+        User $user
+    ): Response {
+        // Projets où l'utilisateur est membre
+        $projetsAssignes = $projectRepository->findByAssignedUser($user);
+
+        // Tâches assignées à l'utilisateur
+        $tachesAssignees = $taskRepository->findByAssignedUser($user);
+
+        // Tâches en retard
+        $tachesRetard = array_filter($tachesAssignees, function ($tache) {
+            return $tache->isOverdue();
+        });
+
+        // Tâches avec échéance proche
+        $tachesProches = $taskRepository->findTasksWithDeadlineApproaching();
+        $tachesProches = array_filter($tachesProches, function ($tache) use ($user) {
+            return $tache->getAssignedUser() === $user;
+        });
+
+        return $this->render('dashboard/employe.html.twig', [
+            'projets_assignes' => $projetsAssignes,
+            'taches_assignees' => $tachesAssignees,
+            'taches_retard' => $tachesRetard,
+            'taches_proches' => $tachesProches,
         ]);
     }
-
-    // #[Route('/Chef_Projet/dashboard', name: 'app_Chef_Projet_dashboard')]
-    // #[IsGranted('ROLE_CHEF_PROJET')]
-    // public function Chef_ProjetDashboard(): Response
-    // {
-    //     return $this->render('dashboard/index.html.twig', [
-    //         'message' => 'Dashboard Chef de Projet - En cours de développement',
-    //     ]);
-    // }
 } // End of DashboardController class
 
 
