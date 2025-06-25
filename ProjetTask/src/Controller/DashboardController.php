@@ -154,8 +154,8 @@ class DashboardController extends AbstractController
             $stats['active_projects'] = $projectRepository->countByStatus(['EN-COURS']);
             $stats['total_users'] = $userRepository->countActive();
             $recentProjects = $projectRepository->findRecent(5);
-        } elseif ($this->isGranted('ROLE_CHEF_DE_PROJET')) {
-            $userProjects = $projectRepository->findByChefDeProjet($user);
+        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
+            $userProjects = $projectRepository->findByChef_Projet($user);
             $stats['total_projects'] = count($userProjects);
             $stats['active_projects'] = count(array_filter($userProjects, fn($p) => $p->getStatut() === 'EN-COURS'));
             $recentProjects = array_slice($userProjects, 0, 5);
@@ -307,23 +307,23 @@ class DashboardController extends AbstractController
         ]);
     }
 
-    #[Route('/chef-de-projet/dashboard', name: 'app_Chef_Projects_dashboard')]
-    #[IsGranted('ROLE_CHEF_DE_PROJET')]
-    public function chefDeProjetDashboard(): Response
+    #[Route('/Chef_Projet/dashboard', name: 'app_Chef_Projects_dashboard')]
+    #[IsGranted('ROLE_CHEF_PROJET')]
+    public function Chef_ProjetDashboard(): Response
     {
-        return $this->render('dashboard/chef_de_projet_dashboard.html.twig', [
+        return $this->render('dashboard/Chef_Projet_dashboard.html.twig', [
             'controller_name' => 'DashboardController',
         ]);
     }
 
-    #[Route('/chef-projet/dashboard', name: 'app_chef_projet_dashboard')]
-    #[IsGranted('ROLE_CHEF_DE_PROJET')]
-    public function chefProjetDashboard(): Response
-    {
-        return $this->render('dashboard/index.html.twig', [
-            'message' => 'Dashboard Chef de Projet - En cours de développement',
-        ]);
-    }
+    // #[Route('/Chef_Projet/dashboard', name: 'app_Chef_Projet_dashboard')]
+    // #[IsGranted('ROLE_CHEF_PROJET')]
+    // public function Chef_ProjetDashboard(): Response
+    // {
+    //     return $this->render('dashboard/index.html.twig', [
+    //         'message' => 'Dashboard Chef de Projet - En cours de développement',
+    //     ]);
+    // }
 } // End of DashboardController class
 
 
