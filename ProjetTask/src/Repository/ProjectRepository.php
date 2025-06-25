@@ -9,6 +9,11 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Project>
+ *
+ * @method Project|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Project|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Project[]    findAll()
+ * @method Project[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class ProjectRepository extends ServiceEntityRepository
 {
@@ -16,16 +21,127 @@ class ProjectRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Project::class);
     }
-
-    public function findByChefDeProjet(User $chef): array
+    /**
+     * Compter tous les projets
+     */
+    public function countAll(): int
     {
         return $this->createQueryBuilder('p')
-            ->where('p.chefDeProjet = :chef')
-            ->setParameter('chef', $chef)
+            ->select('COUNT(p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Compter les projets par statut
+     * (Méthode déplacée ou renommée pour éviter les doublons)
+     */
+    // public function countByStatus(array $statuts): int
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->select('COUNT(p.id)')
+    //         ->where('p.statut IN (:statuts)')
+    //         ->setParameter('statuts', $statuts)
+    //         ->getQuery()
+    //         ->getSingleScalarResult();
+    // }
+
+    /**
+     * Trouver les projets récents
+     */
+    public function findRecent(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.dateCreation', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    // /**
+    //  * Trouver les projets récents avec statistiques
+    //  */
+    public function findRecentWithStats(User $user, int $limit = 5): array
+    {
+        // Cette méthode doit être implémentée selon vos besoins
+        // Par exemple, elle pourrait renvoyer des projets avec le nombre de tâches par statut
+        return $this->findByChefDeProjet($user, $limit);
+    }
+
+    /**
+     * Trouver les projets par chef de projet
+     * (Méthode déplacée ou renommée pour éviter les doublons)
+     */
+    public function findByChefDeProjet(User $user, int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->where('p.Chef_Projet = :user')
+            ->setParameter('user', $user)
+            ->orderBy('p.dateCreation', 'DESC');
+
+        if ($limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    // /**
+    //  * Trouver les projets où l'utilisateur est membre
+    //  */
+    // public function findByAssignedUser(User $user): array
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->join('p.membres', 'm')
+    //         ->where('m.id = :userId')
+    //         ->setParameter('userId', $user->getId())
+    //         ->orderBy('p.dateCreation', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
+
+    /**
+     * Trouver les projets où l'utilisateur est membre
+     */
+    public function findByMembre(User $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.membres', 'm')
+            ->where('m.id = :userId')
+            ->setParameter('userId', $user->getId())
             ->orderBy('p.dateCreation', 'DESC')
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Obtenir des statistiques budgétaires sur les projets (requête SQL brute)
+     */
+    public function getProjectsWithBudgetStatsRaw(): array
+    {
+        // Cette méthode doit retourner des statistiques budgétaires
+        // Par exemple, regrouper les projets par statut et calculer le budget total
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT 
+                statut, 
+                COUNT(id) as count, 
+                SUM(budget) as totalBudget 
+            FROM 
+                project 
+            GROUP BY 
+                statut
+        ';
+
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery();
+
+        return $result->fetchAllAssociative();
+    }
+
+
+
 
     public function findByAssignedUser(User $user): array
     {
@@ -55,20 +171,20 @@ class ProjectRepository extends ServiceEntityRepository
     /**
      * Trouve les projets récents d'un utilisateur avec leurs statistiques
      */
-    public function findRecentWithStats(User $user, int $limit = 5): array
-    {
-        return $this->createQueryBuilder('p')
-            ->leftJoin('p.tasks', 't')
-            ->leftJoin('p.membres', 'm')
-            ->addSelect('COUNT(t.id) as taskCount')
-            ->where('m = :user OR p.chefDeProjet = :user')
-            ->setParameter('user', $user)
-            ->groupBy('p.id')
-            ->orderBy('p.dateCreation', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-    }
+    // public function findRecentWithStats(User $user, int $limit = 5): array
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->leftJoin('p.tasks', 't')
+    //         ->leftJoin('p.membres', 'm')
+    //         ->addSelect('COUNT(t.id) as taskCount')
+    //         ->where('m = :user OR p.chefDeProjet = :user')
+    //         ->setParameter('user', $user)
+    //         ->groupBy('p.id')
+    //         ->orderBy('p.dateCreation', 'DESC')
+    //         ->setMaxResults($limit)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 
     /**
      * Statistiques pour le dashboard directeur
@@ -102,22 +218,14 @@ class ProjectRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function countAll(): int
-    {
-        return $this->createQueryBuilder('p')
-            ->select('COUNT(p.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    public function findRecent(int $limit = 5): array
-    {
-        return $this->createQueryBuilder('p')
-            ->orderBy('p.dateCreation', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-    }
+    // public function findRecent(int $limit = 5): array
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->orderBy('p.dateCreation', 'DESC')
+    //         ->setMaxResults($limit)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 
     public function findWithStats(): array
     {
@@ -157,27 +265,3 @@ class ProjectRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 }
-    //    /**
-    //     * @return Project[] Returns an array of Project objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Project
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }

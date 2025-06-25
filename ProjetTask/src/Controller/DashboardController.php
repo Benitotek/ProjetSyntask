@@ -30,7 +30,7 @@ class DashboardController extends AbstractController
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
             // Vue administrateur/directeur
             return $this->adminDashboard($projectRepository, $taskRepository, $userRepository);
-        } elseif ($this->isGranted('ROLE_CHEF_DE_PROJET')) {
+        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
             // Vue chef de projet
             return $this->chefProjetDashboard($projectRepository, $taskRepository, $user);
         } else {

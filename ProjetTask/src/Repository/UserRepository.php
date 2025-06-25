@@ -28,11 +28,15 @@ class UserRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
+  /**
+     * Trouver les utilisateurs avec un rôle spécifique
+     * Attention: cette fonction utilise le champ 'role' (au singulier) de l'entité User
+     */
     public function findByRole(string $role): array
     {
         return $this->createQueryBuilder('u')
-            ->where('u.roles LIKE :role')
-            ->setParameter('role', '%"' . $role . '"%')
+            ->where('u.role = :role')
+            ->setParameter('role', $role)
             ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();
@@ -61,7 +65,7 @@ class UserRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('u')
             ->where('u.roles LIKE :role')
             ->andWhere('u.estActif = true')
-            ->setParameter('role', '%ROLE_CHEF_DE_PROJET%')
+            ->setParameter('role', '%ROLE_CHEF_PROJET%')
             ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();
