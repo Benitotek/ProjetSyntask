@@ -103,12 +103,5 @@ class UserRepository extends ServiceEntityRepository
     {
         return $this->findByRole('ROLE_CHEF_DE_PROJET');
 
-        // return $this->createQueryBuilder('u')
-        //     ->where('u.role LIKE :role')
-        //     ->andWhere('u.estActif = true')
-        //     ->setParameter('role', '%ROLE_CHEF_PROJET%')
-        //     ->orderBy('u.nom', 'ASC')
-        //     ->getQuery()
-        //     ->getResult();
     }
 }
