@@ -22,9 +22,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public const LOGIN_ROUTE = 'app_login';
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
-    {
-    }
+    public function __construct(private UrlGeneratorInterface $urlGenerator) {}
 
     public function authenticate(Request $request): Passport
     {
@@ -51,19 +49,19 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         // For example:
 
         // Redirection en fonction du rôle
-    $user = $token->getUser();
-    
-    if (in_array('ROLE_ADMIN', $user->getRoles())) {
-        return new RedirectResponse($this->urlGenerator->generate('app_admin_dashboard'));
-    } elseif (in_array('ROLE_DIRECTEUR', $user->getRoles())) {
-        return new RedirectResponse($this->urlGenerator->generate('app_directeur_dashboard'));
-    } elseif (in_array('ROLE_CHEF_PROJET', $user->getRoles())) {
-        return new RedirectResponse($this->urlGenerator->generate('app_chef_projet_dashboard'));
-    } else {
-        return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
-    }
+        $user = $token->getUser();
+
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            return new RedirectResponse($this->urlGenerator->generate('app_admin_dashboard'));
+        } elseif (in_array('ROLE_DIRECTEUR', $user->getRoles())) {
+            return new RedirectResponse($this->urlGenerator->generate('app_directeur_dashboard'));
+        } elseif (in_array('ROLE_CHEF_PROJET', $user->getRoles())) {
+            return new RedirectResponse($this->urlGenerator->generate('app_chef_projet_dashboard'));
+        } else {
+            return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
+        }
         // return new RedirectResponse($this->urlGenerator->generate('some_route'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        throw new \Exception('TODO: provide a valid redirect inside ' . __FILE__);
     }
 
     protected function getLoginUrl(Request $request): string

@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
  */
 #[ORM\Table(name: 'user')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+#[UniqueEntity(fields: ['email'], message: 'Un compte existe déjà avec cette adresse email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const STATUT_ACTIF = 'ACTIF';
@@ -57,7 +57,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #Notblank(message: "Le rôle est obligatoire")
     #[Assert\NotBlank(message: "Le rôle est obligatoire")]
     #[ORM\Column(type: Types::JSON)]
-    private array $role = [];
+    private array $roles = [];
 
     #[NotBlank(message: "L'email' est obligatoire")]
     #[Assert\Length(max: 180, maxMessage: "L'email doit contenir au plus 180 caractères")]
@@ -145,6 +145,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     // Removed duplicate getRole() and setRole() methods above; see unified version below.
 
+    /**
+     * Returns the user roles array.
+     */
+    public function getRole(): ?array
+    {
+        return $this->roles;
+    }
+
     public function getEmail(): ?string
     {
         return $this->email;
@@ -162,38 +170,75 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->mdp;
     }
 
-    public function setMdp(string $mdp): static
+    public function setMdp(string $mdp): self
     {
         $this->mdp = $mdp;
-
         return $this;
     }
 
-    /**
-     * Returns the roles granted to the user.
-     */
-    public function getRole(): array
-    {
-        // guarantee every user at least has ROLE_USER
-        $role = $this->role;
-        $role[] = 'ROLE_USER';
-
-        return array_unique($role);
-    }
-
-    /**
-     * Returns the roles granted to the user.
-     */
     public function getRoles(): array
     {
-        return $this->getRole();
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+        return array_unique($roles);
     }
 
-    public function setRole(array $role): static
+    public function setRoles(array $roles): static
     {
-        $this->role = $role;
+
+        $this->roles = $roles;
         return $this;
     }
+    /**
+     * Version 1 bug sur les roles test avec version 2 (mise en place de ROLES) dans methode 1 commenter a la suite
+     * 
+     * 
+     * Returns the roles granted to the user.
+     */
+    // public function getRole(): array
+    // {
+    //     // guarantee every user at least has ROLE_USER
+    //     $role = $this->role;
+    //     $role[] = 'ROLE_USER';
+
+    //     return array_unique($role);
+    // }
+
+    /**
+     * Returns the roles granted to the user.
+     */
+    // public function getRoles(): array
+    // {
+    //     return $this->getRole();
+    // }
+
+    // public function setRole(array $role): static
+    // {
+    //     $this->role = $role;
+    //     return $this;
+    // }
+    // Version 1.5 a revoir la methode getRoles() et setRoles() pour utiliser getRole() et setRole()
+    // Assurez-vous que la méthode getRoles() est correcte pour l'interface UserInterface
+    // public function getRoles(): array
+    // {
+    //     // Votre code actuel transforme le rôle unique en tableau
+    //     return [$this->getRole()];
+    // }
+
+    // // ... vos autres méthodes
+
+    // // Si vous avez une méthode setRoles quelque part, elle doit être adaptée pour utiliser setRole
+    // public function setRoles(array $roles): self
+    // {
+    //     // Si vous devez implémenter setRoles pour compatibilité
+    //     if (count($roles) > 0) {
+    //         $this->setRole($roles[0]);
+    //     }
+    //     return $this;
+    // }
+
+
     /**
      * Returns the password used to authenticate the user.
      */
@@ -262,7 +307,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Project>
      */
     // Projets gérés (chef de projet)
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'chefDeProjet')]
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'chef_Projet')]
     private Collection $projetsGeres;
     /**
      * @return Collection<int, Project>

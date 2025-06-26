@@ -44,15 +44,14 @@ security:
                 path: app_logout # Route utilisée pour se déconnecter
                 target: app_login # Redirection après déconnexion
                 invalidate_session: true # Invalider la session après déconnexion
-                
-                
+
                 delete_cookies:
                     PHPSESSID: ~ # Supprimer le cookie de session
                     REMEMBERME: ~ # Supprimer le cookie "Se souvenir de moi"
                 # Note: Symfony gère la déconnexion automatiquement, pas besoin de logique ici
                 # Enable CSRF protection for logout
-                enable_csrf: true 
-              
+                enable_csrf: true
+
             # custom_authenticator: App\Security\LoginFormAuthenticator
             # entry_point: App\Security\LoginFormAuthenticator
 
@@ -78,7 +77,7 @@ security:
 
     # Hiérarchie des rôles
     role_hierarchy:
-        ROLE_EMPLOYE: []
+        ROLE_EMPLOYE: [ROLE_USER]
         ROLE_CHEF_PROJET: [ROLE_EMPLOYE]
         ROLE_DIRECTEUR: [ROLE_CHEF_PROJET]
         ROLE_ADMIN: [ROLE_DIRECTEUR, ROLE_ALLOWED_TO_SWITCH]
