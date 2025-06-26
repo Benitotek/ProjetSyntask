@@ -2,84 +2,122 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Enum\UserStatus;
+use App\Form\UserTypeForm;
+use App\Repository\ProjectRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Security\EmailVerifier;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final class AdminController extends AbstractController
+#[Route('/admin')]
+#[IsGranted('ROLE_ADMIN')]
+class AdminController extends AbstractController
 {
-    #[Route('/admin', name: 'app_admin')]
-    public function UserList(): Response
+    private EmailVerifier $emailVerifier;
+
+    public function __construct(EmailVerifier $emailVerifier)
     {
-        // Simuler des données utilisateurs pour l'affichage
-        $users = [
-            [
-                'id' => 1,
-                'nom' => 'Bernard Martin',
-                'email' => 'bernard.martin@free.fr ',
-                'role' => 'Directeur',
-                'status' => 'Actif',
-                'avatar' => null
+        $this->emailVerifier = $emailVerifier;
+    }
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/admin/update-roles', name: 'app_admin_update_roles')]
+    public function updateRoles(UserRepository $userRepository): Response
+    {
+        $count = $userRepository->updateAllUserRoles();
+
+        $this->addFlash('success', "{$count} utilisateurs ont été mis à jour avec succès.");
+
+        return $this->redirectToRoute('app_admin_dashboard');
+    }
+    
+    #[Route('/', name: 'app_admin_dashboard')]
+    public function dashboard(UserRepository $userRepository, ProjectRepository $projectRepository): Response
+    {
+        // Dans cette méthode, assurez-vous que les appels à findByRole utilisent la nouvelle implémentation
+        $admins = $userRepository->findByRole(UserStatus::ADMIN->value);
+        $directeurs = $userRepository->findByRole(UserStatus::DIRECTEUR->value);
+        $chefsProjets = $userRepository->findByRole(UserStatus::CHEF_PROJET->value);
+        $employes = $userRepository->findByRole(UserStatus::EMPLOYE->value);
+
+        // Statistiques
+        $stats = [
+            'utilisateurs' => [
+                'total' => count($userRepository->findAll()),
+                'actifs' => $userRepository->countActive(),
             ],
-            [
-                'id' => 2,
-                'nom' => 'Clara Lefèvre',
-                'email' => 'clara.lefevre@orange.fr',
-                'role' => 'Chefs de Projet ',
-                'status' => 'Actif',
-                'avatar' => null
+            'projets' => [
+                'total' => count($projectRepository->findAll()),
+                // Ajoutez d'autres statistiques de projet si nécessaire
             ],
-            [
-                'id' => 3,
-                'nom' => 'David  Moreau',
-                'email' => 'david.moreau@orange.fr',
-                'role' => 'Chefs de Projet',
-                'status' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 4,
-                'nom' => 'François Girard',
-                'email' => 'francois.girard@gmail.com',
-                'role' => 'Employés',
-                'status' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 5,
-                'nom' => 'Hélène Bernard',
-                'email' => 'helene.bernard@gmail.com',
-                'role' => 'Employés',
-                'status' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 6,
-                'nom' => 'Julien Fontaine',
-                'email' => 'julien.fontaine@example.com',
-                'role' => 'Employés',
-                'status' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 7,
-                'nom' => 'Karine Roche',
-                'email' => 'karine.roche@gmail.com',
-                'role' => 'Employés',
-                'status' => 'Inactif',
-                'avatar' => null
-            ]
         ];
 
-        return $this->render('admin/index.html.twig', [
-            'controller_name' => 'AdminController',
+        return $this->render('admin/dashboard.html.twig', [
+            'stats' => $stats,
+            'admins' => $admins,
+            'directeurs' => $directeurs,
+            'chefs_projets' => $chefsProjets,
+            'employes' => $employes,
+        ]);
+    }
+
+    #[Route('/users', name: 'app_admin_users')]
+    public function usersList(UserRepository $userRepository, Request $request): Response
+    {
+        // Filtrer par rôle si demandé
+        $role = $request->query->get('role');
+
+        if ($role) {
+            try {
+                $roleEnum = UserStatus::from($role);
+                $users = $userRepository->findByRole($role);
+            } catch (\ValueError $e) {
+                $users = $userRepository->findAll();
+            }
+        } else {
+            $users = $userRepository->findAll();
+        }
+
+        return $this->render('admin/users.html.twig', [
             'users' => $users,
-            'current_user' => [
-                'nom' => 'admin',
-                'role' => 'Administrateur'
-            ]
+            'current_role' => $role,
+        ]);
+    }
+
+    #[Route('/user/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
+    public function newUser(
+        Request $request,
+        UserPasswordHasherInterface $userPasswordHasher,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = new User();
+        $form = $this->createForm(UserTypeForm::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // encode the plain password
+            $user->setMdp(
+                $userPasswordHasher->hashPassword(
+                    $user,
+                    $form->get('plainPassword')->getData()
+                )
+            );
+
+            // Set current time
+            $user->setdateCreation(new \DateTimeImmutable());
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+        }
+
+        return $this->render('admin/new_user.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 
@@ -106,7 +144,7 @@ final class AdminController extends AbstractController
 
 
     #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
-    public function dashboard(): Response
+    public function Admindashboard(): Response
     {
         // Logique spécifique pour le dashboard admin
 
@@ -116,3 +154,77 @@ final class AdminController extends AbstractController
         ]);
     }
 }
+    
+
+    // #[Route('/admin', name: 'app_admin')]
+    // public function UserList(): Response
+    // {
+    //     // Simuler des données utilisateurs pour l'affichage
+    //     $users = [
+    //         [
+    //             'id' => 1,
+    //             'nom' => 'Bernard Martin',
+    //             'email' => 'bernard.martin@free.fr ',
+    //             'role' => 'Directeur',
+    //             'status' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 2,
+    //             'nom' => 'Clara Lefèvre',
+    //             'email' => 'clara.lefevre@orange.fr',
+    //             'role' => 'Chefs de Projet ',
+    //             'status' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 3,
+    //             'nom' => 'David  Moreau',
+    //             'email' => 'david.moreau@orange.fr',
+    //             'role' => 'Chefs de Projet',
+    //             'status' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 4,
+    //             'nom' => 'François Girard',
+    //             'email' => 'francois.girard@gmail.com',
+    //             'role' => 'Employés',
+    //             'status' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 5,
+    //             'nom' => 'Hélène Bernard',
+    //             'email' => 'helene.bernard@gmail.com',
+    //             'role' => 'Employés',
+    //             'status' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 6,
+    //             'nom' => 'Julien Fontaine',
+    //             'email' => 'julien.fontaine@example.com',
+    //             'role' => 'Employés',
+    //             'status' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 7,
+    //             'nom' => 'Karine Roche',
+    //             'email' => 'karine.roche@gmail.com',
+    //             'role' => 'Employés',
+    //             'status' => 'Inactif',
+    //             'avatar' => null
+    //         ]
+    //     ];
+
+    //     return $this->render('admin/index.html.twig', [
+    //         'controller_name' => 'AdminController',
+    //         'users' => $users,
+    //         'current_user' => [
+    //             'nom' => 'admin',
+    //             'role' => 'Administrateur'
+    //         ]
+    //     ]);
+    // }

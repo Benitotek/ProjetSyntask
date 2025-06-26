@@ -28,7 +28,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public const ROLE_ADMIN = 'ROLE_ADMIN';
     public const ROLE_DIRECTEUR = 'ROLE_DIRECTEUR';
-    public const ROLE_CHEF_DE_PROJET = 'ROLE_CHEF_DE_PROJET';
+    public const ROLE_CHEF_PROJET = 'ROLE_CHEF_PROJET';
     public const ROLE_EMPLOYE = 'ROLE_EMPLOYE';
 
     #[ORM\Id]
@@ -56,13 +56,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #Notblank(message: "Le rôle est obligatoire")
     #[Assert\NotBlank(message: "Le rôle est obligatoire")]
-    #[ORM\Column(type: Types::JSON)]
+    // #[ORM\Column(type: Types::JSON)]
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Assert\Choice(
+        choices: [self::ROLE_ADMIN, self::ROLE_DIRECTEUR, self::ROLE_CHEF_PROJET, self::ROLE_EMPLOYE],
+        multiple: true
+    )]
     private array $roles = [];
 
     #[NotBlank(message: "L'email' est obligatoire")]
     #[Assert\Length(max: 180, maxMessage: "L'email doit contenir au plus 180 caractères")]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
+
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    private ?string $role = null;
 
     #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
     #[Assert\Length(min: 6, minMessage: "Le mot de passe doit contenir au moins 6 caractères")]
@@ -83,9 +91,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     // Projets gérés (OneToMany, inversé de chefDeProjet)
 
-    // Removed duplicate declaration of $projetsGeres
+
 
     // Projets assignés (ManyToMany, inversé de membres)
+    #[ORM\OneToMany(mappedBy: 'Chef_Projet', targetEntity: Project::class, orphanRemoval: true)]
+    private Collection $projets;
+
+    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
+    private Collection $projects;
 
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
     // private Collection $projetsAssignes; // Removed duplicate declaration
@@ -94,13 +107,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
     // private Collection $tachesAssignees; // Removed duplicate declaration
-    /**
-     * @var Collection<int, UserProject>
-     */
+    private Collection $tasks;
 
-    // Removed duplicate or conflicting declaration of $isVerified
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ResetPasswordRequest::class)]
+    private Collection $resetPasswordRequests;
 
-    // Removed duplicate constructor
+    // Removed duplicate constructor; initialization is handled in the unified constructor below.
+
+
 
     public function getId(): ?int
     {
@@ -140,18 +154,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->statut = $statut;
 
+        // Optionally update roles if needed
+        // $this->roles = [$statut];
+
         return $this;
     }
 
-    // Removed duplicate getRole() and setRole() methods above; see unified version below.
+    // public function getStatut(): ?string
+    // {
+    //     return $this->statut;
+    // }
 
-    /**
-     * Returns the user roles array.
-     */
-    public function getRole(): ?array
-    {
-        return $this->roles;
-    }
+    // public function setStatut(string $statut): static
+    // {
+    //     $this->statut = $statut;
+
+    //     return $this;
+    // }
 
     public function getEmail(): ?string
     {
@@ -165,6 +184,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
     public function getMdp(): ?string
     {
         return $this->mdp;
@@ -175,21 +203,73 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->mdp = $mdp;
         return $this;
     }
-
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-        return array_unique($roles);
+        // Garantir que chaque utilisateur a au moins ROLE_USER
+        if (empty($this->roles)) {
+            $this->roles[] = 'ROLE_USER';
+        }
+
+        return array_unique($this->roles);
     }
 
+    /**
+     * Cette méthode n'est pas directement mappée à la base de données
+     * Elle est utilisée pour compatibilité avec Symfony Security
+     */
     public function setRoles(array $roles): static
     {
-
         $this->roles = $roles;
+
+        // Si des rôles sont fournis, mettre à jour la colonne role
+        if (!empty($roles)) {
+            $this->setRoles($roles[0]);
+        }
+
         return $this;
     }
+    /**
+     * Getter pour la colonne 'role' dans la base de données
+     */
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
+    /**
+     * Setter pour la colonne 'role' dans la base de données
+     */
+    public function setRole(?string $role): static
+    {
+        $this->role = $role;
+
+        // Réinitialiser les rôles en cache
+        $this->roles = $role ? [$role] : [];
+
+        return $this;
+    }
+    // public function getRoles(): array
+    // {
+    //     $roles = $this->roles;
+    //     // guarantee every user at least has ROLE_USER
+    //     $roles[] = 'ROLE_USER';
+    //     return array_unique($roles);
+    // }
+
+    // public function setRoles(array $roles): static
+    // {
+
+    //     $this->roles = $roles;
+    //     return $this;
+    // }
     /**
      * Version 1 bug sur les roles test avec version 2 (mise en place de ROLES) dans methode 1 commenter a la suite
      * 
@@ -258,11 +338,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Removes sensitive data from the user.
      */
-    public function eraseCredentials(): void
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
-    }
+    // public function eraseCredentials(): void
+    // {
+    //     // If you store any temporary, sensitive data on the user, clear it here
+    //     // $this->plainPassword = null;
+    // }
 
     public function isEstActif(): ?bool
     {
@@ -372,12 +452,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    // Méthode pour faciliter la vérification des rôles
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->getRoles(), true);
+    }
 
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
     public function __construct()
     {
+        // Initialize all collections, including those from both constructor definitions
+        $this->projets = new ArrayCollection();
+        $this->projects = new ArrayCollection();
+        $this->tasks = new ArrayCollection();
+        $this->resetPasswordRequests = new ArrayCollection();
 
         $this->projetsGeres = new ArrayCollection();
         $this->projetsAssignes = new ArrayCollection();

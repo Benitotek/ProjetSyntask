@@ -44,7 +44,7 @@ class ProjectVoter extends Voter
         }
 
         // Chef de projet peut voir ses projets
-        if (in_array('ROLE_CHEF_DE_PROJET', $user->getRoles()) && $project->getChefDeProjet() === $user) {
+        if (in_array('ROLE_CHEF_PROJET', $user->getRoles()) && $project->getChef_Projet() === $user) {
             return true;
         }
 
@@ -60,7 +60,7 @@ class ProjectVoter extends Voter
         }
 
         // Chef de projet peut éditer ses projets
-        if (in_array('ROLE_CHEF_DE_PROJET', $user->getRoles()) && $project->getChefDeProjet() === $user) {
+        if (in_array('ROLE_CHEF_PROJET', $user->getRoles()) && $project->getChef_Projet() === $user) {
             return true;
         }
 
