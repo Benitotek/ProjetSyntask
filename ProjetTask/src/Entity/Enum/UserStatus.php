@@ -19,7 +19,7 @@ enum UserStatus: string
             UserStatus::INACTIF => 'Inactif',
             UserStatus::EN_CONGE => 'En congé',
             UserStatus::ABSENT => 'Absent',
-            UserStatus::CHEF_PROJET => 'Chef de projet',
+            UserStatus::CHEF_PROJET => 'Chef_Projet',
             UserStatus::EMPLOYE => 'Employé',
             UserStatus::DIRECTEUR => 'Directeur',
             UserStatus::ADMIN => 'Administrateur',

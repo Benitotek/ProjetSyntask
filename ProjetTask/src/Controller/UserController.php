@@ -15,10 +15,76 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-// #[Route('/admin/users')]
-// #[IsGranted('ROLE_ADMIN')]
+#[Route('/admin/users')]
+#[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
+    /**
+     * Convertit un statut en chaîne de caractères en objet UserStatus
+     * Si la chaîne ne correspond pas à une valeur valide, renvoie null
+     */
+    private function stringToUserStatus(?string $statusString): ?UserStatus
+    {
+        if (empty($statusString)) {
+            return null;
+        }
+
+        try {
+            // Essayer de convertir directement si c'est une constante d'énumération
+            return UserStatus::from($statusString);
+        } catch (\ValueError $e) {
+            // Si ce n'est pas une constante d'énumération valide,
+            // essayer de trouver la correspondance par nom
+            foreach (UserStatus::cases() as $case) {
+                if (strtoupper($case->name) === strtoupper($statusString)) {
+                    return $case;
+                }
+            }
+
+            // Si c'est un nombre, essayer une conversion numérique
+            if (is_numeric($statusString)) {
+                $intStatus = (int)$statusString;
+                foreach (UserStatus::cases() as $case) {
+                    // Les enums peuvent être convertis en entiers
+                    if ($case->value === $intStatus) {
+                        return $case;
+                    }
+                }
+            }
+        }
+
+        // Aucune correspondance trouvée
+        return null;
+    }
+
+    /**
+     * Corrige la méthode mapStatusToRole pour gérer des chaînes de caractères
+     */
+    private function mapStatusToRole($statut): string
+    {
+        // Si c'est déjà un UserStatus, l'utiliser directement
+        if ($statut instanceof UserStatus) {
+            $statusEnum = $statut;
+        } else {
+            // Sinon, essayer de le convertir
+            $statusEnum = $this->stringToUserStatus($statut);
+
+            // Si la conversion échoue, utiliser un rôle par défaut
+            if ($statusEnum === null) {
+                return 'ROLE_USER';
+            }
+        }
+
+        // Maintenant que nous avons un UserStatus, on peut faire le mapping
+        return match ($statusEnum) {
+            UserStatus::ADMIN => 'ROLE_ADMIN',
+            UserStatus::DIRECTEUR => 'ROLE_DIRECTEUR',
+            UserStatus::CHEF_PROJET => 'ROLE_CHEF_DE_PROJET',
+            UserStatus::EMPLOYE => 'ROLE_EMPLOYE',
+            default => 'ROLE_USER',
+        };
+    }
+
     // Commentez temporairement cette ligne pour permettre l'accès
     // #[IsGranted('ROLE_ADMIN')]
 
@@ -50,16 +116,16 @@ class UserController extends AbstractController
         return $this->redirectToRoute('app_login');
     }
 
-    private function mapStatusToRole(UserStatus $statut): string
-    {
-        return match ($statut) {
-            UserStatus::ADMIN => 'ROLE_ADMIN',
-            UserStatus::DIRECTEUR => 'ROLE_DIRECTEUR',
-            UserStatus::CHEF_PROJET => 'ROLE_CHEF_DE_PROJET',
-            UserStatus::EMPLOYE => 'ROLE_EMPLOYE',
-            default => 'ROLE_USER',
-        };
-    }
+    // private function mapStatusToRole(UserStatus $statut): string
+    // {
+    //     return match ($statut) {
+    //         UserStatus::ADMIN => 'ROLE_ADMIN',
+    //         UserStatus::DIRECTEUR => 'ROLE_DIRECTEUR',
+    //         UserStatus::CHEF_PROJET => 'ROLE_CHEF_DE_PROJET',
+    //         UserStatus::EMPLOYE => 'ROLE_EMPLOYE',
+    //         default => 'ROLE_USER',
+    //     };
+    // }
 
     // Ajoutez une route plus simple qui n'exige pas de redirection
     #[Route('/fix-roles-simple', name: 'app_fix_roles_simple')]
