@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\UserStatus;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -12,15 +13,16 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use App\Entity\ResetPasswordRequest;
+use App\Entity\Project;
+use App\Entity\Task;
 
-/**
- * @ORM\Table(name="user")
- */
 #[ORM\Table(name: 'user')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Un compte existe déjà avec cette adresse email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    // Constantes pour les statuts
     public const STATUT_ACTIF = 'ACTIF';
     public const STATUT_INACTIF = 'INACTIF';
     public const STATUT_EN_CONGE = 'EN_CONGE';
@@ -36,19 +38,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     #[Assert\Length(max: 50, maxMessage: "Le nom doit contenir au plus 50 caractères")]
     #[ORM\Column(length: 50)]
     private ?string $nom = null;
 
-    #[NotBlank(message: "Le prénom est obligatoire")]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
     #[Assert\Length(max: 50, maxMessage: "Le prénom doit contenir au plus 50 caractères")]
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
     #[Assert\NotBlank(message: "Le statut est obligatoire")]
-
-    #[ORM\Column(type: Types::STRING, length: 20, enumType: null)]
+    #[ORM\Column(type: Types::STRING, length: 20)]
     #[Assert\Choice(choices: [self::STATUT_ACTIF, self::STATUT_INACTIF, self::STATUT_EN_CONGE, self::STATUT_ABSENT])]
     private ?string $statut = self::STATUT_ACTIF;
     // #[ORM\Column(type: Types::JSON)]
@@ -57,26 +58,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #Notblank(message: "Le rôle est obligatoire")
     #[Assert\NotBlank(message: "Le rôle est obligatoire")]
     // #[ORM\Column(type: Types::JSON)]
-    #[ORM\Column(type: Types::JSON, nullable: true)]
-    #[Assert\Choice(
-        choices: [self::ROLE_ADMIN, self::ROLE_DIRECTEUR, self::ROLE_CHEF_PROJET, self::ROLE_EMPLOYE],
-        multiple: true
-    )]
-    private array $roles = [];
+    // #[ORM\Column(type: Types::JSON, nullable: true)]
+    // #[Assert\Choice(
+    //     choices: [self::ROLE_ADMIN, self::ROLE_DIRECTEUR, self::ROLE_CHEF_PROJET, self::ROLE_EMPLOYE],
+    //     multiple: true
+    // )]
+    // private array $roles = [];
+    #[ORM\Column(name: "role", type: "string", length: 255)]
+    private ?string $role = null;
 
-    #[NotBlank(message: "L'email' est obligatoire")]
+    #[Assert\NotBlank(message: "L'email' est obligatoire")]
     #[Assert\Length(max: 180, maxMessage: "L'email doit contenir au plus 180 caractères")]
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $role = null;
+    // #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    // private ?string $role = null;
 
     #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
     #[Assert\Length(min: 6, minMessage: "Le mot de passe doit contenir au moins 6 caractères")]
     #[ORM\Column(length: 255)]
     private ?string $mdp = null;
-
+    // Utiliser le nom exact de la colonne dans la base de données
+    // #[ORM\Column(name: "mdp")]
+    // private ?string $password = null;
     #[ORM\Column]
     private ?bool $estActif = true;
 
@@ -87,28 +92,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $dateMaj = null;
 
     /**
-     * @var Collection<int, UserProject>
+     * @var Collection<int, ResetPasswordRequest>
      */
-    // Projets gérés (OneToMany, inversé de chefDeProjet)
-
-
-
-    // Projets assignés (ManyToMany, inversé de membres)
-    #[ORM\OneToMany(mappedBy: 'Chef_Projet', targetEntity: Project::class, orphanRemoval: true)]
-    private Collection $projets;
-
-    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
-    private Collection $projects;
-
-    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
-    // private Collection $projetsAssignes; // Removed duplicate declaration
-
-    // Tâches assignées (OneToMany, inversé de assignedUser)
-
-    #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
-    // private Collection $tachesAssignees; // Removed duplicate declaration
-    private Collection $tasks;
-
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: ResetPasswordRequest::class)]
     private Collection $resetPasswordRequests;
 
@@ -145,20 +130,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getStatut(): ?string
-    {
-        return $this->statut;
-    }
+    // public function getStatut(): ?string
+    // {
+    //     return $this->statut;
+    // }
 
-    public function setStatut(string $statut): static
-    {
-        $this->statut = $statut;
+    // public function setStatut(string $statut): static
+    // {
+    //     $this->statut = $statut;
 
-        // Optionally update roles if needed
-        // $this->roles = [$statut];
+    //     // Optionally update roles if needed
+    //     // $this->roles = [$statut];
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     // public function getStatut(): ?string
     // {
@@ -193,6 +178,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see PasswordAuthenticatedUserInterface
      */
+    // Méthodes pour la compatibilité avec le champ mdp
+    // public function getMdp(): ?string
+    // {
+    //     return $this->password;
+    // }
+
+    // public function setMdp(string $password): static
+    // {
+    //     $this->password = $password;
+    //     return $this;
+    // }
     public function getMdp(): ?string
     {
         return $this->mdp;
@@ -206,38 +202,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
+
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
-    public function getRoles(): array
-    {
-        // Garantir que chaque utilisateur a au moins ROLE_USER
-        if (empty($this->roles)) {
-            $this->roles[] = 'ROLE_USER';
-        }
+    // public function getRoles(): array
+    // {
+    //     // Garantir que chaque utilisateur a au moins ROLE_USER
+    //     if (empty($this->roles)) {
+    //         $this->roles[] = 'ROLE_USER';
+    //     }
 
-        return array_unique($this->roles);
-    }
+    //     return array_unique($this->roles);
+    // }
 
     /**
      * Cette méthode n'est pas directement mappée à la base de données
      * Elle est utilisée pour compatibilité avec Symfony Security
      */
+    public function getRoles(): array
+    {
+        // Cette méthode doit retourner un tableau de rôles
+        if ($this->role) {
+            return [$this->role];
+        }
+
+        // Assurer qu'un utilisateur a au moins ROLE_USER
+        return ['ROLE_USER'];
+    }
+
+    /**
+     * Setter pour la compatibilité avec certaines parties de Symfony
+     */
     public function setRoles(array $roles): static
     {
-        $this->roles = $roles;
-
-        // Si des rôles sont fournis, mettre à jour la colonne role
+        // Si des rôles sont fournis, prendre le premier comme rôle principal
         if (!empty($roles)) {
-            $this->setRoles($roles[0]);
+            $this->role = $roles[0];
         }
 
         return $this;
     }
+
     /**
-     * Getter pour la colonne 'role' dans la base de données
+     * Getter pour la colonne 'role'
      */
     public function getRole(): ?string
     {
@@ -245,14 +255,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Setter pour la colonne 'role' dans la base de données
+     * Setter pour la colonne 'role'
      */
     public function setRole(?string $role): static
     {
         $this->role = $role;
+        return $this;
+    }
+    public function getStatut(): ?string
+    {
+        return $this->statut;
+    }
 
-        // Réinitialiser les rôles en cache
-        $this->roles = $role ? [$role] : [];
+    public function setStatut(string $statut): static
+    {
+        $this->statut = $statut;
+
+        // Synchroniser le rôle avec le statut
+        switch ($statut) {
+            case self::STATUT_ACTIF:
+                $this->role = self::ROLE_EMPLOYE;
+                break;
+            case self::STATUT_INACTIF:
+                $this->role = self::ROLE_EMPLOYE;
+                break;
+            case self::STATUT_EN_CONGE:
+                $this->role = self::ROLE_EMPLOYE;
+                break;
+            case self::STATUT_ABSENT:
+                $this->role = self::ROLE_EMPLOYE;
+                break;
+            default:
+                $this->role = 'ROLE_USER';
+        }
 
         return $this;
     }
@@ -389,6 +424,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     // Projets gérés (chef de projet)
     #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'chef_Projet')]
     private Collection $projetsGeres;
+
     /**
      * @return Collection<int, Project>
      */
@@ -396,11 +432,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->projetsGeres;
     }
-    /**
-     * @var Collection<int, Project>
-     */
-    // Projets où le user est membre
-    // The property $projetsAssignes is already declared above.
+
     /**
      * @var Collection<int, Project>
      */
@@ -463,10 +495,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        // Initialize all collections, including those from both constructor definitions
-        $this->projets = new ArrayCollection();
-        $this->projects = new ArrayCollection();
-        $this->tasks = new ArrayCollection();
+        // Initialize all collections and properties
         $this->resetPasswordRequests = new ArrayCollection();
 
         $this->projetsGeres = new ArrayCollection();
@@ -474,11 +503,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tachesAssignees = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
+        $this->statut = self::STATUT_ACTIF;
+        $this->estActif = true;
+        $this->isVerified = false;
     }
 
-    public function isVerified(): bool
+    /**
+     * Needed for Symfony < 5.3 compatibility.
+     */
+    public function getUsername(): string
     {
-        return $this->isVerified;
+        return (string) $this->email;
     }
 
     public function setIsVerified(bool $isVerified): static

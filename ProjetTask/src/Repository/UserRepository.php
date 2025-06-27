@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use App\Enum\UserStatus;
+use App\Service\UserRoleUpdater;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -20,10 +21,14 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+   private ?UserRoleUpdater $userRoleUpdater;
+
+    public function __construct(ManagerRegistry $registry, ?UserRoleUpdater $userRoleUpdater = null)
     {
         parent::__construct($registry, User::class);
+        $this->userRoleUpdater = $userRoleUpdater;
     }
+
 
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
@@ -77,7 +82,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                     $roleValue = $rolePrefix . 'DIRECTEUR';
                     break;
                 case UserStatus::CHEF_PROJET:
-                    $roleValue = $rolePrefix . 'CHEF_DE_PROJET';
+                    $roleValue = $rolePrefix . 'CHEF_PROJET';
                     break;
                 case UserStatus::EMPLOYE:
                     $roleValue = $rolePrefix . 'EMPLOYE';

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\UserRoleUpdater;
 use App\Entity\User;
 use App\Enum\UserStatus;
 use App\Form\UserTypeForm;
@@ -36,7 +37,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
-    
+
     #[Route('/', name: 'app_admin_dashboard')]
     public function dashboard(UserRepository $userRepository, ProjectRepository $projectRepository): Response
     {

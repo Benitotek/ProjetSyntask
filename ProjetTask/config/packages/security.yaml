@@ -87,6 +87,14 @@ security:
 
     # Contrôle d'accès
     access_control:
+       # Nouvelle route pour corriger les rôles (à mettre en premier)
+        - { path: ^/fix-roles-simple, roles: PUBLIC_ACCESS }
+        
+        # Pages publiques existantes
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        # ... (le reste de vos règles d'accès)
+        
         # Pages publiques (ordre important !)
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
