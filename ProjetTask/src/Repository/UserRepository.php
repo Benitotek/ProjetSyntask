@@ -68,7 +68,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
             ->where('u.statut != :status_inactif')
-            ->setParameter('status_inactif', UserStatus::INACTIF)
+            ->setParameter('status_inactif', UserStatus::INACTIF->value)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -91,9 +91,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function findActiveUsers(?string $role = null): array
     {
+        // Création du QueryBuilder pour récupérer les utilisateurs actifs
+        // et filtrer par rôle si spécifié
         $qb = $this->createQueryBuilder('u')
             ->where('u.statut != :status_inactif')
-            ->setParameter('status_inactif', UserStatus::INACTIF)
+            ->setParameter('status_inactif', UserStatus::INACTIF->value)
             ->orderBy('u.nom', 'ASC');
 
         if ($role) {

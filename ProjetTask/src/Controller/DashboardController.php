@@ -56,7 +56,7 @@ class DashboardController extends AbstractController
                 'termines' => $projectRepository->countByStatus([Project::STATUT_TERMINE]),
             ],
             'utilisateurs' => [
-                'actifs' => $userRepository->countActive(),
+                'actifs' => count($userRepository->findActiveUsers()),
                 'chefs_projet' => count($userRepository->findChefsProjets()),
             ],
         ];
