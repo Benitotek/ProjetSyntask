@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Entity\User;
 use App\Enum\UserStatus;
-use App\Service\UserRoleUpdater;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -21,77 +20,23 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    private ?UserRoleUpdater $userRoleUpdater;
-
-    public function __construct(ManagerRegistry $registry, ?UserRoleUpdater $userRoleUpdater = null)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
-        $this->userRoleUpdater = $userRoleUpdater;
     }
 
-
-    /**
-     * Used to upgrade (rehash) the user's password automatically over time.
-     */
     /**
      * Trouver les utilisateurs par statut/rôle
-     * CORRECTION: Utilisation de statut au lieu de roles
+     * @param array $roles 
+     * @return User[]
      */
     public function findByRole(string $role): array
     {
-        try {
-            // Convertir la chaîne de rôle en valeur enum
-            $statusValue = UserStatus::from($role);
-
-            return $this->createQueryBuilder('u')
-                ->where('u.statut = :status')
-                ->setParameter('status', $statusValue)
-                ->orderBy('u.nom', 'ASC')
-                ->getQuery()
-                ->getResult();
-        } catch (\ValueError $e) {
-            // Si le rôle ne correspond pas à une valeur d'enum valide
-            return [];
-        }
-    }
-    /**
-     * Sauvegarde un utilisateur
-     */
-    public function save(User $user): void
-    { // Synchroniser le rôle et le statut avant la sauvegarde
-        $this->synchronizeRoleAndStatus($user);
-        $this->getEntityManager()->persist($user);
-        $this->getEntityManager()->flush();
-    }
-    /**
-     * Synchroniser le rôle avec le statut de l'utilisateur
-     */
-    private function synchronizeRoleAndStatus(User $user): void
-    {
-        // Synchroniser le role avec le statut
-        if ($user->getStatut() !== null) {
-            // Mapper le statut vers un rôle Symfony
-            $rolePrefix = 'ROLE_';
-            $roleValue = '';
-
-            switch ($user->getStatut()) {
-                case UserStatus::ADMIN:
-                    $roleValue = $rolePrefix . 'ADMIN';
-                    break;
-                case UserStatus::DIRECTEUR:
-                    $roleValue = $rolePrefix . 'DIRECTEUR';
-                    break;
-                case UserStatus::CHEF_PROJET:
-                    $roleValue = $rolePrefix . 'CHEF_PROJET';
-                    break;
-                case UserStatus::EMPLOYE:
-                    $roleValue = $rolePrefix . 'EMPLOYE';
-                    break;
-                default:
-                    // Pour les autres statuts, utiliser ROLE_USER
-                    $roleValue = 'ROLE_USER';
-            }
-        }
+        $qb = $this->createQueryBuilder('u')
+            ->where('u.roles LIKE :role')
+            ->setParameter('role', '%' . $role . '%')
+            ->orderBy('u.nom', 'ASC');
+        return $qb->getQuery()->getResult();
     }
     /**
      * Supprime un utilisateur
@@ -132,8 +77,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
-            ->where('u.statut != :status_inactive')
-            ->setParameter('status_inactive', UserStatus::INACTIF)
+            ->where('u.statut != :status_inactif')
+            ->setParameter('status_inactif', UserStatus::INACTIF)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -157,8 +102,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findActiveUsers(?string $role = null): array
     {
         $qb = $this->createQueryBuilder('u')
-            ->where('u.statut != :status_inactive')
-            ->setParameter('status_inactive', UserStatus::INACTIF)
+            ->where('u.statut != :status_inactif')
+            ->setParameter('status_inactif', UserStatus::INACTIF)
             ->orderBy('u.nom', 'ASC');
 
         if ($role) {

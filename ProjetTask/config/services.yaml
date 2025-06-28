@@ -22,12 +22,5 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # Explictily define and configure the UserRoleUpdater service
-    App\Service\UserRoleUpdater:
-        arguments:
-            $entityManager: "@doctrine.orm.entity_manager"
     # please note that last definitions always *replace* previous ones
     # Inject the UserRoleUpdater into UserRepository
-    App\Repository\UserRepository:
-        arguments:
-            $registry: "@doctrine"
-            $userRoleUpdater: '@App\Service\UserRoleUpdater'
