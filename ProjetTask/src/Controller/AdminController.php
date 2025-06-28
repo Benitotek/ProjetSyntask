@@ -28,69 +28,7 @@ class AdminController extends AbstractController
         $this->emailVerifier = $emailVerifier;
     }
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/admin/update-roles', name: 'app_admin_update_roles')]
-    public function updateRoles(UserRepository $userRepository): Response
-    {
-        $count = $userRepository->updateAllUserRoles();
-
-        $this->addFlash('success', "{$count} utilisateurs ont été mis à jour avec succès.");
-
-        return $this->redirectToRoute('app_admin_dashboard');
-    }
-
-    #[Route('/', name: 'app_admin_dashboard')]
-    public function dashboard(UserRepository $userRepository, ProjectRepository $projectRepository): Response
-    {
-        // Dans cette méthode, assurez-vous que les appels à findByRole utilisent la nouvelle implémentation
-        $admins = $userRepository->findByRole(UserStatus::ADMIN->value);
-        $directeurs = $userRepository->findByRole(UserStatus::DIRECTEUR->value);
-        $chefsProjets = $userRepository->findByRole(UserStatus::CHEF_PROJET->value);
-        $employes = $userRepository->findByRole(UserStatus::EMPLOYE->value);
-
-        // Statistiques
-        $stats = [
-            'utilisateurs' => [
-                'total' => count($userRepository->findAll()),
-                'actifs' => $userRepository->countActive(),
-            ],
-            'projets' => [
-                'total' => count($projectRepository->findAll()),
-                // Ajoutez d'autres statistiques de projet si nécessaire
-            ],
-        ];
-
-        return $this->render('admin/dashboard.html.twig', [
-            'stats' => $stats,
-            'admins' => $admins,
-            'directeurs' => $directeurs,
-            'chefs_projets' => $chefsProjets,
-            'employes' => $employes,
-        ]);
-    }
-
-    #[Route('/users', name: 'app_admin_users')]
-    public function usersList(UserRepository $userRepository, Request $request): Response
-    {
-        // Filtrer par rôle si demandé
-        $role = $request->query->get('role');
-
-        if ($role) {
-            try {
-                $roleEnum = UserStatus::from($role);
-                $users = $userRepository->findByRole($role);
-            } catch (\ValueError $e) {
-                $users = $userRepository->findAll();
-            }
-        } else {
-            $users = $userRepository->findAll();
-        }
-
-        return $this->render('admin/users.html.twig', [
-            'users' => $users,
-            'current_role' => $role,
-        ]);
-    }
-
+  
     #[Route('/user/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function newUser(
         Request $request,
@@ -111,7 +49,7 @@ class AdminController extends AbstractController
             );
 
             // Set current time
-            $user->setdateCreation(new \DateTimeImmutable());
+            $user->setDateCreation(new \DateTimeImmutable());
 
             $entityManager->persist($user);
             $entityManager->flush();
