@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-   private ?UserRoleUpdater $userRoleUpdater;
+    private ?UserRoleUpdater $userRoleUpdater;
 
     public function __construct(ManagerRegistry $registry, ?UserRoleUpdater $userRoleUpdater = null)
     {
@@ -90,10 +90,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                 default:
                     // Pour les autres statuts, utiliser ROLE_USER
                     $roleValue = 'ROLE_USER';
-            }
-
-            if (!empty($roleValue)) {
-                $user->setRole($roleValue);
             }
         }
     }

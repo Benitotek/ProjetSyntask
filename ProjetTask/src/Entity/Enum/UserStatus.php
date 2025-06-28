@@ -12,6 +12,7 @@ enum UserStatus: string
     case EMPLOYE = 'employe';
     case DIRECTEUR = 'directeur';
     case ADMIN = 'admin';
+
     public function label(): string
     {
         return match ($this) {

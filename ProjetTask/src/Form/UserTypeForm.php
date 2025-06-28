@@ -19,7 +19,7 @@ class UserTypeForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $isEdit = $options['is_edit'] ?? false;
-        
+
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
@@ -49,7 +49,7 @@ class UserTypeForm extends AbstractType
                 'label' => 'Rôles',
                 'choices' => [
                     'Employé' => User::ROLE_EMPLOYE,
-                    'Chef de projet' => User::ROLE_CHEF_DE_PROJET,
+                    'Chef de projet' => User::ROLE_CHEF_PROJET,
                     'Directeur' => User::ROLE_DIRECTEUR,
                     'Administrateur' => User::ROLE_ADMIN,
                 ],
