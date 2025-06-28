@@ -10,14 +10,7 @@ use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
-/**
- * @extends ServiceEntityRepository<User>
- *
- * @method User|null find($id, $lockMode = null, $lockVersion = null)
- * @method User|null findOneBy(array $criteria, array $orderBy = null)
- * @method User[]    findAll()
- * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
+
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
     public function __construct(ManagerRegistry $registry)
@@ -46,10 +39,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->remove($user);
         $this->getEntityManager()->flush();
     }
-    /**
-     * Met à jour le mot de passe d'un utilisateur
-     * @throws UnsupportedUserException si l'utilisateur n'est pas une instance de User
-     */
+
     public function updatePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
         if (!$user instanceof User) {
@@ -60,15 +50,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Symfony 5.3+ PasswordUpgraderInterface requirement.
+     */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
-        if (!$user instanceof User) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
-        }
-
-        $user->setMdp($newHashedPassword);
-        $this->save($user);
+        $this->updatePassword($user, $newHashedPassword);
     }
+
+
 
     /**
      * Compter les utilisateurs actifs (avec un compte non désactivé)
@@ -89,8 +79,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findChefsProjets(): array
     {
         return $this->createQueryBuilder('u')
-            ->where('u.statut = :status')
-            ->setParameter('status', UserStatus::CHEF_PROJET)
+            ->where('u.roles = :roles_chef_projet')
+            ->setParameter('roles_chef_projet', json_encode(['ROLE_CHEF_PROJET']))
             ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();
