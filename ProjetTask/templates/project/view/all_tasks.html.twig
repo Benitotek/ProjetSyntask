@@ -43,12 +43,12 @@
 			<div class="card-body">
 				<form method="get" class="row g-3">
 					<div class="col-md-3">
-						<label for="status" class="form-label">Statut</label>
-						<select name="status" id="status" class="form-select">
+						<label for="statut" class="form-label">Statut</label>
+						<select name="statut" id="statut" class="form-select">
 							<option value="">Tous les statuts</option>
-							<option value="en_attente" {% if filters.status == 'en_attente' %} selected {% endif %}>En attente</option>
-							<option value="en_cours" {% if filters.status == 'en_cours' %} selected {% endif %}>En cours</option>
-							<option value="termine" {% if filters.status == 'termine' %} selected {% endif %}>Terminé</option>
+							<option value="en_attente" {% if filters.statut == 'en_attente' %} selected {% endif %}>En attente</option>
+							<option value="en_cours" {% if filters.statut == 'en_cours' %} selected {% endif %}>En cours</option>
+							<option value="termine" {% if filters.statut == 'termine' %} selected {% endif %}>Terminé</option>
 						</select>
 					</div>
 

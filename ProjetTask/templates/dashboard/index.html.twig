@@ -61,7 +61,7 @@
 								{% if projects|length > 0 and projects[0].endDate is defined %}
 									<th>Date de fin</th>
 								{% endif %}
-								{% if projects|length > 0 and projects[0].status is defined %}
+								{% if projects|length > 0 and projects[0].statut is defined %}
 									<th>Statut</th>
 								{% endif %}
 								{% if projects|length > 0 and projects[0].priority is defined %}
@@ -88,16 +88,16 @@
 									{% if project.endDate is defined %}
 										<td>{{ project.endDate ? project.endDate|date('d/m/Y') : 'N/A' }}</td>
 									{% endif %}
-									{% if project.status is defined %}
+									{% if project.statut is defined %}
 										<td>
-											{% if project.status == 'En cours' %}
-												<span class="badge bg-primary">{{ project.status }}</span>
-											{% elseif project.status == 'Terminé' %}
-												<span class="badge bg-success">{{ project.status }}</span>
-											{% elseif project.status == 'En pause' %}
-												<span class="badge bg-warning">{{ project.status }}</span>
+											{% if project.statut == 'En cours' %}
+												<span class="badge bg-primary">{{ project.statut }}</span>
+											{% elseif project.statut == 'Terminé' %}
+												<span class="badge bg-success">{{ project.statut }}</span>
+											{% elseif project.statut == 'En pause' %}
+												<span class="badge bg-warning">{{ project.statut }}</span>
 											{% else %}
-												<span class="badge bg-secondary">{{ project.status }}</span>
+												<span class="badge bg-secondary">{{ project.statut }}</span>
 											{% endif %}
 										</td>
 									{% endif %}
@@ -191,7 +191,7 @@
 					<div class="card-body">
 						<h5 class="card-title">Tâches</h5>
 						<h2 class="card-text">{{ stats.totalTasks }}</h2>
-						<p>{{ stats.tasksByStatus['Terminé'] }}
+						<p>{{ stats.tasksBystatut['Terminé'] }}
 							terminées</p>
 					</div>
 				</div>
@@ -224,40 +224,40 @@
 					</div>
 					<div class="card-body">
 						<div class="progress mb-3">
-							{% set todoPercent = (stats.tasksByStatus['À faire'] / stats.totalTasks * 100)|round %}
-							{% set inProgressPercent = (stats.tasksByStatus['En cours'] / stats.totalTasks * 100)|round %}
-							{% set reviewPercent = (stats.tasksByStatus['En revue'] / stats.totalTasks * 100)|round %}
-							{% set donePercent = (stats.tasksByStatus['Terminé'] / stats.totalTasks * 100)|round %}
+							{% set todoPercent = (stats.tasksBystatut['À faire'] / stats.totalTasks * 100)|round %}
+							{% set inProgressPercent = (stats.tasksBystatut['En cours'] / stats.totalTasks * 100)|round %}
+							{% set reviewPercent = (stats.tasksBystatut['En revue'] / stats.totalTasks * 100)|round %}
+							{% set donePercent = (stats.tasksBystatut['Terminé'] / stats.totalTasks * 100)|round %}
 
-							<div class="progress-bar bg-secondary" style="width: {{ todoPercent }}%" title="À faire: {{ stats.tasksByStatus['À faire'] }}">
+							<div class="progress-bar bg-secondary" style="width: {{ todoPercent }}%" title="À faire: {{ stats.tasksBystatut['À faire'] }}">
 								{{ todoPercent }}%
 							</div>
-							<div class="progress-bar bg-primary" style="width: {{ inProgressPercent }}%" title="En cours: {{ stats.tasksByStatus['En cours'] }}">
+							<div class="progress-bar bg-primary" style="width: {{ inProgressPercent }}%" title="En cours: {{ stats.tasksBystatut['En cours'] }}">
 								{{ inProgressPercent }}%
 							</div>
-							<div class="progress-bar bg-warning" style="width: {{ reviewPercent }}%" title="En revue: {{ stats.tasksByStatus['En revue'] }}">
+							<div class="progress-bar bg-warning" style="width: {{ reviewPercent }}%" title="En revue: {{ stats.tasksBystatut['En revue'] }}">
 								{{ reviewPercent }}%
 							</div>
-							<div class="progress-bar bg-success" style="width: {{ donePercent }}%" title="Terminé: {{ stats.tasksByStatus['Terminé'] }}">
+							<div class="progress-bar bg-success" style="width: {{ donePercent }}%" title="Terminé: {{ stats.tasksBystatut['Terminé'] }}">
 								{{ donePercent }}%
 							</div>
 						</div>
 						<div class="row text-center">
 							<div class="col">
 								<span class="badge bg-secondary">À faire:
-									{{ stats.tasksByStatus['À faire'] }}</span>
+									{{ stats.tasksBystatut['À faire'] }}</span>
 							</div>
 							<div class="col">
 								<span class="badge bg-primary">En cours:
-									{{ stats.tasksByStatus['En cours'] }}</span>
+									{{ stats.tasksBystatut['En cours'] }}</span>
 							</div>
 							<div class="col">
 								<span class="badge bg-warning">En revue:
-									{{ stats.tasksByStatus['En revue'] }}</span>
+									{{ stats.tasksBystatut['En revue'] }}</span>
 							</div>
 							<div class="col">
 								<span class="badge bg-success">Terminé:
-									{{ stats.tasksByStatus['Terminé'] }}</span>
+									{{ stats.tasksBystatut['Terminé'] }}</span>
 							</div>
 						</div>
 					</div>
@@ -336,14 +336,14 @@
 									<td>{{ project.startDate ? project.startDate|date('d/m/Y') : 'N/A' }}</td>
 									<td>{{ project.endDate ? project.endDate|date('d/m/Y') : 'N/A' }}</td>
 									<td>
-										{% if project.status == 'En cours' %}
-											<span class="badge bg-primary">{{ project.status }}</span>
-										{% elseif project.status == 'Terminé' %}
-											<span class="badge bg-success">{{ project.status }}</span>
-										{% elseif project.status == 'En pause' %}
-											<span class="badge bg-warning">{{ project.status }}</span>
+										{% if project.statut == 'En cours' %}
+											<span class="badge bg-primary">{{ project.statut }}</span>
+										{% elseif project.statut == 'Terminé' %}
+											<span class="badge bg-success">{{ project.statut }}</span>
+										{% elseif project.statut == 'En pause' %}
+											<span class="badge bg-warning">{{ project.statut }}</span>
 										{% else %}
-											<span class="badge bg-secondary">{{ project.status }}</span>
+											<span class="badge bg-secondary">{{ project.statut }}</span>
 										{% endif %}
 									</td>
 									<td>
@@ -588,7 +588,7 @@
 						<p class="text-muted">Aucune tâche assignée.</p>
 					{% else %}
 						{% for task in user_tasks %}
-							<div class="card mb-2 kanban-card {{ task.priorityClass }} {{ task.statusClass }} {{ task.isOverdue ? 'task-overdue' : '' }}">
+							<div class="card mb-2 kanban-card {{ task.priorityClass }} {{ task.statutClass }} {{ task.isOverdue ? 'task-overdue' : '' }}">
 								<div class="card-body p-2">
 									<h6 class="card-title mb-1">{{ task.titre }}</h6>
 									<p class="card-text small text-muted mb-1">{{ task.project.titre }}</p>

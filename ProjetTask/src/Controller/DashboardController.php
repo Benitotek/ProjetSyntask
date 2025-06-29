@@ -51,9 +51,9 @@ class DashboardController extends AbstractController
         $stats = [
             'projets' => [
                 'total' => $projectRepository->countAll(),
-                'en_cours' => $projectRepository->countByStatus([Project::STATUT_EN_COURS]),
-                'en_attente' => $projectRepository->countByStatus([Project::STATUT_EN_ATTENTE]),
-                'termines' => $projectRepository->countByStatus([Project::STATUT_TERMINE]),
+                'en_cours' => $projectRepository->countBystatut([Project::STATUT_EN_COURS]),
+                'en_attente' => $projectRepository->countBystatut([Project::STATUT_EN_ATTENTE]),
+                'termines' => $projectRepository->countBystatut([Project::STATUT_TERMINE]),
             ],
             'utilisateurs' => [
                 'actifs' => count($userRepository->findActiveUsers()),

@@ -222,19 +222,19 @@
 				background: rgba(102, 126, 234, 0.05);
 			}
 
-			.status-badge {
+			.statut-badge {
 				padding: 6px 12px;
 				border-radius: 20px;
 				font-size: 12px;
 				font-weight: 500;
 			}
 
-			.status-active {
+			.statut-active {
 				background: rgba(76, 175, 80, 0.1);
 				color: #4CAF50;
 			}
 
-			.status-inactive {
+			.statut-inactive {
 				background: rgba(255, 107, 107, 0.1);
 				color: #ff6b6b;
 			}
@@ -481,8 +481,8 @@
 									<td>{{ user.email }}</td>
 									<td>{{ user.role.label() }}</td>
 									<td>
-										<span class="status-badge {{ user.status.value == 'Actif' ? 'status-active' : 'status-inactive' }}">
-											{{ user.status.value }}
+										<span class="statut-badge {{ user.statut.value == 'Actif' ? 'statut-active' : 'statut-inactive' }}">
+											{{ user.statut.value }}
 										</span>
 									</td>
 								</tr>

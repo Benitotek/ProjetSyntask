@@ -292,15 +292,15 @@ body {
     border-left-color: var(--success-color);
 }
 
-.kanban-card.status-todo {
+.kanban-card.statut-todo {
     background-color: var(--gray-100);
 }
 
-.kanban-card.status-inprogress {
+.kanban-card.statut-inprogress {
     background-color: #edf2ff;
 }
 
-.kanban-card.status-done {
+.kanban-card.statut-done {
     background-color: #e6fffa;
 }
 

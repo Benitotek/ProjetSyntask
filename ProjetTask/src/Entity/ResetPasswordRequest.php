@@ -18,9 +18,12 @@ class ResetPasswordRequest implements ResetPasswordRequestInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
+   /**
+ * @ManyToOne(targetEntity=User::class, inversedBy="resetPasswordRequests")
+ */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'resetPasswordRequests')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+private $user;
 
     // NE PAS définir à nouveau les propriétés requestedAt et expiresAt ici
     // SUPPRIMER ces propriétés si elles sont présentes dans votre classe

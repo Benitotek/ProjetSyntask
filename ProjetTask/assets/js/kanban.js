@@ -32,28 +32,28 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Gestion du changement de statut des tâches
-    document.querySelectorAll('.task-status-select').forEach(select => {
+    document.querySelectorAll('.task-statut-select').forEach(select => {
         select.addEventListener('change', function () {
             const taskId = this.getAttribute('data-task-id');
-            const newStatus = this.value;
+            const newstatut = this.value;
 
-            fetch(`/tasks/${taskId}/update-status`, {
+            fetch(`/tasks/${taskId}/update-statut`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `status=${newStatus}`
+                body: `statut=${newstatut}`
             }).then(response => response.json()).then(data => {
                 if (data.success) { // Mettre à jour la classe CSS de la carte
                     const card = this.closest('.kanban-card');
-                    card.className = card.className.replace(/status-\w+/g, '');
+                    card.className = card.className.replace(/statut-\w+/g, '');
 
-                    if (newStatus === 'EN-ATTENTE')
-                        card.classList.add('status-pending');
-                    else if (newStatus === 'EN-COURS')
-                        card.classList.add('status-progress');
-                    else if (newStatus === 'TERMINE')
-                        card.classList.add('status-completed');
+                    if (newstatut === 'EN-ATTENTE')
+                        card.classList.add('statut-pending');
+                    else if (newstatut === 'EN-COURS')
+                        card.classList.add('statut-progress');
+                    else if (newstatut === 'TERMINE')
+                        card.classList.add('statut-completed');
 
 
 

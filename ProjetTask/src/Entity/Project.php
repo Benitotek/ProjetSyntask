@@ -54,7 +54,7 @@ class Project
 
     // Chef de projet : Un User peut gérer plusieurs projets
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
-    #[ORM\JoinColumn(nullable: true)]
+
     #[ORM\JoinColumn(name: "chef_projet_id", referencedColumnName: "id", nullable: true)]
     private ?User $Chef_Projet = null;
 
@@ -270,7 +270,7 @@ class Project
         return $this->tasks;
     }
 
-    public function getTasksByStatus(): array
+    public function getTasksBystatut(): array
     {
         $tasks = $this->tasks->toArray();
         return [

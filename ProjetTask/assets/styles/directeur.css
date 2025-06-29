@@ -399,7 +399,7 @@
             color: #1f2937;
         }
 
-        .status-badge {
+        .statut-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
             font-size: 0.75rem;
@@ -407,17 +407,17 @@
             text-transform: uppercase;
         }
 
-        .status-badge--critical {
+        .statut-badge--critical {
             background: #fee2e2;
             color: #dc2626;
         }
 
-        .status-badge--warning {
+        .statut-badge--warning {
             background: #fef3c7;
             color: #d97706;
         }
 
-        .status-badge--normal {
+        .statut-badge--normal {
             background: #d1fae5;
             color: #059669;
         }

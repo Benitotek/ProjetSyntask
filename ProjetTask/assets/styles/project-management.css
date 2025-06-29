@@ -487,8 +487,8 @@ label {
    STATUTS & BADGES
    ================= */
 
-.project-status,
-.status-badge {
+.project-statut,
+.statut-badge {
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 12px;
@@ -497,20 +497,20 @@ label {
     letter-spacing: 0.5px;
 }
 
-.project-status-en_attente,
-.status-en_attente {
+.project-statut-en_attente,
+.statut-en_attente {
     background: #fef3c7;
     color: #92400e;
 }
 
-.project-status-en_cours,
-.status-en_cours {
+.project-statut-en_cours,
+.statut-en_cours {
     background: #dbeafe;
     color: #1e40af;
 }
 
-.project-status-termine,
-.status-termine {
+.project-statut-termine,
+.statut-termine {
     background: #d1fae5;
     color: #065f46;
 }

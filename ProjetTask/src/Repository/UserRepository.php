@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\User;
-use App\Enum\UserStatus;
+use App\Enum\Userstatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -62,8 +62,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         return $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
-            ->where('u.status != :status_inactif')
-            ->setParameter('status_inactif', UserStatus::INACTIF)
+            ->where('u.statut != :statut_inactif')
+            ->setParameter('statut_inactif', Userstatut::INACTIF)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -84,18 +84,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * Trouver tous les utilisateurs actifs (filtrable par statut)
      */
-    public function findActiveUsers(?string $status = null): array
+    public function findActiveUsers(?string $statut = null): array
     {
         $qb = $this->createQueryBuilder('u')
-            ->where('u.status != :status_inactif')
-            ->setParameter('status_inactif', UserStatus::INACTIF)
+            ->where('u.statut != :statut_inactif')
+            ->setParameter('statut_inactif', Userstatut::INACTIF)
             ->orderBy('u.nom', 'ASC');
 
-        if ($status) {
-            $statusEnum = UserStatus::tryFrom($status);
-            if ($statusEnum !== null) {
-                $qb->andWhere('u.status = :status')
-                    ->setParameter('status', $statusEnum);
+        if ($statut) {
+            $statutEnum = Userstatut::tryFrom($statut);
+            if ($statutEnum !== null) {
+                $qb->andWhere('u.statut = :statut')
+                    ->setParameter('statut', $statutEnum);
             }
         }
 
@@ -111,8 +111,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $count = 0;
 
         foreach ($users as $user) {
-            if ($user->getStatus() !== null) {
-                $this->synchronizeRoleAndStatus($user);
+            if ($user->getstatut() !== null) {
+                $this->synchronizeRoleAndstatut($user);
                 $this->getEntityManager()->persist($user);
                 $count++;
             }
@@ -126,7 +126,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      * Synchronise les rôles avec le statut (ex: promotion automatique)
      * Ce stub est laissé pour être implémenté selon votre logique métier.
      */
-    private function synchronizeRoleAndStatus(User $user): void
+    private function synchronizeRoleAndstatut(User $user): void
     {
         // Implémentez la logique métier ici
     }

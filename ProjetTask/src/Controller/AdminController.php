@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Service\UserRoleUpdater;
 use App\Entity\User;
-use App\Enum\UserStatus;
+use App\Enum\Userstatut;
 use App\Form\UserTypeForm;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
@@ -117,7 +117,7 @@ class AdminController extends AbstractController
                 'nom' => 'Bernard Martin',
                 'email' => 'bernard.martin@free.fr ',
                 'role' => 'Directeur',
-                'status' => 'Actif',
+                'statut' => 'Actif',
                 'avatar' => null
             ],
             [
@@ -125,7 +125,7 @@ class AdminController extends AbstractController
                 'nom' => 'Clara Lefèvre',
                 'email' => 'clara.lefevre@orange.fr',
                 'role' => 'Chefs de Projet ',
-                'status' => 'Actif',
+                'statut' => 'Actif',
                 'avatar' => null
             ],
             [
@@ -133,7 +133,7 @@ class AdminController extends AbstractController
                 'nom' => 'David  Moreau',
                 'email' => 'david.moreau@orange.fr',
                 'role' => 'Chefs de Projet',
-                'status' => 'Actif',
+                'statut' => 'Actif',
                 'avatar' => null
             ],
             [
@@ -141,7 +141,7 @@ class AdminController extends AbstractController
                 'nom' => 'François Girard',
                 'email' => 'francois.girard@gmail.com',
                 'role' => 'Employés',
-                'status' => 'Actif',
+                'statut' => 'Actif',
                 'avatar' => null
             ],
             [
@@ -149,7 +149,7 @@ class AdminController extends AbstractController
                 'nom' => 'Hélène Bernard',
                 'email' => 'helene.bernard@gmail.com',
                 'role' => 'Employés',
-                'status' => 'Actif',
+                'statut' => 'Actif',
                 'avatar' => null
             ],
             [
@@ -157,7 +157,7 @@ class AdminController extends AbstractController
                 'nom' => 'Julien Fontaine',
                 'email' => 'julien.fontaine@example.com',
                 'role' => 'Employés',
-                'status' => 'Actif',
+                'statut' => 'Actif',
                 'avatar' => null
             ],
             [
@@ -165,7 +165,7 @@ class AdminController extends AbstractController
                 'nom' => 'Karine Roche',
                 'email' => 'karine.roche@gmail.com',
                 'role' => 'Employés',
-                'status' => 'Inactif',
+                'statut' => 'Inactif',
                 'avatar' => null
             ]
         ];

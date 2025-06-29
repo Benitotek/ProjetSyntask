@@ -79,7 +79,7 @@
                     <span>{{ project.nom }}</span>
                 </div>
                 <h1 class="page-title">{{ project.nom }}</h1>
-                <span class="project-status project-status-{{ project.statut|lower|replace({'-': '_'}) }}">
+                <span class="project-statut project-statut-{{ project.statut|lower|replace({'-': '_'}) }}">
                     {{ project.statut|replace({'-': ' '})|title }}
                 </span>
             </div>
@@ -120,7 +120,7 @@
                         <div class="info-item">
                             <label>Statut</label>
                             <div class="info-value">
-                                <span class="status-badge status-{{ project.statut|lower|replace({'-': '_'}) }}">
+                                <span class="statut-badge statut-{{ project.statut|lower|replace({'-': '_'}) }}">
                                     {{ project.statut|replace({'-': ' '})|title }}
                                 </span>
                             </div>

@@ -87,16 +87,16 @@
 				<!-- Filtres -->
 				<div class="filters-section">
 					<div class="filter-tabs">
-						<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_status is not defined %}active{% endif %}">
+						<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
 							Tous
 						</a>
-						<a href="{{ path('app_mes_projets', {'status': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_status == 'EN-ATTENTE' %}active{% endif %}">
+						<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
 							En attente
 						</a>
-						<a href="{{ path('app_mes_projets', {'status': 'EN-COURS'}) }}" class="filter-tab {% if current_status == 'EN-COURS' %}active{% endif %}">
+						<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
 							En cours
 						</a>
-						<a href="{{ path('app_mes_projets', {'status': 'TERMINE'}) }}" class="filter-tab {% if current_status == 'TERMINE' %}active{% endif %}">
+						<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
 							Terminés
 						</a>
 					</div>
@@ -108,7 +108,7 @@
 						<div class="project-card">
 							<div class="project-header">
 								<h3 class="project-title">{{ project.nom }}</h3>
-								<span class="project-status project-status-{{ project.statut|lower|replace({'-': '_'}) }}">
+								<span class="project-statut project-statut-{{ project.statut|lower|replace({'-': '_'}) }}">
 									{{ project.statut|replace({'-': ' '})|title }}
 								</span>
 							</div>

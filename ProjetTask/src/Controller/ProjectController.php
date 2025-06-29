@@ -181,7 +181,7 @@ class ProjectViewController extends AbstractController
         $this->denyAccessUnlessGranted('VIEW', $project);
 
         // Filtres
-        $status = $request->query->get('status');
+        $statut = $request->query->get('statut');
         $priority = $request->query->get('priority');
         $assignee = $request->query->get('assignee');
 
@@ -189,9 +189,9 @@ class ProjectViewController extends AbstractController
         $tasks = $taskRepository->findByProject($project);
 
         // Appliquer les filtres
-        if ($status) {
-            $tasks = array_filter($tasks, function ($task) use ($status) {
-                return $task->getStatut() === $status;
+        if ($statut) {
+            $tasks = array_filter($tasks, function ($task) use ($statut) {
+                return $task->getStatut() === $statut;
             });
         }
 
@@ -211,7 +211,7 @@ class ProjectViewController extends AbstractController
             'project' => $project,
             'tasks' => $tasks,
             'filters' => [
-                'status' => $status,
+                'statut' => $statut,
                 'priority' => $priority,
                 'assignee' => $assignee,
             ],
@@ -250,25 +250,25 @@ class ProjectViewController extends AbstractController
     /**
      * Filtre les tâches par statut
      */
-    #[Route('/{id}/filter-by-status/{status}', name: 'app_project_filter_by_status')]
-    public function filterByStatus(
+    #[Route('/{id}/filter-by-statut/{statut}', name: 'app_project_filter_by_statut')]
+    public function filterBystatut(
         Project $project,
-        string $status,
+        string $statut,
         TaskRepository $taskRepository
     ): Response {
         // Vérifier les permissions
         $this->denyAccessUnlessGranted('VIEW', $project);
 
         $tasks = $taskRepository->findByProject($project);
-        $filteredTasks = array_filter($tasks, function ($task) use ($status) {
-            return $task->getStatut() === $status;
+        $filteredTasks = array_filter($tasks, function ($task) use ($statut) {
+            return $task->getStatut() === $statut;
         });
 
         return $this->render('project/view/all_tasks.html.twig', [
             'project' => $project,
             'tasks' => $filteredTasks,
             'filters' => [
-                'status' => $status,
+                'statut' => $statut,
             ],
         ]);
     }

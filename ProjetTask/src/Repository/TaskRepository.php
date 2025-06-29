@@ -293,11 +293,11 @@ class TaskRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function findByStatus(string $status): array
+    public function findBystatut(string $statut): array
     {
         return $this->createQueryBuilder('t')
-            ->where('t.statut = :status')
-            ->setParameter('status', $status)
+            ->where('t.statut = :statut')
+            ->setParameter('statut', $statut)
             ->orderBy('t.dateCreation', 'DESC')
             ->getQuery()
             ->getResult();

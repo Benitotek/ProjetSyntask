@@ -90,11 +90,11 @@
 
 						<div class="form-row">
 							<div class="form-group">
-								<label for="project_status">Statut</label>
-								<select id="project_status" name="project[status]" class="form-select">
-									<option value="draft" {% if project.status|default('') == 'draft' %} selected {% endif %}>Brouillon</option>
-									<option value="active" {% if project.status|default('') == 'active' %} selected {% endif %}>Actif</option>
-									<option value="completed" {% if project.status|default('') == 'completed' %} selected {% endif %}>Terminé</option>
+								<label for="project_statut">Statut</label>
+								<select id="project_statut" name="project[statut]" class="form-select">
+									<option value="draft" {% if project.statut|default('') == 'draft' %} selected {% endif %}>Brouillon</option>
+									<option value="active" {% if project.statut|default('') == 'active' %} selected {% endif %}>Actif</option>
+									<option value="completed" {% if project.statut|default('') == 'completed' %} selected {% endif %}>Terminé</option>
 								</select>
 							</div>
 						</div>

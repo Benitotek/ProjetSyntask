@@ -36,7 +36,7 @@ class ProjectRepository extends ServiceEntityRepository
      * Compter les projets par statut
      * (Méthode déplacée ou renommée pour éviter les doublons)
      */
-    // public function countByStatus(array $statuts): int
+    // public function countBystatut(array $statuts): int
     // {
     //     return $this->createQueryBuilder('p')
     //         ->select('COUNT(p.id)')
@@ -198,22 +198,22 @@ class ProjectRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findByStatus(array $statuses): array
+    public function findBystatut(array $statutes): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.statut IN (:statuses)')
-            ->setParameter('statuses', $statuses)
+            ->where('p.statut IN (:statutes)')
+            ->setParameter('statutes', $statutes)
             ->orderBy('p.dateCreation', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
-    public function countByStatus(array $statuses): int
+    public function countBystatut(array $statutes): int
     {
         return $this->createQueryBuilder('p')
             ->select('COUNT(p.id)')
-            ->where('p.statut IN (:statuses)')
-            ->setParameter('statuses', $statuses)
+            ->where('p.statut IN (:statutes)')
+            ->setParameter('statutes', $statutes)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -240,8 +240,8 @@ class ProjectRepository extends ServiceEntityRepository
     public function findActiveProjects(): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.statut IN (:statuses)')
-            ->setParameter('statuses', [Project::STATUT_EN_COURS, Project::STATUT_EN_ATTENTE])
+            ->where('p.statut IN (:statutes)')
+            ->setParameter('statutes', [Project::STATUT_EN_COURS, Project::STATUT_EN_ATTENTE])
             ->orderBy('p.dateCreation', 'DESC')
             ->getQuery()
             ->getResult();

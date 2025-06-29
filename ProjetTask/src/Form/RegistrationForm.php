@@ -15,7 +15,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use App\Enum\UserStatus;
+use App\Enum\Userstatut;
 
 class RegistrationForm extends AbstractType
 {
@@ -46,7 +46,7 @@ class RegistrationForm extends AbstractType
                 'attr' => ['class' => 'form-select']
             ])
             ->add('statut', EnumType::class, [
-                'class' => UserStatus::class,
+                'class' => Userstatut::class,
                 'label' => 'Statut',
                 'attr' => ['class' => 'form-select']
             ])

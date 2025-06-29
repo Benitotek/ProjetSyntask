@@ -11,9 +11,9 @@ enum TaskStatut: string
     case TERMINE = 'TERMINE';
     case ANNULE = 'ANNULE';
     /**
-     * Returns the label for the task status.
+     * Returns the label for the task statut.
      *
-     * @return string The label corresponding to the task status.
+     * @return string The label corresponding to the task statut.
      */
     public function label(): string
     {

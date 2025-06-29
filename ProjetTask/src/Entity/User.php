@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\UserStatus;
+use App\Enum\Userstatut;
 use App\Enum\UserRole;
 use App\Repository\UserRepository;
 use App\Entity\ResetPasswordRequest;
@@ -38,8 +38,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $prenom = null;
 
     #[Assert\NotBlank(message: "Le statut est obligatoire")]
-    #[ORM\Column(enumType: UserStatus::class)]
-    private ?UserStatus $status = null;
+    #[ORM\Column(enumType: Userstatut::class)]
+    private ?Userstatut $statut = null;
 
     #[ORM\Column(enumType: UserRole::class)]
     private ?UserRole $role = null;
@@ -67,10 +67,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ResetPasswordRequest::class)]
+    /**
+     * @ManyToOne(targetEntity=User::class, inversedBy="resetPasswordRequests")
+     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'resetPasswordRequests')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $user;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ResetPasswordRequest::class, cascade: ['persist'])]
+    #[ORM\OrderBy(['requestedAt' => 'DESC'])]
     private Collection $resetPasswordRequests;
 
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'chef_Projet')]
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'Chef_Projet')]
     private Collection $projetsGeres;
 
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
@@ -118,14 +125,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getStatus(): ?UserStatus
+    public function getstatut(): ?Userstatut
     {
-        return $this->status;
+        return $this->statut;
     }
 
-    public function setStatus(UserStatus $status): static
+    public function setstatut(Userstatut $statut): static
     {
-        $this->status = $status;
+        $this->statut = $statut;
         return $this;
     }
 

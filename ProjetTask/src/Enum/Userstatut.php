@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum UserStatus: string
+enum Userstatut: string
 {
     case ACTIF = 'ACTIF';
     case INACTIF = 'INACTIF';
@@ -12,10 +12,10 @@ enum UserStatus: string
     public function label(): string
     {
         return match ($this) {
-            UserStatus::ACTIF => 'Actif',
-            UserStatus::INACTIF => 'Inactif',
-            UserStatus::EN_CONGE => 'En congé',
-            UserStatus::ABSENT => 'Absent',
+            Userstatut::ACTIF => 'Actif',
+            Userstatut::INACTIF => 'Inactif',
+            Userstatut::EN_CONGE => 'En congé',
+            Userstatut::ABSENT => 'Absent',
             default => 'Statut inconnu',
         };
     }

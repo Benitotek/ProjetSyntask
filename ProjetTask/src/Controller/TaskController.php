@@ -201,11 +201,11 @@ class TaskController extends AbstractController
     /**
      * Changer le statut d'une tâche
      */
-    #[Route('/{id}/status/{status}', name: 'app_task_status', methods: ['POST'])]
-    public function changeStatus(
+    #[Route('/{id}/statut/{statut}', name: 'app_task_statut', methods: ['POST'])]
+    public function changestatut(
         int $projectId,
         Task $task,
-        string $status,
+        string $statut,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
@@ -220,11 +220,11 @@ class TaskController extends AbstractController
         
         // Vérifier que le statut est valide
         try {
-            $statusEnum = TaskStatut::from($status);
-            $task->setStatut($statusEnum);
+            $statutEnum = TaskStatut::from($statut);
+            $task->setStatut($statutEnum);
             
             // Si la tâche est terminée, définir la date réelle
-            if ($statusEnum === TaskStatut::TERMINE) {
+            if ($statutEnum === TaskStatut::TERMINE) {
                 $task->setDateReelle(new \DateTime());
             }
             
@@ -332,30 +332,30 @@ class TaskController extends AbstractController
 //         ]);
 //     }
 
-//     #[Route('/{id}/update-status', name: 'app_task_update_status', methods: ['POST'])]
+//     #[Route('/{id}/update-statut', name: 'app_task_update_statut', methods: ['POST'])]
 //     #[IsGranted('ROLE_EMPLOYE')]
-//     public function updateStatus(Request $request, Task $task, EntityManagerInterface $entityManager): JsonResponse
+//     public function updatestatut(Request $request, Task $task, EntityManagerInterface $entityManager): JsonResponse
 //     {
-//         $status = $request->request->get('status');
-//         $validStatuses = ['EN-ATTENTE', 'EN-COURS', 'TERMINE'];
+//         $statut = $request->request->get('statut');
+//         $validstatutes = ['EN-ATTENTE', 'EN-COURS', 'TERMINE'];
 
-//         if (!in_array($status, $validStatuses)) {
+//         if (!in_array($statut, $validstatutes)) {
 //             return new JsonResponse(['error' => 'Statut invalide'], 400);
 //         }
 
-//         $enumStatus = match ($status) {
+//         $enumstatut = match ($statut) {
 //             'EN-ATTENTE' => \App\Enum\TaskStatut::EN_ATTENTE,
 //             'EN-COURS' => \App\Enum\TaskStatut::EN_COUR, // Use the correct constant name as defined in TaskStatut
 //             'TERMINE' => \App\Enum\TaskStatut::TERMINE,
 //             default => null,
 //         };
 
-//         if ($enumStatus === null) {
+//         if ($enumstatut === null) {
 //             return new JsonResponse(['error' => 'Statut invalide'], 400);
 //         }
 
-//         $task->setStatut($enumStatus);
-//         if ($enumStatus === \App\Enum\TaskStatut::TERMINE) {
+//         $task->setStatut($enumstatut);
+//         if ($enumstatut === \App\Enum\TaskStatut::TERMINE) {
 //             $task->setDateReelle(new \DateTime());
 //         }
 
@@ -541,15 +541,15 @@ class TaskController extends AbstractController
 //         return $this->redirectToRoute('project_kanban', ['id' => $task->getTaskList()->getProject()->getId()]);
 //     }
 
-//     #[Route('/{id}/status', name: 'task_status', methods: ['POST'])]
-//     public function updateStatus(Request $request, Task $task, EntityManagerInterface $entityManager): Response
+//     #[Route('/{id}/statut', name: 'task_statut', methods: ['POST'])]
+//     public function updatestatut(Request $request, Task $task, EntityManagerInterface $entityManager): Response
 //     {
 //         $this->denyAccessUnlessGranted('TASK_EDIT', $task);
 
-//         $status = $request->request->get('status');
-//         $task->setStatut(\App\Entity\TaskStatus::from($status));
+//         $statut = $request->request->get('statut');
+//         $task->setStatut(\App\Entity\Taskstatut::from($statut));
         
-//         if ($status === 'TERMINE' && !$task->getDateDeFinReelle()) {
+//         if ($statut === 'TERMINE' && !$task->getDateDeFinReelle()) {
 //             $task->setDateDeFinReelle(new \DateTime());
 //         }
         

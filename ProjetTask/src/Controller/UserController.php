@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Enum\UserStatus;
+use App\Enum\Userstatut;
 use App\Form\UserType;
 use App\Form\UserTypeForm;
 use App\Repository\UserRepository;
@@ -23,13 +23,13 @@ class UserController extends AbstractController
     public function index(UserRepository $userRepository): Response
     {
         $users = $userRepository->findAll();    
-        $userStatuses = UserStatus::cases();
-        $userStatusLabels = array_map(fn($status) => $status->label(), $userStatuses);
+        $userstatutes = Userstatut::cases();
+        $userstatutLabels = array_map(fn($statut) => $statut->label(), $userstatutes);
 
         return $this->render('user/index.html.twig', [
             'users' => $users,
-            'userStatuses' => $userStatuses,
-            'userStatusLabels' => $userStatusLabels,
+            'userstatutes' => $userstatutes,
+            'userstatutLabels' => $userstatutLabels,
         ]);
     }
 
@@ -96,15 +96,15 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/toggle-status', name: 'app_user_toggle_status', methods: ['POST'])]
-    public function toggleStatus(User $user, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/toggle-statut', name: 'app_user_toggle_statut', methods: ['POST'])]
+    public function togglestatut(User $user, EntityManagerInterface $entityManager): Response
     {
         $user->setEstActif(!$user->isEstActif());
         $user->setDateMaj(new \DateTime());
         $entityManager->flush();
 
-        $status = $user->isEstActif() ? 'activé' : 'désactivé';
-        $this->addFlash('success', "Utilisateur {$status} avec succès.");
+        $statut = $user->isEstActif() ? 'activé' : 'désactivé';
+        $this->addFlash('success', "Utilisateur {$statut} avec succès.");
 
         return $this->redirectToRoute('app_user_index');
     }

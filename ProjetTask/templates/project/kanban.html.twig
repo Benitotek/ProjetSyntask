@@ -299,7 +299,7 @@
 			<div class="kanban-header">
 				<div class="project-info">
 					<h1 class="project-title">{{ project.nom }}</h1>
-					<span class="project-status project-status-{{ project.statut|lower|replace({'-': '_'}) }}">
+					<span class="project-statut project-statut-{{ project.statut|lower|replace({'-': '_'}) }}">
 						{{ project.statut|replace({'-': ' '})|title }}
 					</span>
 				</div>

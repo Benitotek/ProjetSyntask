@@ -78,13 +78,13 @@
                         </span>
                     {% endif %}
                     
-                    {% if task.status %}
+                    {% if task.statut %}
                         <span class="badge bg-light text-dark">
-                            {% if task.status == 'todo' %}À faire
-                            {% elseif task.status == 'in_progress' %}En cours
-                            {% elseif task.status == 'review' %}En révision
-                            {% elseif task.status == 'done' %}Terminé
-                            {% else %}{{ task.status }}
+                            {% if task.statut == 'todo' %}À faire
+                            {% elseif task.statut == 'in_progress' %}En cours
+                            {% elseif task.statut == 'review' %}En révision
+                            {% elseif task.statut == 'done' %}Terminé
+                            {% else %}{{ task.statut }}
                             {% endif %}
                         </span>
                     {% endif %}
@@ -249,7 +249,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        {% if task.status != 'done' %}
+                        {% if task.statut != 'done' %}
                             <button class="btn btn-success btn-sm" onclick="markAsDone()">
                                 <i class="fas fa-check"></i> Marquer comme terminé
                             </button>
