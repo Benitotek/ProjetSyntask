@@ -134,10 +134,10 @@ security:
         - { path: ^/statistiques, roles: ROLE_CHEF_PROJET }
 
         # Dashboard par défaut (accessible à tous les utilisateurs connectés)
-        - { path: ^/dashboard, roles: ROLE_EMPLOYE }
+        # - { path: ^/dashboard, roles: ROLE_EMPLOYE }
 
         # Toutes les autres routes nécessitent une authentification
-        - { path: ^/, roles: ROLE_EMPLOYE }
+        # - { path: ^/, roles: ROLE_EMPLOYE }
 
 # This configuration is only used in the test environment to speed up password hashing.
 

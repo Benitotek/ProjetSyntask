@@ -10,7 +10,6 @@ use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
-
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
     public function __construct(ManagerRegistry $registry)
@@ -19,18 +18,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Trouver les utilisateurs par statut/rôle
-     * @param array $roles 
-     * @return User[]
+     * Trouver les utilisateurs par rôle (string-based filter only)
      */
     public function findByRole(string $role): array
     {
-        $qb = $this->createQueryBuilder('u')
-            ->where('u.roles LIKE :role')
-            ->setParameter('role', '%' . $role . '%')
-            ->orderBy('u.nom', 'ASC');
-        return $qb->getQuery()->getResult();
+        return $this->createQueryBuilder('u')
+            ->where('u.role = :role')
+            ->setParameter('role', $role)
+            ->orderBy('u.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
+
     /**
      * Supprime un utilisateur
      */
@@ -45,71 +44,64 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         if (!$user instanceof User) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
         }
+
         $user->setMdp($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
     }
 
-    /**
-     * Symfony 5.3+ PasswordUpgraderInterface requirement.
-     */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
         $this->updatePassword($user, $newHashedPassword);
     }
 
-
-
     /**
-     * Compter les utilisateurs actifs (avec un compte non désactivé)
+     * Compter les utilisateurs actifs
      */
     public function countActive(): int
     {
         return $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
-            ->where('u.statut != :status_inactif')
-            ->setParameter('status_inactif', UserStatus::INACTIF->value)
+            ->where('u.status != :status_inactif')
+            ->setParameter('status_inactif', UserStatus::INACTIF)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
     /**
-     * Trouver tous les chefs de projets
+     * Trouver tous les chefs de projet
      */
     public function findChefsProjets(): array
     {
         return $this->createQueryBuilder('u')
-            ->where('u.roles = :roles_chef_projet')
-            ->setParameter('roles_chef_projet', json_encode(['ROLE_CHEF_PROJET']))
+            ->where('u.role = :role')
+            ->setParameter('role', 'ROLE_CHEF_PROJET')
             ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * Trouver tous les utilisateurs actifs (filtrable par rôle)
+     * Trouver tous les utilisateurs actifs (filtrable par statut)
      */
-    public function findActiveUsers(?string $role = null): array
+    public function findActiveUsers(?string $status = null): array
     {
-        // Création du QueryBuilder pour récupérer les utilisateurs actifs
-        // et filtrer par rôle si spécifié
         $qb = $this->createQueryBuilder('u')
-            ->where('u.statut != :status_inactif')
-            ->setParameter('status_inactif', UserStatus::INACTIF->value)
+            ->where('u.status != :status_inactif')
+            ->setParameter('status_inactif', UserStatus::INACTIF)
             ->orderBy('u.nom', 'ASC');
 
-        if ($role) {
-            try {
-                $statusValue = UserStatus::from($role);
-                $qb->andWhere('u.statut = :role')
-                    ->setParameter('role', $statusValue);
-            } catch (\ValueError $e) {
-                // Ignorer le filtre si le rôle n'est pas valide
+        if ($status) {
+            $statusEnum = UserStatus::tryFrom($status);
+            if ($statusEnum !== null) {
+                $qb->andWhere('u.status = :status')
+                    ->setParameter('status', $statusEnum);
             }
         }
 
         return $qb->getQuery()->getResult();
     }
+
     /**
      * Met à jour les rôles de tous les utilisateurs en fonction de leur statut
      */
@@ -119,7 +111,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $count = 0;
 
         foreach ($users as $user) {
-            if ($user->getStatut() !== null) {
+            if ($user->getStatus() !== null) {
                 $this->synchronizeRoleAndStatus($user);
                 $this->getEntityManager()->persist($user);
                 $count++;
@@ -128,5 +120,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         $this->getEntityManager()->flush();
         return $count;
+    }
+
+    /**
+     * Synchronise les rôles avec le statut (ex: promotion automatique)
+     * Ce stub est laissé pour être implémenté selon votre logique métier.
+     */
+    private function synchronizeRoleAndStatus(User $user): void
+    {
+        // Implémentez la logique métier ici
     }
 }

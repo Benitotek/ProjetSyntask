@@ -1,14 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de bord | Administration
-{% endblock %}
+{% block title %}Tableau de bord | Administration{% endblock %}
 
 {% block body %}
 <div class="container-fluid py-4">
 	<h1 class="mb-4">Tableau de bord | Administration</h1>
 
-	<div
-		class="row">
+	<div class="row">
 		<!-- Statistiques globales -->
 		<div class="col-md-3 mb-4">
 			<div class="card border-0 shadow-sm">
@@ -58,9 +56,7 @@
 			<div class="card border-0 shadow-sm">
 				<div class="card-body">
 					<h5 class="card-title">Budget des projets</h5>
-					<div
-						class="budget-chart">
-						<!-- Ici on pourrait intégrer un graphique avec Chart.js -->
+					<div class="budget-chart">
 						<table class="table table-sm">
 							<thead>
 								<tr>
@@ -74,8 +70,7 @@
 									<tr>
 										<td>{{ stat.statut }}</td>
 										<td>{{ stat.count }}</td>
-										<td>{{ stat.totalBudget|number_format(2, ',', ' ') }}
-											€</td>
+										<td>{{ stat.totalBudget|number_format(2, ',', ' ') }} €</td>
 									</tr>
 								{% endfor %}
 							</tbody>
@@ -86,58 +81,9 @@
 		</div>
 	</div>
 
-	<div
-		class="row">
-		<!-- Projets récents -->
-		<div class="col-md-6 mb-4">
-			<div class="card border-0 shadow-sm">
-				<div class="card-header bg-white">
-					<div class="d-flex justify-content-between align-items-center">
-						<h5 class="mb-0">Projets récents</h5>
-						<a href="{{ path('app_project_index') }}" class="btn btn-sm btn-outline-primary">Voir tous</a>
-					</div>
-				</div>
-				<div class="card-body">
-					<div class="table-responsive">
-						<table class="table table-hover">
-							<thead>
-								<tr>
-									<th>Titre</th>
-									<th>Chef de projet</th>
-									<th>Statut</th>
-									<th>Date</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for projet in projets_recents %}
-									<tr>
-										<td>
-											<a href="{{ path('app_project_show', {id: projet.id}) }}">{{ projet.titre }}</a>
-										</td>
-										<td>
-											{% if projet.Chef_Projet %}
-												{{ projet.Chef_Projet.fullName }}
-											{% else %}
-												<span class="text-muted">Non assigné</span>
-											{% endif %}
-										</td>
-										<td>
-											<span class="badge {% if projet.statut == 'EN-COURS' %}bg-primary{% elseif projet.statut == 'TERMINE' %}bg-success{% else %}bg-warning{% endif %}">
-												{{ projet.statut }}
-											</span>
-										</td>
-										<td>{{ projet.dateCreation|date('d/m/Y') }}</td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-		</div>
-
+	<div class="row">
 		<!-- Tâches en retard -->
-		<div class="col-md-6 mb-4">
+		<div class="col-md-12 mb-4">
 			<div class="card border-0 shadow-sm">
 				<div class="card-header bg-white">
 					<h5 class="mb-0">Tâches en retard</h5>
@@ -148,7 +94,7 @@
 							<table class="table table-hover">
 								<thead>
 									<tr>
-										<th>Tâche</th>
+										<th>Titre</th>
 										<th>Projet</th>
 										<th>Assigné à</th>
 										<th>Date butoir</th>
@@ -156,4 +102,22 @@
 								</thead>
 								<tbody>
 									{% for tache in taches_retard %}
-										<tr
+										<tr>
+											<td>{{ tache.title }}</td>
+											<td>{{ tache.project ? tache.project.titre : 'Non assigné' }}</td>
+											<td>{{ tache.assignedUser ? tache.assignedUser.fullName : 'Non assigné' }}</td>
+											<td>{{ tache.dateButoir ? tache.dateButoir|date('d/m/Y') : 'N/A' }}</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					{% else %}
+						<p class="text-muted">Aucune tâche en retard</p>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

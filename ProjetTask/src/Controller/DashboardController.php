@@ -70,7 +70,7 @@ class DashboardController extends AbstractController
         // Projets avec statistiques budgétaires
         $projetsBudget = $projectRepository->getProjectsWithBudgetStats();
 
-        return $this->render('dashboard/admin.html.twig', [
+        return $this->render('dashboard/admin_dashboard.html.twig', [
             'stats' => $stats,
             'projets_recents' => $projetsRecents,
             'taches_retard' => $tachesRetard,

@@ -17,7 +17,7 @@ use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-#[Route('/admin')]
+// #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
 class AdminController extends AbstractController
 {
@@ -28,7 +28,7 @@ class AdminController extends AbstractController
         $this->emailVerifier = $emailVerifier;
     }
     #[IsGranted('ROLE_ADMIN')]
-  
+
     #[Route('/user/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function newUser(
         Request $request,
@@ -57,6 +57,18 @@ class AdminController extends AbstractController
 
         return $this->render('admin/new_user.html.twig', [
             'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/admin', name: 'app_admin_index')]
+    public function index(UserRepository $userRepository): Response
+    {
+        $currentUser = $this->getUser(); // returns User object or null
+        $users = $userRepository->findAll();
+
+        return $this->render('admin/index.html.twig', [
+            'current_user' => $this->getUser(),
+            'users' => $users,
         ]);
     }
 
@@ -92,78 +104,79 @@ class AdminController extends AbstractController
             // Autres variables
         ]);
     }
+
+
+
+    #[Route('/admin', name: 'app_admin')]
+    public function UserList(): Response
+    {
+        // Simuler des données utilisateurs pour l'affichage
+        $users = [
+            [
+                'id' => 1,
+                'nom' => 'Bernard Martin',
+                'email' => 'bernard.martin@free.fr ',
+                'role' => 'Directeur',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 2,
+                'nom' => 'Clara Lefèvre',
+                'email' => 'clara.lefevre@orange.fr',
+                'role' => 'Chefs de Projet ',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 3,
+                'nom' => 'David  Moreau',
+                'email' => 'david.moreau@orange.fr',
+                'role' => 'Chefs de Projet',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 4,
+                'nom' => 'François Girard',
+                'email' => 'francois.girard@gmail.com',
+                'role' => 'Employés',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 5,
+                'nom' => 'Hélène Bernard',
+                'email' => 'helene.bernard@gmail.com',
+                'role' => 'Employés',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 6,
+                'nom' => 'Julien Fontaine',
+                'email' => 'julien.fontaine@example.com',
+                'role' => 'Employés',
+                'status' => 'Actif',
+                'avatar' => null
+            ],
+            [
+                'id' => 7,
+                'nom' => 'Karine Roche',
+                'email' => 'karine.roche@gmail.com',
+                'role' => 'Employés',
+                'status' => 'Inactif',
+                'avatar' => null
+            ]
+        ];
+
+        return $this->render('admin/index.html.twig', [
+            'controller_name' => 'AdminController',
+            'users' => $users,
+            'current_user' => [
+                'nom' => 'admin',
+                'role' => 'Administrateur'
+            ]
+        ]);
+    }
 }
-    
-
-    // #[Route('/admin', name: 'app_admin')]
-    // public function UserList(): Response
-    // {
-    //     // Simuler des données utilisateurs pour l'affichage
-    //     $users = [
-    //         [
-    //             'id' => 1,
-    //             'nom' => 'Bernard Martin',
-    //             'email' => 'bernard.martin@free.fr ',
-    //             'role' => 'Directeur',
-    //             'status' => 'Actif',
-    //             'avatar' => null
-    //         ],
-    //         [
-    //             'id' => 2,
-    //             'nom' => 'Clara Lefèvre',
-    //             'email' => 'clara.lefevre@orange.fr',
-    //             'role' => 'Chefs de Projet ',
-    //             'status' => 'Actif',
-    //             'avatar' => null
-    //         ],
-    //         [
-    //             'id' => 3,
-    //             'nom' => 'David  Moreau',
-    //             'email' => 'david.moreau@orange.fr',
-    //             'role' => 'Chefs de Projet',
-    //             'status' => 'Actif',
-    //             'avatar' => null
-    //         ],
-    //         [
-    //             'id' => 4,
-    //             'nom' => 'François Girard',
-    //             'email' => 'francois.girard@gmail.com',
-    //             'role' => 'Employés',
-    //             'status' => 'Actif',
-    //             'avatar' => null
-    //         ],
-    //         [
-    //             'id' => 5,
-    //             'nom' => 'Hélène Bernard',
-    //             'email' => 'helene.bernard@gmail.com',
-    //             'role' => 'Employés',
-    //             'status' => 'Actif',
-    //             'avatar' => null
-    //         ],
-    //         [
-    //             'id' => 6,
-    //             'nom' => 'Julien Fontaine',
-    //             'email' => 'julien.fontaine@example.com',
-    //             'role' => 'Employés',
-    //             'status' => 'Actif',
-    //             'avatar' => null
-    //         ],
-    //         [
-    //             'id' => 7,
-    //             'nom' => 'Karine Roche',
-    //             'email' => 'karine.roche@gmail.com',
-    //             'role' => 'Employés',
-    //             'status' => 'Inactif',
-    //             'avatar' => null
-    //         ]
-    //     ];
-
-    //     return $this->render('admin/index.html.twig', [
-    //         'controller_name' => 'AdminController',
-    //         'users' => $users,
-    //         'current_user' => [
-    //             'nom' => 'admin',
-    //             'role' => 'Administrateur'
-    //         ]
-    //     ]);
-    // }

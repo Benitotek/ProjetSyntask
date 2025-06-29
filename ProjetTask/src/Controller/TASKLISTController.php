@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Entity\Project;
 use App\Entity\TaskList;
-use App\Form\TaskListTypeForm;
+use App\Form\TaskListType;
 use App\Repository\TaskListRepository;
 
 #[Route('/project/{projectId}/task-list')]
@@ -44,7 +44,7 @@ class TaskListController extends AbstractController
         $nextPosition = $taskListRepository->findMaxPositionByProject($project) + 1;
         $taskList->setPositionColumn($nextPosition);
         
-        $form = $this->createForm(TaskListTypeForm::class, $taskList);
+        $form = $this->createForm(TaskListType::class, $taskList);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
@@ -80,7 +80,7 @@ class TaskListController extends AbstractController
         // Vérifier les permissions
         $this->denyAccessUnlessGranted('EDIT', $project);
         
-        $form = $this->createForm(TaskListTypeForm::class, $taskList);
+        $form = $this->createForm(TaskListType::class, $taskList);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {

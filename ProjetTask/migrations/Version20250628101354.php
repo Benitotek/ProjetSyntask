@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250628042213 extends AbstractMigration
+final class Version20250628101354 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,10 +21,7 @@ final class Version20250628042213 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE user CHANGE role role VARCHAR(255) NOT NULL
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE UNIQUE INDEX UNIQ_8D93D649E7927C74 ON user (email)
+            ALTER TABLE user ADD status VARCHAR(255) NOT NULL, ADD role VARCHAR(255) NOT NULL, DROP statut, DROP roles
         SQL);
     }
 
@@ -32,10 +29,7 @@ final class Version20250628042213 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            DROP INDEX UNIQ_8D93D649E7927C74 ON user
-        SQL);
-        $this->addSql(<<<'SQL'
-            ALTER TABLE user CHANGE role role JSON NOT NULL
+            ALTER TABLE user ADD statut VARCHAR(20) NOT NULL, ADD roles JSON NOT NULL, DROP status, DROP role
         SQL);
     }
 }

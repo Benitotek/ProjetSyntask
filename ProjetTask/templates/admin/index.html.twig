@@ -411,7 +411,10 @@
 					</div>
 					<div class="user-details">
 						<h3>{{ current_user.nom }}</h3>
-						<div class="user-role">{{ current_user.role }}</div>
+						<div class="user-role">
+							{{ current_user.role.label() }}
+						</div>
+
 					</div>
 				</div>
 
@@ -476,10 +479,10 @@
 										</div>
 									</td>
 									<td>{{ user.email }}</td>
-									<td>{{ user.role }}</td>
+									<td>{{ user.role.label() }}</td>
 									<td>
-										<span class="status-badge {{ user.status == 'Actif' ? 'status-active' : 'status-inactive' }}">
-											{{ user.status }}
+										<span class="status-badge {{ user.status.value == 'Actif' ? 'status-active' : 'status-inactive' }}">
+											{{ user.status.value }}
 										</span>
 									</td>
 								</tr>
