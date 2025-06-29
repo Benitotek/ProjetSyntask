@@ -67,12 +67,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
-    /**
-     * @ManyToOne(targetEntity=User::class, inversedBy="resetPasswordRequests")
-     */
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'resetPasswordRequests')]
-    #[ORM\JoinColumn(nullable: false)]
-    private $user;
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: ResetPasswordRequest::class, cascade: ['persist'])]
     #[ORM\OrderBy(['requestedAt' => 'DESC'])]
     private Collection $resetPasswordRequests;
@@ -88,7 +82,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->resetPasswordRequests = new ArrayCollection();
+        
         $this->projetsGeres = new ArrayCollection();
         $this->projetsAssignes = new ArrayCollection();
         $this->tachesAssignees = new ArrayCollection();
