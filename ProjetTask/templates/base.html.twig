@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8">
+		<meta	charset="UTF-8">
 		<title>
-			{% block title %}Welcome!PAGE HTML DE BASE
+			{% block title %}
+				Welcome!PAGE HTML DE BASE
 			{% endblock %}
 		</title>
-		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">" rel="stylesheet" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous">
-		<link
-		rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+		<link	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"	rel="stylesheet">
+		" rel="stylesheet" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous">
+		<link	rel="icon"	href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
 		{# --- FAVICON ET ICÔNES --- #}
-		<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
-		<link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon-96x96.png') }}">
-		<link rel="icon" type="image/png" sizes="192x192" href="{{ asset('android-chrome-192x192.png') }}">
-		<link rel="icon" type="image/png" sizes="512x512" href="{{ asset('android-chrome-512x512.png') }}">
-		<link rel="manifest" href="{{ asset('site.webmanifest') }}">
-		<meta
-		name="theme-color" content="#ffffff">
-
+		<link	rel="apple-touch-icon"	sizes="180x180"	href="{{ asset('apple-touch-icon.png') }}">
+		<link	rel="icon"	type="image/png"	sizes="96x96"	href="{{ asset('favicon-96x96.png') }}">
+		<link	rel="icon"	type="image/png"	sizes="192x192"	href="{{ asset('android-chrome-192x192.png') }}">
+		<link	rel="icon"	type="image/png"	sizes="512x512"	href="{{ asset('android-chrome-512x512.png') }}">
+		<link	rel="manifest"	href="{{ asset('site.webmanifest') }}">
+		<meta	name="theme-color"	content="#ffffff">
 		{# <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/styles/all.min.css" integrity="sha512-papbmo3cc/hrVxv/6wA7/4U1k2Ki6UrK9Ejq7m8Q7pqZ7iZUw/B/tH47G5P8OsWQrVO45mLfIHJO6P6QWggzR7A==" crossorigin="anonymous" referrerpolicy="no-referrer" /> #}
+		
+		{# Autres feuilles de style existantes #}
 		{% block stylesheets %}
-
-			{# Autres feuilles de style existantes #}
-			<link
-			rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
-
-		{# {{ encore_entry_link_tags('app') }} #}
+			<link	rel="stylesheet"	href="{{ asset('styles/dashboard.css') }}">
+			{% block extra_styles %}{% endblock %}
 		{% endblock %}
-
 		{% block javascripts %}
 			{{ encore_entry_script_tags('app') }}
 		{% endblock %}
