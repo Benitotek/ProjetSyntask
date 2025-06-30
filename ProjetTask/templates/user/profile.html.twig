@@ -1,0 +1,227 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 1rem;
+            object-fit: cover;
+        }
+        
+        .profile-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-container {
+                margin: 1rem auto;
+            }
+            
+            .profile-header,
+            .profile-form {
+                padding: 1.5rem;
+            }
+        }
+        
+        .required::after {
+            content: " *";
+            color: #ef4444;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="profile-container">
+    <div class="profile-header">
+        {% if user.avatar %}
+            <img src="{{ asset('uploads/avatars/' ~ user.avatar) }}" alt="Avatar" class="profile-avatar">
+        {% else %}
+            <div class="profile-avatar" style="background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                👤
+            </div>
+        {% endif %}
+        <h1>{{ user.firstname ?? 'Utilisateur' }} {{ user.lastname ?? '' }}</h1>
+        <p style="opacity: 0.9;">{{ user.email }}</p>
+    </div>
+
+    <div class="profile-form">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        
+        <div class="form-row">
+            <div class="form-group">
+                {{ form_label(form.prenom, 'Prénom', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(form.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Votre prénom'}}) }}
+                {{ form_errors(form.prenom) }}
+            </div>
+            
+            <div class="form-group">
+                {{ form_label(form.nom, 'Nom', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Votre nom'}}) }}
+                {{ form_errors(form.nom) }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label required'}}) }}
+            {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'votre@email.com'}}) }}
+            {{ form_errors(form.email) }}
+        </div>
+
+        {% if form.phone is defined %}
+        <div class="form-group">
+            {{ form_label(form.phone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.phone, {'attr': {'class': 'form-control', 'placeholder': '06 12 34 56 78'}}) }}
+            {{ form_errors(form.phone) }}
+        </div>
+        {% endif %}
+
+        {% if form.avatar is defined %}
+        <div class="form-group">
+            {{ form_label(form.avatar, 'Avatar', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.avatar, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.avatar) }}
+            <small style="color: #6b7280; font-size: 0.875rem;">
+                Formats acceptés : JPG, PNG, GIF. Taille maximale : 2MB
+            </small>
+        </div>
+        {% endif %}
+
+        {% if form.plainPassword is defined %}
+        <div class="form-row">
+            <div class="form-group">
+                {{ form_label(form.plainPassword.first, 'Nouveau mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': 'Laisser vide si inchangé'}}) }}
+                {{ form_errors(form.plainPassword.first) }}
+            </div>
+            
+            <div class="form-group">
+                {{ form_label(form.plainPassword.second, 'Confirmer le mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirmer le mot de passe'}}) }}
+                {{ form_errors(form.plainPassword.second) }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if form.bio is defined %}
+        <div class="form-group">
+            {{ form_label(form.bio, 'Biographie', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.bio, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Parlez-nous de vous...'}}) }}
+            {{ form_errors(form.bio) }}
+        </div>
+        {% endif %}
+
+        <div style="text-align: center; padding-top: 1rem;">
+            <button type="submit" class="btn-primary">
+                Mettre à jour mon profil
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

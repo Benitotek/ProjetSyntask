@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
+use App\Enum\Userstatut;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -45,51 +46,46 @@ class UserTypeForm extends AbstractType
                     new Length(['max' => 50])
                 ]
             ])
-            ->add('roles', ChoiceType::class, [
+              ->add('roles', ChoiceType::class, [
                 'label' => 'Rôles',
                 'choices' => [
-                    'Employé' => User::ROLE_EMPLOYE,
-                    'Chef de projet' => User::ROLE_CHEF_PROJET,
-                    'Directeur' => User::ROLE_DIRECTEUR,
-                    'Administrateur' => User::ROLE_ADMIN,
+                    'Employé' => 'ROLE_EMPLOYE',
+                    'Chef de projet' => 'ROLE_CHEF_PROJET',
+                    'Directeur' => 'ROLE_DIRECTEUR',
+                    'Administrateur' => 'ROLE_ADMIN',
                 ],
                 'multiple' => true,
                 'expanded' => true,
                 'attr' => ['class' => 'form-check-input']
             ])
+            
             ->add('statut', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => [
-                    'Actif' => User::STATUT_ACTIF,
-                    'Inactif' => User::STATUT_INACTIF,
-                    'En congé' => User::STATUT_EN_CONGE,
-                    'Absent' => User::STATUT_ABSENT,
-                ],
-                'attr' => ['class' => 'form-select']
-            ])
-            ->add('estActif', CheckboxType::class, [
-                'label' => 'Compte actif',
-                'required' => false,
-                'attr' => ['class' => 'form-check-input']
+                    'Actif' => Userstatut::ACTIF,
+                    'Inactif' => Userstatut::INACTIF,
+                    'En congé' => Userstatut::EN_CONGE,
+                    'Absent' => Userstatut::ABSENT,
+                ],  'attr' => ['class' => 'form-select']
             ]);
-
-        if ($options['is_new']) {
-            $builder->add('password', PasswordType::class, [
-                'label' => 'Mot de passe',
-                'attr' => ['class' => 'form-control'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le mot de passe est requis']),
-                    new Length(['min' => 6, 'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères'])
-                ]
-            ]);
-        }
     }
-
+    
+    /**
+     * Génère les choix pour les statuts à partir de l'enum
+     */
+    private function getStatutChoices(): array
+    {
+        $choices = [];
+        foreach (Userstatut::cases() as $statut) {
+            $choices[$statut->label()] = $statut;
+        }
+        return $choices;
+    }
+    
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => User::class,
-            'is_new' => false,
         ]);
     }
 }

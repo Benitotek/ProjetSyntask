@@ -29,6 +29,18 @@ class ProjectController extends AbstractController
         $this->security = $security;
     }
 
+    #[Route('/mes-projets', name: 'app_my_projects', methods: ['GET'])]
+    #[IsGranted('ROLE_CHEF_PROJET')]
+   public function myProjects(ProjectRepository $projectRepository): Response {
+         $user = $this->getUser();
+// On récupère les projets où l’utilisateur est owner OU (optionnel) membre/partage…
+        $projects = $projectRepository->findBy(['owner' => $user]);
+        return $this->render('project/my_projects.html.twig', [
+             'projects' => $projects,
+        ]);
+}
+
+
     #[Route('/', name: 'app_project_index', methods: ['GET'])]
     public function index(ProjectRepository $projectRepository): Response
     {

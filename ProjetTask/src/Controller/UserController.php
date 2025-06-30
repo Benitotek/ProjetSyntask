@@ -19,10 +19,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
-   #[Route('/', name: 'app_user_index', methods: ['GET'])]
+    #[Route('/', name: 'app_user_index', methods: ['GET'])]
     public function index(UserRepository $userRepository): Response
     {
-        $users = $userRepository->findAll();    
+        $users = $userRepository->findAll();
         $userstatutes = Userstatut::cases();
         $userstatutLabels = array_map(fn($statut) => $statut->label(), $userstatutes);
 
@@ -30,6 +30,30 @@ class UserController extends AbstractController
             'users' => $users,
             'userstatutes' => $userstatutes,
             'userstatutLabels' => $userstatutLabels,
+        ]);
+    }
+    
+    // Route pour le profil de l'utilisateur connecté
+    // Permet de modifier les informations de l'utilisateur connecté
+    #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET','POST'])]
+    public function myProfile(Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $form = $this->createForm(UserTypeForm::class, $user);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Ici, tu peux gérer l'upload d'avatar si nécessaire, ex :
+            // $avatar = $form->get('avatar')->getData();
+            $em->flush();
+            $this->addFlash('success', 'Profil mis à jour !');
+            // On reste sur la même page :
+            return $this->redirectToRoute('app_my_profile');
+        }
+
+        return $this->render('user/profile.html.twig', [
+            'user' => $user,
+            'form' => $form->createView(),
         ]);
     }
 
