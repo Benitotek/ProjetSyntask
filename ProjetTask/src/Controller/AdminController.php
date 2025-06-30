@@ -104,79 +104,106 @@ class AdminController extends AbstractController
             // Autres variables
         ]);
     }
-
-
-
     #[Route('/admin', name: 'app_admin')]
-    public function UserList(): Response
+    #[IsGranted('ROLE_ADMIN')]
+    /**
+     * Display the admin dashboard with a list of users.
+     *
+     * @param UserRepository $userRepository
+     * @return Response
+     */
+    public function UserList(UserRepository $userRepository): Response
     {
-        // Simuler des données utilisateurs pour l'affichage
-        $users = [
-            [
-                'id' => 1,
-                'nom' => 'Bernard Martin',
-                'email' => 'bernard.martin@free.fr ',
-                'role' => 'Directeur',
-                'statut' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 2,
-                'nom' => 'Clara Lefèvre',
-                'email' => 'clara.lefevre@orange.fr',
-                'role' => 'Chefs de Projet ',
-                'statut' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 3,
-                'nom' => 'David  Moreau',
-                'email' => 'david.moreau@orange.fr',
-                'role' => 'Chefs de Projet',
-                'statut' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 4,
-                'nom' => 'François Girard',
-                'email' => 'francois.girard@gmail.com',
-                'role' => 'Employés',
-                'statut' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 5,
-                'nom' => 'Hélène Bernard',
-                'email' => 'helene.bernard@gmail.com',
-                'role' => 'Employés',
-                'statut' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 6,
-                'nom' => 'Julien Fontaine',
-                'email' => 'julien.fontaine@example.com',
-                'role' => 'Employés',
-                'statut' => 'Actif',
-                'avatar' => null
-            ],
-            [
-                'id' => 7,
-                'nom' => 'Karine Roche',
-                'email' => 'karine.roche@gmail.com',
-                'role' => 'Employés',
-                'statut' => 'Inactif',
-                'avatar' => null
-            ]
-        ];
-
+        $users = $userRepository->findAll();
+        $currentUser = $this->getUser();
         return $this->render('admin/index.html.twig', [
-            'controller_name' => 'AdminController',
             'users' => $users,
-            'current_user' => [
-                'nom' => 'admin',
-                'role' => 'Administrateur'
-            ]
+            'current_user' => $currentUser,
+            'activePage' => 'dashboard', // <--- ajouter cette ligne !
         ]);
     }
+
+    #[Route('/admin/projects', name: 'app_admin_projects')]
+    public function projects(ProjectRepository $projectRepository): Response
+    {
+        $projects = $projectRepository->findBy(['owner' => $this->getUser()]);
+        return $this->render('admin/projects.html.twig', [
+            'projects' => $projects,
+            'activePage' => 'projects',
+        ]);
+    }
+// project/view/kanban.html.twig test voir mes-projets? a la place de /admin/projects
+    // #[Route('/admin', name: 'app_admin')]
+    // public function UserList(): Response
+    // {
+    //     // Logique pour récupérer les utilisateurs depuis la base de données
+    //     // Simuler des données utilisateurs pour l'affichage
+    //     $users = [
+    //         [
+    //             'id' => 1,
+    //             'nom' => 'Bernard Martin',
+    //             'email' => 'bernard.martin@free.fr ',
+    //             'role' => 'Directeur',
+    //             'statut' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 2,
+    //             'nom' => 'Clara Lefèvre',
+    //             'email' => 'clara.lefevre@orange.fr',
+    //             'role' => 'Chefs de Projet ',
+    //             'statut' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 3,
+    //             'nom' => 'David  Moreau',
+    //             'email' => 'david.moreau@orange.fr',
+    //             'role' => 'Chefs de Projet',
+    //             'statut' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 4,
+    //             'nom' => 'François Girard',
+    //             'email' => 'francois.girard@gmail.com',
+    //             'role' => 'Employés',
+    //             'statut' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 5,
+    //             'nom' => 'Hélène Bernard',
+    //             'email' => 'helene.bernard@gmail.com',
+    //             'role' => 'Employés',
+    //             'statut' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 6,
+    //             'nom' => 'Julien Fontaine',
+    //             'email' => 'julien.fontaine@example.com',
+    //             'role' => 'Employés',
+    //             'statut' => 'Actif',
+    //             'avatar' => null
+    //         ],
+    //         [
+    //             'id' => 7,
+    //             'nom' => 'Karine Roche',
+    //             'email' => 'karine.roche@gmail.com',
+    //             'role' => 'Employés',
+    //             'statut' => 'Inactif',
+    //             'avatar' => null
+    //         ]
+    //     ];
+
+    //     return $this->render('admin/index.html.twig', [
+    //         'controller_name' => 'AdminController',
+    //         'users' => $users,
+    //         'current_user' => [
+    //             'nom' => 'admin',
+    //             'role' => 'Administrateur'
+    //         ]
+    //     ]);
+    // }
 }

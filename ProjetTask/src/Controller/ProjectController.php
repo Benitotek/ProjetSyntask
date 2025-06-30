@@ -141,15 +141,15 @@ class ProjectController extends AbstractController
     }
 }
 
-#[Route('/project/view')]
-#[IsGranted('ROLE_EMPLOYE')]
+// #[Route('/project/view')]
+// #[IsGranted('ROLE_EMPLOYE')]
 class ProjectViewController extends AbstractController
 {
     /**
      * Vue Kanban d'un projet
      */
     #[Route('/{id}/kanban', name: 'app_project_view_kanban', methods: ['GET'])]
-    public function kanban(
+    public function ProjectKanban(
         Project $project,
         TaskListRepository $taskListRepository
     ): Response {
