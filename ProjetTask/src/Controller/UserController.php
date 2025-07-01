@@ -32,7 +32,7 @@ class UserController extends AbstractController
             'userstatutLabels' => $userstatutLabels,
         ]);
     }
-    #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET','POST'])]
+    #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET', 'POST'])]
     public function myProfile(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
@@ -79,8 +79,8 @@ class UserController extends AbstractController
     //     ]);
     // }
 
-  // cette route permet de créer un nouvel utilisateur 
-  // elle est accessible uniquement aux utilisateurs ayant le rôle ROLE_ADMIN
+    // cette route permet de créer un nouvel utilisateur 
+    // elle est accessible uniquement aux utilisateurs ayant le rôle ROLE_ADMIN
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -118,7 +118,7 @@ class UserController extends AbstractController
     //         'user' => $user,
     //     ]);
     // }
-//
+    //
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -143,17 +143,32 @@ class UserController extends AbstractController
             'form' => $form,
         ]);
     }
-
-    #[Route('/{id}/toggle-statut', name: 'app_user_toggle_statut', methods: ['POST'])]
-    public function togglestatut(User $user, EntityManagerInterface $entityManager): Response
+// Attention a cette route car elle supprime l'utilisateur des que l'on mets l'ID dans l'URL
+    #[Route('/{id}', name: 'app_user_delete', methods: ['POST', 'GET'])]
+    public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
-        $user->setEstActif(!$user->isEstActif());
-        $user->setDateMaj(new \DateTime());
+       
+     // Temporairement désactiver la validation CSRF pour tester
+    // if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
+        $entityManager->remove($user);
         $entityManager->flush();
-
-        $statut = $user->isEstActif() ? 'activé' : 'désactivé';
-        $this->addFlash('success', "Utilisateur {$statut} avec succès.");
-
+        $this->addFlash('success', 'Utilisateur supprimé avec succès.');
+    // } else {
+    //     $this->addFlash('danger', 'Jeton CSRF invalide. Suppression annulée.');
+    // }
         return $this->redirectToRoute('app_user_index');
     }
+
+    // #[Route('/{id}/toggle-statut', name: 'app_user_toggle_statut', methods: ['POST'])]
+    // public function togglestatut(User $user, EntityManagerInterface $entityManager): Response
+    // {
+    //     $user->setEstActif(!$user->isEstActif());
+    //     $user->setDateMaj(new \DateTime());
+    //     $entityManager->flush();
+
+    //     $statut = $user->isEstActif() ? 'activé' : 'désactivé';
+    //     $this->addFlash('success', "Utilisateur {$statut} avec succès.");
+
+    //     return $this->redirectToRoute('app_user_index');
+    // }
 }
