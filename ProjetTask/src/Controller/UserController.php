@@ -32,10 +32,10 @@ class UserController extends AbstractController
             'userstatutLabels' => $userstatutLabels,
         ]);
     }
-    
+
     // Route pour le profil de l'utilisateur connecté
     // Permet de modifier les informations de l'utilisateur connecté
-    #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET','POST'])]
+    #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET', 'POST'])]
     public function myProfile(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
@@ -56,6 +56,22 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+    // route pour le profil de l'utilisateur connecté Version Ben Test
+    // #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET', 'POST'])]
+    // public function UserProfile(): Response
+    // {
+    //     $user = $this->getUser();
+    //     if (!$user) {
+    //         throw $this->createAccessDeniedException();
+    //     }
+    //     // Afficher ou éditer le profil comme tu veux
+    //     return $this->render('user/profile.html.twig', ['user' => $user]);
+    // }
+
+
+
+
+
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
