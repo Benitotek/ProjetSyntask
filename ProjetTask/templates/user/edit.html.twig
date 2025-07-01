@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un utilisateur{% endblock %}
+
+{% block body %}
+    <div class="edit-user-container">
+        <h1>Modifier l'utilisateur</h1>
+
+        {% for message in app.flashes('success') %}
+            <div class="flash-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {{ form_start(form) }}
+            <div class="form-fields">
+                {{ form_row(form.nom) }}
+                {{ form_row(form.prenom) }}
+                {{ form_row(form.email) }}
+                {{ form_row(form.mdp, {
+                    'attr': {
+                        'placeholder': 'Laissez vide pour ne pas changer'
+                    }
+                }) }}
+                {{ form_row(form.roles) }}
+            </div>
+
+            <button class="btn btn-primary">Enregistrer</button>
+            <a href="{{ path('app_user_index') }}" class="btn btn-secondary">Annuler</a>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

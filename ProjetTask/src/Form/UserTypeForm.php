@@ -67,9 +67,25 @@ class UserTypeForm extends AbstractType
                     'En congé' => Userstatut::EN_CONGE,
                     'Absent' => Userstatut::ABSENT,
                 ],  'attr' => ['class' => 'form-select']
+            ])
+            ->add('mdp', PasswordType::class, [
+                'label' => 'Mot de passe',
+                'mapped' => false,          // IMPORTANT : ne pas mapper à l'entité User
+                'required' => false,        // optionnel à la modification
+                'attr' => ['class' => 'form-control'],
+                'help' => 'Laissez vide pour ne pas changer le mot de passe',
+                'constraints' => [
+                    new Length([
+                        'min' => 6,
+                        'max' => 20,
+                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+                        'maxMessage' => 'Le mot de passe ne peut pas dépasser {{ limit }} caractères'
+                    ]),
+                    new NotBlank(['message' => 'Le mot de passe est requis'])
+                ]
             ]);
     }
-    
+   
     /**
      * Génère les choix pour les statuts à partir de l'enum
      */
@@ -89,21 +105,3 @@ class UserTypeForm extends AbstractType
         ]);
     }
 }
-            // ->add('email', TextType::class, ['label' => "Email"])
-            // ->add('mdp', PasswordType::class, [
-            //     // 'hash_property_path' => 'password',
-            //     'mapped' => true, 
-            //     'label' => "Mot de passe"])
-            // ->add('estActif', CheckboxType::class, ['label' => "Actif"])
-//             ->add('dateCreation')
-//             ->add('dateMaj')
-//         ;
-//     }
-
-//     public function configureOptions(OptionsResolver $resolver): void
-//     {
-//         $resolver->setDefaults([
-//             'data_class' => User::class,
-//         ]);
-//     }
-// }

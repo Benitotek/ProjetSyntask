@@ -78,7 +78,9 @@ class UserController extends AbstractController
     //         'form' => $form->createView(),
     //     ]);
     // }
- 
+
+  // cette route permet de créer un nouvel utilisateur 
+  // elle est accessible uniquement aux utilisateurs ayant le rôle ROLE_ADMIN
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -116,7 +118,7 @@ class UserController extends AbstractController
     //         'user' => $user,
     //     ]);
     // }
-
+//
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
