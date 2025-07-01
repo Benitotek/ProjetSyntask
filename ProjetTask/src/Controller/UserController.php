@@ -32,6 +32,7 @@ class UserController extends AbstractController
             'userstatutLabels' => $userstatutLabels,
         ]);
     }
+     // Route pour le profil de l'utilisateur connecté
     #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET', 'POST'])]
     public function myProfile(Request $request, EntityManagerInterface $em): Response
     {

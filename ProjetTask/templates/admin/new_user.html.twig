@@ -3,12 +3,11 @@
 {% block title %}Ajouter un utilisateur - Administration{% endblock %}
 
 {% block stylesheets %}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/styles/all.min.css" rel="stylesheet"
-	<link rel="stylesheet" href="{{ asset('styles/new_user.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('styles/new_user.css') }}">
 {% endblock %}
 
 {% block body %}
-
     <h1>Ajouter un utilisateur</h1>
 
     <form action="{{ path('app_admin_user_add') }}" method="POST">
@@ -18,8 +17,18 @@
         </div>
 
         <div class="form-group">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" name="prenom" required>
+        </div>
+
+        <div class="form-group">
             <label for="email">Email</label>
             <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" required minlength="8">
         </div>
 
         <div class="form-group">
@@ -28,8 +37,8 @@
                 <option value="">Sélectionner un rôle</option>
                 <option value="Directeur">Directeur</option>
                 <option value="Chef De Projet">Chef De Projet</option>
-            <option value="Employer">Employer</option>
-			<option value="Admin">Admin</option>
+                <option value="Employer">Employer</option>
+                <option value="Admin">Admin</option>
             </select>
         </div>
 
