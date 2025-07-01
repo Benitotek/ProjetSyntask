@@ -32,10 +32,7 @@ class UserController extends AbstractController
             'userstatutLabels' => $userstatutLabels,
         ]);
     }
-
-    // Route pour le profil de l'utilisateur connecté
-    // Permet de modifier les informations de l'utilisateur connecté
-    #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET', 'POST'])]
+    #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET','POST'])]
     public function myProfile(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
@@ -56,23 +53,32 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-    // route pour le profil de l'utilisateur connecté Version Ben Test
+    // Commenté pour éviter les conflits avec la route de profil
+    // Si tu souhaites réactiver cette route, assure-toi qu'elle ne soit pas en conflit avec d'autres routes.
+    // Route pour le profil de l'utilisateur connecté
+    // Permet de modifier les informations de l'utilisateur connecté
     // #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET', 'POST'])]
-    // public function UserProfile(): Response
+    // public function myProfile(Request $request, EntityManagerInterface $em): Response
     // {
     //     $user = $this->getUser();
-    //     if (!$user) {
-    //         throw $this->createAccessDeniedException();
+    //     $form = $this->createForm(UserTypeForm::class, $user);
+
+    //     $form->handleRequest($request);
+    //     if ($form->isSubmitted() && $form->isValid()) {
+    //         // Ici, tu peux gérer l'upload d'avatar si nécessaire, ex :
+    //         // $avatar = $form->get('avatar')->getData();
+    //         $em->flush();
+    //         $this->addFlash('success', 'Profil mis à jour !');
+    //         // On reste sur la même page :
+    //         return $this->redirectToRoute('app_my_profile');
     //     }
-    //     // Afficher ou éditer le profil comme tu veux
-    //     return $this->render('user/profile.html.twig', ['user' => $user]);
+
+    //     return $this->render('user/profile.html.twig', [
+    //         'user' => $user,
+    //         'form' => $form->createView(),
+    //     ]);
     // }
-
-
-
-
-
-
+ 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -103,13 +109,13 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
-    public function show(User $user): Response
-    {
-        return $this->render('user/show.html.twig', [
-            'user' => $user,
-        ]);
-    }
+    // #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
+    // public function show(User $user): Response
+    // {
+    //     return $this->render('user/show.html.twig', [
+    //         'user' => $user,
+    //     ]);
+    // }
 
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
