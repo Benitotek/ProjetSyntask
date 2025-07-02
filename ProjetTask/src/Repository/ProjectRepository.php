@@ -32,19 +32,6 @@ class ProjectRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    /**
-     * Compter les projets par statut
-     * (Méthode déplacée ou renommée pour éviter les doublons)
-     */
-    // public function countBystatut(array $statuts): int
-    // {
-    //     return $this->createQueryBuilder('p')
-    //         ->select('COUNT(p.id)')
-    //         ->where('p.statut IN (:statuts)')
-    //         ->setParameter('statuts', $statuts)
-    //         ->getQuery()
-    //         ->getSingleScalarResult();
-    // }
 
     /**
      * Trouver les projets récents
@@ -65,14 +52,14 @@ class ProjectRepository extends ServiceEntityRepository
     {
         // Cette méthode doit être implémentée selon vos besoins
         // Par exemple, elle pourrait renvoyer des projets avec le nombre de tâches par statut
-        return $this->findByChefDeProjet($user, $limit);
+        return $this->findByChef_Projet($user, $limit);
     }
 
     /**
      * Trouver les projets par chef de projet
      * (Méthode déplacée ou renommée pour éviter les doublons)
      */
-    public function findByChefDeProjet(User $user, int $limit = null): array
+    public function findByChef_Projet(User $user, $limit): array
     {
         $qb = $this->createQueryBuilder('p')
             ->where('p.Chef_Projet = :user')
@@ -86,19 +73,6 @@ class ProjectRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    // /**
-    //  * Trouver les projets où l'utilisateur est membre
-    //  */
-    // public function findByAssignedUser(User $user): array
-    // {
-    //     return $this->createQueryBuilder('p')
-    //         ->join('p.membres', 'm')
-    //         ->where('m.id = :userId')
-    //         ->setParameter('userId', $user->getId())
-    //         ->orderBy('p.dateCreation', 'DESC')
-    //         ->getQuery()
-    //         ->getResult();
-    // }
 
     /**
      * Trouver les projets où l'utilisateur est membre
@@ -147,7 +121,7 @@ class ProjectRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->join('p.membres', 'm')
-            ->where('m = :user OR p.chefDeProjet = :user')
+            ->where('m = :user OR p.Chef_Projet = :user')
             ->setParameter('user', $user)
             ->orderBy('p.dateCreation', 'DESC')
             ->getQuery()
@@ -207,25 +181,19 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-    public function countBystatut(array $statutes): int
+    /**
+     * Compter les projets par statut
+     */
+    public function countBystatut(array $statuts): int
     {
         return $this->createQueryBuilder('p')
             ->select('COUNT(p.id)')
-            ->where('p.statut IN (:statutes)')
-            ->setParameter('statutes', $statutes)
+            ->where('p.statut IN (:statuts)')
+            ->setParameter('statut', $statuts)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
-    // public function findRecent(int $limit = 5): array
-    // {
-    //     return $this->createQueryBuilder('p')
-    //         ->orderBy('p.dateCreation', 'DESC')
-    //         ->setMaxResults($limit)
-    //         ->getQuery()
-    //         ->getResult();
-    // }
 
     public function findWithStats(): array
     {
@@ -251,7 +219,7 @@ class ProjectRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->andWhere('p.estArchive = :val')
             ->setParameter('val', true)
-            ->orderBy('p.updatedAt', 'DESC') // optionnel si tu as un champ updatedAt
+            ->orderBy('p.dateMaj', 'DESC') // optionnel si tu as un champ updatedAt
             ->getQuery()
             ->getResult();
     }
@@ -263,5 +231,16 @@ class ProjectRepository extends ServiceEntityRepository
             ->setParameter('ref', $reference)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findProjectsByUser(User $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.Chef_Projet = :user')
+            ->orWhere(':user MEMBER OF p.membres')
+            ->setParameter('user', $user)
+            ->orderBy('p.dateCreation', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

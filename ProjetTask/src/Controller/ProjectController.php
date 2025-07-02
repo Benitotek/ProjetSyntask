@@ -29,19 +29,29 @@ class ProjectController extends AbstractController
         $this->security = $security;
     }
 
-    #[Route('/mes-projets', name: 'app_my_projects', methods: ['GET'])]
+    #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
     #[IsGranted('ROLE_CHEF_PROJET')]
-   public function myProjects(ProjectRepository $projectRepository): Response {
-         $user = $this->getUser();
-// On récupère les projets où l’utilisateur est owner OU (optionnel) membre/partage…
-        $projects = $projectRepository->findBy(['owner' => $user]);
-        return $this->render('project/my_projects.html.twig', [
-             'projects' => $projects,
+    public function myProjects(ProjectRepository $projectRepository, Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            throw $this->createAccessDeniedException();
+        }
+        // Récupérer le statut courant depuis la requête, ou utiliser une valeur par défaut
+        $current_statut = $request->query->get('statut', 'tous');
+        $projects = $projectRepository->findProjectsByUser($user, $current_statut,);
+
+        return $this->render('project/mes_projets.html.twig', [
+            'projects' => $projects,
+            'current_statut' => $current_statut,
+            'user' => $user,
         ]);
-}
+    }
 
 
-    #[Route('/', name: 'app_project_index', methods: ['GET'])]
+    #[Route('/', name: 'app_projet_index', methods: ['GET'])]
     public function index(ProjectRepository $projectRepository): Response
     {
         $user = $this->getUser();
@@ -51,7 +61,7 @@ class ProjectController extends AbstractController
             $projects = $projectRepository->findAll();
         } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
             // Afficher uniquement les projets dont l'utilisateur est chef
-            $projects = $projectRepository->findByChef_Projet($user);
+            $projects = $projectRepository->findByChef_Projet($user, []);
         } else {
             // Afficher uniquement les projets dont l'utilisateur est membre
             $projects = $projectRepository->findByMembre($user);
@@ -62,7 +72,7 @@ class ProjectController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_project_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CHEF_PROJET')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -80,22 +90,22 @@ class ProjectController extends AbstractController
             $entityManager->persist($project);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_project_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_projet_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('project/new.html.twig', [
+        return $this->render('projet/new.html.twig', [
             'project' => $project,
             'form' => $form,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_project_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
     public function show(Project $project): Response
     {
         // Vérifier que l'utilisateur a le droit de voir ce projet
         $this->denyAccessUnlessGranted('VIEW', $project);
 
-        return $this->render('project/show.html.twig', [
+        return $this->render('projet/show.html.twig', [
             'project' => $project,
         ]);
     }
@@ -112,16 +122,16 @@ class ProjectController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_project_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_projet_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('project/edit.html.twig', [
+        return $this->render('projet/edit.html.twig', [
             'project' => $project,
             'form' => $form,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_project_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_projet_delete', methods: ['POST'])]
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que l'utilisateur a le droit de supprimer ce projet
@@ -132,7 +142,7 @@ class ProjectController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_project_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_projet_index', [], Response::HTTP_SEE_OTHER);
     }
 
     private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
@@ -153,14 +163,14 @@ class ProjectController extends AbstractController
     }
 }
 
-// #[Route('/project/view')]
+#[Route('/projet/view')]
 // #[IsGranted('ROLE_EMPLOYE')]
 class ProjectViewController extends AbstractController
 {
     /**
      * Vue Kanban d'un projet
      */
-    #[Route('/{id}/kanban', name: 'app_project_view_kanban', methods: ['GET'])]
+    #[Route('/{id}/kanban', name: 'app_projet_view_kanban', methods: ['GET'])]
     public function ProjectKanban(
         Project $project,
         TaskListRepository $taskListRepository
@@ -174,7 +184,7 @@ class ProjectViewController extends AbstractController
         // Mettre à jour automatiquement les couleurs
         $taskListRepository->updateAutoColorsForProject($project);
 
-        return $this->render('project/view/kanban.html.twig', [
+        return $this->render('projet/view/kanban.html.twig', [
             'project' => $project,
             'taskLists' => $taskLists,
         ]);
@@ -183,7 +193,7 @@ class ProjectViewController extends AbstractController
     /**
      * Vue globale des tâches d'un projet
      */
-    #[Route('/{id}/tasks', name: 'app_project_view_tasks', methods: ['GET'])]
+    #[Route('/{id}/tasks', name: 'app_projet_view_tasks', methods: ['GET'])]
     public function allTasks(
         Project $project,
         Request $request,
@@ -219,7 +229,7 @@ class ProjectViewController extends AbstractController
             });
         }
 
-        return $this->render('project/view/all_tasks.html.twig', [
+        return $this->render('projet/view/all_tasks.html.twig', [
             'project' => $project,
             'tasks' => $tasks,
             'filters' => [
@@ -233,7 +243,7 @@ class ProjectViewController extends AbstractController
     /**
      * API pour réorganiser les tâches (AJAX)
      */
-    #[Route('/{id}/reorder-tasks', name: 'app_project_reorder_tasks', methods: ['POST'])]
+    #[Route('/{id}/reorder-tasks', name: 'app_projet_reorder_tasks', methods: ['POST'])]
     public function reorderTasks(
         Project $project,
         Request $request,
@@ -262,7 +272,7 @@ class ProjectViewController extends AbstractController
     /**
      * Filtre les tâches par statut
      */
-    #[Route('/{id}/filter-by-statut/{statut}', name: 'app_project_filter_by_statut')]
+    #[Route('/{id}/filter-by-statut/{statut}', name: 'app_projet_filter_by_statut')]
     public function filterBystatut(
         Project $project,
         string $statut,
@@ -276,7 +286,7 @@ class ProjectViewController extends AbstractController
             return $task->getStatut() === $statut;
         });
 
-        return $this->render('project/view/all_tasks.html.twig', [
+        return $this->render('projet/view/all_tasks.html.twig', [
             'project' => $project,
             'tasks' => $filteredTasks,
             'filters' => [

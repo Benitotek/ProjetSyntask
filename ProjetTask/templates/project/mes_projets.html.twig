@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block body %}
+	{% set current_statut = current_statut|default('tous') %}
 	<div
 		class="app-container">
 		<!-- Sidebar -->
@@ -36,7 +37,7 @@
 				<nav class="sidebar-nav">
 					<ul class="nav-menu">
 						<li class="nav-item">
-							<a href="{{ path('app_employe_dashboard') }}" class="nav-link">
+							<a href="{{ path('app_dashboard') }}" class="nav-link">
 								<i class="icon-dashboard"></i>
 								Tableau de bord
 							</a>
@@ -48,13 +49,13 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ path('app_statistiques') }}" class="nav-link">
+							<a href="{{ path('app_dashboard') }}" class="nav-link">
 								<i class="icon-stats"></i>
 								Statistiques
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ path('app_mon_profil') }}" class="nav-link">
+							<a href="{{ path('app_my_profile') }}" class="nav-link">
 								<i class="icon-profile"></i>
 								Mon profil
 							</a>
@@ -76,7 +77,7 @@
 					<h1 class="page-title">Mes Projets</h1>
 					<div class="header-actions">
 						{% if is_granted('ROLE_DIRECTEUR') %}
-							<a href="{{ path('app_project_new') }}" class="btn btn-primary">
+							<a href="{{ path('app_projet_new') }}" class="btn btn-primary">
 								<i class="icon-plus"></i>
 								Nouveau Projet
 							</a>
@@ -90,15 +91,26 @@
 						<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
 							Tous
 						</a>
-						<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
-							En attente
-						</a>
-						<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
-							En cours
-						</a>
-						<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
-							Terminés
-						</a>
+						{% if current_statut is defined %}
+							{# Utiliser current_statut ici #}
+							<span class="badge {% if current_statut == 'en_cours' %}bg-primary{% else %}bg-secondary{% endif %}">
+								{{ current_statut }}
+							</span>
+						{% else %}
+							{# Valeur par défaut si current_statut n'existe pas #}
+							<span class="badge bg-secondary">tous</span>
+
+							<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
+								En attente
+							</a>
+							<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
+								En cours
+							</a>
+							<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
+								Terminés
+
+							</a>
+						{% endif %}
 					</div>
 				</div>
 
@@ -172,11 +184,11 @@
 							</div>
 
 							<div class="project-actions">
-								<a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn btn-primary btn-sm">
+								<a href="{{ path('app_projet_kanban', {'id': project.id}) }}" class="btn btn-primary btn-sm">
 									<i class="icon-kanban"></i>
 									Kanban
 								</a>
-								<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-secondary btn-sm">
+								<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn btn-secondary btn-sm">
 									<i class="icon-eye"></i>
 									Détails
 								</a>
@@ -188,7 +200,7 @@
 							<h3>Aucun projet trouvé</h3>
 							<p>Vous n'avez pas encore de projets assignés.</p>
 							{% if is_granted('ROLE_DIRECTEUR') %}
-								<a href="{{ path('app_project_new') }}" class="btn btn-primary">
+								<a href="{{ path('app_projet_new') }}" class="btn btn-primary">
 									Créer un nouveau projet
 								</a>
 							{% endif %}
