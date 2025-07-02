@@ -77,13 +77,26 @@ class ProjectRepository extends ServiceEntityRepository
     /**
      * Trouver les projets où l'utilisateur est membre
      */
-    public function findByMembre(User $user): array
+    public function findProjectsAsMember(User $user): array
     {
         return $this->createQueryBuilder('p')
             ->join('p.membres', 'm')
-            ->where('m.id = :userId')
-            ->setParameter('userId', $user->getId())
-            ->orderBy('p.dateCreation', 'DESC')
+            ->where('m = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
+    /**
+     * Trouve les projets où l'utilisateur est membre et qui ont un statut spécifique
+     */
+    public function findProjectsAsMemberByStatus(User $user, string $status): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.membres', 'm')
+            ->where('m = :user')
+            ->andWhere('p.statut = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', $status)
             ->getQuery()
             ->getResult();
     }

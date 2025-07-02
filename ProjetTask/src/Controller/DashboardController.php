@@ -7,6 +7,7 @@ use App\Entity\Task;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\Attribute\Security;
@@ -20,11 +21,24 @@ class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
     public function index(
+        Request $request,
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository,
         UserRepository $userRepository
     ): Response {
+
+        /** @var User $user */
         $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        $statut = $request->query->get('statut', 'tous');
+        return $this->render('dashboard/index.html.twig', [
+            'user' => $user,
+            'current_statut' => $statut,
+            // autres variables...
+        ]);
 
         // Différentes vues selon le rôle
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {

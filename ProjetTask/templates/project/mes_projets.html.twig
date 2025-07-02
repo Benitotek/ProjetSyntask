@@ -85,41 +85,57 @@
 					</div>
 				</div>
 
+				{# <!-- Filtres --> Partie Ok mais sans les 2 bouton Tableau de bord et statistiques Voir Modif dashbordController ProjectRepository etc..
+								<div class="filters-section">
+									<div class="filter-tabs">
+										<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
+											Tous
+										</a>
+										{% if current_statut is defined %}
+											{# Utiliser current_statut ici #}
+				{# <span class="badge {% if current_statut == 'en_cours' %}bg-primary{% else %}bg-secondary{% endif %}">
+												{{ current_statut }}
+											</span>
+										{% else %} #}
+				{# Valeur par défaut si current_statut n'existe pas #}
+				{# <span class="badge bg-secondary">tous</span>
+				
+											<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
+												En attente
+											</a>
+											<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
+												En cours
+											</a>
+											<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
+												Terminés
+				
+											</a>
+										{% endif %}
+									</div>
+								</div> #}
+				{# Remplacez la section des filtres par celle-ci #}
 				<!-- Filtres -->
-				<div class="filters-section">
-					<div class="filter-tabs">
-						<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
+					<div class="filters-section"> <div class="filter-tabs">
+						<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut == 'tous' %}active{% endif %}">
 							Tous
 						</a>
-						{% if current_statut is defined %}
-							{# Utiliser current_statut ici #}
-							<span class="badge {% if current_statut == 'en_cours' %}bg-primary{% else %}bg-secondary{% endif %}">
-								{{ current_statut }}
-							</span>
-						{% else %}
-							{# Valeur par défaut si current_statut n'existe pas #}
-							<span class="badge bg-secondary">tous</span>
-
-							<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
-								En attente
-							</a>
-							<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
-								En cours
-							</a>
-							<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
-								Terminés
-
-							</a>
-						{% endif %}
+						<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
+							En attente
+						</a>
+						<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
+							En cours
+						</a>
+						<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
+							Terminés
+						</a>
 					</div>
 				</div>
-
 				<!-- Liste des projets -->
 				<div class="projects-grid">
 					{% for project in projects %}
 						<div class="project-card">
 							<div class="project-header">
-								<h3 class="project-title">{{ project.nom }}</h3>
+								<h3 class="project-title">{{ project.titre }}</h3>
 								<span class="project-statut project-statut-{{ project.statut|lower|replace({'-': '_'}) }}">
 									{{ project.statut|replace({'-': ' '})|title }}
 								</span>
@@ -149,8 +165,33 @@
 								</div>
 
 								<div class="project-team">
-									<div class="team-avatars">
-										{% if project.chefDeProjet %}
+									<div
+										class="team-avatars">
+										{# Si le chef de projet s'appelle Chef_Projet dans l'entité #}
+										{% if project.Chef_Projet %}
+											<div class="team-avatar chef" title="Chef de projet: {{ project.Chef_Projet.fullName }}">
+												{{ project.Chef_Projet.prenom|slice(0, 1)|upper }}{{ project.Chef_Projet.nom|slice(0, 1)|upper }}
+											</div>
+										{% endif %}
+										{% if project.Chef_Projet is not empty %}
+											<div class="team-avatar chef" title="Chef de projet: {{ project.Chef_Projet.prenom }} {{ project.Chef_Projet.nom }}">
+												{{ project.Chef_Projet.prenom|slice(0, 1)|upper }}{{ project.Chef_Projet.nom|slice(0, 1)|upper }}
+											</div>
+										{% endif %}
+										{# Afficher les membres du projet #}
+										{% if project.membres is defined and project.membres|length > 0 %}
+											{% for membre in project.membres|slice(0, 3) %}
+												<div class="team-avatar" title="{{ membre.prenom }} {{ membre.nom }}">
+													{{ membre.prenom|slice(0, 1)|upper }}{{ membre.nom|slice(0, 1)|upper }}
+												</div>
+											{% endfor %}
+											{% if project.membres|length > 3 %}
+												<div class="team-avatar more">
+													+{{ project.membres|length - 3 }}
+												</div>
+											{% endif %}
+										{% endif %}
+										{# {% if project.chefDeProjet %}
 											<div class="team-avatar chef" title="Chef de projet: {{ project.chefDeProjet.username }}">
 												{{ project.chefDeProjet.username|slice(0, 2)|upper }}
 											</div>
@@ -165,7 +206,7 @@
 												+{{ project.membres|length - 3 }}
 											</div>
 										{% endif %}
-									</div>
+									</div> #}
 								</div>
 
 								{% if project.tasks is defined and project.tasks|length > 0 %}

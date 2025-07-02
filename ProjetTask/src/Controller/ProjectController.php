@@ -28,27 +28,72 @@ class ProjectController extends AbstractController
     {
         $this->security = $security;
     }
-
-    #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
-    #[IsGranted('ROLE_CHEF_PROJET')]
-    public function myProjects(ProjectRepository $projectRepository, Request $request): Response
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        if (!$user) {
-            throw $this->createAccessDeniedException();
-        }
-        // Récupérer le statut courant depuis la requête, ou utiliser une valeur par défaut
-        $current_statut = $request->query->get('statut', 'tous');
-        $projects = $projectRepository->findProjectsByUser($user, $current_statut,);
-
-        return $this->render('project/mes_projets.html.twig', [
-            'projects' => $projects,
-            'current_statut' => $current_statut,
-            'user' => $user,
-        ]);
+    //VERSION AVEC 2 BOUTONS (tableau de bord et stats )?
+/**
+ * Affiche les projets de l'utilisateur connecté
+ */
+#[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
+public function mesProjects(Request $request, ProjectRepository $projectRepository): Response
+{
+    /** @var User $user */
+    $user = $this->getUser();
+    
+    if (!$user) {
+        throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page');
     }
+    
+    // Récupérer le statut sélectionné depuis la requête
+    $current_statut = $request->query->get('statut', 'tous');
+    
+    // Récupérer les projets selon le statut sélectionné
+    if ($current_statut !== 'tous') {
+        // Si un statut spécifique est demandé
+        $projectsAsManager = $projectRepository->findBy([
+            'Chef_Projet' => $user,
+            'statut' => $current_statut
+        ]);
+        
+        // Récupérer les projets où l'utilisateur est membre avec le statut spécifié
+        $projectsAsMember = $projectRepository->findProjectsAsMemberByStatus($user, $current_statut);
+    } else {
+        // Tous les projets
+        $projectsAsManager = $projectRepository->findBy(['Chef_Projet' => $user]);
+        $projectsAsMember = $projectRepository->findProjectsAsMember($user);
+    }
+    
+    // Fusionner les deux collections de projets
+    $projects = array_merge($projectsAsManager, $projectsAsMember);
+    
+    // Éliminer les doublons potentiels
+    $projects = array_unique($projects, SORT_REGULAR);
+    
+    return $this->render('project/mes_projets.html.twig', [
+        'projects' => $projects,
+        'current_statut' => $current_statut,
+    ]);
+}
+
+    // CETTE PARTIE MARCHE MAIS N'EST PAS COMPATIBLE AVEC 2 BOUTONS(tableau de bord et stats )
+    // #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
+    // #[IsGranted('ROLE_CHEF_PROJET')]
+    // public function myProjects(ProjectRepository $projectRepository, Request $request): Response
+    // {
+    //     /** @var User $user */
+    //     $user = $this->getUser();
+
+    //     if (!$user) {
+    //         throw $this->createAccessDeniedException();
+    //     }
+    //     // Récupérer le statut courant depuis la requête, ou utiliser une valeur par défaut
+    //     $current_statut = $request->query->get('statut', 'tous');
+    //     $projects = $projectRepository->findProjectsByUser($user, $current_statut,);
+
+    //     return $this->render('project/mes_projets.html.twig', [
+    //         'projects' => $projects,
+    //         'current_statut' => $current_statut,
+    //         'user' => $user,
+    //     ]);
+    // }
 
 
     #[Route('/', name: 'app_projet_index', methods: ['GET'])]
@@ -99,16 +144,16 @@ class ProjectController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
-    public function show(Project $project): Response
-    {
-        // Vérifier que l'utilisateur a le droit de voir ce projet
-        $this->denyAccessUnlessGranted('VIEW', $project);
+    // #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
+    // public function show(Project $project): Response
+    // {
+    //     // Vérifier que l'utilisateur a le droit de voir ce projet
+    //     $this->denyAccessUnlessGranted('VIEW', $project);
 
-        return $this->render('projet/show.html.twig', [
-            'project' => $project,
-        ]);
-    }
+    //     return $this->render('projet/show.html.twig', [
+    //         'project' => $project,
+    //     ]);
+    // }
 
     #[Route('/{id}/edit', name: 'app_project_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
