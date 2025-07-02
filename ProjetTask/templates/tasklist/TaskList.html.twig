@@ -179,25 +179,49 @@
 			</div>
 		</div>
 	</div>
+	{{ form_start(form, {'attr': {'class': 'column-form', 'data-action': form.vars.action}}) }}
+	<div class="mb-3">
+		{{ form_label(form.nom) }}
+		{{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+		{{ form_errors(form.nom) }}
+	</div>
 
-	<!-- Modal de confirmation pour supprimer -->
-	<div class="modal fade" id="deleteModal" tabindex="-1">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Confirmer la suppression</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+	<div class="mb-3">
+		{{ form_label(form.color) }}
+		<div class="color-selector">
+			{% for color in form.color.vars.choices %}
+				<div class="color-option">
+					<input type="radio" id="color_{{ color.value }}" name="{{ form.color.vars.full_name }}" value="{{ color.value }}" {% if form.color.vars.value == color.value %} checked {% endif %}>
+					<label for="color_{{ color.value }}" style="background-color: {{ color.label }};" title="{{ color.label }}"></label>
 				</div>
-				<div class="modal-body">
-					Êtes-vous sûr de vouloir supprimer cette colonne ? Cette action est irréversible.
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-					<button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+			{% endfor %}
+		</div>
+		{{ form_errors(form.color) }}
+	</div>
+
+	<div class="d-flex justify-content-end">
+		<button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+		<button type="submit" class="btn btn-primary">Enregistrer</button>
+	</div>
+	{{ form_end(form) }}
+	{# <!-- Modal de confirmation pour supprimer -->
+		<div class="modal fade" id="deleteModal" tabindex="-1">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Confirmer la suppression</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						Êtes-vous sûr de vouloir supprimer cette colonne ? Cette action est irréversible.
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+					</div>
 				</div>
 			</div>
-		</div>
-	</div>
+		</div> #}
 {% endblock %}
 
 {% block javascripts %}

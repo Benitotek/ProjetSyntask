@@ -1,519 +1,512 @@
+{# Test Version 2 - 3 du 02/07 #}
 {% extends 'base.html.twig' %}
 
-{% block title %}
+{% block title %}Kanban:
 	{{ project.titre }}
-	| Kanban
 {% endblock %}
 
 {% block stylesheets %}
 	{{ parent() }}
-	<style>
-		.kanban-container {
-			overflow-x: auto;
-			min-height: calc(100vh - 250px);
-		}
-
-		.kanban-board {
-			display: flex;
-			min-height: 500px;
-		}
-
-		.kanban-column {
-			min-width: 300px;
-			max-width: 300px;
-			margin-right: 1rem;
-			border-radius: 0.25rem;
-			background-color: #f8f9fa;
-		}
-
-		.kanban-column-header {
-			padding: 0.75rem;
-			border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-		}
-
-		.kanban-column-body {
-			padding: 0.5rem;
-			min-height: 200px;
-			max-height: calc(100vh - 350px);
-			overflow-y: auto;
-		}
-
-		.kanban-task {
-			margin-bottom: 0.5rem;
-			cursor: grab;
-		}
-
-		.kanban-task:active {
-			cursor: grabbing;
-		}
-
-		.task-priority-urgent {
-			border-left: 4px solid #dc3545;
-		}
-
-		.task-priority-normal {
-			border-left: 4px solid #007bff;
-		}
-
-		.task-priority-en_attente {
-			border-left: 4px solid #6c757d;
-		}
-
-		.column-color-VERT {
-			border-top: 3px solid #28a745;
-		}
-
-		.column-color-JAUNE {
-			border-top: 3px solid #ffc107;
-		}
-
-		.column-color-ORANGE {
-			border-top: 3px solid #fd7e14;
-		}
-
-		.column-color-ROUGE {
-			border-top: 3px solid #dc3545;
-		}
-	</style>
+	<link rel="stylesheet" href="{{ asset('styles/kanban.css') }}">
 {% endblock %}
 
 {% block body %}
-	<div class="container-fluid py-4">
-		<div class="d-flex justify-content-between align-items-center mb-4">
-			<div>
-				<h1 class="mb-0">{{ project.titre }}</h1>
-				<p class="text-muted">
-					<span class="badge {% if project.statut == 'EN-COURS' %}bg-primary{% elseif project.statut == 'TERMINE' %}bg-success{% else %}bg-warning{% endif %}">
-						{{ project.statut }}
-					</span>
-					{% if project.dateButoir %}
-						<span class="ms-2">
-							<i class="far fa-calendar-alt me-1"></i>
-							Échéance:
-							{{ project.dateButoir|date('d/m/Y') }}
-						</span>
-					{% endif %}
-				</p>
+	<div class="kanban-container">
+		<div class="kanban-header">
+			<h1 class="kanban-title">{{ project.titre }}</h1>
+			<div class="project-meta">
+				<span class="project-status status-{{ project.statut|lower|replace({'-': '_'}) }}">{{ project.statut|replace({'-': ' '})|title }}</span>
+				<span class="project-date">Créé le:
+					{{ project.dateCreation|date('d/m/Y') }}</span>
+				{% if project.dateButoir %}
+					<span class="project-deadline">Échéance:
+						{{ project.dateButoir|date('d/m/Y') }}</span>
+				{% endif %}
 			</div>
-
-			<div>
-				<div class="btn-group">
-					<a href="{{ path('app_project_show', {id: project.id}) }}" class="btn btn-outline-secondary">
-						<i class="fas fa-info-circle me-1"></i>
-						Détails
-					</a>
-					<a href="{{ path('app_project_view_tasks', {id: project.id}) }}" class="btn btn-outline-primary">
-						<i class="fas fa-tasks me-1"></i>
-						Toutes les tâches
-					</a>
-					{% if is_granted('EDIT', project) %}
-						<a href="{{ path('app_task_list_new', {projectId: project.id}) }}" class="btn btn-primary">
-							<i class="fas fa-plus me-1"></i>
-							Nouvelle colonne
-						</a>
-					{% endif %}
-				</div>
+			<div class="kanban-actions">
+				{% if is_granted('EDIT', project) %}
+					<button type="button" class="btn btn-primary btn-add-column" data-bs-toggle="modal" data-bs-target="#addColumnModal">
+						<i class="bi bi-plus"></i>
+						Ajouter une colonne
+					</button>
+				{% endif %}
+				<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn btn-secondary">
+					<i class="bi bi-info-circle"></i>
+					Détails du projet
+				</a>
 			</div>
 		</div>
 
-		<div class="kanban-container">
-			<div class="kanban-board" id="kanban-board">
-				{% for taskList in taskLists %}
-					<div class="kanban-column column-color-{{ taskList.couleur ? taskList.couleur.value : 'VERT' }}" data-column-id="{{ taskList.id }}">
-						<div class="kanban-column-header d-flex justify-content-between align-items-center">
-							<h5 class="mb-0">{{ taskList.nom }}</h5>
-							<div class="dropdown">
-								<button class="btn btn-sm btn-link text-dark" type="button" data-bs-toggle="dropdown">
-									<i class="fas fa-ellipsis-v"></i>
+		<div class="kanban-board" id="kanbanBoard" data-project-id="{{ project.id }}">
+			{% for taskList in taskLists %}
+				<div class="kanban-column" data-column-id="{{ taskList.id }}" data-position="{{ taskList.positionColumn }}">
+					<div class="column-header" style="background-color: {{ taskList.color.value }}">
+						<h2 class="column-title">{{ taskList.nom }}</h2>
+						<span class="task-count">{{ taskList.tasks|length }}</span>
+						{% if is_granted('EDIT', project) %}
+							<div class="column-actions">
+								<button type="button" class="btn btn-sm btn-edit-column" data-column-id="{{ taskList.id }}">
+									<i class="bi bi-pencil"></i>
 								</button>
-								<div class="dropdown-menu dropdown-menu-end">
-									{% if is_granted('EDIT', project) %}
-										<a href="{{ path('app_task_new', {projectId: project.id, taskListId: taskList.id}) }}" class="dropdown-item">
-											<i class="fas fa-plus me-2"></i>
-											Nouvelle tâche
-										</a>
-										<a href="{{ path('app_task_list_edit', {projectId: project.id, id: taskList.id}) }}" class="dropdown-item">
-											<i class="fas fa-edit me-2"></i>
-											Modifier la colonne
-										</a>
-										<div class="dropdown-divider"></div>
-										<form action="{{ path('app_task_list_delete', {projectId: project.id, id: taskList.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette colonne ?');">
-											<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ taskList.id) }}">
-											<button type="submit" class="dropdown-item text-danger">
-												<i class="fas fa-trash me-2"></i>
-												Supprimer
-											</button>
-										</form>
-									{% endif %}
-								</div>
+								{% if taskList.tasks|length == 0 %}
+									<button type="button" class="btn btn-sm btn-delete-column" data-column-id="{{ taskList.id }}" data-column-name="{{ taskList.nom }}">
+										<i class="bi bi-trash"></i>
+									</button>
+								{% endif %}
 							</div>
-						</div>
+						{% endif %}
+					</div>
 
-						<div class="kanban-column-body" data-column-id="{{ taskList.id }}">
-							{% if taskList.tasks|length > 0 %}
-								{% for task in taskList.tasks %}
-									<div class="card kanban-task task-priority-{{ task.priorite.value }}" data-task-id="{{ task.id }}">
-										<div class="card-body p-2">
-											<div class="d-flex justify-content-between align-items-start">
-												<h6 class="card-title mb-1">{{ task.title }}</h6>
-												<div class="dropdown">
-													<button class="btn btn-sm btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
-														<i class="fas fa-ellipsis-v"></i>
-													</button>
-													<div class="dropdown-menu dropdown-menu-end">
-														{% if is_granted('EDIT', project) %}
-															<a href="{{ path('app_task_edit', {projectId: project.id, id: task.id}) }}" class="dropdown-item">
-																<i class="fas fa-edit me-2"></i>
-																Modifier
-															</a>
-															<div class="dropdown-divider"></div>
-															<form action="{{ path('app_task_delete', {projectId: project.id, id: task.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?');">
-																<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-																<button type="submit" class="dropdown-item text-danger">
-																	<i class="fas fa-trash me-2"></i>
-																	Supprimer
-																</button>
-															</form>
-														{% endif %}
+					<div class="column-tasks-container">
+						<div class="column-tasks" data-column-id="{{ taskList.id }}">
+							{% for task in taskList.tasks %}
+								<div class="kanban-task" data-task-id="{{ task.id }}" data-position="{{ task.position }}">
+									<div class="task-header">
+										<h3 class="task-title">{{ task.titre }}</h3>
+										<span class="task-priority priority-{{ task.priorite.name|lower }}">{{ task.priorite.value }}</span>
+									</div>
+									<div class="task-content">
+										{% if task.description %}
+											<div class="task-description">
+												{{ task.description|slice(0, 100) }}
+												{% if task.description|length > 100 %}...
+												{% endif %}
+											</div>
+										{% endif %}
+
+										<div class="task-meta">
+											{% if task.dateEcheance %}
+												<div class="task-deadline">
+													<i class="bi bi-calendar"></i>
+													<span{{task.assignedUser.firstname|slice(0,1)|upper}}{{task.assignedUser.lastname|slice(0,1)|upper}}</span {% if task.dateEcheance < "now"|date('Y-m-d') and task.statut != 'TERMINE' %}class="overdue"{% endif %}> {{ task.dateEcheance|date('d/m/Y') }} </span> </div> {% endif %} </div> <div class="task-assigned"> {% if task.assignedUser %} <div class="assigned-user" title="{{ task.assignedUser.fullName }}"> <span class="user-avatar">>
+														<span class="user-name">{{ task.assignedUser.fullName }}</span>
 													</div>
-												</div>
+												{% else %}
+													{% if is_granted('ASSIGN_TASKS', project) %}
+														<button type="button" class="btn btn-sm btn-assign-task" data-task-id="{{ task.id }}">
+															<i class="bi bi-person-plus"></i>
+															Assigner
+														</button>
+													{% else %}
+														<span class="unassigned">Non assigné</span>
+													{% endif %}
+												{% endif %}
 											</div>
+										</div>
 
-											{% if task.description %}
-												<p class="card-text small text-muted mb-2">
-													{{ task.description|length > 100 ? task.description|slice(0, 100) ~ '...' : task.description }}
-												</p>
+										<div class="task-actions">
+											<a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-info">
+												<i class="bi bi-eye"></i>
+											</a>
+											{% if is_granted('EDIT', project) %}
+												<button type="button" class="btn btn-sm btn-edit-task" data-task-id="{{ task.id }}">
+													<i class="bi bi-pencil"></i>
+												</button>
+												<button type="button" class="btn btn-sm btn-delete-task" data-task-id="{{ task.id }}" data-task-title="{{ task.titre }}">
+													<i class="bi bi-trash"></i>
+												</button>
 											{% endif %}
-
-											<div class="d-flex justify-content-between align-items-center">
-												<div>
-													{% if task.dateButoir %}
-														<small class="text-{% if task.isOverdue %}danger{% else %}muted{% endif %}">
-															<i class="far fa-calendar-alt"></i>
-															{{ task.dateButoir|date('d/m/Y') }}
-														</small>
-													{% endif %}
-												</div>
-
-												<div>
-													{% if task.assignedUser %}
-														<span class="badge bg-info text-white" title="{{ task.assignedUser.fullName }}">
-															{{ task.assignedUser.prenom|first }}{{ task.assignedUser.nom|first }}
-														</span>
-													{% endif %}
-
-													<span class="badge {% if task.priorite.value == 'urgent' %}bg-danger{% elseif task.priorite.value == 'normal' %}bg-primary{% else %}bg-secondary{% endif %}">
-														{{ task.priorite.value }}
-													</span>
-												</div>
-											</div>
 										</div>
 									</div>
 								{% endfor %}
-							{% else %}
-								<div class="text-center p-3 text-muted">
-									<em>Aucune tâche</em>
-								</div>
+							</div>
+
+							{% if is_granted('EDIT', project) %}
+								<button type="button" class="btn btn-add-task" data-column-id="{{ taskList.id }}">
+									<i class="bi bi-plus"></i>
+									Ajouter une tâche
+								</button>
 							{% endif %}
 						</div>
 					</div>
 				{% endfor %}
 			</div>
 		</div>
-	</div>
-{% endblock %}
 
-{% block javascripts %}
-	{{ parent() }}
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-// Pour une version avec drag-and-drop, il faudrait ajouter du JavaScript ici
-// avec une bibliothèque comme SortableJS ou jQuery UI Sortable
-});
-	</script>
-{% endblock %}
-
-{# {% block title %}
-	{{ project.nom }}
-	- Kanban
-{% endblock %}
-
-{% block stylesheets %}
-	{{ parent() }}
-	<link rel="stylesheet" href="{{ asset('styles/project-management.css') }}">
-	<link rel="stylesheet" href="{{ asset('styles/kanban.css') }}">
-{% endblock %}
-
-{% block body %}
-	<div
-		class="app-container">
-		<!-- Sidebar -->
-		<aside class="sidebar sidebar-collapsed" id="sidebar">
-			<div class="sidebar-toggle" id="sidebarToggle">
-				<i class="icon-menu"></i>
-			</div>
-
-			<div class="sidebar-header">
-				<div class="app-logo">
-					<div class="logo-placeholder">
-						<i class="icon-image"></i>
-					</div>
-					<span class="logo-text">logo de l'application</span>
-				</div>
-			</div>
-
-			<nav class="sidebar-nav">
-				<ul class="nav-menu">
-					<li class="nav-item">
-						<a href="{{ path('app_employe_dashboard') }}" class="nav-link">
-							<i class="icon-dashboard"></i>
-							<span class="nav-text">Tableau de bord</span>
-						</a>
-					</li>
-					<li class="nav-item active">
-						<a href="{{ path('app_mes_projets') }}" class="nav-link">
-							<i class="icon-projects"></i>
-							<span class="nav-text">Mes projets</span>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="{{ path('statistiques') }}" class="nav-link">
-							<i class="icon-stats"></i>
-							<span class="nav-text">Statistiques</span>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="{{ path('mon_profil') }}" class="nav-link">
-							<i class="icon-profile"></i>
-							<span class="nav-text">Mon profil</span>
-						</a>
-					</li>
-				</ul>
-			</nav>
-		</aside>
-
-		<!-- Contenu principal Kanban -->
-		<main
-			class="main-content kanban-main">
-			<!-- Header du projet -->
-			<div class="kanban-header">
-				<div class="project-info">
-					<h1 class="project-title">{{ project.nom }}</h1>
-					<span class="project-statut project-statut-{{ project.statut|lower|replace({'-': '_'}) }}">
-						{{ project.statut|replace({'-': ' '})|title }}
-					</span>
-				</div>
-
-				<div class="kanban-actions">
-					<button class="btn btn-secondary btn-sm" id="addColumnBtn">
-						<i class="icon-plus"></i>
-						Ajouter colonne
-					</button>
-					<button class="btn btn-primary btn-sm" id="addTaskBtn">
-						<i class="icon-plus"></i>
-						Nouvelle tâche
-					</button>
-					<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-outline btn-sm">
-						<i class="icon-settings"></i>
-						Paramètres
-					</a>
-				</div>
-			</div>
-
-			<!-- Tableau Kanban -->
-			<div class="kanban-board" id="kanbanBoard">
-				{% for taskList in project.taskLists %}
-					<div class="kanban-column" data-column-id="{{ taskList.id }}">
-						<div class="column-header">
-							<div class="column-title-container">
-								<h3 class="column-title" contenteditable="true" data-column-id="{{ taskList.id }}">
-									{{ taskList.nom }}
-								</h3>
-								<span class="task-count">{{ taskList.tasks|length }}</span>
-							</div>
-							<div class="column-actions">
-								<button class="btn-icon" onclick="addTask({{ taskList.id }})" title="Ajouter une tâche">
-									<i class="icon-plus"></i>
-								</button>
-								<div class="dropdown">
-									<button class="btn-icon dropdown-toggle" title="Options">
-										<i class="icon-more"></i>
-									</button>
-									<div class="dropdown-menu">
-										<a href="#" onclick="editColumn({{ taskList.id }})">Modifier</a>
-										<a href="#" onclick="deleteColumn({{ taskList.id }})">Supprimer</a>
-									</div>
-								</div>
-							</div>
+		{# Modals #}
+		{% if is_granted('EDIT', project) %}
+			{# Modal pour ajouter une colonne #}
+			<div class="modal fade" id="addColumnModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Ajouter une colonne</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 						</div>
+						<div class="modal-body">
+							<div id="addColumnFormContainer"></div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-						<div class="tasks-container" data-column-id="{{ taskList.id }}">
-							{% for task in taskList.tasks %}
-								<div class="task-card" data-task-id="{{ task.id }}" data-column-id="{{ taskList.id }}" draggable="true">
-									<div class="task-header">
-										<h4 class="task-title">{{ task.titre }}</h4>
-										{% if task.priorite %}
-											<span class="priority-badge priority-{{ task.priorite|lower }}">
-												{{ task.priorite }}
-											</span>
-										{% endif %}
-									</div>
+			{# Modal pour éditer une colonne #}
+			<div class="modal fade" id="editColumnModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Modifier la colonne</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+						</div>
+						<div class="modal-body">
+							<div id="editColumnFormContainer"></div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-									{% if task.description %}
-										<p class="task-description">
-											{{ task.description|slice(0, 100) }}
-											{% if task.description|length > 100 %}...
-											{% endif %}
-										</p>
-									{% endif %}
+			{# Modal pour supprimer une colonne #}
+			<div class="modal fade" id="deleteColumnModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Supprimer la colonne</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+						</div>
+						<div class="modal-body">
+							<p>Êtes-vous sûr de vouloir supprimer la colonne
+								<strong id="deleteColumnName"></strong>
+								?</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+							<form id="deleteColumnForm" method="post">
+								<input type="hidden" name="_token" value="">
+								<button type="submit" class="btn btn-danger">Supprimer</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
 
-									<div class="task-meta">
-										{% if task.dateButoir %}
-											<div class="task-due-date {% if task.dateButoir < date() and task.statut != 'TERMINE' %}overdue{% endif %}">
-												<i class="icon-calendar"></i>
-												{{ task.dateButoir|date('d/m') }}
-											</div>
-										{% endif %}
+			{# Modal pour ajouter une tâche #}
+			<div class="modal fade" id="addTaskModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Ajouter une tâche</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+						</div>
+						<div class="modal-body">
+							<div id="addTaskFormContainer"></div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-										{% if task.assignedUsers|length > 0 %}
-											<div class="task-assignees">
-												{% for user in task.assignedUsers|slice(0, 3) %}
-													<div class="assignee-avatar" title="{{ user.username }}">
-														{{ user.username|slice(0, 2)|upper }}
-													</div>
-												{% endfor %}
-												{% if task.assignedUsers|length > 3 %}
-													<div class="assignee-avatar more">
-														+{{ task.assignedUsers|length - 3 }}
-													</div>
-												{% endif %}
-											</div>
-										{% endif %}
-									</div>
+			{# Modal pour éditer une tâche #}
+			<div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Modifier la tâche</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+						</div>
+						<div class="modal-body">
+							<div id="editTaskFormContainer"></div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-									{% if task.commentaires is defined and task.commentaires|length > 0 %}
-										<div class="task-indicators">
-											<span class="indicator">
-												<i class="icon-comment"></i>
-												{{ task.commentaires|length }}
-											</span>
+			{# Modal pour supprimer une tâche #}
+			<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Supprimer la tâche</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+						</div>
+						<div class="modal-body">
+							<p>Êtes-vous sûr de vouloir supprimer la tâche
+								<strong id="deleteTaskTitle"></strong>
+								?</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+							<form id="deleteTaskForm" method="post">
+								<input type="hidden" name="_token" value="">
+								<button type="submit" class="btn btn-danger">Supprimer</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+
+		{# Modal pour assigner une tâche à un utilisateur #}
+		{% if is_granted('ASSIGN_TASKS', project) %}
+			<div class="modal fade" id="assignTaskModal" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Assigner la tâche</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+						</div>
+						<div class="modal-body">
+							<p>Choisissez un utilisateur pour cette tâche:</p>
+							<div class="user-list">
+								{% for user in availableUsers %}
+									<div class="user-item" data-user-id="{{ user.id }}">
+										<div class="user-avatar">{{ user.firstname|slice(0, 1)|upper }}{{ user.lastname|slice(0, 1)|upper }}</div>
+										<div class="user-info">
+											<div class="user-name">{{ user.fullName }}</div>
+											<div class="user-email">{{ user.email }}</div>
 										</div>
-									{% endif %}
-								</div>
-							{% endfor %}
-
-							<!-- Zone de drop pour les tâches -->
-							<div class="task-drop-zone" data-column-id="{{ taskList.id }}">
-								Glisser une tâche ici
+									</div>
+								{% endfor %}
 							</div>
 						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						</div>
 					</div>
-				{% endfor %}
-
-				<!-- Bouton pour ajouter une colonne -->
-				<div class="add-column-placeholder" id="addColumnPlaceholder">
-					<button class="add-column-btn" onclick="showAddColumnForm()">
-						<i class="icon-plus"></i>
-						Ajouter une colonne
-					</button>
 				</div>
 			</div>
-		</main>
-	</div>
+		{% endif %}
 
-	<!-- Modal pour ajouter/modifier une tâche -->
-	<div class="modal" id="taskModal">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3 id="taskModalTitle">Nouvelle tâche</h3>
-				<button class="modal-close" onclick="closeTaskModal()">×</button>
+	{% endblock %}
+
+	{% block javascripts %}
+		{{ parent() }}
+		<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+		<script src="{{ asset('js/kanban.js') }}"></script>
+	{% endblock %}
+
+
+	{# Version1 avant le 01/07/2025 #}
+	{# {% extends 'base.html.twig' %}
+	
+	
+	{% block title %}
+		{{ project.titre }}
+		| Kanban
+	{% endblock %}
+	
+	{% block stylesheets %}
+		{{ parent() }}
+		<style>
+			.kanban-container {
+				overflow-x: auto;
+				min-height: calc(100vh - 250px);
+			}
+	
+			.kanban-board {
+				display: flex;
+				min-height: 500px;
+			}
+	
+			.kanban-column {
+				min-width: 300px;
+				max-width: 300px;
+				margin-right: 1rem;
+				border-radius: 0.25rem;
+				background-color: #f8f9fa;
+			}
+	
+			.kanban-column-header {
+				padding: 0.75rem;
+				border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+			}
+	
+			.kanban-column-body {
+				padding: 0.5rem;
+				min-height: 200px;
+				max-height: calc(100vh - 350px);
+				overflow-y: auto;
+			}
+	
+			.kanban-task {
+				margin-bottom: 0.5rem;
+				cursor: grab;
+			}
+	
+			.kanban-task:active {
+				cursor: grabbing;
+			}
+	
+			.task-priority-urgent {
+				border-left: 4px solid #dc3545;
+			}
+	
+			.task-priority-normal {
+				border-left: 4px solid #007bff;
+			}
+	
+			.task-priority-en_attente {
+				border-left: 4px solid #6c757d;
+			}
+	
+			.column-color-VERT {
+				border-top: 3px solid #28a745;
+			}
+	
+			.column-color-JAUNE {
+				border-top: 3px solid #ffc107;
+			}
+	
+			.column-color-ORANGE {
+				border-top: 3px solid #fd7e14;
+			}
+	
+			.column-color-ROUGE {
+				border-top: 3px solid #dc3545;
+			}
+		</style>
+	{% endblock %}
+	
+	{% block body %}
+		<div class="container-fluid py-4">
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<div>
+					<h1 class="mb-0">{{ project.titre }}</h1>
+					<p class="text-muted">
+						<span class="badge {% if project.statut == 'EN-COURS' %}bg-primary{% elseif project.statut == 'TERMINE' %}bg-success{% else %}bg-warning{% endif %}">
+							{{ project.statut }}
+						</span>
+						{% if project.dateButoir %}
+							<span class="ms-2">
+								<i class="far fa-calendar-alt me-1"></i>
+								Échéance:
+								{{ project.dateButoir|date('d/m/Y') }}
+							</span>
+						{% endif %}
+					</p>
+				</div>
+	
+				<div>
+					<div class="btn-group">
+						<a href="{{ path('app_project_show', {id: project.id}) }}" class="btn btn-outline-secondary">
+							<i class="fas fa-info-circle me-1"></i>
+							Détails
+						</a>
+						<a href="{{ path('app_project_view_tasks', {id: project.id}) }}" class="btn btn-outline-primary">
+							<i class="fas fa-tasks me-1"></i>
+							Toutes les tâches
+						</a>
+						{% if is_granted('EDIT', project) %}
+							<a href="{{ path('app_task_list_new', {projectId: project.id}) }}" class="btn btn-primary">
+								<i class="fas fa-plus me-1"></i>
+								Nouvelle colonne
+							</a>
+						{% endif %}
+					</div>
+				</div>
 			</div>
-			<form id="taskForm">
-				<div class="form-group">
-					<label for="taskTitle">Titre de la tâche</label>
-					<input type="text" id="taskTitle" name="titre" class="form-input" required>
+	
+			<div class="kanban-container">
+				<div class="kanban-board" id="kanban-board">
+					{% for taskList in taskLists %}
+						<div class="kanban-column column-color-{{ taskList.couleur ? taskList.couleur.value : 'VERT' }}" data-column-id="{{ taskList.id }}">
+							<div class="kanban-column-header d-flex justify-content-between align-items-center">
+								<h5 class="mb-0">{{ taskList.nom }}</h5>
+								<div class="dropdown">
+									<button class="btn btn-sm btn-link text-dark" type="button" data-bs-toggle="dropdown">
+										<i class="fas fa-ellipsis-v"></i>
+									</button>
+									<div class="dropdown-menu dropdown-menu-end">
+										{% if is_granted('EDIT', project) %}
+											<a href="{{ path('app_task_new', {projectId: project.id, taskListId: taskList.id}) }}" class="dropdown-item">
+												<i class="fas fa-plus me-2"></i>
+												Nouvelle tâche
+											</a>
+											<a href="{{ path('app_task_list_edit', {projectId: project.id, id: taskList.id}) }}" class="dropdown-item">
+												<i class="fas fa-edit me-2"></i>
+												Modifier la colonne
+											</a>
+											<div class="dropdown-divider"></div>
+											<form action="{{ path('app_task_list_delete', {projectId: project.id, id: taskList.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette colonne ?');">
+												<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ taskList.id) }}">
+												<button type="submit" class="dropdown-item text-danger">
+													<i class="fas fa-trash me-2"></i>
+													Supprimer
+												</button>
+											</form>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+	
+							<div class="kanban-column-body" data-column-id="{{ taskList.id }}">
+								{% if taskList.tasks|length > 0 %}
+									{% for task in taskList.tasks %}
+										<div class="card kanban-task task-priority-{{ task.priorite.value }}" data-task-id="{{ task.id }}">
+											<div class="card-body p-2">
+												<div class="d-flex justify-content-between align-items-start">
+													<h6 class="card-title mb-1">{{ task.title }}</h6>
+													<div class="dropdown">
+														<button class="btn btn-sm btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+															<i class="fas fa-ellipsis-v"></i>
+														</button>
+														<div class="dropdown-menu dropdown-menu-end">
+															{% if is_granted('EDIT', project) %}
+																<a href="{{ path('app_task_edit', {projectId: project.id, id: task.id}) }}" class="dropdown-item">
+																	<i class="fas fa-edit me-2"></i>
+																	Modifier
+																</a>
+																<div class="dropdown-divider"></div>
+																<form action="{{ path('app_task_delete', {projectId: project.id, id: task.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?');">
+																	<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+																	<button type="submit" class="dropdown-item text-danger">
+																		<i class="fas fa-trash me-2"></i>
+																		Supprimer
+																	</button>
+																</form>
+															{% endif %}
+														</div>
+													</div>
+												</div>
+	
+												{% if task.description %}
+													<p class="card-text small text-muted mb-2">
+														{{ task.description|length > 100 ? task.description|slice(0, 100) ~ '...' : task.description }}
+													</p>
+												{% endif %}
+	
+												<div class="d-flex justify-content-between align-items-center">
+													<div>
+														{% if task.dateButoir %}
+															<small class="text-{% if task.isOverdue %}danger{% else %}muted{% endif %}">
+																<i class="far fa-calendar-alt"></i>
+																{{ task.dateButoir|date('d/m/Y') }}
+															</small>
+														{% endif %}
+													</div>
+	
+													<div>
+														{% if task.assignedUser %}
+															<span class="badge bg-info text-white" title="{{ task.assignedUser.fullName }}">
+																{{ task.assignedUser.prenom|first }}{{ task.assignedUser.nom|first }}
+															</span>
+														{% endif %}
+	
+														<span class="badge {% if task.priorite.value == 'urgent' %}bg-danger{% elseif task.priorite.value == 'normal' %}bg-primary{% else %}bg-secondary{% endif %}">
+															{{ task.priorite.value }}
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									{% endfor %}
+								{% else %}
+									<div class="text-center p-3 text-muted">
+										<em>Aucune tâche</em>
+									</div>
+								{% endif %}
+							</div>
+						</div>
+					{% endfor %}
 				</div>
-
-				<div class="form-group">
-					<label for="taskDescription">Description</label>
-					<textarea id="taskDescription" name="description" class="form-textarea" rows="3"></textarea>
-				</div>
-
-				<div class="form-row">
-					<div class="form-group">
-						<label for="taskPriority">Priorité</label>
-						<select id="taskPriority" name="priorite" class="form-select">
-							<option value="">Aucune</option>
-							<option value="FAIBLE">Faible</option>
-							<option value="NORMALE">Normale</option>
-							<option value="HAUTE">Haute</option>
-							<option value="URGENTE">Urgente</option>
-						</select>
-					</div>
-
-					<div class="form-group">
-						<label for="taskDueDate">Date d'échéance</label>
-						<input type="date" id="taskDueDate" name="dateButoir" class="form-input">
-					</div>
-				</div>
-
-				<div class="form-group">
-					<label for="taskAssignees">Assigné à</label>
-					<select id="taskAssignees" name="assignedUsers[]" class="form-select" multiple>
-						{% for membre in project.membres %}
-							<option value="{{ membre.id }}">{{ membre.username }}</option>
-						{% endfor %}
-					</select>
-				</div>
-
-				<div class="modal-actions">
-					<button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Annuler</button>
-					<button type="submit" class="btn btn-primary">Sauvegarder</button>
-				</div>
-
-				<input type="hidden" id="taskId" name="id">
-				<input type="hidden" id="taskColumnId" name="taskListId">
-			</form>
+			</div>
 		</div>
-	</div>
-
-	<!-- Modal pour ajouter une colonne -->
-	<div class="modal" id="columnModal">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3>Nouvelle colonne</h3>
-				<button class="modal-close" onclick="closeColumnModal()">×</button>
-			</div>
-			<form id="columnForm">
-				<div class="form-group">
-					<label for="columnName">Nom de la colonne</label>
-					<input type="text" id="columnName" name="nom" class="form-input" required>
-				</div>
-
-				<div class="modal-actions">
-					<button type="button" class="btn btn-secondary" onclick="closeColumnModal()">Annuler</button>
-					<button type="submit" class="btn btn-primary">Créer</button>
-				</div>
-			</form>
-		</div>
-	</div>
-{% endblock %}
-
-{% block javascripts %}
-	{{ parent() }}
-	<script src="{{ asset('js/kanban.js') }}"></script>
-{% endblock %}
-
-
-<style>
-	/* Ajoutez ces styles spécifiques au kanban si nécessaire */
-	.kanban-card {
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
-	.kanban-card:hover {
-		transform: translateY(-5px);
-	}
-</style>{% endblock %}{% block javascripts %}
-<script>
-{% endblock %} #}
+	{% endblock %}
+	
+	{% block javascripts %}
+		{{ parent() }}
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+	// Pour une version avec drag-and-drop, il faudrait ajouter du JavaScript ici
+	// avec une bibliothèque comme SortableJS ou jQuery UI Sortable
+	});
+		</script>
+	{% endblock %} #}

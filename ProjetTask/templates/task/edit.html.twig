@@ -1,139 +1,195 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier - {{ task.title }}{% endblock %}
+{% block title %}Modifier -
+	{{ task.title }}
+{% endblock %}
 
 {% block body %}
-<div class="container">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('app_task_index') }}">Tâches</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_task_show', {id: task.id}) }}">{{ task.title }}</a></li>
-            <li class="breadcrumb-item active">Modification</li>
-        </ol>
-    </nav>
+	<div class="container">
+		<nav aria-label="breadcrumb" class="mb-4">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="{{ path('app_task_index') }}">Tâches</a>
+				</li>
+				<li class="breadcrumb-item">
+					<a href="{{ path('app_task_show', {id: task.id}) }}">{{ task.title }}</a>
+				</li>
+				<li class="breadcrumb-item active">Modification</li>
+			</ol>
+		</nav>
 
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0"><i class="fas fa-edit"></i> Modifier la tâche</h3>
-                </div>
-                <div class="card-body">
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-                    
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                                {{ form_label(form.title) }}
-                                {{ form_widget(form.title) }}
-                                {{ form_errors(form.title) }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        {{ form_label(form.description) }}
-                        {{ form_widget(form.description) }}
-                        {{ form_errors(form.description) }}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                {{ form_label(form.taskList) }}
-                                {{ form_widget(form.taskList) }}
-                                {{ form_errors(form.taskList) }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                {{ form_label(form.assignedUser) }}
-                                {{ form_widget(form.assignedUser) }}
-                                {{ form_errors(form.assignedUser) }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                {{ form_label(form.priority) }}
-                                {{ form_widget(form.priority) }}
-                                {{ form_errors(form.priority) }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                {{ form_label(form.statut) }}
-                                {{ form_widget(form.statut) }}
-                                {{ form_errors(form.statut) }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                {{ form_label(form.dueDate) }}
-                                {{ form_widget(form.dueDate) }}
-                                {{ form_errors(form.dueDate) }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ path('app_task_show', {id: task.id}) }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Retour
-                        </a>
-                        
-                        <div>
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class="fas fa-save"></i> Enregistrer
-                            </button>
-                            
-                            {% if is_granted('TASK_DELETE', task) %}
-                                <button type="button" class="btn btn-outline-danger" onclick="deleteTask()">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    {{ form_end(form) }}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+		<div class="row justify-content-center">
+			<div class="col-md-8">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="mb-0">
+							<i class="fas fa-edit"></i>
+							Modifier la tâche</h3>
+					</div>
+					{{ form_start(form, {'attr': {'class': 'task-form', 'data-action': form.vars.action}}) }}
+					<div class="mb-3">
+						{{ form_label(form.titre) }}
+						{{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+						{{ form_errors(form.titre) }}
+					</div>
 
-<!-- Modal de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-danger">Supprimer la tâche</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer cette tâche ?</p>
-                <p class="text-muted">Cette action est irréversible.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form method="post" action="{{ path('app_task_delete', {id: task.id}) }}" style="display: inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Supprimer
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+					<div class="mb-3">
+						{{ form_label(form.description) }}
+						{{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+						{{ form_errors(form.description) }}
+					</div>
+
+					<div class="row mb-3">
+						<div class="col">
+							{{ form_label(form.priorite) }}
+							{{ form_widget(form.priorite, {'attr': {'class': 'form-select'}}) }}
+							{{ form_errors(form.priorite) }}
+						</div>
+						<div class="col">
+							{{ form_label(form.dateEcheance) }}
+							{{ form_widget(form.dateEcheance, {'attr': {'class': 'form-control datepicker'}}) }}
+							{{ form_errors(form.dateEcheance) }}
+						</div>
+					</div>
+
+					{% if form.assignedUser is defined %}
+						<div class="mb-3">
+							{{ form_label(form.assignedUser) }}
+							{{ form_widget(form.assignedUser, {'attr': {'class': 'form-select'}}) }}
+							{{ form_errors(form.assignedUser) }}
+						</div>
+					{% endif %}
+
+					<div class="d-flex justify-content-end">
+						<div class="d-flex justify-content-end">
+							<button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+							<button type="submit" class="btn btn-primary">Enregistrer</button>
+						</div>
+						{{ form_end(form) }}
+
+
+						{# <div class="card-body">
+												
+												
+												                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+												                    
+												                    <div class="row">
+												                        <div class="col-md-12">
+												                            <div class="mb-3">
+												                                {{ form_label(form.title) }}
+												                                {{ form_widget(form.title) }}
+												                                {{ form_errors(form.title) }}
+												                            </div>
+												                        </div>
+												                    </div>
+												                    
+												                    <div class="mb-3">
+												                        {{ form_label(form.description) }}
+												                        {{ form_widget(form.description) }}
+												                        {{ form_errors(form.description) }}
+												                    </div>
+												                    
+												                    <div class="row">
+												                        <div class="col-md-6">
+												                            <div class="mb-3">
+												                                {{ form_label(form.taskList) }}
+												                                {{ form_widget(form.taskList) }}
+												                                {{ form_errors(form.taskList) }}
+												                            </div>
+												                        </div>
+												                        <div class="col-md-6">
+												                            <div class="mb-3">
+												                                {{ form_label(form.assignedUser) }}
+												                                {{ form_widget(form.assignedUser) }}
+												                                {{ form_errors(form.assignedUser) }}
+												                            </div>
+												                        </div>
+												                    </div>
+												                    
+												                    <div class="row">
+												                        <div class="col-md-4">
+												                            <div class="mb-3">
+												                                {{ form_label(form.priority) }}
+												                                {{ form_widget(form.priority) }}
+												                                {{ form_errors(form.priority) }}
+												                            </div>
+												                        </div>
+												                        <div class="col-md-4">
+												                            <div class="mb-3">
+												                                {{ form_label(form.statut) }}
+												                                {{ form_widget(form.statut) }}
+												                                {{ form_errors(form.statut) }}
+												                            </div>
+												                        </div>
+												                        <div class="col-md-4">
+												                            <div class="mb-3">
+												                                {{ form_label(form.dueDate) }}
+												                                {{ form_widget(form.dueDate) }}
+												                                {{ form_errors(form.dueDate) }}
+												                            </div>
+												                        </div>
+												                    </div> #}
+
+						<div class="d-flex justify-content-between">
+							<a href="{{ path('app_task_show', {id: task.id}) }}" class="btn btn-secondary">
+								<i class="fas fa-arrow-left"></i>
+								Retour
+							</a>
+
+							<div>
+								<button type="submit" class="btn btn-primary me-2">
+									<i class="fas fa-save"></i>
+									Enregistrer
+								</button>
+
+								{% if is_granted('TASK_DELETE', task) %}
+									<button type="button" class="btn btn-outline-danger" onclick="deleteTask()">
+										<i class="fas fa-trash"></i>
+										Supprimer
+									</button>
+								{% endif %}
+							</div>
+						</div>
+
+						{{ form_end(form) }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal de suppression -->
+	<div class="modal fade" id="deleteModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title text-danger">Supprimer la tâche</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer cette tâche ?</p>
+					<p class="text-muted">Cette action est irréversible.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form method="post" action="{{ path('app_task_delete', {id: task.id}) }}" style="display: inline;">
+						<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+						<button type="submit" class="btn btn-danger">
+							<i class="fas fa-trash"></i>
+							Supprimer
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <script>
-        function deleteTask() {
-            new bootstrap.Modal(document.getElementById('deleteModal')).show();
-        }
-    </script>
+	{{ parent() }}
+	<script>
+		function deleteTask() {
+new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+	</script>
 {% endblock %}
