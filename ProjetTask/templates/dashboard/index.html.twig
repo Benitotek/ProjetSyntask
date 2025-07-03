@@ -1,32 +1,41 @@
 {% extends 'base.html.twig' %}
+
 {% block title %}BACK-OFFICE - SYNTASK
 {% endblock %}
+
 {% block stylesheets %}
-    {{ parent() }}
-    {# Bootstrap 5 #}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/styles/bootstrap.min.css" rel="stylesheet">
-    {# FontAwesome (icônes) #}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/styles/all.min.css" rel="stylesheet">
-    {# CSS personnalisé #}
-    <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+	{{ parent() }}
+	{# Bootstrap 5 et FontAwesome #}
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    {# Bootstrap 5 (pour menus, éventuels éléments dynamiques) #}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	{{ parent() }}
+	 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
+
 {% block body %}
 	<div class="container-fluid py-4">
-		<h1 class="mb-4">MyDashboard</h1>
+		<h1 class="mb-4">Tableau de Bord</h1>
 
-		{# STATISTIQUES SIMPLES #}
+		{# --- STATISTIQUES --- #}
 		<div class="row mb-4">
 			<div class="col-md-4">
 				<div class="card bg-primary text-white">
 					<div class="card-body">
 						<h5 class="card-title">Projets</h5>
-						<h2 class="card-text">{{ stats.totalProjects }}</h2>
+						<h2 class="card-text">
+							{{ stats.projects.total is defined ? stats.projects.total : 'N/A' }}
+						</h2>
+						<div>
+							<span>En cours:
+								{{ stats.projects.in_progress is defined ? stats.projects.in_progress : '0' }}</span>
+							|
+							<span>Terminés:
+								{{ stats.projects.completed is defined ? stats.projects.completed : '0' }}</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -34,7 +43,13 @@
 				<div class="card bg-success text-white">
 					<div class="card-body">
 						<h5 class="card-title">Tâches</h5>
-						<h2 class="card-text">{{ stats.totalTasks }}</h2>
+						<h2 class="card-text">
+							{{ stats.tasks.total is defined ? stats.tasks.total : 'N/A' }}
+						</h2>
+						<div>
+							<span>En retard:
+								{{ stats.tasks.overdue is defined ? stats.tasks.overdue : '0' }}</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -42,18 +57,20 @@
 				<div class="card bg-info text-white">
 					<div class="card-body">
 						<h5 class="card-title">Utilisateurs</h5>
-						<h2 class="card-text">{{ stats.totalUsers }}</h2>
+						<h2 class="card-text">
+							{{ stats.users.total is defined ? stats.users.total : 'N/A' }}
+						</h2>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		{# LISTE DES PROJETS #}
+		{# --- LISTE DES PROJETS --- #}
 		<div class="card mb-4">
 			<div class="card-header d-flex justify-content-between align-items-center">
 				<h5 class="mb-0">Mes projets</h5>
 				{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
-					<a href="{{ path('project_new') }}" class="btn btn-sm btn-primary">
+					<a href="{{ path('app_projet_new') }}" class="btn btn-sm btn-primary">
 						<i class="fas fa-plus"></i>
 						Nouveau projet
 					</a>
@@ -61,23 +78,14 @@
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
-					<table class="table table-hover">
+					<table class="table table-hover align-middle">
 						<thead>
 							<tr>
 								<th>Nom</th>
 								<th>Description</th>
-								{% if projects|length > 0 and projects[0].startDate is defined %}
-									<th>Date de début</th>
-								{% endif %}
-								{% if projects|length > 0 and projects[0].endDate is defined %}
-									<th>Date de fin</th>
-								{% endif %}
-								{% if projects|length > 0 and projects[0].statut is defined %}
-									<th>Statut</th>
-								{% endif %}
-								{% if projects|length > 0 and projects[0].priority is defined %}
-									<th>Priorité</th>
-								{% endif %}
+								<th>Création</th>
+								<th>Échéance</th>
+								<th>Statut</th>
 								<th>Chef de projet</th>
 								<th>Actions</th>
 							</tr>
@@ -85,7 +93,7 @@
 						<tbody>
 							{% for project in projects %}
 								<tr>
-									<td>{{ project.name }}</td>
+									<td>{{ project.titre }}</td>
 									<td>
 										{% if project.description is defined %}
 											{{ project.description|slice(0, 50) }}
@@ -93,56 +101,39 @@
 											{% endif %}
 										{% endif %}
 									</td>
-									{% if project.startDate is defined %}
-										<td>{{ project.startDate ? project.startDate|date('d/m/Y') : 'N/A' }}</td>
-									{% endif %}
-									{% if project.endDate is defined %}
-										<td>{{ project.endDate ? project.endDate|date('d/m/Y') : 'N/A' }}</td>
-									{% endif %}
-									{% if project.statut is defined %}
-										<td>
-											{% if project.statut == 'En cours' %}
-												<span class="badge bg-primary">{{ project.statut }}</span>
-											{% elseif project.statut == 'Terminé' %}
-												<span class="badge bg-success">{{ project.statut }}</span>
-											{% elseif project.statut == 'En pause' %}
-												<span class="badge bg-warning">{{ project.statut }}</span>
-											{% else %}
-												<span class="badge bg-secondary">{{ project.statut }}</span>
-											{% endif %}
-										</td>
-									{% endif %}
-									{% if project.priority is defined %}
-										<td>
-											{% if project.priority == 'Basse' %}
-												<span class="badge bg-success">{{ project.priority }}</span>
-											{% elseif project.priority == 'Moyenne' %}
-												<span class="badge bg-info">{{ project.priority }}</span>
-											{% elseif project.priority == 'Haute' %}
-												<span class="badge bg-warning">{{ project.priority }}</span>
-											{% elseif project.priority == 'Urgente' %}
-												<span class="badge bg-danger">{{ project.priority }}</span>
-											{% endif %}
-										</td>
-									{% endif %}
 									<td>
-										{% if project.chefProjet is defined and project.chefProjet %}
-											{% if project.chefProjet.firstName is defined and project.chefProjet.lastName is defined %}
-												{{ project.chefProjet.firstName }}
-												{{ project.chefProjet.lastName }}
-											{% else %}
-												{{ project.chefProjet }}
-											{% endif %}
+										{{ project.dateCreation is defined and project.dateCreation ? project.dateCreation|date('d/m/Y') : 'N/A' }}
+									</td>
+									<td>
+										{{ project.dateButoir is defined and project.dateButoir ? project.dateButoir|date('d/m/Y') : 'N/A' }}
+									</td>
+									<td>
+										{% set statut = project.statut|default('N/A') %}
+										<span class="badge
+												                                    {% if statut == 'EN-COURS' %} bg-primary
+												                                    {% elseif statut == 'TERMINE' %} bg-success
+												                                    {% elseif statut == 'EN-ATTENTE' %} bg-warning
+												                                    {% else %} bg-secondary
+												                                    {% endif %}">
+											{{ statut|replace({'-':' '})|title }}
+										</span>
+									</td>
+									<td>
+										{% if project.Chef_Projet is defined and project.Chef_Projet %}
+											{{ project.Chef_Projet.getFullName is defined ? project.Chef_Projet.getFullName() : project.Chef_Projet.prenom ~ ' ' ~ project.Chef_Projet.nom }}
 										{% else %}
 											<span class="text-muted">Non assigné</span>
 										{% endif %}
 									</td>
 									<td>
-										<a href="{{ path('dashboard_project_details', {'id': project.id}) }}" class="btn btn-sm btn-info">
+										<a href="{{ path('app_projet_kanban', {'id': project.id}) }}" class="btn btn-sm btn-success" title="Voir Kanban">
+											<i class="fa-solid fa-grip"></i>
+										</a>
+										<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn btn-sm btn-info" title="Détails">
 											<i class="fas fa-eye"></i>
 										</a>
 										{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
-											<a href="{{ path('project_edit', {'id': project.id}) }}" class="btn btn-sm btn-warning">
+											<a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn btn-sm btn-warning" title="Éditer">
 												<i class="fas fa-edit"></i>
 											</a>
 										{% endif %}
@@ -150,7 +141,7 @@
 								</tr>
 							{% else %}
 								<tr>
-									<td colspan="8" class="text-center">Aucun projet trouvé</td>
+									<td colspan="7" class="text-center">Aucun projet trouvé</td>
 								</tr>
 							{% endfor %}
 						</tbody>
@@ -160,19 +151,7 @@
 		</div>
 	</div>
 
-	<style>
-		.card {
-			border-radius: 10px;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-			margin-bottom: 20px;
-		}
-		.badge {
-			font-size: 0.85rem;
-			padding: 5px 10px;
-		}
-	</style>
 {% endblock %}
-
 
 {# Version 2 DashBoard OPTI avec STATS* a revoir #}
 {# {% block title %}Dashboard

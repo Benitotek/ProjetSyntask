@@ -7,9 +7,39 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
-final class SecurityController extends AbstractController
+class SecurityController extends AbstractController
 {
+    private $csrf;
+
+    public function __construct(CsrfTokenManagerInterface $csrf)
+    {
+        $this->csrf = $csrf;
+    }
+
+    /**
+     * Page d'accueil de l'application
+     */
+
+    /**
+     * Génère un token CSRF pour les requêtes AJAX
+     */
+    #[Route('/generate-csrf-token', name: 'app_generate_csrf_token', methods: ['GET'])]
+    public function generateCsrfToken(Request $request): JsonResponse
+    {
+        $id = $request->query->get('id');
+
+        if (!$id) {
+            return new JsonResponse(['error' => 'ID manquant'], 400);
+        }
+
+        $token = $this->csrf->getToken($id)->getValue();
+
+        return new JsonResponse(['token' => $token]);
+    }
+
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {

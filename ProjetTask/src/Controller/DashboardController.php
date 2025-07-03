@@ -20,7 +20,72 @@ use Symfony\Bundle\SecurityBundle\Security as SecurityBundleSecurity;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
+    #[IsGranted('ROLE_USER')]
     public function index(
+        ProjectRepository $projectRepository,
+        TaskRepository $taskRepository,
+        UserRepository $userRepository
+    ): Response {
+        $user = $this->getUser();
+
+        // Récupérer les données pour les statistiques
+        $stats = [
+            'projects' => [
+                'total' => 0,
+                'in_progress' => 0,
+                'completed' => 0,
+                'overdue' => 0,
+            ],
+            'tasks' => [
+                'total' => 0,
+                'in_progress' => 0,
+                'completed' => 0,
+                'overdue' => 0,
+            ],
+            'users' => [
+                'total' => 0,
+                'active' => 0,
+            ]
+        ];
+
+        // Statistiques des projets
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+            // Admin et directeurs voient toutes les statistiques
+            $stats['projects']['total'] = $projectRepository->countAll();
+            $stats['projects']['in_progress'] = $projectRepository->countBystatut(['EN-COURS']);
+            $stats['projects']['completed'] = $projectRepository->countBystatut(['TERMINE']);
+
+            // Statistiques des utilisateurs
+            $stats['users']['total'] = $userRepository->countAll();
+            $stats['users']['active'] = $userRepository->countActive();
+        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
+            // Chefs de projet voient leurs projets
+            $stats['projects']['total'] = count($projectRepository->findByChefDeProjet($user));
+            // Ajouter d'autres statistiques spécifiques aux chefs de projet
+        } else {
+            // Employés voient leurs projets assignés
+            $stats['projects']['total'] = count($projectRepository->findByMembre($user));
+            // Ajouter d'autres statistiques pour les employés
+        }
+
+        // Statistiques des tâches (pour tous les utilisateurs)
+        $stats['tasks']['overdue'] = count($taskRepository->findOverdue());
+
+        // Si l'utilisateur est un employé, chercher ses tâches assignées
+        if (!$this->isGranted('ROLE_CHEF_PROJET')) {
+            $assignedTasks = $taskRepository->findByAssignedUser($user);
+            $stats['tasks']['total'] = count($assignedTasks);
+            // Ajouter d'autres statistiques de tâches
+        }
+
+        return $this->render('dashboard/index.html.twig', [
+            'stats' => $stats,
+            // autres variables que vous pourriez déjà passer
+        ]);
+    }
+    // Route pour le tableau de bord principal
+    #[Route('/dashboard', name: 'app_dashboard')]
+    public function Dashindex(
         Request $request,
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository,
