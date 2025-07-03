@@ -890,6 +890,189 @@ function initDatepicker() {
         });
     }
 }
+/**
+ * kanban.js - Gestion du tableau Kanban pour les projets
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    initKanban();
+    initKanbanModals();
+});
+
+/**
+ * Initialise les fonctionnalités du tableau Kanban
+ */
+function initKanban() {
+    // Rendre les cartes déplaçables
+    const kanbanCards = document.querySelectorAll('.kanban-card');
+    const kanbanColumns = document.querySelectorAll('.kanban-column');
+    
+    let draggedCard = null;
+    
+    // Ajouter les événements de drag and drop pour chaque carte
+    kanbanCards.forEach(card => {
+        card.setAttribute('draggable', true);
+        
+        card.addEventListener('dragstart', function(e) {
+            draggedCard = this;
+            setTimeout(() => {
+                this.classList.add('dragging');
+            }, 0);
+        });
+        
+        card.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+            draggedCard = null;
+            
+            // Actualiser les compteurs
+            updateColumnCounts();
+        });
+    });
+    
+    // Ajouter les événements pour les colonnes
+    kanbanColumns.forEach(column => {
+        column.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragging-over');
+        });
+        
+        column.addEventListener('dragleave', function(e) {
+            this.classList.remove('dragging-over');
+        });
+        
+        column.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragging-over');
+            
+            if (draggedCard) {
+                const cardsContainer = this.querySelector('.kanban-cards');
+                cardsContainer.appendChild(draggedCard);
+                
+                // Envoyer les données au serveur
+                updateTaskstatut(draggedCard.dataset.taskId, this.dataset.statut);
+            }
+        });
+    });
+    
+    // Événements pour le bouton d'ajout de carte
+    document.querySelectorAll('.kanban-add-card').forEach(button => {
+        button.addEventListener('click', function() {
+            const statut = this.closest('.kanban-column').dataset.statut;
+            const projectId = document.getElementById('kanban-board').dataset.projectId;
+            
+            // Ouvrir le modal de création de tâche avec le statut prédéfini
+            const modal = new bootstrap.Modal(document.getElementById('task-modal'));
+            
+            // Remplir le formulaire
+            document.getElementById('task_statut').value = statut;
+            document.getElementById('task_projet').value = projectId;
+            
+            modal.show();
+        });
+    });
+    
+    // Événements pour l'ouverture des détails d'une tâche
+    document.querySelectorAll('.kanban-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Ne pas déclencher si on est en train de glisser-déposer
+            if (e.target.closest('.kanban-card-actions')) {
+                return;
+            }
+            
+            const taskId = this.dataset.taskId;
+            window.location.href = `/task/${taskId}`;
+        });
+    });
+}
+
+/**
+ * Met à jour les compteurs de cartes dans chaque colonne
+ */
+function updateColumnCounts() {
+    document.querySelectorAll('.kanban-column').forEach(column => {
+        const count = column.querySelectorAll('.kanban-card').length;
+        column.querySelector('.kanban-column-count').textContent = count;
+    });
+}
+
+/**
+ * Met à jour le statut d'une tâche via une requête AJAX
+ */
+function updateTaskstatut(taskId, newstatut) {
+    fetch(`/api/task/${taskId}/statut`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        },
+        body: JSON.stringify({ statut: newstatut })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Statut de la tâche mis à jour', 'success');
+        } else {
+            showToast(data.message || 'Erreur lors de la mise à jour du statut', 'error');
+            // Recharger la page pour restaurer l'état précédent
+            setTimeout(() => window.location.reload(), 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showToast('Erreur lors de la mise à jour du statut', 'error');
+        // Recharger la page pour restaurer l'état précédent
+        setTimeout(() => window.location.reload(), 2000);
+    });
+}
+
+/**
+ * Initialise les modals pour la création et l'édition de tâches
+ */
+function initKanbanModals() {
+    // Modal de création de tâche
+    const taskModal = document.getElementById('task-modal');
+    
+    if (taskModal) {
+        taskModal.addEventListener('hidden.bs.modal', function() {
+            // Réinitialiser le formulaire
+            document.getElementById('task-form').reset();
+        });
+        
+        // Soumission du formulaire
+        document.getElementById('task-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Fermer le modal
+                    bootstrap.Modal.getInstance(taskModal).hide();
+                    
+                    showToast('Tâche créée avec succès', 'success');
+                    
+                    // Recharger la page après un court délai
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'Erreur lors de la création de la tâche', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showToast('Erreur lors de la création de la tâche', 'error');
+            });
+        });
+    }
+}
 
 // Version 1 a voir et pas test date du >01/.07/2025
 

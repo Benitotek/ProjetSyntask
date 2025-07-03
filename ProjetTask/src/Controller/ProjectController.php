@@ -64,7 +64,7 @@ class ProjectController extends AbstractController
             ]);
 
             // Récupérer les projets où l'utilisateur est membre avec le statut spécifié
-            $projectsAsMember = $projectRepository->findProjectsAsMemberByStatus($user, $current_statut);
+            $projectsAsMember = $projectRepository->findProjectsAsMemberBystatut($user, $current_statut);
         } else {
             // Tous les projets
             $projectsAsManager = $projectRepository->findBy(['Chef_Projet' => $user]);

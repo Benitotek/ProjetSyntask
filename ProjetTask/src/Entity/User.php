@@ -42,7 +42,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Userstatut $statut = null;
 
     #[ORM\Column(enumType: UserRole::class)]
-    private ?UserRole $role = null;
+    private ?UserRole $role = UserRole::USER;  // Valeur par défaut
 
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Length(max: 180)]
@@ -146,6 +146,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
+        $roles = [];
+
+        if ($this->role) {
+            $roles[] = 'ROLE_' . $this->role->value;  // Par exemple ROLE_ADMIN
+        }
+
+        // Assurez-vous que tous les utilisateurs ont au moins ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
         return [$this->role?->value ?? 'ROLE_EMPLOYE'];
     }
 

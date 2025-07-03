@@ -1,0 +1,84 @@
+<div class="sidebar">
+	<div class="sidebar-header">
+		<div class="sidebar-logo">
+			<img src="{{ asset('img/logo.png') }}" alt="SYNTASK" class="me-2">
+			SYNTASK
+		</div>
+		<button class="sidebar-toggle">
+			<i class="fas fa-bars"></i>
+		</button>
+	</div>
+
+	<div class="sidebar-content">
+		<a href="{{ path('app_dashboard') }}" class="sidebar-link">
+			<span class="sidebar-icon">
+				<i class="fas fa-home"></i>
+			</span>
+			<span>Tableau de bord</span>
+		</a>
+
+		<a href="{{ path('app_projet_index') }}" class="sidebar-link">
+			<span class="sidebar-icon">
+				<i class="fas fa-project-diagram"></i>
+			</span>
+			<span>Projets</span>
+		</a>
+
+		<a href="{{ path('app_task_index') }}" class="sidebar-link">
+			<span class="sidebar-icon">
+				<i class="fas fa-tasks"></i>
+			</span>
+			<span>Tâches</span>
+		</a>
+
+		<a href="{{ path('app_user_calendar') }}" class="sidebar-link">
+			<span class="sidebar-icon">
+				<i class="fas fa-calendar-alt"></i>
+			</span>
+			<span>Calendrier</span>
+		</a>
+
+		{% if is_granted('ROLE_ADMIN') %}
+			<div class="sidebar-section">
+				<div class="sidebar-section-title">Administration</div>
+
+				<a href="{{ path('app_user_index') }}" class="sidebar-link">
+					<span class="sidebar-icon">
+						<i class="fas fa-users"></i>
+					</span>
+					<span>Utilisateurs</span>
+				</a>
+
+				<a href="{{ path('app_admin_settings') }}" class="sidebar-link">
+					<span class="sidebar-icon">
+						<i class="fas fa-cogs"></i>
+					</span>
+					<span>Paramètres</span>
+				</a>
+
+				<a href="{{ path('app_admin_logs') }}" class="sidebar-link">
+					<span class="sidebar-icon">
+						<i class="fas fa-history"></i>
+					</span>
+					<span>Journaux d'activité</span>
+				</a>
+			</div>
+		{% endif %}
+	</div>
+
+	<div class="sidebar-footer">
+		<a href="{{ path('app_user_profile') }}" class="sidebar-link">
+			<span class="sidebar-icon">
+				<i class="fas fa-user-circle"></i>
+			</span>
+			<span>Mon profil</span>
+		</a>
+
+		<a href="{{ path('app_logout') }}" class="sidebar-link">
+			<span class="sidebar-icon">
+				<i class="fas fa-sign-out-alt"></i>
+			</span>
+			<span>Déconnexion</span>
+		</a>
+	</div>
+</div>

@@ -254,14 +254,14 @@ class ProjectRepository extends ServiceEntityRepository
 // /**
 //  * Trouve les projets où l'utilisateur est membre et qui ont un statut spécifique
 //  */
-// public function findProjectsAsMemberByStatus(User $user, string $status): array
+// public function findProjectsAsMemberBystatut(User $user, string $statut): array
 // {
 //     return $this->createQueryBuilder('p')
 //         ->join('p.membres', 'm')
 //         ->where('m = :user')
-//         ->andWhere('p.statut = :status')
+//         ->andWhere('p.statut = :statut')
 //         ->setParameter('user', $user)
-//         ->setParameter('status', $status)
+//         ->setParameter('statut', $statut)
 //         ->getQuery()
 //         ->getResult();
 // }

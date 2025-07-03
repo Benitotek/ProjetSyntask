@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
+use App\Enum\UserRole;
 use App\Enum\Userstatut;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -12,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -47,17 +49,26 @@ class UserTypeForm extends AbstractType
                 ]
             ])
             ->add('role', ChoiceType::class, [
-                'label' => 'Rôles',
                 'choices' => [
-                    'Employé' => 'ROLE_EMPLOYE',
-                    'Chef de projet' => 'ROLE_CHEF_PROJET',
-                    'Directeur' => 'ROLE_DIRECTEUR',
-                    'Administrateur' => 'ROLE_ADMIN',
+                    'Utilisateur' => UserRole::USER,
+                    'Admin' => UserRole::ADMIN,
                 ],
-                'multiple' => true,
-                'expanded' => true,
-                'attr' => ['class' => 'form-check-input']
+                'multiple' => false,  // Un seul rôle principal
+                'expanded' => true,   // Affiche comme des radio buttons
+                'label' => 'Rôle'
             ])
+            // ->add('role', ChoiceType::class, [
+            //     'label' => 'Rôles',
+            //     'choices' => [
+            //         'Employé' => 'ROLE_EMPLOYE',
+            //         'Chef de projet' => 'ROLE_CHEF_PROJET',
+            //         'Directeur' => 'ROLE_DIRECTEUR',
+            //         'Administrateur' => 'ROLE_ADMIN',
+            //     ],
+            //     'multiple' => true,
+            //     'expanded' => true,
+            //     'attr' => ['class' => 'form-check-input']
+            // ])
 
             ->add('statut', ChoiceType::class, [
                 'label' => 'Statut',

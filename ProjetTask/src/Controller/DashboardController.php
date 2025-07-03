@@ -22,67 +22,60 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'app_dashboard')]
     #[IsGranted('ROLE_USER')]
     public function index(
+
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository,
         UserRepository $userRepository
     ): Response {
+        // Assurez-vous que l'utilisateur est connecté
         $user = $this->getUser();
-
-        // Récupérer les données pour les statistiques
-        $stats = [
-            'projects' => [
-                'total' => 0,
-                'in_progress' => 0,
-                'completed' => 0,
-                'overdue' => 0,
-            ],
-            'tasks' => [
-                'total' => 0,
-                'in_progress' => 0,
-                'completed' => 0,
-                'overdue' => 0,
-            ],
-            'users' => [
-                'total' => 0,
-                'active' => 0,
-            ]
-        ];
-
-        // Statistiques des projets
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-            // Admin et directeurs voient toutes les statistiques
-            $stats['projects']['total'] = $projectRepository->countAll();
-            $stats['projects']['in_progress'] = $projectRepository->countBystatut(['EN-COURS']);
-            $stats['projects']['completed'] = $projectRepository->countBystatut(['TERMINE']);
-
-            // Statistiques des utilisateurs
-            $stats['users']['total'] = $userRepository->countAll();
-            $stats['users']['active'] = $userRepository->countActive();
-        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
-            // Chefs de projet voient leurs projets
-            $stats['projects']['total'] = count($projectRepository->findByChefDeProjet($user));
-            // Ajouter d'autres statistiques spécifiques aux chefs de projet
-        } else {
-            // Employés voient leurs projets assignés
-            $stats['projects']['total'] = count($projectRepository->findByMembre($user));
-            // Ajouter d'autres statistiques pour les employés
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
         }
 
-        // Statistiques des tâches (pour tous les utilisateurs)
-        $stats['tasks']['overdue'] = count($taskRepository->findOverdue());
+        // Récupérer les projets
+        $projects = $projectRepository->findAll(); // Ou une requête plus spécifique
 
-        // Si l'utilisateur est un employé, chercher ses tâches assignées
-        if (!$this->isGranted('ROLE_CHEF_PROJET')) {
-            $assignedTasks = $taskRepository->findByAssignedUser($user);
-            $stats['tasks']['total'] = count($assignedTasks);
-            // Ajouter d'autres statistiques de tâches
-        }
+        // Récupérer les tâches
+        $tasks = $taskRepository->findAll(); // Ou une requête plus spécifique
+
+        // Récupérer les utilisateurs
+        $users = $userRepository->findAll();
+
+        // Récupérer les activités récentes (désactivé car ActivityRepository n'existe pas)
+        $activities = [];
+
+        // Calculs pour les statistiques
+        $completedTasks = count(array_filter($tasks, function ($task) {
+            return $task->getstatut() === 'completed'; // Adaptez selon votre structure
+        }));
+
+        $pendingTasks = count(array_filter($tasks, function ($task) {
+            return $task->getstatut() === 'pending'; // Adaptez selon votre structure
+        }));
+
+        $inProgressTasks = count(array_filter($tasks, function ($task) {
+            return $task->getstatut() === 'in_progress'; // Adaptez selon votre structure
+        }));
 
         return $this->render('dashboard/index.html.twig', [
-            'stats' => $stats,
-            // autres variables que vous pourriez déjà passer
+            'projects' => $projects,
+            'tasks' => $tasks,
+            'users' => $users,
+            'activities' => $activities,
+            'stats' => [
+                'totalProjects' => count($projects),
+                'totalTasks' => count($tasks),
+                'completedTasks' => $completedTasks,
+                'pendingTasks' => $pendingTasks,
+                'inProgressTasks' => $inProgressTasks,
+                'totalUsers' => count($users),
+                'completionRate' => count($tasks) > 0 ? ($completedTasks / count($tasks)) * 100 : 0,
+            ],
         ]);
     }
+
+
     // Route pour le tableau de bord principal
     #[Route('/dashboard', name: 'app_dashboard')]
     public function Dashindex(
@@ -93,17 +86,36 @@ class DashboardController extends AbstractController
     ): Response {
 
         /** @var User $user */
+        // Récupération de l'utilisateur actuel
         $user = $this->getUser();
 
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
-        $statut = $request->query->get('statut', 'tous');
+        // Récupération des projets
+        $projects = $projectRepository->findAll(); // Récupère tous les projets
+        // OU pour récupérer uniquement les projets de l'utilisateur connecté :
+        // $projects = $projectRepository->findByUser($user);
+        // Si vous voulez uniquement les projets actifs
+        $projects = $projectRepository->findBy(['statut' => 'active']);
+        // Si vous voulez trier les projets
+        $projects = $projectRepository->findBy([], ['dateCreation' => 'DESC']);
+
+        // Si vous avez une méthode personnalisée dans votre repository
+        $projects = $projectRepository->findProjectsWithStats();
+
+        // Code existant pour déterminer le statut actuel
+        $currentStatut = 'votre_logique_pour_determiner_statut';
+
+        // Récupération des tâches (si nécessaire pour d'autres parties du template)
+        $tasks = $taskRepository->findAll(); // ou une requête plus spécifique
+
+        // Récupération des statistiques ou autres données nécessaires
+
         return $this->render('dashboard/index.html.twig', [
             'user' => $user,
-            'current_statut' => $statut,
-            // autres variables...
+            'current_statut' => $currentStatut,
+            'projects' => $projects,
+            'tasks' => $tasks
         ]);
+        // Vérification des rôles de l'utilisateur
 
         // Différentes vues selon le rôle
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {

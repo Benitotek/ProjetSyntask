@@ -8,7 +8,7 @@ enum UserRole: string
     case DIRECTEUR = 'ROLE_DIRECTEUR';
     case CHEF_PROJET = 'ROLE_CHEF_PROJET';
     case EMPLOYE = 'ROLE_EMPLOYE';
-
+    case USER = 'ROLE_USER';
     public function label(): string
     {
         return match ($this) {
@@ -16,6 +16,7 @@ enum UserRole: string
             self::DIRECTEUR => 'Directeur',
             self::CHEF_PROJET => 'Chef de projet',
             self::EMPLOYE => 'Employé',
+            self::USER => 'Utilisateur',
         };
     }
 }

@@ -43,7 +43,7 @@
 								{{ project.dateButoir|date('d/m/Y') }}</span>
 						{% endif %}
 					</div>
-					<div class="project-status status-{{ project.statut|lower|replace({'-': '_'}) }}">
+					<div class="project-statut statut-{{ project.statut|lower|replace({'-': '_'}) }}">
 						{{ project.statut|replace({'-': ' '})|title }}
 					</div>
 				</div>
@@ -302,7 +302,7 @@
 		<div class="kanban-header">
 			<h1 class="kanban-title">{{ project.titre }}</h1>
 			<div class="project-meta">
-				<span class="project-status status-{{ project.statut|lower|replace({'-': '_'}) }}">{{ project.statut|replace({'-': ' '})|title }}</span>
+				<span class="project-statut statut-{{ project.statut|lower|replace({'-': '_'}) }}">{{ project.statut|replace({'-': ' '})|title }}</span>
 				<span class="project-date">Créé le:
 					{{ project.dateCreation|date('d/m/Y') }}</span>
 				{% if project.dateButoir %}

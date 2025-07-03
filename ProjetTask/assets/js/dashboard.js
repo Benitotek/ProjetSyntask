@@ -145,18 +145,18 @@ function initSearchFilters() {
     });
     
     // Filtres par statut
-    const statusFilters = document.querySelectorAll('.status-filter');
+    const statutFilters = document.querySelectorAll('.statut-filter');
     
-    statusFilters.forEach(filter => {
+    statutFilters.forEach(filter => {
         filter.addEventListener('click', function(e) {
             e.preventDefault();
             
             const targetTable = document.querySelector(this.dataset.target);
-            const status = this.dataset.status;
+            const statut = this.dataset.statut;
             
             if (targetTable) {
                 // Marquer le filtre actif
-                document.querySelectorAll('.status-filter').forEach(f => {
+                document.querySelectorAll('.statut-filter').forEach(f => {
                     f.classList.remove('active');
                 });
                 this.classList.add('active');
@@ -165,11 +165,11 @@ function initSearchFilters() {
                 const rows = targetTable.querySelectorAll('tbody tr');
                 
                 rows.forEach(row => {
-                    if (status === 'all') {
+                    if (statut === 'all') {
                         row.style.display = '';
                     } else {
-                        const statusCell = row.querySelector('.status-cell');
-                        if (statusCell && statusCell.dataset.status === status) {
+                        const statutCell = row.querySelector('.statut-cell');
+                        if (statutCell && statutCell.dataset.statut === statut) {
                             row.style.display = '';
                         } else {
                             row.style.display = 'none';
@@ -306,7 +306,7 @@ function ajaxAction(url, method = 'POST', data = {}, successCallback = null, err
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Erreur réseau: ' + response.status);
+            throw new Error('Erreur réseau: ' + response.statut);
         }
         return response.json();
     })
@@ -373,8 +373,8 @@ function confirmAction(title, message, callback) {
 /**
  * Mise à jour en temps réel du statut des tâches et projets
  */
-function updateStatus(element, url, statusValue) {
-    const initialStatus = element.dataset.status;
+function updatestatut(element, url, statutValue) {
+    const initialstatut = element.dataset.statut;
     const initialText = element.textContent;
     
     // Ajouter une classe de chargement
@@ -382,29 +382,29 @@ function updateStatus(element, url, statusValue) {
     
     // Appeler l'API pour mettre à jour le statut
     ajaxAction(url, 'POST', {
-        status: statusValue
+        statut: statutValue
     }, function(data) {
         // Succès
-        element.dataset.status = statusValue;
-        element.textContent = data.statusLabel || statusValue;
+        element.dataset.statut = statutValue;
+        element.textContent = data.statutLabel || statutValue;
         
         // Mettre à jour les classes de statut
         element.className = 'badge'; // Réinitialiser les classes
         
         // Ajouter la classe appropriée selon le statut
-        if (statusValue === 'EN-COURS') {
+        if (statutValue === 'EN-COURS') {
             element.classList.add('badge-primary');
-        } else if (statusValue === 'TERMINE') {
+        } else if (statutValue === 'TERMINE') {
             element.classList.add('badge-success');
-        } else if (statusValue === 'EN-ATTENTE') {
+        } else if (statutValue === 'EN-ATTENTE') {
             element.classList.add('badge-warning');
         }
         
         // Mettre à jour d'autres éléments de l'interface si nécessaire
         const parentRow = element.closest('tr');
         if (parentRow) {
-            parentRow.classList.remove(`status-${initialStatus}`);
-            parentRow.classList.add(`status-${statusValue}`);
+            parentRow.classList.remove(`statut-${initialstatut}`);
+            parentRow.classList.add(`statut-${statutValue}`);
         }
         
         showToast('Statut mis à jour avec succès', 'success');

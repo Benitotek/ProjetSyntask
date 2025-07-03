@@ -116,7 +116,7 @@
 
 							<div class="form-group">
 								<label for="project_created_date">Date de création</label>
-								<input type="date" id="project_created_date" name="project[createdDate]" value="{% if project.createdAt is defined %}{{ project.createdAt|date('Y-m-d') }}{% endif %}" class="form-input" readonly>
+								<input type="date" id="project_created_date" name="project[createdDate]" value="{% if project.dateCreation is defined %}{{ project.dateCreation|date('Y-m-d') }}{% endif %}" class="form-input" readonly>
 							</div>
 						</div>
 

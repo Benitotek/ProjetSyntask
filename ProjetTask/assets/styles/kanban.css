@@ -27,24 +27,24 @@
     margin: 10px 0;
 }
 
-.project-status {
+.project-statut {
     padding: 5px 10px;
     border-radius: 4px;
     font-weight: 500;
     font-size: 14px;
 }
 
-.status-en_attente {
+.statut-en_attente {
     background-color: #FEF3C7;
     color: #92400E;
 }
 
-.status-en_cours {
+.statut-en_cours {
     background-color: #DBEAFE;
     color: #1E40AF;
 }
 
-.status-termine {
+.statut-termine {
     background-color: #D1FAE5;
     color: #065F46;
 }

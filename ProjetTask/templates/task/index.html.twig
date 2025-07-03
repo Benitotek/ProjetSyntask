@@ -50,16 +50,16 @@
 
 					<div class="table-actions">
 						<div class="btn-group">
-							<button type="button" class="btn btn-outline-primary status-filter active" data-target="#tasks-table" data-status="all">
+							<button type="button" class="btn btn-outline-primary statut-filter active" data-target="#tasks-table" data-statut="all">
 								Toutes
 							</button>
-							<button type="button" class="btn btn-outline-primary status-filter" data-target="#tasks-table" data-status="EN-ATTENTE">
+							<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="EN-ATTENTE">
 								En attente
 							</button>
-							<button type="button" class="btn btn-outline-primary status-filter" data-target="#tasks-table" data-status="EN-COURS">
+							<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="EN-COURS">
 								En cours
 							</button>
-							<button type="button" class="btn btn-outline-primary status-filter" data-target="#tasks-table" data-status="TERMINE">
+							<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="TERMINE">
 								Terminées
 							</button>
 						</div>
@@ -90,7 +90,7 @@
 											{{ task.project.titre }}
 										</a>
 									</td>
-									<td class="status-cell" data-status="{{ task.statut }}">
+									<td class="statut-cell" data-statut="{{ task.statut }}">
 										<span class="badge
 																							                                        {% if task.statut == 'EN-COURS' %} badge-primary
 																							                                        {% elseif task.statut == 'TERMINE' %} badge-success

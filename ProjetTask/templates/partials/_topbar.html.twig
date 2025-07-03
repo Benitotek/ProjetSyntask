@@ -1,0 +1,72 @@
+<div class="topbar">
+	<div class="d-flex align-items-center">
+		<button type="button" class="sidebar-toggle me-3 d-md-none">
+			<i class="fas fa-bars"></i>
+		</button>
+
+		<div class="topbar-search">
+			<span class="topbar-search-icon">
+				<i class="fas fa-search"></i>
+			</span>
+			<input type="text" class="topbar-search-input" placeholder="Rechercher...">
+		</div>
+	</div>
+
+	<div class="topbar-actions">
+		<a href="{{ path('app_notification_index') }}" class="topbar-action" title="Notifications">
+			<i class="fas fa-bell"></i>
+			{% if app.user.unreadNotifications|default(0) > 0 %}
+				<span class="badge bg-danger badge-notification">{{ app.user.unreadNotifications }}</span>
+			{% endif %}
+		</a>
+
+		<div class="dropdown">
+			<a class="topbar-user" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				<div class="topbar-user-avatar">
+					{{ app.user.prenom|first }}{{ app.user.nom|first }}
+				</div>
+				<div class="topbar-user-info d-none d-md-block">
+					<div class="fw-bold">{{ app.user.prenom }}
+						{{ app.user.nom }}</div>
+					<div class="text-muted small">
+						{% if is_granted('ROLE_ADMIN') %}
+							Administrateur
+						{% elseif is_granted('ROLE_CHEF_PROJET') %}
+							Chef de projet
+						{% elseif is_granted('ROLE_DIRECTEUR') %}
+							Directeur
+						{% else %}
+							Membre
+						{% endif %}
+					</div>
+				</div>
+			</a>
+
+			<ul class="dropdown-menu dropdown-menu-end">
+				<li>
+					<h6 class="dropdown-header">{{ app.user.prenom }}
+						{{ app.user.nom }}</h6>
+				</li>
+				<li>
+					<a class="dropdown-item" href="{{ path('app_user_profile') }}">
+						<i class="fas fa-user-circle me-2"></i>
+						Mon profil
+					</a>
+				</li>
+				<li>
+					<a class="dropdown-item" href="{{ path('app_user_settings') }}">
+						<i class="fas fa-cog me-2"></i>
+						Paramètres
+					</a>
+				</li>
+				<li><hr class="dropdown-divider"></li>
+				<li>
+					<a class="dropdown-item" href="{{ path('app_logout') }}">
+						<i class="fas fa-sign-out-alt me-2"></i>
+						Déconnexion
+					</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

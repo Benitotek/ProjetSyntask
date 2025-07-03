@@ -199,8 +199,8 @@
                         <div class="col-12">
                             <div class="info-label">Créé le</div>
                             <div class="info-value">
-                                {% if task.createdAt %}
-                                    <i class="fas fa-clock"></i> {{ task.createdAt|date('d/m/Y H:i') }}
+                                {% if task.dateCreation %}
+                                    <i class="fas fa-clock"></i> {{ task.dateCreation|date('d/m/Y H:i') }}
                                 {% endif %}
                             </div>
                         </div>
