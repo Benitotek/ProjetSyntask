@@ -46,7 +46,7 @@ class UserTypeForm extends AbstractType
                     new Length(['max' => 50])
                 ]
             ])
-              ->add('roles', ChoiceType::class, [
+            ->add('role', ChoiceType::class, [
                 'label' => 'Rôles',
                 'choices' => [
                     'Employé' => 'ROLE_EMPLOYE',
@@ -58,7 +58,7 @@ class UserTypeForm extends AbstractType
                 'expanded' => true,
                 'attr' => ['class' => 'form-check-input']
             ])
-            
+
             ->add('statut', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => [
@@ -66,26 +66,36 @@ class UserTypeForm extends AbstractType
                     'Inactif' => Userstatut::INACTIF,
                     'En congé' => Userstatut::EN_CONGE,
                     'Absent' => Userstatut::ABSENT,
-                ],  'attr' => ['class' => 'form-select']
+                ],
+                'attr' => ['class' => 'form-select']
             ])
+            // autres champs...
             ->add('mdp', PasswordType::class, [
                 'label' => 'Mot de passe',
-                'mapped' => false,          // IMPORTANT : ne pas mapper à l'entité User
-                'required' => false,        // optionnel à la modification
+                'mapped' => false, // si vous ne souhaitez pas lier directement à l'entité
+                'required' => true,
+            ])
+            ->add('confirmer_mdp', PasswordType::class, [
+                'label' => 'Confirmer le mot de passe',
+                'mapped' => false,
+                'required' => true,
+            ])
+            ->add('estActif', CheckboxType::class, [
+                'required' => false,
+            ]);
+
+        if (!$isEdit) {
+            $builder->add('avatar', TextType::class, [
+                'label' => 'Avatar (URL)',
+                'required' => false,
                 'attr' => ['class' => 'form-control'],
-                'help' => 'Laissez vide pour ne pas changer le mot de passe',
                 'constraints' => [
-                    new Length([
-                        'min' => 6,
-                        'max' => 20,
-                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
-                        'maxMessage' => 'Le mot de passe ne peut pas dépasser {{ limit }} caractères'
-                    ]),
-                    new NotBlank(['message' => 'Le mot de passe est requis'])
+                    new Length(['max' => 255]),
                 ]
             ]);
+        }
     }
-   
+
     /**
      * Génère les choix pour les statuts à partir de l'enum
      */
@@ -97,7 +107,7 @@ class UserTypeForm extends AbstractType
         }
         return $choices;
     }
-    
+
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use App\Enum\UserRole;
 use App\Enum\Userstatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -18,13 +19,32 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Trouver les utilisateurs par rôle (string-based filter only)
+     * Compter les utilisateurs par rôle
      */
-    public function findByRole(string $role): array
+    public function countByRole(string $roleValue): int
     {
+        // Convertir la string en enum
+        $roleEnum = UserRole::from($roleValue);
+        
+        return $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.role = :role')
+            ->setParameter('role', $roleEnum)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Trouver les utilisateurs par rôle
+     */
+    public function findByRole(string $roleValue): array
+    {
+        // ✅ CORRIGÉ : Convertir la string en enum
+        $roleEnum = UserRole::from($roleValue);
+        
         return $this->createQueryBuilder('u')
             ->where('u.role = :role')
-            ->setParameter('role', $role)
+            ->setParameter('role', $roleEnum)
             ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();
@@ -73,9 +93,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function findChefsProjets(): array
     {
+        // ✅ CORRIGÉ : Utiliser l'enum au lieu de string
         return $this->createQueryBuilder('u')
             ->where('u.role = :role')
-            ->setParameter('role', 'ROLE_CHEF_PROJET')
+            ->setParameter('role', UserRole::CHEF_PROJET)
             ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();

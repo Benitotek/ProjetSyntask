@@ -10,52 +10,61 @@
 {% block body %}
     <h1>Ajouter un utilisateur</h1>
 
-    <form action="{{ path('app_admin_user_add') }}" method="POST">
-        <div class="form-group">
-            <label for="nom">Nom</label>
-            <input type="text" id="nom" name="nom" required>
-        </div>
+    {{ form_start(form, {'action': path('app_user_new'), 'method': 'POST'}) }}
 
-        <div class="form-group">
-            <label for="prenom">Prénom</label>
-            <input type="text" id="prenom" name="prenom" required>
-        </div>
+    <div class="form-group">
+        {{ form_label(form.nom, 'Nom') }}
+        {{ form_widget(form.nom) }}
+        {{ form_errors(form.nom) }}
+    </div>
 
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
-        </div>
+    <div class="form-group">
+        {{ form_label(form.prenom, 'Prénom') }}
+        {{ form_widget(form.prenom) }}
+        {{ form_errors(form.prenom) }}
+    </div>
 
-        <div class="form-group">
-            <label for="password">Mot de passe</label>
-            <input type="password" id="password" name="password" required minlength="8">
-        </div>
+    <div class="form-group">
+        {{ form_label(form.email, 'Email') }}
+        {{ form_widget(form.email) }}
+        {{ form_errors(form.email) }}
+    </div>
 
-        <div class="form-group">
-            <label for="role">Rôle</label>
-            <select id="role" name="role" required>
-                <option value="">Sélectionner un rôle</option>
-                <option value="Directeur">Directeur</option>
-                <option value="Chef De Projet">Chef De Projet</option>
-                <option value="Employer">Employer</option>
-                <option value="Admin">Admin</option>
-            </select>
-        </div>
+    <!-- Champ mot de passe -->
+    <div class="form-group">
+        {{ form_label(form.mdp, 'Mot de passe') }}
+        {{ form_widget(form.mdp) }}
+        {{ form_errors(form.mdp) }}
+    </div>
 
-        <div class="form-group">
-            <div class="checkbox-group">
-                <input type="checkbox" id="actif" name="actif" checked>
-                <label for="actif">Actif</label>
-            </div>
-        </div>
+    <!-- Champ confirmation mot de passe -->
+    <div class="form-group">
+        {{ form_label(form.confirmer_mdp, 'Confirmer le mot de passe') }}
+        {{ form_widget(form.confirmer_mdp) }}
+        {{ form_errors(form.confirmer_mdp) }}
+    </div>
 
-        <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="history.back()">Annuler</button>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Enregistrer
-            </button>
-        </div>
-    </form>
+    <div class="form-group">
+        {{ form_label(form.role, 'Rôle') }}
+        {{ form_widget(form.role) }}
+        {{ form_errors(form.role) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.estActif, 'Actif') }}
+        {{ form_widget(form.estActif) }}
+        {{ form_errors(form.estActif) }}
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">Annuler</button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Enregistrer
+        </button>
+    </div>
+
+    {{ form_end(form) }}
+
 {% endblock %}
 
 {# {% extends 'base.html.twig' %}

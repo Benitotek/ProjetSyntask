@@ -14,7 +14,7 @@
             </tr>
         </thead>
         <tbody>
-            {# {% for user in users %} #}
+            {% for user in users %}
                 <tr>
                     <td>{{ user.id }}</td>
                     <td>{{ user.email }}</td>
@@ -34,3 +34,40 @@
         </tbody>
     </table>
 {% endblock %}
+
+{# {% extends 'base.html.twig' %}
+
+{% block title %}Liste des utilisateurs{% endblock %}
+
+{% block body %}
+    <h1>Liste des utilisateurs</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Rôles</th>
+            </tr>
+        </thead>
+        <tbody>
+            {# {% for user in users %} #}
+                {# <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% for role in user.roles %}
+                            <span class="badge bg-secondary">{{ role }}</span>
+                        {% else %}
+                            <span>Aucun rôle</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="3">Aucun utilisateur trouvé.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %} #} 

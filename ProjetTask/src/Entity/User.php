@@ -196,7 +196,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
-    public function isEstActif(): ?bool
+    public function getEstActif(): ?bool
     {
         return $this->estActif;
     }
