@@ -16,11 +16,12 @@ use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security as SecurityBundleSecurity;
+use Symfony\Component\Security\Core\Role\Role;
 
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    #[IsGranted('ROLE_USER')]
+    #[IsGranted('ROLE_ADMIN')]
     public function index(
 
         ProjectRepository $projectRepository,
@@ -89,45 +90,145 @@ class DashboardController extends AbstractController
         // Récupération de l'utilisateur actuel
         $user = $this->getUser();
 
+         // Vérifier si l'utilisateur est admin
+        $isAdmin = false;
+        
+        // Si vous utilisez les rôles Symfony standards
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $isAdmin = true;
+        }
+        // OU si vous utilisez un enum Role
+        // if ($user->getRole() === Role::ADMIN) {
+        //     $isAdmin = true;
+        // }
+        
+         if ($user->getRole() === 'ROLE_ADMIN') {
+             $isAdmin = true;
+        }
+        
+        // Récupérer les projets en fonction du rôle
+        if ($isAdmin) {
+            // Pour un admin, récupérer TOUS les projets
+            $projects = $projectRepository->findAll();
+        } else {
+            // Pour un utilisateur normal, seulement ses projets
+            $projects = $projectRepository->findBy(['user' => $user]);
+        }
+ // Récupérer les projets
+        // $projects = $projectRepository->findBy(['user' => $user]);
+        
+        // Récupérer les tâches
+        // $tasks = $taskRepository->findBy(['user' => $user]);
+
         // Récupération des projets
-        $projects = $projectRepository->findAll(); // Récupère tous les projets
+        // $projects = $projectRepository->findAll(); // Récupère tous les projets
         // OU pour récupérer uniquement les projets de l'utilisateur connecté :
         // $projects = $projectRepository->findByUser($user);
         // Si vous voulez uniquement les projets actifs
-        $projects = $projectRepository->findBy(['statut' => 'active']);
+        // $projects = $projectRepository->findBy(['statut' => 'active']);
         // Si vous voulez trier les projets
-        $projects = $projectRepository->findBy([], ['dateCreation' => 'DESC']);
+        // $projects = $projectRepository->findBy([], ['dateCreation' => 'DESC']);
 
         // Si vous avez une méthode personnalisée dans votre repository
-        $projects = $projectRepository->findProjectsWithStats();
+        // $projects = $projectRepository->findProjectsWithStats();
 
         // Code existant pour déterminer le statut actuel
         $currentStatut = 'votre_logique_pour_determiner_statut';
 
         // Récupération des tâches (si nécessaire pour d'autres parties du template)
-        $tasks = $taskRepository->findAll(); // ou une requête plus spécifique
-
+        // $tasks = $taskRepository->findAll(); 
+        // ou une requête plus spécifique
+//  Même logique pour les tâches
+        if ($isAdmin) {
+            $tasks = $taskRepository->findAll();
+        } else {
+            $tasks = $taskRepository->findBy(['user' => $user]);
+        }
+        
+        // Préparer les statistiques adaptées au rôle
+        // $stats = [
+        //     'totalProjects' => count($projects),
+        //     'totalTasks' => count($tasks),
+            // Autres statistiques...
+        // ];
         // Récupération des statistiques ou autres données nécessaires
 
+         // Préparer les statistiques
+        $stats = [
+            'totalProjects' => count($projects),
+            'totalTasks' => count($tasks),
+            
+            // Statistiques des projets par statut
+            'projectsByStatus' => [
+                'not_started' => count(array_filter($projects, fn($p) => $p->getStatut() === 'not_started')),
+                'in_progress' => count(array_filter($projects, fn($p) => $p->getStatut() === 'in_progress')),
+                'completed' => count(array_filter($projects, fn($p) => $p->getStatut() === 'completed')),
+            ],
+            
+            // Statistiques des tâches par statut
+            'tasksByStatus' => [
+                'not_started' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'not_started')),
+                'in_progress' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'in_progress')),
+                'completed' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'completed')),
+            ],
+            
+            // Taux de complétion (pourcentage de tâches terminées)
+            'completionRate' => count($tasks) > 0 
+                ? round((count(array_filter($tasks, fn($t) => $t->getStatut() === 'completed')) / count($tasks)) * 100) 
+                : 0,
+                
+            // Statistiques temporelles (tâches par mois/semaine)
+            'recentActivity' => $this->calculateRecentActivity($tasks),
+        ];
+        
+        // Si vous avez besoin de statistiques plus avancées, vous pouvez 
+        // utiliser des requêtes DQL personnalisées dans vos repositories
+        
         return $this->render('dashboard/index.html.twig', [
             'user' => $user,
-            'current_statut' => $currentStatut,
+            'current_statut' => 'dashboard',
             'projects' => $projects,
-            'tasks' => $tasks
+            'tasks' => $tasks,
+            'stats' => $stats, // Ajout de la variable stats
+            'isAdmin' => $isAdmin, // Indique si l'utilisateur est admin
+            'curent_statut' => $currentStatut, // Ajout de la variable current_statut
         ]);
+    }
+    
+    /**
+     * Calcule l'activité récente basée sur les dates de création des tâches
+     */
+    private function calculateRecentActivity(array $tasks): array
+    {
+        $now = new \DateTime();
+        $lastWeek = (new \DateTime())->modify('-7 days');
+        $lastMonth = (new \DateTime())->modify('-30 days');
+        
+        $tasksLastWeek = array_filter($tasks, function($task) use ($lastWeek) {
+            return $task->getCreatedAt() >= $lastWeek;
+        });
+        
+        $tasksLastMonth = array_filter($tasks, function($task) use ($lastMonth, $lastWeek) {
+            return $task->getCreatedAt() >= $lastMonth && $task->getCreatedAt() < $lastWeek;
+        });
+        
+        return [
+            'lastWeek' => count($tasksLastWeek),
+            'lastMonth' => count($tasksLastMonth),
+            'total' => count($tasks),
+        ];
+    
+        // return $this->render('dashboard/index.html.twig', [
+        //     'user' => $user,
+        //     'current_statut' => $currentStatut,
+        //     'projects' => $projects,
+        //     'tasks' => $tasks
+        // ]);
         // Vérification des rôles de l'utilisateur
 
         // Différentes vues selon le rôle
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-            // Vue administrateur/directeur
-            return $this->adminDashboard($projectRepository, $taskRepository, $userRepository);
-        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
-            // Vue chef de projet
-            return $this->chefProjetDashboard($projectRepository, $taskRepository, $user);
-        } else {
-            // Vue employé
-            return $this->employeDashboard($projectRepository, $taskRepository, $user);
-        }
+        // Note: Ne pas retourner de Response ici, car cette méthode doit retourner un array
+        // Si vous souhaitez rediriger selon le rôle, faites-le dans l'action du contrôleur, pas ici.
     }
 
     /**

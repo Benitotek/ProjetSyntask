@@ -12,18 +12,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Table(name: 'task')]
 class Task
 {
-    public const PRIORITE_URGENT = 'urgent';
-    public const PRIORITE_NORMAL = 'normal';
-    public const PRIORITE_EN_ATTENTE = 'en_attente';
-
-    public const STATUT_EN_ATTENTE = 'en_attente';
-    public const STATUT_EN_COURS = 'en_cours';
-    public const STATUT_TERMINE = 'termine';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -42,9 +36,9 @@ class Task
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
-
-    #[ORM\Column(type: 'string', length: 20)]
-    private string $statut = 'en_attente';
+    #[Assert\Choice(callback: [TaskStatut::class, 'cases'])]
+    #[ORM\Column(enumType: TaskStatut::class)]
+    private ?TaskStatut $statut = TaskStatut::EN_ATTENTE;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
@@ -55,8 +49,9 @@ class Task
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateReelle = null;
 
-    #[ORM\Column(type: 'string', length: 20)]
-    private string $priorite = 'normal';
+    #[ORM\Column(enumType: TaskPriority::class)]
+    #[Assert\Choice(callback: [TaskPriority::class, 'cases'])]
+    private ?TaskPriority $priorite = TaskPriority::NORMAL;
 
     #[ORM\Column]
     private int $position = 0;
@@ -111,15 +106,45 @@ class Task
 
     public function getStatut(): TaskStatut
     {
-        return TaskStatut::from($this->statut);
+        if ($this->statut instanceof TaskStatut) {
+            return $this->statut;
+        }
+        if (is_string($this->statut) || is_int($this->statut)) {
+            return TaskStatut::from($this->statut);
+        }
+        // Default fallback if statut is null or invalid
+        return TaskStatut::EN_ATTENTE;
+    }
+    public function getStatutLabel(): string
+    {
+        return $this->getStatut()->label();
     }
 
     public function setStatut(TaskStatut $statut): static
     {
-        $this->statut = $statut->value;
+        $this->statut = $statut;
         return $this;
     }
-
+public function getPriorite(): TaskPriority
+{
+    if ($this->priorite instanceof TaskPriority) {
+        return $this->priorite;
+    }
+    if (is_string($this->priorite) || is_int($this->priorite)) {
+        return TaskPriority::from($this->priorite);
+    }
+    // Default fallback if priorite is null or invalid
+    return TaskPriority::NORMAL;
+}
+ public function getPrioriteLabel(): string
+    {
+        return $this->getPriorite()->label();
+    }
+    public function setPriorite(TaskPriority $priorite): static
+    {
+        $this->priorite = $priorite;
+        return $this;
+    }
     public function getDateCreation(): ?\DateTime
     {
         return $this->dateCreation;
@@ -153,16 +178,7 @@ class Task
         return $this;
     }
 
-    public function getPriorite(): TaskPriority
-    {
-        return TaskPriority::from($this->priorite);
-    }
-
-    public function setPriorite(TaskPriority $priorite): static
-    {
-        $this->priorite = $priorite->value;
-        return $this;
-    }
+   
 
     public function getPosition(): int
     {

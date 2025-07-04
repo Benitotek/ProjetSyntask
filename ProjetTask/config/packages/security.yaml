@@ -87,6 +87,10 @@ security:
 
     # Contrôle d'accès
     access_control:
+    
+     # Administration
+        - { path: ^/admin, roles: ROLE_ADMIN }
+    
         # Nouvelle route pour corriger les rôles (à mettre en premier)
         - { path: ^/fix-roles-simple, roles: PUBLIC_ACCESS }
 
@@ -104,9 +108,6 @@ security:
         # API publique
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/public, roles: PUBLIC_ACCESS }
-
-        # Administration
-        - { path: ^/admin, roles: ROLE_ADMIN }
 
         # Dashboards spécifiques
         - { path: ^/directeur, roles: ROLE_DIRECTEUR }
@@ -133,11 +134,11 @@ security:
         # Statistiques
         - { path: ^/statistiques, roles: ROLE_CHEF_PROJET }
 
-        # Dashboard par défaut (accessible à tous les utilisateurs connectés)
-        # - { path: ^/dashboard, roles: ROLE_EMPLOYE }
+        # # Dashboard par défaut (accessible à tous les utilisateurs connectés)
+        - { path: ^/dashboard, roles: ROLE_EMPLOYE }
 
         # Toutes les autres routes nécessitent une authentification
-        # - { path: ^/, roles: ROLE_EMPLOYE }
+        - { path: ^/, roles: ROLE_EMPLOYE }
 
 # This configuration is only used in the test environment to speed up password hashing.
 

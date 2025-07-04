@@ -47,65 +47,76 @@ class UserTypeForm extends AbstractType
                     new NotBlank(['message' => 'L\'email est requis']),
                     new Length(['max' => 50])
                 ]
-            ])
-            ->add('role', ChoiceType::class, [
-                'choices' => [
-                    'Utilisateur' => UserRole::USER,
-                    'Admin' => UserRole::ADMIN,
-                ],
-                'multiple' => false,  // Un seul rôle principal
-                'expanded' => true,   // Affiche comme des radio buttons
-                'label' => 'Rôle'
-            ])
-            // ->add('role', ChoiceType::class, [
-            //     'label' => 'Rôles',
-            //     'choices' => [
-            //         'Employé' => 'ROLE_EMPLOYE',
-            //         'Chef de projet' => 'ROLE_CHEF_PROJET',
-            //         'Directeur' => 'ROLE_DIRECTEUR',
-            //         'Administrateur' => 'ROLE_ADMIN',
-            //     ],
-            //     'multiple' => true,
-            //     'expanded' => true,
-            //     'attr' => ['class' => 'form-check-input']
-            // ])
+        ]);
 
-            ->add('statut', ChoiceType::class, [
-                'label' => 'Statut',
-                'choices' => [
-                    'Actif' => Userstatut::ACTIF,
-                    'Inactif' => Userstatut::INACTIF,
-                    'En congé' => Userstatut::EN_CONGE,
-                    'Absent' => Userstatut::ABSENT,
-                ],
-                'attr' => ['class' => 'form-select']
-            ])
-            // autres champs...
-            ->add('mdp', PasswordType::class, [
-                'label' => 'Mot de passe',
-                'mapped' => false, // si vous ne souhaitez pas lier directement à l'entité
-                'required' => true,
-            ])
-            ->add('confirmer_mdp', PasswordType::class, [
-                'label' => 'Confirmer le mot de passe',
-                'mapped' => false,
-                'required' => true,
-            ])
-            ->add('estActif', CheckboxType::class, [
-                'required' => false,
-            ]);
-
-        if (!$isEdit) {
-            $builder->add('avatar', TextType::class, [
-                'label' => 'Avatar (URL)',
-                'required' => false,
-                'attr' => ['class' => 'form-control'],
-                'constraints' => [
-                    new Length(['max' => 255]),
-                ]
-            ]);
-        }
+    // Ajout conditionnel du champ de choix du role
+    if (
+        isset($options['can_choose_role'])
+        && $options['can_choose_role'] === true
+    ) {
+        $builder->add('role', ChoiceType::class, [
+            'choices' => [
+                'Employé' => UserRole::EMPLOYE,
+                'Admin' => UserRole::ADMIN,
+                'Chef de projet' => UserRole::CHEF_PROJET,
+                'Directeur' => UserRole::DIRECTEUR,
+            ],
+            'attr' => ['class' => 'form-check-input'],
+            'multiple' => false,  // Un seul rôle principal
+            'expanded' => true,   // Affiche comme des radio buttons
+            'label' => 'Rôle'
+        ]);
+        // ->add('role', ChoiceType::class, [
+        //     'label' => 'Rôles',
+        //     'choices' => [
+        //         'Employé' => 'ROLE_EMPLOYE',
+        //         'Chef de projet' => 'ROLE_CHEF_PROJET',
+        //         'Directeur' => 'ROLE_DIRECTEUR',
+        //         'Administrateur' => 'ROLE_ADMIN',
+        //     ],
+        //     'multiple' => true,
+        //     'expanded' => true,
+        //     'attr' => ['class' => 'form-check-input']
+        // ])
     }
+
+    $builder
+        ->add('statut', ChoiceType::class, [
+            'label' => 'Statut',
+            'choices' => [
+                'Actif' => Userstatut::ACTIF,
+                'Inactif' => Userstatut::INACTIF,
+                'En congé' => Userstatut::EN_CONGE,
+                'Absent' => Userstatut::ABSENT,
+            ],
+            'attr' => ['class' => 'form-select']
+        ])
+        // autres champs...
+        ->add('mdp', PasswordType::class, [
+            'label' => 'Mot de passe',
+            'mapped' => false, // si vous ne souhaitez pas lier directement à l'entité
+            'required' => true,
+        ])
+        ->add('confirmer_mdp', PasswordType::class, [
+            'label' => 'Confirmer le mot de passe',
+            'mapped' => false,
+            'required' => true,
+        ])
+        ->add('estActif', CheckboxType::class, [
+            'required' => false,
+        ]);
+
+    if (!$isEdit) {
+        $builder->add('avatar', TextType::class, [
+            'label' => 'Avatar (URL)',
+            'required' => false,
+            'attr' => ['class' => 'form-control'],
+            'constraints' => [
+                new Length(['max' => 255]),
+            ]
+        ]);
+    }
+}
 
     /**
      * Génère les choix pour les statuts à partir de l'enum

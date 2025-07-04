@@ -42,8 +42,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Userstatut $statut = null;
 
     #[ORM\Column(enumType: UserRole::class)]
-    private ?UserRole $role = UserRole::USER;  // Valeur par défaut
+    private ?UserRole $role = UserRole::EMPLOYE;  // Valeur par défaut
 
+    
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Length(max: 180)]
     #[Assert\Email]
@@ -144,19 +145,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Returns an array of roles as expected by Symfony.
+     */
     public function getRoles(): array
     {
-        $roles = [];
-
-        if ($this->role) {
-            $roles[] = 'ROLE_' . $this->role->value;  // Par exemple ROLE_ADMIN
-        }
-
-        // Assurez-vous que tous les utilisateurs ont au moins ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-        return [$this->role?->value ?? 'ROLE_EMPLOYE'];
+        return [$this->role?->value ?? UserRole::EMPLOYE->value];
     }
 
     public function hasRole(string $role): bool
