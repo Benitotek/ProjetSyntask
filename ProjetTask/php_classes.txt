@@ -1,0 +1,51 @@
+﻿
+src\Kernel.php:8:class Kernel extends BaseKernel
+src\Command\HashUserPasswordsCommand.php:11:class HashUserPasswordsCommand extends Command
+src\Command\HashUserPasswordsCommand.php:61:// class HashUserPasswordsCommand extends Command
+src\Command\HashUserPasswordsCommand.php:101:// class HashUserPasswordsCommand extends Command
+src\Controller\AdminController.php:22:class AdminController extends AbstractController
+src\Controller\DashboardController.php:21:class DashboardController extends AbstractController
+src\Controller\DashboardController.php:337:    // End of DashboardController class restest route 
+suivante verrif et modif a revoir
+src\Controller\HomeController.php:9:final class HomeController extends AbstractController
+src\Controller\ProjectController.php:25:class ProjectController extends AbstractController
+src\Controller\ProjectController.php:512:// class ProjectViewController extends AbstractController
+src\Controller\RegistrationController.php:23:class RegistrationController extends AbstractController
+src\Controller\ResetPasswordController.php:24:class ResetPasswordController extends 
+AbstractController
+src\Controller\SecurityController.php:13:class SecurityController extends AbstractController
+src\Controller\TaskController.php:25:class TaskController extends AbstractController
+src\Controller\TaskListController.php:20:class TaskListController extends AbstractController
+src\Controller\TaskListController.php:251:// class TaskListController extends AbstractController
+src\Controller\UserController.php:21:class UserController extends AbstractController
+src\Entity\Project.php:14:class Project
+src\Entity\ResetPasswordRequest.php:11:class ResetPasswordRequest implements 
+ResetPasswordRequestInterface
+src\Entity\Task.php:19:class Task
+src\Entity\TaskList.php:14:class TaskList
+src\Entity\User.php:23:class User implements UserInterface, PasswordAuthenticatedUserInterface
+src\Form\ChangePasswordForm.php:15:class ChangePasswordForm extends AbstractType
+src\Form\ProjectTypeForm.php:19:class ProjectTypeForm extends AbstractType
+src\Form\RegistrationForm.php:20:class RegistrationForm extends AbstractType
+src\Form\ResetPasswordRequestForm.php:11:class ResetPasswordRequestForm extends AbstractType
+src\Form\TaskListTypeForm.php:16:class TaskListType extends AbstractType
+src\Form\TaskListTypeForm.php:57:// class TaskListTypeForm extends AbstractType
+src\Form\TaskTypeForm.php:24:class TaskType extends AbstractType
+src\Form\TaskTypeForm.php:110:// class TaskType extends AbstractType
+src\Form\UserTypeForm.php:20:class UserTypeForm extends AbstractType
+src\Repository\ProjectRepository.php:18:class ProjectRepository extends ServiceEntityRepository
+src\Repository\ResetPasswordRequestRepository.php:16:class ResetPasswordRequestRepository extends 
+ServiceEntityRepository implements ResetPasswordRequestRepositoryInterface
+src\Repository\TaskListRepository.php:12:class TaskListRepository extends ServiceEntityRepository
+src\Repository\TaskRepository.php:15:class TaskRepository extends ServiceEntityRepository
+src\Repository\TaskRepository.php:259:// class TaskRepository extends ServiceEntityRepository
+src\Repository\UserRepository.php:14:class UserRepository extends ServiceEntityRepository 
+implements PasswordUpgraderInterface
+src\Security\EmailVerifier.php:13:class EmailVerifier
+src\Security\LoginFormAuthenticator.php:19:class LoginFormAuthenticator extends 
+AbstractLoginFormAuthenticator
+src\Security\Voter\ProjectVoter.php:11:class ProjectVoter extends Voter
+src\Security\Voter\TaskVoter.php:13:class TaskVoter extends Voter
+src\Twig\AppExtension.php:8:class AppExtension extends AbstractExtension
+
+
