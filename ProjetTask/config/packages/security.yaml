@@ -89,56 +89,56 @@ security:
     access_control:
     
      # Administration
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin, role: ROLE_ADMIN }
     
         # Nouvelle route pour corriger les rôles (à mettre en premier)
-        - { path: ^/fix-roles-simple, roles: PUBLIC_ACCESS }
+        - { path: ^/fix-role-simple, role: PUBLIC_ACCESS }
 
         # Pages publiques existantes
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/login, role: PUBLIC_ACCESS }
+        - { path: ^/register, role: PUBLIC_ACCESS }
         # ... (le reste de vos règles d'accès)
 
         # Pages publiques (ordre important !)
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/public, roles: PUBLIC_ACCESS }
-        - { path: ^/$, roles: PUBLIC_ACCESS } # Page d'accueil
+        - { path: ^/login, role: PUBLIC_ACCESS }
+        - { path: ^/register, role: PUBLIC_ACCESS }
+        - { path: ^/public, role: PUBLIC_ACCESS }
+        - { path: ^/$, role: PUBLIC_ACCESS } # Page d'accueil
 
         # API publique
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/public, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login, role: PUBLIC_ACCESS }
+        - { path: ^/api/public, role: PUBLIC_ACCESS }
 
         # Dashboards spécifiques
-        - { path: ^/directeur, roles: ROLE_DIRECTEUR }
-        - { path: ^/chef-projet, roles: ROLE_CHEF_PROJET }
-        - { path: ^/employe, roles: ROLE_EMPLOYE }
+        - { path: ^/directeur, role: ROLE_DIRECTEUR }
+        - { path: ^/chef-projet, role: ROLE_CHEF_PROJET }
+        - { path: ^/employe, role: ROLE_EMPLOYE }
 
         # Routes des projets (accessibles selon les rôles)
-        - { path: ^/projects, roles: ROLE_EMPLOYE }
-        - { path: ^/mes-projets, roles: ROLE_EMPLOYE }
-        - { path: ^/project, roles: ROLE_EMPLOYE }
+        - { path: ^/projects, role: ROLE_EMPLOYE }
+        - { path: ^/mes-projets, role: ROLE_EMPLOYE }
+        - { path: ^/project, role: ROLE_EMPLOYE }
 
         # Routes des tâches
-        - { path: ^/tasks, roles: ROLE_EMPLOYE }
-        - { path: ^/task, roles: ROLE_EMPLOYE }
-        - { path: ^/tasklist, roles: ROLE_CHEF_PROJET } # Seuls les chefs peuvent gérer les colonnes
+        - { path: ^/tasks, role: ROLE_EMPLOYE }
+        - { path: ^/task, role: ROLE_EMPLOYE }
+        - { path: ^/tasklist, role: ROLE_CHEF_PROJET } # Seuls les chefs peuvent gérer les colonnes
 
         # API authentifiée
-        - { path: ^/api, roles: ROLE_EMPLOYE }
+        - { path: ^/api, role: ROLE_EMPLOYE }
 
         # Profil utilisateur
-        - { path: ^/profile, roles: ROLE_EMPLOYE }
-        - { path: ^/mon-profil, roles: ROLE_EMPLOYE }
+        - { path: ^/profile, role: ROLE_EMPLOYE }
+        - { path: ^/mon-profil, role: ROLE_EMPLOYE }
 
         # Statistiques
-        - { path: ^/statistiques, roles: ROLE_CHEF_PROJET }
+        - { path: ^/statistiques, role: ROLE_CHEF_PROJET }
 
         # # Dashboard par défaut (accessible à tous les utilisateurs connectés)
-        - { path: ^/dashboard, roles: ROLE_EMPLOYE }
+        - { path: ^/dashboard, role: ROLE_EMPLOYE }
 
         # Toutes les autres routes nécessitent une authentification
-        - { path: ^/, roles: ROLE_EMPLOYE }
+        - { path: ^/, role: ROLE_EMPLOYE }
 
 # This configuration is only used in the test environment to speed up password hashing.
 

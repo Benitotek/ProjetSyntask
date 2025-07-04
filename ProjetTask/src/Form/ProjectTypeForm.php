@@ -37,7 +37,7 @@ class ProjectTypeForm extends AbstractType
                     'rows' => 4
                 ]
             ])
-            ->add('ref', TextType::class, [
+            ->add('reference', TextType::class, [
                 'label' => 'Référence',
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
@@ -62,13 +62,13 @@ class ProjectTypeForm extends AbstractType
                 ],
                 'attr' => ['class' => 'form-select']
             ])
-            ->add('chefProjet', EntityType::class, [
+            ->add('Chef_Projet', EntityType::class, [
                 'label' => 'Chef de projet',
                 'class' => User::class,
                 'choice_label' => 'fullName',
                 'query_builder' => function (UserRepository $repo) {
                     return $repo->createQueryBuilder('u')
-                        ->where('u.roles LIKE :role')
+                        ->where('u.role LIKE :role')
                         ->andWhere('u.estActif = true')
                         ->setParameter('role', '%ROLE_CHEF_PROJET%')
                         ->orderBy('u.nom', 'ASC');

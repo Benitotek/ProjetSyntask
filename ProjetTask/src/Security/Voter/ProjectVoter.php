@@ -49,7 +49,7 @@ class ProjectVoter extends Voter
         $project = $subject;
 
         // Les administrateurs et directeurs ont tous les droits
-        if (in_array('ROLE_ADMIN', $user->getRoles()) || in_array('ROLE_DIRECTEUR', $user->getRoles())) {
+        if (in_array('ROLE_ADMIN', $user->getrole()) || in_array('ROLE_DIRECTEUR', $user->getrole())) {
             return true;
         }
 
@@ -113,12 +113,12 @@ class ProjectVoter extends Voter
 //     private function canView(Project $project, User $user): bool
 //     {
 //         // Admin et Directeur peuvent tout voir
-//         if (in_array('ROLE_ADMIN', $user->getRoles()) || in_array('ROLE_DIRECTEUR', $user->getRoles())) {
+//         if (in_array('ROLE_ADMIN', $user->getrole()) || in_array('ROLE_DIRECTEUR', $user->getrole())) {
 //             return true;
 //         }
 
 //         // Chef de projet peut voir ses projets
-//         if (in_array('ROLE_CHEF_PROJET', $user->getRoles()) && $project->getChef_Projet() === $user) {
+//         if (in_array('ROLE_CHEF_PROJET', $user->getrole()) && $project->getChef_Projet() === $user) {
 //             return true;
 //         }
 
@@ -129,12 +129,12 @@ class ProjectVoter extends Voter
 //     private function canEdit(Project $project, User $user): bool
 //     {
 //         // Admin peut tout éditer
-//         if (in_array('ROLE_ADMIN', $user->getRoles())) {
+//         if (in_array('ROLE_ADMIN', $user->getrole())) {
 //             return true;
 //         }
 
 //         // Chef de projet peut éditer ses projets
-//         if (in_array('ROLE_CHEF_PROJET', $user->getRoles()) && $project->getChef_Projet() === $user) {
+//         if (in_array('ROLE_CHEF_PROJET', $user->getrole()) && $project->getChef_Projet() === $user) {
 //             return true;
 //         }
 

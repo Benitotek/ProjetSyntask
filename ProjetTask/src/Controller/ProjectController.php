@@ -296,7 +296,7 @@ class ProjectController extends AbstractController
         }
 
         // Vérifier que l'utilisateur a le rôle CHEF_PROJET
-        if (!in_array('ROLE_CHEF_PROJET', $user->getRoles())) {
+        if (!in_array('ROLE_CHEF_PROJET', $user->getrole())) {
             $this->addFlash('error', 'L\'utilisateur doit avoir le rôle CHEF_PROJET pour être assigné comme chef de projet');
             return $this->redirectToRoute('app_projet_members', ['id' => $project->getId()]);
         }

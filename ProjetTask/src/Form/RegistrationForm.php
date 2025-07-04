@@ -33,7 +33,7 @@ class RegistrationForm extends AbstractType
                 'label' => 'Prénom',
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('roles', ChoiceType::class, [
+            ->add('role', ChoiceType::class, [
                 'label' => 'Rôle',
                 'choices' => [
                     'Employé' => 'ROLE_EMPLOYE',

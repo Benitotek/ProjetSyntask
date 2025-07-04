@@ -51,7 +51,7 @@ class TaskVoter extends Voter
         $task = $subject;
 
         // Les administrateurs et directeurs ont tous les droits
-        if (in_array('ROLE_ADMIN', $user->getRoles()) || in_array('ROLE_DIRECTEUR', $user->getRoles())) {
+        if (in_array('ROLE_ADMIN', $user->getrole()) || in_array('ROLE_DIRECTEUR', $user->getrole())) {
             return true;
         }
 

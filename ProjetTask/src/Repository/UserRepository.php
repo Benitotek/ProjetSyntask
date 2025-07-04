@@ -126,7 +126,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * Met à jour les rôles de tous les utilisateurs en fonction de leur statut
      */
-    public function updateAllUserRoles(): int
+    public function updateAllUserrole(): int
     {
         $users = $this->findAll();
         $count = 0;

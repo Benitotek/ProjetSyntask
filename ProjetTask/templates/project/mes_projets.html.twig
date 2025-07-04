@@ -28,7 +28,7 @@
 					</div>
 					<div class="user-info">
 						<div class="user-name">{{ app.user.username|default('salarié') }}</div>
-						<div class="user-role">{{ app.user.roles|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
+						<div class="user-role">{{ app.user.role|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
                 </div>
                 <div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
 					</div>

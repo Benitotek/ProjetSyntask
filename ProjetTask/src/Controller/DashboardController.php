@@ -426,7 +426,7 @@ class DashboardController extends AbstractController
     // }
 
 
-// This code is a Symfony controller for a dashboard that displays statistics and recent projects/tasks for users based on their roles.
+// This code is a Symfony controller for a dashboard that displays statistics and recent projects/tasks for users based on their role.
 // It uses repositories to fetch data and renders a Twig template with the statistics and recent projects/tasks.
 // src/Controller/DashboardController.php
 // This file defines a controller for the dashboard of a Symfony application.
