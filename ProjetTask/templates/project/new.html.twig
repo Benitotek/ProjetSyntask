@@ -1,0 +1,62 @@
+{# templates/projet/new.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un projet{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Créer un nouveau projet</h1>
+
+    {{ form_start(form) }}
+        <div class="mb-3">
+            {{ form_label(form.titre) }}
+            {{ form_widget(form.titre) }}
+            {{ form_errors(form.titre) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.reference) }}
+            {{ form_widget(form.reference) }}
+            {{ form_errors(form.reference) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.budget) }}
+            {{ form_widget(form.budget) }}
+            {{ form_errors(form.budget) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.statut) }}
+            {{ form_widget(form.statut) }}
+            {{ form_errors(form.statut) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.ChefProjet) }}
+            {{ form_widget(form.ChefProjet) }}
+            {{ form_errors(form.ChefProjet) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.membres) }}
+            {{ form_widget(form.membres) }}
+            {{ form_errors(form.membres) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Créer</button>
+    {{ form_end(form) }}
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/project-form.js') }}"></script>
+{% endblock %}
+{% endblock %}
+

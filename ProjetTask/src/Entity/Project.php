@@ -56,7 +56,7 @@ class Project
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
 
     #[ORM\JoinColumn(name: "chef_projet_id", referencedColumnName: "id", nullable: true)]
-    private ?User $Chef_Projet = null;
+    private ?User $chefProjet = null;
 
     // Membres : ManyToMany
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
@@ -202,14 +202,14 @@ class Project
         return $this;
     }
 
-    public function getChef_Projet(): ?User
+    public function getChefProjet(): ?User
     {
-        return $this->Chef_Projet;
+        return $this->chefProjet;
     }
 
-    public function setChef_Projet(?User $Chef_Projet): static
+    public function setChefProjet(?User $chefProjet): static
     {
-        $this->Chef_Projet = $Chef_Projet;
+        $this->chefProjet = $chefProjet;
         return $this;
     }
 

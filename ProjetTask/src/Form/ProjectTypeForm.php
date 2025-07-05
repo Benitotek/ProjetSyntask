@@ -62,7 +62,7 @@ class ProjectTypeForm extends AbstractType
                 ],
                 'attr' => ['class' => 'form-select']
             ])
-            ->add('Chef_Projet', EntityType::class, [
+            ->add('ChefProjet', EntityType::class, [
                 'label' => 'Chef de projet',
                 'class' => User::class,
                 'choice_label' => 'fullName',

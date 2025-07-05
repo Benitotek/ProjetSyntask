@@ -34,54 +34,47 @@ class ProjectController extends AbstractController
     /**
      * Affiche les projets de l'utilisateur connecté
      */
-    #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
-    public function mesProjects(Request $request, ProjectRepository $projectRepository): Response
-    {
-        /** @var User $user */
-        $user = $this->getUser();
+   #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
+public function mesProjects(Request $request, ProjectRepository $projectRepository): Response
+{
+    /** @var User $user */
+    $user = $this->getUser();
 
-        if (!$user) {
-            throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page');
-        }
-
-        // Récupérer le statut sélectionné depuis la requête
-        $current_statut = $request->query->get('statut', 'tous');
-        // Récupérer les projets selon le rôle de l'utilisateur et le statut demandé
-        $projects = $projectRepository->findProjectsByUser($user, $current_statut);
-
-        return $this->render('project/mes_projets.html.twig', [
-            'projects' => $projects,
-            'current_statut' => $current_statut,
-            'user' => $user,
-        ]);
-
-        // Récupérer les projets selon le statut sélectionné
-        if ($current_statut !== 'tous') {
-            // Si un statut spécifique est demandé
-            $projectsAsManager = $projectRepository->findBy([
-                'Chef_Projet' => $user,
-                'statut' => $current_statut
-            ]);
-
-            // Récupérer les projets où l'utilisateur est membre avec le statut spécifié
-            $projectsAsMember = $projectRepository->findProjectsAsMemberBystatut($user, $current_statut);
-        } else {
-            // Tous les projets
-            $projectsAsManager = $projectRepository->findBy(['Chef_Projet' => $user]);
-            $projectsAsMember = $projectRepository->findProjectsAsMember($user);
-        }
-
-        // Fusionner les deux collections de projets
-        $projects = array_merge($projectsAsManager, $projectsAsMember);
-
-        // Éliminer les doublons potentiels
-        $projects = array_unique($projects, SORT_REGULAR);
-
-        return $this->render('project/mes_projets.html.twig', [
-            'projects' => $projects,
-            'current_statut' => $current_statut,
-        ]);
+    if (!$user) {
+        throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page');
     }
+
+    // Récupérer le statut sélectionné depuis la requête
+    $current_statut = $request->query->get('statut', 'tous');
+    
+    // Récupérer les projets selon le statut sélectionné
+    if ($current_statut !== 'tous') {
+        // Si un statut spécifique est demandé
+        $projectsAsManager = $projectRepository->findBy([
+            'chefProjet' => $user,  // CORRECTION: chefProjet au lieu de ChefProjet
+            'statut' => $current_statut
+        ]);
+
+        // Récupérer les projets où l'utilisateur est membre avec le statut spécifié
+        $projectsAsMember = $projectRepository->findProjectsAsMemberBystatut($user, $current_statut);
+    } else {
+        // Tous les projets
+        $projectsAsManager = $projectRepository->findBy(['chefProjet' => $user]); // CORRECTION: chefProjet
+        $projectsAsMember = $projectRepository->findProjectsAsMember($user);
+    }
+
+    // Fusionner les deux collections de projets
+    $projects = array_merge($projectsAsManager, $projectsAsMember);
+
+    // Éliminer les doublons potentiels
+    $projects = array_unique($projects, SORT_REGULAR);
+
+    return $this->render('project/mes_projets.html.twig', [
+        'projects' => $projects,
+        'current_statut' => $current_statut,
+        'user' => $user,
+    ]);
+}
     // Test Version 2-3 date 02/07/2025
     /**
      * Liste de tous les projets (avec filtres selon les permissions)
@@ -115,7 +108,7 @@ class ProjectController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $project = new Project();
-        $project->setChef_Projet($this->getUser());
+        $project->setChefProjet($this->getUser());
         $project->setDateCreation(new \DateTime());
 
         $form = $this->createForm(ProjectTypeForm::class, $project);
@@ -132,7 +125,7 @@ class ProjectController extends AbstractController
             return $this->redirectToRoute('app_projet_index');
         }
 
-        return $this->render('projet/new.html.twig', [
+        return $this->render('project/new.html.twig', [
             'project' => $project,
             'form' => $form,
         ]);
@@ -147,7 +140,7 @@ class ProjectController extends AbstractController
         // Vérifier que l'utilisateur a le droit de voir ce projet
         $this->denyAccessUnlessGranted('VIEW', $project);
 
-        return $this->render('projet/show.html.twig', [
+        return $this->render('project/show.html.twig', [
             'project' => $project,
         ]);
     }
@@ -171,7 +164,7 @@ class ProjectController extends AbstractController
             return $this->redirectToRoute('app_projet_index');
         }
 
-        return $this->render('projet/edit.html.twig', [
+        return $this->render('project/edit.html.twig', [
             'project' => $project,
             'form' => $form,
         ]);
@@ -212,11 +205,11 @@ class ProjectController extends AbstractController
         $availableUsers = $project->getMembres()->toArray();
 
         // Ajouter le chef de projet s'il n'est pas déjà membre
-        if (!in_array($project->getChef_Projet(), $availableUsers)) {
-            $availableUsers[] = $project->getChef_Projet();
+        if (!in_array($project->getChefProjet(), $availableUsers)) {
+            $availableUsers[] = $project->getChefProjet();
         }
 
-        return $this->render('projet/kanban.html.twig', [
+        return $this->render('project/kanban.html.twig', [
             'project' => $project,
             'taskLists' => $taskLists,
             'availableUsers' => $availableUsers
@@ -249,7 +242,7 @@ class ProjectController extends AbstractController
                         $this->addFlash('success', $user->getFullName() . ' ajouté au projet avec succès');
                     } elseif ($action === 'remove' && $project->getMembres()->contains($user)) {
                         // Vérifier qu'il n'est pas le chef de projet
-                        if ($project->getChef_Projet() === $user) {
+                        if ($project->getChefProjet() === $user) {
                             $this->addFlash('error', 'Vous ne pouvez pas retirer le chef de projet');
                         } else {
                             $project->removeMembre($user);
@@ -301,7 +294,7 @@ class ProjectController extends AbstractController
             return $this->redirectToRoute('app_projet_members', ['id' => $project->getId()]);
         }
 
-        $project->setChef_Projet($user);
+        $project->setChefProjet($user);
 
         // Ajouter automatiquement le chef de projet aux membres s'il n'y est pas déjà
         if (!$project->getMembres()->contains($user)) {
@@ -362,7 +355,7 @@ class ProjectController extends AbstractController
         }
 
         // Les chefs de projet peuvent voir les projets qu'ils dirigent
-        if ($this->isGranted('ROLE_CHEF_PROJET') && $project->getChef_Projet() === $user) {
+        if ($this->isGranted('ROLE_CHEF_PROJET') && $project->getChefProjet() === $user) {
             return true;
         }
 

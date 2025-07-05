@@ -45,7 +45,7 @@
 								<option value="all" {{ app.request.query.get('project') == null ? 'selected' : '' }}>Tous les projets</option>
 								{% for project in projects %}
 									<option value="{{ project.id }}" {{ app.request.query.get('project') == project.id ? 'selected' : '' }}>
-										{{ project.title }}
+										{{ project.titre }}
 									</option>
 								{% endfor %}
 							</select>
