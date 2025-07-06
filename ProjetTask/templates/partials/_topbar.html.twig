@@ -13,11 +13,11 @@
 	</div>
 
 	<div class="topbar-actions">
-		<a href="{{ path('app_notification_index') }}" class="topbar-action" title="Notifications">
+		{# <a href="{{ path('app_notification_index') }}" class="topbar-action" title="Notifications">
 			<i class="fas fa-bell"></i>
 			{% if app.user.unreadNotifications|default(0) > 0 %}
 				<span class="badge bg-danger badge-notification">{{ app.user.unreadNotifications }}</span>
-			{% endif %}
+			{% endif %} #}
 		</a>
 
 		<div class="dropdown">
