@@ -18,6 +18,7 @@ use App\Enum\TaskStatut;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
+use App\Service\ActivityLogger;
 
 // Version 2-3 Test du 02/07/2025
 
@@ -68,66 +69,62 @@ class TaskController extends AbstractController
     public function new(
         Request $request,
         int $taskListId,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ActivityLogger $activityLogger
     ): Response {
-        $taskList = $entityManager->getRepository(TaskList::class)->find($taskListId);
-
-        if (!$taskList) {
-            throw $this->createNotFoundException('La liste de tâches n\'existe pas');
-        }
-
-        $project = $taskList->getProject();
-
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
-        if (!$this->canModifyProject($project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour ajouter une tâche à ce projet');
-        }
-
-        $task = new Task();
-        $task->setTaskList($taskList);
-        $task->setProject($project);
-        $task->setDateCreation(new \DateTime());
-
-        // Déterminer la position de la nouvelle tâche
-        $taskRepository = $entityManager->getRepository(Task::class);
-        $position = $taskRepository->findNextPositionInColumn($taskList);
-        $task->setPosition($position);
-
-        $form = $this->createForm(TaskType::class, $task, [
-            'project' => $project,
-        ]);
+         $task = new Task();
+        $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($task);
             $entityManager->flush();
 
-            if ($request->isXmlHttpRequest()) {
-                return new JsonResponse([
-                    'success' => true,
-                    'id' => $task->getId(),
-                    'titre' => $task->getTitle(),
-                ]);
-            }
+            // Enregistrer l'activité de création de tâche
+            $activityLogger->logTaskCreation(
+                (string) $task->getId(),
+                $task->getTitle()
+            );
 
-            $this->addFlash('success', 'Tâche créée avec succès');
-            return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+            return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
         }
-
-        if ($request->isXmlHttpRequest()) {
-            return $this->render('task/_form_modal.html.twig', [
-                'task' => $task,
-                'form' => $form,
-                'project' => $project,
-            ]);
-        }
-
         return $this->render('task/new.html.twig', [
             'task' => $task,
             'form' => $form,
-            'project' => $project,
         ]);
     }
+     #[Route('/task/{id}/status', name: 'app_task_status_change', methods: ['POST'])]
+    public function changeStatus(
+        Task $task, 
+        Request $request, 
+        EntityManagerInterface $entityManager,
+        ActivityLogger $activityLogger
+    ): Response {
+        $oldStatus = $task->getStatut()->label();
+        $newStatus = $request->request->get('status');
+        
+        // Convertir la valeur en enum TaskStatut
+        try {
+            $enumStatus = TaskStatut::from($newStatus);
+        } catch (\ValueError $e) {
+            throw $this->createNotFoundException('Statut de tâche invalide');
+        }
+
+        // Mettre à jour le statut
+        $task->setStatut($enumStatus);
+        $entityManager->flush();
+
+        // Enregistrer l'activité de changement de statut
+        $activityLogger->logTaskStatusChange(
+            (string) $task->getId(),
+            $task->getTitle(),
+            $oldStatus,
+            $task->getStatut()->label()
+        );
+
+        return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
+    }
+
 
     /**
      * Afficher les détails d'une tâche

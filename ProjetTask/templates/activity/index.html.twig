@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes activités récentes{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Mes activités récentes</h1>
+        
+        <div class="activity-list">
+            {% for activity in activities %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas {{ activity.type.icon() }}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-header">
+                            <span class="activity-user">{{ activity.user.getFullName() }}</span>
+                            <span class="activity-action">{{ activity.action }}</span>
+                            <span class="activity-target">{{ activity.target }}</span>
+                        </div>
+                        <div class="activity-date">
+                            {{ activity.dateCreation|date('d/m/Y H:i') }}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p>Aucune activité récente.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
