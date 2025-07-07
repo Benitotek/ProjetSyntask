@@ -24,6 +24,21 @@ use App\Repository\UserRepository;
 #[Route('/task')]
 class TaskController extends AbstractController
 {
+    #[Route('/task', name: 'app_task_index', methods: ['GET'])]
+    public function index(TaskRepository $taskRepository): Response
+    {
+        // Pour admin/directeur, tout voir. Sinon, adapter la logique selon le rôle.
+        $user = $this->getUser();
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+            $tasks = $taskRepository->findAll();
+        } else {
+            $tasks = $taskRepository->findByAssignedUser($user);
+        }
+
+        return $this->render('task/index.html.twig', [
+            'tasks' => $tasks,
+        ]);
+    }
     /**
      * Liste des tâches assignées à l'utilisateur courant
      */
@@ -293,7 +308,7 @@ class TaskController extends AbstractController
         }
 
         // Vérifier que l'utilisateur est membre du projet
-        if (!$project->getMembres()->contains($user) && $project->getChef_Projet() !== $user) {
+        if (!$project->getMembres()->contains($user) && $project->getChefProjet() !== $user) {
             if ($request->isXmlHttpRequest()) {
                 return new JsonResponse(['error' => 'L\'utilisateur n\'est pas membre du projet'], 400);
             }
@@ -361,7 +376,7 @@ class TaskController extends AbstractController
         }
 
         // Les chefs de projet peuvent voir les projets qu'ils dirigent
-        if ($project->getChef_Projet() === $user) {
+        if ($project->getChefProjet() === $user) {
             return true;
         }
 
@@ -386,7 +401,7 @@ class TaskController extends AbstractController
         }
 
         // Les chefs de projet peuvent modifier les projets qu'ils dirigent
-        return $project->getChef_Projet() === $user;
+        return $project->getChefProjet() === $user;
     }
 
     /**

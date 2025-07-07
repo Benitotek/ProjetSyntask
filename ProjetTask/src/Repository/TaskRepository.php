@@ -138,12 +138,10 @@ class TaskRepository extends ServiceEntityRepository
                     ->where('t.taskList = :column')
                     ->andWhere('t.position > :oldPos AND t.position <= :newPos')
                     ->andWhere('t != :task')
-                    ->setParameters([
-                        'column' => $oldColumn,
-                        'oldPos' => $oldPosition,
-                        'newPos' => $newPosition,
-                        'task' => $task,
-                    ])
+                    ->setParameter('column', $oldColumn)
+                    ->setParameter('oldPos', $oldPosition)
+                    ->setParameter('newPos', $newPosition)
+                    ->setParameter('task', $task)
                     ->getQuery()->getResult();
 
                 foreach ($tasks as $t) {
@@ -154,12 +152,10 @@ class TaskRepository extends ServiceEntityRepository
                     ->where('t.taskList = :column')
                     ->andWhere('t.position >= :newPos AND t.position < :oldPos')
                     ->andWhere('t != :task')
-                    ->setParameters([
-                        'column' => $oldColumn,
-                        'oldPos' => $oldPosition,
-                        'newPos' => $newPosition,
-                        'task' => $task,
-                    ])
+                    ->setParameter('column', $oldColumn)
+                    ->setParameter('oldPos', $oldPosition)
+                    ->setParameter('newPos', $newPosition)
+                    ->setParameter('task', $task)
                     ->getQuery()->getResult();
 
                 foreach ($tasks as $t) {
@@ -170,10 +166,8 @@ class TaskRepository extends ServiceEntityRepository
             $tasksOld = $this->createQueryBuilder('t')
                 ->where('t.taskList = :oldColumn')
                 ->andWhere('t.position > :oldPos')
-                ->setParameters([
-                    'oldColumn' => $oldColumn,
-                    'oldPos' => $oldPosition,
-                ])
+                ->setParameter('oldColumn', $oldColumn)
+                ->setParameter('oldPos', $oldPosition)
                 ->getQuery()->getResult();
 
             foreach ($tasksOld as $t) {
@@ -183,10 +177,8 @@ class TaskRepository extends ServiceEntityRepository
             $tasksNew = $this->createQueryBuilder('t')
                 ->where('t.taskList = :newColumn')
                 ->andWhere('t.position >= :newPos')
-                ->setParameters([
-                    'newColumn' => $newColumn,
-                    'newPos' => $newPosition,
-                ])
+                ->setParameter('newColumn', $newColumn)
+                ->setParameter('newPos', $newPosition)
                 ->getQuery()->getResult();
 
             foreach ($tasksNew as $t) {

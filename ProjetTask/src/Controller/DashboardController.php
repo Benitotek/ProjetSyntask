@@ -90,9 +90,9 @@ class DashboardController extends AbstractController
         // Récupération de l'utilisateur actuel
         $user = $this->getUser();
 
-         // Vérifier si l'utilisateur est admin
+        // Vérifier si l'utilisateur est admin
         $isAdmin = false;
-        
+
         // Si vous utilisez les rôles Symfony standards
         if ($this->isGranted('ROLE_ADMIN')) {
             $isAdmin = true;
@@ -101,11 +101,11 @@ class DashboardController extends AbstractController
         // if ($user->getRole() === Role::ADMIN) {
         //     $isAdmin = true;
         // }
-        
-         if ($user->getRole() === 'ROLE_ADMIN') {
-             $isAdmin = true;
+
+        if ($user->getRole() === 'ROLE_ADMIN') {
+            $isAdmin = true;
         }
-        
+
         // Récupérer les projets en fonction du rôle
         if ($isAdmin) {
             // Pour un admin, récupérer TOUS les projets
@@ -114,9 +114,9 @@ class DashboardController extends AbstractController
             // Pour un utilisateur normal, seulement ses projets
             $projects = $projectRepository->findBy(['user' => $user]);
         }
- // Récupérer les projets
+        // Récupérer les projets
         // $projects = $projectRepository->findBy(['user' => $user]);
-        
+
         // Récupérer les tâches
         // $tasks = $taskRepository->findBy(['user' => $user]);
 
@@ -138,52 +138,52 @@ class DashboardController extends AbstractController
         // Récupération des tâches (si nécessaire pour d'autres parties du template)
         // $tasks = $taskRepository->findAll(); 
         // ou une requête plus spécifique
-//  Même logique pour les tâches
+        //  Même logique pour les tâches
         if ($isAdmin) {
             $tasks = $taskRepository->findAll();
         } else {
             $tasks = $taskRepository->findBy(['user' => $user]);
         }
-        
+
         // Préparer les statistiques adaptées au rôle
         // $stats = [
         //     'totalProjects' => count($projects),
         //     'totalTasks' => count($tasks),
-            // Autres statistiques...
+        // Autres statistiques...
         // ];
         // Récupération des statistiques ou autres données nécessaires
 
-         // Préparer les statistiques
+        // Préparer les statistiques
         $stats = [
             'totalProjects' => count($projects),
             'totalTasks' => count($tasks),
-            
+
             // Statistiques des projets par statut
             'projectsByStatus' => [
                 'not_started' => count(array_filter($projects, fn($p) => $p->getStatut() === 'not_started')),
                 'in_progress' => count(array_filter($projects, fn($p) => $p->getStatut() === 'in_progress')),
                 'completed' => count(array_filter($projects, fn($p) => $p->getStatut() === 'completed')),
             ],
-            
+
             // Statistiques des tâches par statut
             'tasksByStatus' => [
                 'not_started' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'not_started')),
                 'in_progress' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'in_progress')),
                 'completed' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'completed')),
             ],
-            
+
             // Taux de complétion (pourcentage de tâches terminées)
-            'completionRate' => count($tasks) > 0 
-                ? round((count(array_filter($tasks, fn($t) => $t->getStatut() === 'completed')) / count($tasks)) * 100) 
+            'completionRate' => count($tasks) > 0
+                ? round((count(array_filter($tasks, fn($t) => $t->getStatut() === 'completed')) / count($tasks)) * 100)
                 : 0,
-                
+
             // Statistiques temporelles (tâches par mois/semaine)
             'recentActivity' => $this->calculateRecentActivity($tasks),
         ];
-        
+
         // Si vous avez besoin de statistiques plus avancées, vous pouvez 
         // utiliser des requêtes DQL personnalisées dans vos repositories
-        
+
         return $this->render('dashboard/index.html.twig', [
             'user' => $user,
             'current_statut' => 'dashboard',
@@ -192,9 +192,12 @@ class DashboardController extends AbstractController
             'stats' => $stats, // Ajout de la variable stats
             'isAdmin' => $isAdmin, // Indique si l'utilisateur est admin
             'curent_statut' => $currentStatut, // Ajout de la variable current_statut
+            'tachesAssignees' => [],
+            'userAssignees' => [],
+            'projectAssignees' => [],
         ]);
     }
-    
+
     /**
      * Calcule l'activité récente basée sur les dates de création des tâches
      */
@@ -203,21 +206,21 @@ class DashboardController extends AbstractController
         $now = new \DateTime();
         $lastWeek = (new \DateTime())->modify('-7 days');
         $lastMonth = (new \DateTime())->modify('-30 days');
-        
-        $tasksLastWeek = array_filter($tasks, function($task) use ($lastWeek) {
-            return $task->getCreatedAt() >= $lastWeek;
+
+        $tasksLastWeek = array_filter($tasks, function ($task) use ($lastWeek) {
+            return $task->getDateCreation() >= $lastWeek;
         });
-        
-        $tasksLastMonth = array_filter($tasks, function($task) use ($lastMonth, $lastWeek) {
-            return $task->getCreatedAt() >= $lastMonth && $task->getCreatedAt() < $lastWeek;
+
+        $tasksLastMonth = array_filter($tasks, function ($task) use ($lastMonth, $lastWeek) {
+            return $task->getDateCreation() >= $lastMonth && $task->getDateCreation() < $lastWeek;
         });
-        
+
         return [
             'lastWeek' => count($tasksLastWeek),
             'lastMonth' => count($tasksLastMonth),
             'total' => count($tasks),
         ];
-    
+
         // return $this->render('dashboard/index.html.twig', [
         //     'user' => $user,
         //     'current_statut' => $currentStatut,
