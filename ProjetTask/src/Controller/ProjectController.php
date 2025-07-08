@@ -97,6 +97,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 
         return $this->render('project/index.html.twig', [
             'projects' => $projects,
+            'current_statut' => null,
         ]);
     }
 
@@ -126,7 +127,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
         }
 
         return $this->render('project/new.html.twig', [
-            'project' => $project,
+            'project' => $project, 
             'form' => $form,
         ]);
     }
@@ -173,7 +174,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     /**
      * Suppression d'un projet
      */
-    #[Route('/{id}', name: 'app_projet_delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'app_projet_delete', methods: ['POST'])]
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que l'utilisateur a le droit de supprimer ce projet

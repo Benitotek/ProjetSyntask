@@ -75,7 +75,7 @@
 					<h1 class="page-title">Gestion des Projets</h1>
 					<div class="header-actions">
 						{% if is_granted('ROLE_DIRECTEUR') %}
-							<a href="{{ path('app_project_new') }}" class="btn btn-primary">
+							<a href="{{ path('app_projet_new') }}" class="btn btn-primary">
 								<i class="icon-plus"></i>
 								Nouveau Projet
 							</a>
@@ -170,10 +170,10 @@
 										</span>
 									</td>
 									<td>
-										{% if project.Chef_Projet %}
+										{% if project.ChefProjet %}
 											<div class="user-info-cell">
-												<div class="user-avatar">{{ project.Chef_Projet.username|slice(0, 2)|upper }}</div>
-												{{ project.Chef_Projet.username }}
+												<div class="user-avatar">{{ project.ChefProjet.username|slice(0, 2)|upper }}</div>
+												{{ project.ChefProjet.username }}
 											</div>
 										{% else %}
 											<span class="text-muted">Non assigné</span>
@@ -221,14 +221,14 @@
 									</td>
 									<td>
 										<div class="action-buttons">
-											<a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn-icon" title="Vue Kanban">
+											<a href="{{ path('app_projet_kanban', {'id': project.id}) }}" class="btn-icon" title="Vue Kanban">
 												<i class="icon-kanban"></i>
 											</a>
-											<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn-icon" title="Voir détails">
+											<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn-icon" title="Voir détails">
 												<i class="icon-eye"></i>
 											</a>
 											{% if is_granted('ROLE_DIRECTEUR') or project.Chef_Projet == app.user %}
-												<a href="{{ path('app_project_new', {'id': project.id}) }}" class="btn-icon" title="Modifier">
+												<a href="{{ path('app_projet_new', {'id': project.id}) }}" class="btn-icon" title="Modifier">
 													<i class="icon-edit"></i>
 												</a>
 											{% endif %}
