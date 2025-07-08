@@ -63,7 +63,12 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Project $project = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tachesAssignees')]
+    // #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tachesAssignees')]
+    // private ?User $assignedUser = null;
+
+    // Si dans votre base de données, la colonne s'appelle "assigned_user_id" au lieu de "user_id"
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: "assigned_user_id", referencedColumnName: "id", nullable: true)]
     private ?User $assignedUser = null;
     /**
      * @var Collection<int, User>
@@ -125,18 +130,18 @@ class Task
         $this->statut = $statut;
         return $this;
     }
-public function getPriorite(): TaskPriority
-{
-    if ($this->priorite instanceof TaskPriority) {
-        return $this->priorite;
+    public function getPriorite(): TaskPriority
+    {
+        if ($this->priorite instanceof TaskPriority) {
+            return $this->priorite;
+        }
+        if (is_string($this->priorite) || is_int($this->priorite)) {
+            return TaskPriority::from($this->priorite);
+        }
+        // Default fallback if priorite is null or invalid
+        return TaskPriority::NORMAL;
     }
-    if (is_string($this->priorite) || is_int($this->priorite)) {
-        return TaskPriority::from($this->priorite);
-    }
-    // Default fallback if priorite is null or invalid
-    return TaskPriority::NORMAL;
-}
- public function getPrioriteLabel(): string
+    public function getPrioriteLabel(): string
     {
         return $this->getPriorite()->label();
     }
@@ -178,7 +183,7 @@ public function getPriorite(): TaskPriority
         return $this;
     }
 
-   
+
 
     public function getPosition(): int
     {

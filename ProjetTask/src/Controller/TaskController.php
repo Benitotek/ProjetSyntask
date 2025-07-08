@@ -22,7 +22,7 @@ use App\Service\ActivityLogger;
 
 // Version 2-3 Test du 02/07/2025
 
-#[Route('/task')]
+
 class TaskController extends AbstractController
 {
     #[Route('/task', name: 'app_task_index', methods: ['GET'])]
@@ -35,11 +35,41 @@ class TaskController extends AbstractController
         } else {
             $tasks = $taskRepository->findByAssignedUser($user);
         }
+ // Ajoutez une tâche individuelle si nécessaire
+ $task = $taskRepository->findOneBy(['statut' => 'En cours']);
 
         return $this->render('task/index.html.twig', [
             'tasks' => $tasks,
-        ]);
+            'task' => $task,
+            // Passer l'utilisateur pour les permissions
+            'user' => $user,
+            'task' => $task,
+        ])->setStatusCode(Response::HTTP_OK);
     }
+    /**
+     * Liste des tâches d'un projet
+     */
+    #[Route('/project/{id}/tasks', name: 'app_task_project_tasks', methods: ['GET'])]
+    #[IsGranted('ROLE_EMPLOYE')]
+    public function projectTasks(Project $project, TaskRepository $taskRepository): Response
+    {
+        // Vérifier que l'utilisateur a le droit de voir ce projet
+        if (!$this->canViewProject($project)) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
+        }
+        // Récupérer les tâches du projet
+        $tasks = $taskRepository->findBy(['project' => $project], ['position' => 'ASC']);
+         // Ajoutez une tâche individuelle si nécessaire
+    $task = $taskRepository->findOneBy(['someCondition' => 'value']);
+        return $this->render('task/project_tasks.html.twig', [
+            'project' => $project,
+            'tasks' => $tasks,
+            'task' => $task,
+        ])->setStatusCode(Response::HTTP_OK);
+
+    
+    }
+
     /**
      * Liste des tâches assignées à l'utilisateur courant
      */

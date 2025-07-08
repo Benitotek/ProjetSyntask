@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\Role\Role;
 // use App\Repository\ActivityRepository; // Correction ici
 // Assurez-vous que le namespace est correct pour votre projet
 // Si vous avez un service spécifique pour les activités, utilisez-le
- use App\Service\ActivityService; // Si vous avez un service pour les activités
+use App\Service\ActivityService; // Si vous avez un service pour les activités
 use Container1mDkSxn\getActivityRepositoryService;
 
 class DashboardController extends AbstractController
@@ -34,6 +34,8 @@ class DashboardController extends AbstractController
         UserRepository $userRepository,
         ActivityRepository $activityRepository // Correction ici
     ): Response {
+
+
         // Assurez-vous que l'utilisateur est connecté
         $user = $this->getUser();
         if (!$user) {
@@ -64,10 +66,33 @@ class DashboardController extends AbstractController
         $inProgressTasks = count(array_filter($tasks, function ($task) {
             return $task->getStatut() === 'EN-COURS'; // Adapter selon votre structure
         }));
+        // Si vous avez besoin d'une tâche spécifique, vous pouvez la récupérer ici
+        // Par exemple, si vous voulez la première tâche ou une tâche spécifique
+        // $task = $taskRepository->findOneBy(['someCondition' => 'value']);
+// Récupérer une tâche valide ou créer un objet vide
+    $task = $taskRepository->findOneBy([], ['id' => 'DESC']) ?? new Task();
+
+$task = $taskRepository->findOneBy(['statut' => 'En cours']);
+
+$tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
+
 
         return $this->render('dashboard/index.html.twig', [
             'projects' => $projects,
             'tasks' => $tasks,
+            'task' => $task, // Si vous avez une tâche spécifique à afficher
+            'user' => $user,
+            'current_statut' => 'dashboard', // Statut actuel pour le template
+            'isAdmin' => $this->isGranted('ROLE_ADMIN'), // Vérification si l'utilisateur est admin
+            'curent_statut' => 'dashboard', // Correction de la variable
+            'tachesAssignees' => [], // Si vous avez des tâches assignées
+            'userAssignees' => [], // Si vous avez des utilisateurs assignés
+            'projectAssignees' => [], // Si vous avez des projets assignés
+            'currentUser' => $user, // Utilisateur actuel
+            // 'currentRole' => $user->getRoles(), // Récupération des rôles de l'utilisateur
+            // 'currentUserId' => $user->getId(), // ID de l'utilisateur actuel
+            // 'currentUserName' => $user->getUsername(), // Nom de l'utilisateur actuel
+            // 'currentUserEmail' => $user->getEmail(), // Email
             'users' => $users,
             'activities' => $activities,
             'stats' => [
@@ -82,6 +107,28 @@ class DashboardController extends AbstractController
         ]);
     }
 
+    // Pour une solution vraiment définitive, implémentez des tests fonctionnels qui vérifient le rendu correct des templates:
+    /**
+     * Test pour vérifier que le tableau de bord se charge correctement
+     */
+    // #[Route('/dashboard', name: 'app_dashboard_test')]
+    // public function testDashboard(): Response
+    // {
+    //     $client = static::createClient();
+    //     $client->request('GET', '/dashboard');
+    //     $this->assertResponseIsSuccessful();
+    //     $this->assertSelectorTextContains('h1', 'Tableau de bord'); // Vérifiez que le titre est correct
+    // Vous pouvez ajouter d'autres assertions pour vérifier le contenu du tableau de bord
+    //         return new Response('Dashboard test passed');
+    //     }
+    // public function testDashboardRendersCorrectly()
+    // {
+    //     $client = static::createClient();
+    //     $client->request('GET', '/dashboard');
+
+    //     $this->assertResponseIsSuccessful();
+    //     // Autres assertions...
+    // }
     // Supprimer ou commenter la deuxième méthode index avec la même route
     // #[Route('/dashboard', name: 'app_dashboard')]
     // public function Dashindex(...)

@@ -185,8 +185,8 @@
 						<div
 							class="task-list" id="assigned-tasks">
 							{# {% if tachesAssignees|length > 0 %}
-																																				{% for task in tachesAssignees %}
-																																					<div class="task-item"> #}
+																																																									{% for task in tachesAssignees %}
+																																																										<div class="task-item"> #}
 							{% if tachesAssignees is defined %}
 								<!-- Affichage ou manipulation de tachesAssignees -->
 								<p>Nombre de tâches assignées :
@@ -197,827 +197,360 @@
 							{% endif %}
 							{# {% if tachesAssignees|length > 0 %} #}
 							{# {% for task in tachesAssignees %} #}
-								<div
-									class="task-item">
-									{# Affichage de la tâche #}
-									{# {% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
-									{% set taskClass = isOverdue ? 'task-overdue' : '' %} #}
-
-									<div class="task-checkbox">
-										<input type="checkbox" class="form-check-input task-complete-checkbox" id="task-{{ task.id }}" data-task-id="{{ task.id }}" {{ task.statut == 'TERMINE' ? 'checked' : '' }}>
+							<div class="task-item">
+								{# Affichage de la tâche #}
+								{# {% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
+																																	{% set taskClass = isOverdue ? 'task-overdue' : '' %} #}
+									{% for task in tasks %}
+									{{ task.title }}
+										<div class="task-checkbox"> <input type="checkbox" class="form-check-input task-complete-checkbox" id="task-{{ task.id }}" data-task-id="{{ task.id }}" {{ task.statut == 'TERMINE' ? 'checked' : '' }}>
 										<label for="task-{{ task.id }}" class="form-check-label {{ task.statut == 'TERMINE' ? 'text-muted text-decoration-line-through' : '' }}">
-											{{ task.titre }}
+											{{ task.title }}
 										</label>
 									</div>
-									<div class="task-meta">
-										<span class="badge
-																																																																																																																	                                            {% if task.priority == 'HAUTE' %}badge-danger
-																																																																																																																	                                            {% elseif task.priority == 'MOYENNE' %}badge-warning
-																																																																																																																	                                            {% else %}badge-success{% endif %}">
-											{{ task.priority|capitalize }}
-										</span>
-
-										{% if task.dateButoir %}
-											{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
-											<span class="task-due-date {{ isOverdue ? 'overdue' : '' }}">
-												<i class="fas fa-calendar-alt"></i>
-												{{ task.dateButoir|date('d/m/Y') }}
-											</span>
-										{% endif %}
-									</div>
-								</div>
-							{# {% endfor %} #}
-						{# {% else %} #}
-							<div class="text-center py-4">
-								<i class="fas fa-check-square fa-2x text-muted mb-2"></i>
-								<p class="text-muted">Aucune tâche assignée</p>
-							</div>
-						{# {% endif %} #}
-					</div>
-				</div>
-				<div class="card-footer">
-					<a href="{{ path('app_task_index') }}" class="btn btn-sm btn-primary w-100">
-						Voir toutes les tâches
-					</a>
-				</div>
-			</div>
-		</div>
-
-		<div class="col-lg-4 mb-4">
-			<div class="card h-100">
-				<div class="card-header">
-					<h5 class="card-title">Activités récentes</h5>
-				</div>
-				<div class="card-body">
-					<div class="activity-list" id="recent-activities">
-						{% if activities|length > 0 %}
-							{% for activity in activities %}
-								<div class="activity-item">
-									<div class="activity-icon {{ activity.activityTypeString }}">
-										<i class="fas fa-{{ activity.icon }}"></i>
-										{# Ou utiliser l'extension Twig #}
-										{# <i class="fas fa-{{ getActivityIcon(activity.type.value) }}"></i> #}
-									</div>
-									<div class="activity-content">
-										<div class="activity-title">
-											<a href="{{ path('app_user_show', {'id': activity.user.id}) }}" class="user-link">
-												{{ activity.user.prenom }}
-												{{ activity.user.nom }}
-											</a>
-											{{ activity.action }}
-											<a href="{{ activity.targetUrl ?: activity.generateTargetUrl() }}" class="target-link">{{ activity.target }}</a>
-										</div>
-										<div class="activity-time">{{ activity.dateCreation|date('d/m/Y H:i') }}</div>
-									</div>
-								</div>
-							{% endfor %}
-						{% else %}
-							<div class="text-center py-4">
-								<i class="fas fa-history fa-2x text-muted mb-2"></i>
-								<p class="text-muted">Aucune activité récente</p>
-							</div>
-						{% endif %}
-					</div>
-					{# <div class="activity-list" id="recent-activities">
-																		{% if activities|length > 0 %}
-																			{% for activity in activities %}
-																				<div class="activity-item">
-																					<div class="activity-icon {{ activity.type }}">
-																						<i class="fas fa-{{ getActivityIcon(activity.type) }}"></i>
-																					</div>
-																					<div class="activity-content">
-																						<div class="activity-title">
-																							<a href="{{ path('app_user_show', {'id': activity.user.id}) }}" class="user-link">
-																								{{ activity.user.prenom }}
-																								{{ activity.user.nom }}
-																							</a>
-																							{{ activity.action }}
-																							<a href="{{ activity.targetUrl }}" class="target-link">{{ activity.target }}</a>
-																						</div>
-																						<div class="activity-time">{{ activity.dateCreation|date('d/m/Y H:i') }}</div>
-																					</div>
-																				</div>
-																			{% endfor %}
-																		{% else %}
-																			<div class="text-center py-4">
-																				<i class="fas fa-history fa-2x text-muted mb-2"></i>
-																				<p class="text-muted">Aucune activité récente</p>
-																			</div>
-																		{% endif %}
-																	</div>
-																</div>
-																<div class="card-footer">
-																	<a href="{{ path('app_activity_index') }}" class="btn btn-sm btn-primary w-100">
-																		Voir toutes les activités
-																	</a>
-																</div>
-															</div>
-														</div> #}
-
-					<div class="col-lg-4 mb-4">
-						<div class="card h-100">
-							<div class="card-header">
-								<h5 class="card-title">Échéances à venir</h5>
-							</div>
-							<div class="card-body">
-								<div class="due-date-list" id="upcoming-due-dates">
-									{% if dueDates|length > 0 %}
-										{% for dueDate in dueDates %}
-											{% set isOverdue = dueDate.date < date() and not dueDate.completed %}
-											<div class="due-date-item {{ isOverdue ? 'overdue' : '' }}">
-												<div class="due-date-icon {{ dueDate.type }}">
-													<i class="fas fa-{{ dueDate.type == 'task' ? 'tasks' : 'project-diagram' }}"></i>
-												</div>
-												<div class="due-date-content">
-													<div class="due-date-title">
-														<a href="{{ dueDate.url }}">{{ dueDate.title }}</a>
-													</div>
-													<div class="due-date-info">
-														{% if isOverdue %}
-															<span class="text-danger">
-																<i class="fas fa-exclamation-circle"></i>
-																En retard</span>
-														{% endif %}
-														<span class="due-date-time">
-															<i class="fas fa-calendar-alt"></i>
-															{{ dueDate.date|date('d/m/Y') }}
-														</span>
-													</div>
-												</div>
-												<div class="due-date-statut">
-													<span class="badge {{ dueDate.completed ? 'badge-success' : isOverdue ? 'badge-danger' : 'badge-primary' }}">
-														{{ dueDate.statut }}
-													</span>
-												</div>
+								{% endfor %}
+								<div class="task-details">
+									{% if tasks is not empty %}
+										{% for task in tasks %}
+											<div class="task-item">
+												<h5>{{ task.title }}</h5>
+												<p>{{ task.description }}</p>
 											</div>
 										{% endfor %}
 									{% else %}
-										<div class="text-center py-4">
-											<i class="fas fa-calendar-check fa-2x text-muted mb-2"></i>
-											<p class="text-muted">Aucune échéance à venir</p>
-										</div>
+										<div class="alert alert-info">Aucune tâche disponible</div>
+									{% endif %}
+									{% if task is not null and task.assignedUser is not null %}
+    {{ task.assignedUser.nom }}
+{% else %}
+    Non assigné
+{% endif %}
+									{% if task.assignedUser is defined %}
+										<div class="task-assigned-user">
+											<span class="badge bg-secondary">
+												<i class="fas fa-user"></i>
+												{{ task.assignedUser.prenom }} {{ task.assignedUser.nom }}
 									{% endif %}
 								</div>
+								{% if task.dateButoir %}
+								{% if task.dateButoir is defined %}
+									{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
+									<span class="task-due-date {{ isOverdue ? 'overdue' : '' }}">
+										<i class="fas fa-calendar-alt"></i>
+										{{ task.dateButoir|date('d/m/Y') }}
+									</span>
+								{% endif %}							
+								{% if task.priority is defined %}
+									<span class="badge">
+										{{ task.priority|capitalize }}
+									</span>
+								{% endif %}
+									<div class="text-center py-4"> <i class="fas fa-check-square fa-2x text-muted mb-2"></i>
+									<p class="text-muted">Aucune tâche assignée</p>
+								</div>
+								{% endif %}
 							</div>
-							<div class="card-footer">
-								<a href="{{ path('app_user_calendar') }}" class="btn btn-sm btn-primary w-100">
-									Voir le calendrier
-								</a>
-							</div>
+						</div>
+						<div class="card-footer">
+							<a href="{{ path('app_task_index') }}" class="btn btn-sm btn-primary w-100">
+								Voir toutes les tâches
+							</a>
 						</div>
 					</div>
 				</div>
-				{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
-					<div class="row">
-						<div class="col-lg-8 mb-4">
-							<div class="card">
-								<div class="card-header">
-									<h5 class="card-title">Projets en cours</h5>
-								</div>
-								<div class="card-body p-0">
-									<div class="table-responsive">
-										<table class="table table-hover mb-0">
-											<thead>
-												<tr>
-													<th>Projet</th>
-													<th>Statut</th>
-													<th>Progression</th>
-													<th>Échéance</th>
-													<th>Actions</th>
-												</tr>
-											</thead>
-											<tbody>
-												{% for project in activeProjects %}
-													{% set completionRate = project.completionRate|default(0) %}
-													<tr>
-														<td>
-															<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="text-reset">
-																{{ project.titre }}
-															</a>
-														</td>
-														<td>
-															<span class="badge
-																																																																																																																																									                                                    {% if project.statut == 'EN-COURS' %}badge-primary
-																																																																																																																																									                                                    {% elseif project.statut == 'TERMINE' %}badge-success
-																																																																																																																																									                                                    {% elseif project.statut == 'EN-ATTENTE' %}badge-warning
-																																																																																																																																									                                                    {% else %}badge-secondary{% endif %}">
-																{{ project.statut|replace({'-': ' '})|title }}
-															</span>
-														</td>
-														<td>
-															<div class="d-flex align-items-center">
-																<div class="progress flex-grow-1 me-2" style="height: 8px;">
-																	<div class="progress-bar
-																																																																																																																																																		                                                            {% if completionRate < 30 %}bg-danger
-																																																																																																																																																		                                                            {% elseif completionRate < 70 %}bg-warning
-																																																																																																																																																		                                                            {% else %}bg-success{% endif %}" role="progressbar" style="width: {{ completionRate }}%" aria-valuenow="{{ completionRate }}" aria-valuemin="0" aria-valuemax="100"></div>
-																</div>
-																<span class="text-muted small">{{ completionRate }}%</span>
-															</div>
-														</td>
-														<td>
-															{% if project.dateButoir %}
-																{% set isOverdue = project.dateButoir < date() and project.statut != 'TERMINE' %}
-																<span class="{{ isOverdue ? 'text-danger fw-bold' : '' }}">
-																	{{ project.dateButoir|date('d/m/Y') }}
-																	{% if isOverdue %}
-																		<i class="fas fa-exclamation-circle ms-1" title="En retard"></i>
-																	{% endif %}
-																</span>
-															{% else %}
-																<span class="text-muted">Non définie</span>
-															{% endif %}
-														</td>
-														<td>
-															<div class="d-flex">
-																<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn btn-sm btn-info me-1" title="Voir">
-																	<i class="fas fa-eye"></i>
-																</a>
-																<a href="{{ path('app_projet_kanban', {'id': project.id}) }}" class="btn btn-sm btn-primary me-1" title="Kanban">
-																	<i class="fas fa-columns"></i>
-																</a>
-															</div>
-														</td>
-													</tr>
-												{% else %}
-													<tr>
-														<td colspan="5" class="text-center py-4">
-															<i class="fas fa-project-diagram fa-2x text-muted mb-2"></i>
-															<p class="text-muted">Aucun projet en cours</p>
-															<a href="{{ path('app_projet_new') }}" class="btn btn-sm btn-primary mt-2">
-																<i class="fas fa-plus"></i>
-																Nouveau projet
-															</a>
-														</td>
-													</tr>
-												{% endfor %}
-											</tbody>
-										</table>
-									</div>
-								</div>
-								<div class="card-footer text-end">
-									<a href="{{ path('app_projet_index') }}" class="btn btn-sm btn-primary">Tous les projets</a>
-								</div>
-							</div>
+
+				<div class="col-lg-4 mb-4">
+					<div class="card h-100">
+						<div class="card-header">
+							<h5 class="card-title">Activités récentes</h5>
 						</div>
-
-						<div class="col-lg-4 mb-4">
-							<div class="card h-100">
-								<div class="card-header">
-									<h5 class="card-title">Répartition des tâches</h5>
-								</div>
-								<div class="card-body">
-									<div class="chart-container" style="height: 250px;">
-										<canvas id="chart-task-statut" data-pending="{{ stats.pendingTasks }}" data-in-progress="{{ stats.inProgressTasks }}" data-completed="{{ stats.completedTasks }}"></canvas>
-									</div>
-
-									<div class="task-distribution-stats mt-3">
-										<div class="row g-2 text-center">
-											<div class="col-4">
-												<div class="task-stat-item">
-													<div class="task-stat-label text-warning">En attente</div>
-													<div class="task-stat-value">{{ stats.pendingTasks }}</div>
-												</div>
+						<div class="card-body">
+							<div class="activity-list" id="recent-activities">
+								{% if activities|length > 0 %}
+									{% for activity in activities %}
+										<div class="activity-item">
+											<div class="activity-icon {{ activity.activityTypeString }}">
+												<i class="fas fa-{{ activity.icon }}"></i>
+												Ou utiliser l'extension Twig
+												<i class="fas fa-{{ getActivityIcon(activity.type.value) }}"></i>
 											</div>
-											<div class="col-4">
-												<div class="task-stat-item">
-													<div class="task-stat-label text-primary">En cours</div>
-													<div class="task-stat-value">{{ stats.inProgressTasks }}</div>
+											<div class="activity-content">
+												<div class="activity-title">
+													<a href="{{ path('app_user_show', {'id': activity.user.id}) }}" class="user-link">
+														{{ activity.user.prenom }}
+														{{ activity.user.nom }}
+													</a>
+													{{ activity.action }}
+													<a href="{{ activity.targetUrl ?: activity.generateTargetUrl() }}" class="target-link">{{ activity.target }}</a>
 												</div>
-											</div>
-											<div class="col-4">
-												<div class="task-stat-item">
-													<div class="task-stat-label text-success">Terminées</div>
-													<div class="task-stat-value">{{ stats.completedTasks }}</div>
-												</div>
+												<div class="activity-time">{{ activity.dateCreation|date('d/m/Y H:i') }}</div>
 											</div>
 										</div>
+									{% endfor %}
+								{% else %}
+									<div class="text-center py-4">
+										<i class="fas fa-history fa-2x text-muted mb-2"></i>
+										<p class="text-muted">Aucune activité récente</p>
 									</div>
-								</div>
+								{% endif %}
 							</div>
-						</div>
-					</div>
-
-					<div class="row">
-						<div class="col-12 mb-4">
-							<div class="card">
-								<div class="card-header d-flex justify-content-between align-items-center">
-									<h5 class="card-title mb-0">Performance de l'équipe</h5>
-
-									<div class="card-actions">
-										<a href="{{ path('app_report_team') }}" class="btn btn-sm btn-outline-primary">
-											<i class="fas fa-chart-line"></i>
-											Rapport complet
-										</a>
-									</div>
-								</div>
-								<div class="card-body">
-									<div class="table-responsive">
-										<table class="table table-hover">
-											<thead>
-												<tr>
-													<th>Membre</th>
-													<th>Tâches assignées</th>
-													<th>Tâches terminées</th>
-													<th>Taux de complétion</th>
-													<th>Tâches en retard</th>
-													<th>Activité récente</th>
-												</tr>
-											</thead>
-											<tbody>
-												{% for member in teamPerformance %}
-													<tr>
-														<td>
-															<div class="d-flex align-items-center">
-																<div class="user-avatar me-2">
-																	{{ member.user.prenom|first }}{{ member.user.nom|first }}
-																</div>
-																<div>
-																	<div class="fw-bold">{{ member.user.prenom }}
-																		{{ member.user.nom }}</div>
-																	<div class="text-muted small">{{ member.user.role|default('Membre') }}</div>
-																</div>
-															</div>
-														</td>
-														<td>{{ member.assignedTasks }}</td>
-														<td>{{ member.completedTasks }}</td>
-														<td>
-															<div class="d-flex align-items-center">
-																<div class="progress flex-grow-1 me-2" style="height: 6px;">
-																	<div class="progress-bar
-																																																																																																																																																		                                                            {% if member.completionRate < 30 %}bg-danger
-																																																																																																																																																		                                                            {% elseif member.completionRate < 70 %}bg-warning
-																																																																																																																																																		                                                            {% else %}bg-success{% endif %}" role="progressbar" style="width: {{ member.completionRate }}%" aria-valuenow="{{ member.completionRate }}" aria-valuemin="0" aria-valuemax="100"></div>
-																</div>
-																<span class="text-muted small">{{ member.completionRate }}%</span>
-															</div>
-														</td>
-														<td>
-															{% if member.overdueTasks > 0 %}
-																<span class="text-danger">{{ member.overdueTasks }}</span>
-															{% else %}
-																<span class="text-success">0</span>
-															{% endif %}
-														</td>
-														<td>
-															{% if member.lastActivity %}
-																<span class="text-muted">{{ member.lastActivity|date('d/m/Y H:i') }}</span>
-															{% else %}
-																<span class="text-muted">Aucune activité</span>
-															{% endif %}
-														</td>
-													</tr>
-												{% endfor %}
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				{% endif %}
-			</div>
-		{% endblock %}{# Version 2 DashBoard OPTI avec STATS* a revoir #}{# {% block title %}Dashboard
-									{% endblock %}
-									{% block stylesheets %}
-										{{ parent() }}
-										<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
-									{% endblock %}
-									{% block body %}
-										<div class="container-fluid py-4">
-											<h1 class="mb-4">Dashboard</h1>
-									
-											{# STATISTIQUES GLOBALES #}
-		{# <div class="row mb-4">
-									<div class="col-md-3">
-										<div class="card bg-primary text-white">
-											<div class="card-body">
-												<h5 class="card-title">Projets</h5>
-												<h2 class="card-text">{{ stats.totalProjects }}</h2>
-												<p>{{ stats.activeProjects }}
-													en cours</p>
-											</div>
-										</div>
-									</div>
-									<div class="col-md-3">
-										<div class="card bg-success text-white">
-											<div class="card-body">
-												<h5 class="card-title">Tâches</h5>
-												<h2 class="card-text">{{ stats.totalTasks }}</h2>
-												<p>{{ stats.tasksBystatut['Terminé'] }}
-													terminées</p>
-											</div>
-										</div>
-									</div>
-									<div class="col-md-3">
-										<div class="card bg-info text-white">
-											<div class="card-body">
-												<h5 class="card-title">Utilisateurs</h5>
-												<h2 class="card-text">{{ stats.totalUsers }}</h2>
-											</div>
-										</div>
-									</div>
-									<div class="col-md-3">
-										<div class="card bg-warning text-white">
-											<div class="card-body">
-												<h5 class="card-title">Complétion</h5>
-												<h2 class="card-text">{{ stats.projectCompletionRate }}%</h2>
-												<p>des projets terminés</p>
-											</div>
-										</div>
-									</div>
-								</div> #}
-		{# GRAPHIQUES ET STATISTIQUES DÉTAILLÉES #}
-		{# <div class="row mb-4">
-									<div class="col-md-6">
-										<div class="card">
-											<div class="card-header">
-												<h5 class="card-title">Tâches par statut</h5>
-											</div>
-											<div class="card-body">
-												<div class="progress mb-3">
-													{% set todoPercent = (stats.tasksBystatut['À faire'] / stats.totalTasks * 100)|round %}
-													{% set inProgressPercent = (stats.tasksBystatut['En cours'] / stats.totalTasks * 100)|round %}
-													{% set reviewPercent = (stats.tasksBystatut['En revue'] / stats.totalTasks * 100)|round %}
-													{% set donePercent = (stats.tasksBystatut['Terminé'] / stats.totalTasks * 100)|round %}
-						
-													<div class="progress-bar bg-secondary" style="width: {{ todoPercent }}%" title="À faire: {{ stats.tasksBystatut['À faire'] }}">
-														{{ todoPercent }}%
-													</div>
-													<div class="progress-bar bg-primary" style="width: {{ inProgressPercent }}%" title="En cours: {{ stats.tasksBystatut['En cours'] }}">
-														{{ inProgressPercent }}%
-													</div>
-													<div class="progress-bar bg-warning" style="width: {{ reviewPercent }}%" title="En revue: {{ stats.tasksBystatut['En revue'] }}">
-														{{ reviewPercent }}%
-													</div>
-													<div class="progress-bar bg-success" style="width: {{ donePercent }}%" title="Terminé: {{ stats.tasksBystatut['Terminé'] }}">
-														{{ donePercent }}%
-													</div>
-												</div>
-												<div class="row text-center">
-													<div class="col">
-														<span class="badge bg-secondary">À faire:
-															{{ stats.tasksBystatut['À faire'] }}</span>
-													</div>
-													<div class="col">
-														<span class="badge bg-primary">En cours:
-															{{ stats.tasksBystatut['En cours'] }}</span>
-													</div>
-													<div class="col">
-														<span class="badge bg-warning">En revue:
-															{{ stats.tasksBystatut['En revue'] }}</span>
-													</div>
-													<div class="col">
-														<span class="badge bg-success">Terminé:
-															{{ stats.tasksBystatut['Terminé'] }}</span>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-						
-									<div class="col-md-6">
-										<div class="card">
-											<div class="card-header">
-												<h5 class="card-title">Projets par priorité</h5>
-											</div>
-											<div class="card-body">
-												<div class="row">
-													<div class="col-md-3 text-center">
-														<div class="circle-stat bg-success">
-															<span>{{ stats.projectsByPriority['Basse'] }}</span>
-														</div>
-														<p>Basse</p>
-													</div>
-													<div class="col-md-3 text-center">
-														<div class="circle-stat bg-info">
-															<span>{{ stats.projectsByPriority['Moyenne'] }}</span>
-														</div>
-														<p>Moyenne</p>
-													</div>
-													<div class="col-md-3 text-center">
-														<div class="circle-stat bg-warning">
-															<span>{{ stats.projectsByPriority['Haute'] }}</span>
-														</div>
-														<p>Haute</p>
-													</div>
-													<div class="col-md-3 text-center">
-														<div class="circle-stat bg-danger">
-															<span>{{ stats.projectsByPriority['Urgente'] }}</span>
-														</div>
-														<p>Urgente</p>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div> #}
-		{# LISTE DES PROJETS #}
-		{# <div class="card mb-4">
-									<div class="card-header d-flex justify-content-between align-items-center">
-										<h5 class="mb-0">Mes projets</h5>
-										<a href="{{ path('project_new') }}" class="btn btn-sm btn-primary">
-											<i class="fas fa-plus"></i>
-											Nouveau projet
-										</a>
+							<div class="col-lg-4 mb-4">
+								<div class="card h-100">
+									<div class="card-header">
+										<h5 class="card-title">Échéances à venir</h5>
 									</div>
 									<div class="card-body">
-										<div class="table-responsive">
-											<table class="table table-hover">
-												<thead>
-													<tr>
-														<th>Nom</th>
-														<th>Description</th>
-														<th>Date de début</th>
-														<th>Date de fin</th>
-														<th>Statut</th>
-														<th>Priorité</th>
-														<th>Chef de projet</th>
-														<th>Actions</th>
-													</tr>
-												</thead>
-												<tbody>
-													{% for project in projects %}
-														<tr>
-															<td>{{ project.name }}</td>
-															<td>{{ project.description|slice(0, 50) }}
-																{% if project.description|length > 50 %}...
-																{% endif %}
-															</td>
-															<td>{{ project.startDate ? project.startDate|date('d/m/Y') : 'N/A' }}</td>
-															<td>{{ project.endDate ? project.endDate|date('d/m/Y') : 'N/A' }}</td>
-															<td>
-																{% if project.statut == 'En cours' %}
-																	<span class="badge bg-primary">{{ project.statut }}</span>
-																{% elseif project.statut == 'Terminé' %}
-																	<span class="badge bg-success">{{ project.statut }}</span>
-																{% elseif project.statut == 'En pause' %}
-																	<span class="badge bg-warning">{{ project.statut }}</span>
-																{% else %}
-																	<span class="badge bg-secondary">{{ project.statut }}</span>
-																{% endif %}
-															</td>
-															<td>
-																{% if project.priority == 'Basse' %}
-																	<span class="badge bg-success">{{ project.priority }}</span>
-																{% elseif project.priority == 'Moyenne' %}
-																	<span class="badge bg-info">{{ project.priority }}</span>
-																{% elseif project.priority == 'Haute' %}
-																	<span class="badge bg-warning">{{ project.priority }}</span>
-																{% elseif project.priority == 'Urgente' %}
-																	<span class="badge bg-danger">{{ project.priority }}</span>
-																{% endif %}
-															</td>
-															<td>
-																{% if project.chefProjet %}
-																	{{ project.chefProjet.firstName }}
-																	{{ project.chefProjet.lastName }}
-																{% else %}
-																	<span class="text-muted">Non assigné</span>
-																{% endif %}
-															</td>
-															<td>
-																<a href="{{ path('dashboard_project_details', {'id': project.id}) }}" class="btn btn-sm btn-info">
-																	<i class="fas fa-eye"></i>
-																</a>
-																{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
-																	<a href="{{ path('project_edit', {'id': project.id}) }}" class="btn btn-sm btn-warning">
-																		<i class="fas fa-edit"></i>
-																	</a>
-																{% endif %}
-															</td>
-														</tr>
-													{% else %}
-														<tr>
-															<td colspan="8" class="text-center">Aucun projet trouvé</td>
-														</tr>
-													{% endfor %}
-												</tbody>
-											</table>
-										</div>
-									</div>
-								</div>
-							</div>
-						
-							<style>
-								.circle-stat {
-									width: 60px;
-									height: 60px;
-									border-radius: 50%;
-									display: flex;
-									align-items: center;
-									justify-content: center;
-									margin: 0 auto;
-									color: white;
-									font-size: 1.2rem;
-									font-weight: bold;
-								}
-							</style> #}
-		{# {% endblock %}  #}
-		{# Premier Test DashboardVue
-						
-						{% block title %}Tableau de bord - SYNTASK
-						{% endblock %}
-						
-						{% block body %}
-							<div class="dashboard-container">
-								<div class="row">
-									<div class="col-12">
-										<h1>
-											<i class="fas fa-home"></i>
-											Tableau de bord</h1>
-										<p class="text-muted">Bienvenue,<i class="fa-solid fa-user"></i>
-											{{ app.user.fullName }}</p>
-									</div>
-								</div>
-							</div>
-							<nav class="dashboard-nav">
-								<ul>
-									{% if is_granted('ROLE_EMPLOYE') %}
-										<li>
-											<a href="{{ path('app_employe_dashboard') }}">Dashboard Employé</a>
-										</li>
-									{% endif %}
-						
-									{% if is_granted('ROLE_CHEF_PROJET') %}
-										<li>
-											<a href="{{ path('app_chef_projet_dashboard') }}">Dashboard Chef de Projet</a>
-										</li>
-									{% endif %}
-						
-									{% if is_granted('ROLE_DIRECTEUR') %}
-										<li>
-											<a href="{{ path('app_directeur_dashboard') }}">Dashboard Directeur</a>
-										</li>
-									{% endif %}
-						
-									{% if is_granted('ROLE_ADMIN') %}
-										<li>
-											<a href="{{ path('app_admin_dashboard') }}">Administration</a>
-										</li>
-									{% endif %}
-								</ul>
-							</nav>
-							<div class="row mb-4">
-								<div class="col-md-3">
-									<div class="card stats-card bg-primary text-white">
-										<div class="card-body">
-											<div class="d-flex justify-content-between">
-												<div>
-													<h5>Projets</h5>
-													<h2>{{ stats.total_projects }}</h2>
-												</div>
-												<div class="align-self-center">
-													<i class="fas fa-project-diagram fa-2x"></i>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-						
-								<div class="col-md-3">
-									<div class="card stats-card bg-success text-white">
-										<div class="card-body">
-											<div class="d-flex justify-content-between">
-												<div>
-													<h5>Projets actifs</h5>
-													<h2>{{ stats.active_projects }}</h2>
-												</div>
-												<div class="align-self-center">
-													<i class="fas fa-play fa-2x"></i>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-						
-								<div class="col-md-3">
-									<div class="card stats-card bg-info text-white">
-										<div class="card-body">
-											<div class="d-flex justify-content-between">
-												<div>
-													<h5>Mes tâches</h5>
-													<h2>{{ stats.total_tasks }}</h2>
-												</div>
-												<div class="align-self-center">
-													<i class="fas fa-tasks fa-2x"></i>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-						
-								<div class="col-md-3">
-									<div class="card stats-card bg-warning text-white">
-										<div class="card-body">
-											<div class="d-flex justify-content-between">
-												<div>
-													<h5>En retard</h5>
-													<h2>{{ stats.overdue_tasks }}</h2>
-												</div>
-												<div class="align-self-center">
-													<i class="fas fa-exclamation-triangle fa-2x"></i>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						
-							<div class="row">
-								<div class="col-md-8">
-									<div class="card content-card">
-										<div class="card-header">
-											<h5>
-												<i class="fas fa-project-diagram"></i>
-												Projets récents</h5>
-										</div>
-										<div class="card-body">
-											{% if recent_projects is empty %}
-												<p class="text-muted">Aucun projet récent.</p>
-											{% else %}
-												<div class="table-responsive">
-													<table class="table table-hover">
-														<thead>
-															<tr>
-																<th>Projet</th>
-																<th>Statut</th>
-																<th>Chef de projet</th>
-																<th>Progression</th>
-																<th>Actions</th>
-															</tr>
-														</thead>
-														<tbody>
-															{% for project in recent_projects %}
-																<tr>
-																	<td>
-																		<strong>{{ project.titre }}</strong>
-																		{% if project.reference %}
-																			<small class="text-muted">({{ project.reference }})</small>
-																		{% endif %}
-																	</td>
-																	<td>
-																		<span class="badge bg-{{ project.statut == 'EN-COURS' ? 'success' : (project.statut == 'TERMINE' ? 'primary' : 'warning') }}">
-																			{{ project.statut }}
-																		</span>
-																	</td>
-																	<td>{{ project.chefDeProjet ? project.chefDeProjet.fullName : 'Non assigné' }}</td>
-																	<td>
-																		<div class="progress">
-																			<div class="progress-bar" style="width: {{ project.progress }}%">{{ project.progress|round }}%</div>
-																		</div>
-																	</td>
-																	<td>
-																		<a href="{{ path('app_project_show', {id: project.id}) }}" class="btn btn-sm btn-outline-primary">
-																			<i class="fas fa-eye"></i>
-																		</a>
-																		<a href="{{ path('app_project_kanban', {id: project.id}) }}" class="btn btn-sm btn-outline-success">
-																			<i class="fas fa-columns"></i>
-																		</a>
-																	</td>
-																</tr>
-															{% endfor %}
-														</tbody>
-													</table>
-												</div>
-											{% endif %}
-										</div>
-									</div>
-								</div>
-						
-								<div class="col-md-4">
-									<div class="card content-card">
-										<div class="card-header">
-											<h5>
-												<i class="fas fa-tasks"></i>
-												Mes tâches récentes</h5>
-										</div>
-										<div class="card-body">
-											{% if user_tasks is empty %}
-												<p class="text-muted">Aucune tâche assignée.</p>
-											{% else %}
-												{% for task in user_tasks %}
-													<div class="card mb-2 kanban-card {{ task.priorityClass }} {{ task.statutClass }} {{ task.isOverdue ? 'task-overdue' : '' }}">
-														<div class="card-body p-2">
-															<h6 class="card-title mb-1">{{ task.titre }}</h6>
-															<p class="card-text small text-muted mb-1">{{ task.project.titre }}</p>
-															<div class="d-flex justify-content-between align-items-center">
-																<span class="badge bg-{{ task.statut == 'EN-COURS' ? 'primary' : (task.statut == 'TERMINE' ? 'success' : 'secondary') }}">
-																	{{ task.statut }}
-																</span>
-																{% if task.dateDeFin %}
-																	<small class="text-muted">
-																		<i class="fas fa-clock"></i>
-																		{{ task.dateDeFin|date('d/m/Y') }}
-																	</small>
-																{% endif %}
+										<div class="due-date-list" id="upcoming-due-dates">
+											{% if dueDates|length > 0 %}
+												{% for dueDate in dueDates %}
+													{% set isOverdue = dueDate.date < date() and not dueDate.completed %}
+													<div class="due-date-item {{ isOverdue ? 'overdue' : '' }}">
+														<div class="due-date-icon {{ dueDate.type }}">
+															<i class="fas fa-{{ dueDate.type == 'task' ? 'tasks' : 'project-diagram' }}"></i>
+														</div>
+														<div class="due-date-content">
+															<div class="due-date-title">
+																<a href="{{ dueDate.url }}">{{ dueDate.title }}</a>
 															</div>
+															<div class="due-date-info">
+																{% if isOverdue %}
+																	<span class="text-danger">
+																		<i class="fas fa-exclamation-circle"></i>
+																		En retard</span>
+																{% endif %}
+																<span class="due-date-time">
+																	<i class="fas fa-calendar-alt"></i>
+																	{{ dueDate.date|date('d/m/Y') }}
+																</span>
+															</div>
+														</div>
+														<div class="due-date-statut">
+															<span class="badge {{ dueDate.completed ? 'badge-success' : isOverdue ? 'badge-danger' : 'badge-primary' }}">
+																{{ dueDate.statut }}
+															</span>
 														</div>
 													</div>
 												{% endfor %}
+											{% else %}
+												<div class="text-center py-4">
+													<i class="fas fa-calendar-check fa-2x text-muted mb-2"></i>
+													<p class="text-muted">Aucune échéance à venir</p>
+												</div>
 											{% endif %}
 										</div>
 									</div>
 								</div>
 							</div>
-						{% endblock %} #}
+						</div>
+						{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
+							<div class="row">
+								<div class="col-lg-8 mb-4">
+									<div class="card">
+										<div class="card-header">
+											<h5 class="card-title">Projets en cours</h5>
+										</div>
+										<div class="card-body p-0">
+											<div class="table-responsive">
+												<table class="table table-hover mb-0">
+													<thead>
+														<tr>
+															<th>Projet</th>
+															<th>Statut</th>
+															<th>Progression</th>
+															<th>Échéance</th>
+															<th>Actions</th>
+														</tr>
+													</thead>
+													<tbody>
+														{% for project in activeProjects %}
+															{% set completionRate = project.completionRate|default(0) %}
+															<tr>
+																<td>
+																	<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="text-reset">
+																		{{ project.titre }}
+																	</a>
+																</td>
+																<td>
+																	<span class="badge">																																																																																																																																																																															                                                    {% else %}badge-secondary{% endif %}">
+																		{{ project.statut|replace({'-': ' '})|title }}
+																	</span>
+																</td>
+																<td>
+																	<div class="d-flex align-items-center">
+																		<div class="progress flex-grow-1 me-2" style="height: 8px;">
+																			<div class="progress-bar"
+																				role="progressbar"
+																				style="width: {{ completionRate }}%"
+																				aria-valuenow="{{ completionRate }}"
+																				aria-valuemin="0"
+																				aria-valuemax="100"
+																				class="{% if completionRate < 30 %}bg-danger{% elseif completionRate < 70 %}bg-warning{% else %}bg-success{% endif %}">
+																		</div>
+																		<span class="text-muted small">{{ completionRate }}%</span>
+																	</div>
+																</td>
+																<td>
+																	{% if project.dateButoir %}
+																		{% set isOverdue = project.dateButoir < date() and project.statut != 'TERMINE' %}
+																		<span class="{{ isOverdue ? 'text-danger fw-bold' : '' }}">
+																			{{ project.dateButoir|date('d/m/Y') }}
+																			{% if isOverdue %}
+																				<i class="fas fa-exclamation-circle ms-1" title="En retard"></i>
+																			{% endif %}
+																		</span>
+																	{% else %}
+																		<span class="text-muted">Non définie</span>
+																	{% endif %}
+																</td>
+																<td>
+																	<div class="d-flex">
+																		<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn btn-sm btn-info me-1" title="Voir">
+																			<i class="fas fa-eye"></i>
+																		</a>
+																		<a href="{{ path('app_projet_kanban', {'id': project.id}) }}" class="btn btn-sm btn-primary me-1" title="Kanban">
+																			<i class="fas fa-columns"></i>
+																		</a>
+																	</div>
+																</td>
+															</tr>
+														{% else %}
+															<tr>
+																<td colspan="5" class="text-center py-4">
+																	<i class="fas fa-project-diagram fa-2x text-muted mb-2"></i>
+																	<p class="text-muted">Aucun projet en cours</p>
+																	<a href="{{ path('app_projet_new') }}" class="btn btn-sm btn-primary mt-2">
+																		<i class="fas fa-plus"></i>
+																		Nouveau projet
+																	</a>
+																</td>
+															</tr>
+														{% endfor %}
+													</tbody>
+												</table>
+											</div>
+										</div>
+										<div class="card-footer text-end">
+											<a href="{{ path('app_projet_index') }}" class="btn btn-sm btn-primary">Tous les projets</a>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-4 mb-4">
+									<div class="card h-100">
+										<div class="card-header">
+											<h5 class="card-title">Répartition des tâches</h5>
+										</div>
+										<div class="card-body">
+											<div class="chart-container" style="height: 250px;">
+												<canvas id="chart-task-statut" data-pending="{{ stats.pendingTasks }}" data-in-progress="{{ stats.inProgressTasks }}" data-completed="{{ stats.completedTasks }}"></canvas>
+											</div>
+
+											<div class="task-distribution-stats mt-3">
+												<div class="row g-2 text-center">
+													<div class="col-4">
+														<div class="task-stat-item">
+															<div class="task-stat-label text-warning">En attente</div>
+															<div class="task-stat-value">{{ stats.pendingTasks }}</div>
+														</div>
+													</div>
+													<div class="col-4">
+														<div class="task-stat-item">
+															<div class="task-stat-label text-primary">En cours</div>
+															<div class="task-stat-value">{{ stats.inProgressTasks }}</div>
+														</div>
+													</div>
+													<div class="col-4">
+														<div class="task-stat-item">
+															<div class="task-stat-label text-success">Terminées</div>
+															<div class="task-stat-value">{{ stats.completedTasks }}</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-12 mb-4">
+									<div class="card">
+										<div class="card-header d-flex justify-content-between align-items-center">
+											<h5 class="card-title mb-0">Performance de l'équipe</h5>
+
+											<div class="card-actions">
+												<a href="{{ path('app_report_team') }}" class="btn btn-sm btn-outline-primary">
+													<i class="fas fa-chart-line"></i>
+													Rapport complet
+												</a>
+											</div>
+										</div>
+										<div class="card-body">
+											<div class="table-responsive">
+												<table class="table table-hover">
+													<thead>
+														<tr>
+															<th>Membre</th>
+															<th>Tâches assignées</th>
+															<th>Tâches terminées</th>
+															<th>Taux de complétion</th>
+															<th>Tâches en retard</th>
+															<th>Activité récente</th>
+														</tr>
+													</thead>
+													<tbody>
+														{% for member in teamPerformance %}
+															<tr>
+																<td>
+																	<div class="d-flex align-items-center">
+																		<div class="user-avatar me-2">
+																			{{ member.user.prenom|first }}{{ member.user.nom|first }}
+																		</div>
+																		<div>
+																			<div class="fw-bold">{{ member.user.prenom }}
+																				{{ member.user.nom }}</div>
+																			<div class="text-muted small">{{ member.user.role|default('Membre') }}</div>
+																		</div>
+																	</div>
+																</td>
+																<td>{{ member.assignedTasks }}</td>
+																<td>{{ member.completedTasks }}</td>
+																<td>
+																	<div class="d-flex align-items-center">
+																		<div class="progress flex-grow-1 me-2" style="height: 6px;">
+																			<div class="progress-bar">
+																				role="progressbar"
+																				style="width: {{ member.completionRate }}%"
+																				aria-valuenow="{{ member.completionRate }}"
+																				aria-valuemin="0"
+																				aria-valuemax="100"
+																				class="{% if member.completionRate < 30 %}bg-danger{% elseif member.completionRate < 70 %}bg-warning{% else %}bg-success{% endif %}">
+																		</div>
+																		<span class="text-muted small">{{ member.completionRate }}%</span>
+																	</div>
+																</td>
+																<td>
+																	{% if member.overdueTasks > 0 %}
+																		<span class="text-danger">{{ member.overdueTasks }}</span>
+																	{% else %}
+																		<span class="text-success">0</span>
+																	{% endif %}
+																</td>
+																<td>
+																	{% if member.lastActivity %}
+																		<span class="text-muted">{{ member.lastActivity|date('d/m/Y H:i') }}</span>
+																	{% else %}
+																		<span class="text-muted">Aucune activité</span>
+																	{% endif %}
+																</td>
+															</tr>
+														{% endfor %}
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						{% endif %}
+					</div>
+				{% endblock %}
