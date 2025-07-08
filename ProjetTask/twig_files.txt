@@ -2,6 +2,7 @@
 FullName                                                                                  
 --------                                                                                  
 C:\Users\durri\ProjetTask\ProjetTask\templates\base.html.twig                             
+C:\Users\durri\ProjetTask\ProjetTask\templates\activity\index.html.twig                   
 C:\Users\durri\ProjetTask\ProjetTask\templates\admin\dashboard.html.twig                  
 C:\Users\durri\ProjetTask\ProjetTask\templates\admin\index.html.twig                      
 C:\Users\durri\ProjetTask\ProjetTask\templates\admin\new_user.html.twig                   
@@ -16,10 +17,13 @@ C:\Users\durri\ProjetTask\ProjetTask\templates\partials\_topbar.html.twig
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\index.html.twig                    
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\kanban.html.twig                   
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\mes_projets.html.twig              
+C:\Users\durri\ProjetTask\ProjetTask\templates\project\new.html.twig                      
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\show.html.twig                     
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\view\all_tasks.html.twig           
 C:\Users\durri\ProjetTask\ProjetTask\templates\registration\confirmation_email.html.twig  
 C:\Users\durri\ProjetTask\ProjetTask\templates\registration\register.html.twig            
+C:\Users\durri\ProjetTask\ProjetTask\templates\report\index.html.twig                     
+C:\Users\durri\ProjetTask\ProjetTask\templates\report\team.html.twig                      
 C:\Users\durri\ProjetTask\ProjetTask\templates\reset_password\check_email.html.twig       
 C:\Users\durri\ProjetTask\ProjetTask\templates\reset_password\email.html.twig             
 C:\Users\durri\ProjetTask\ProjetTask\templates\reset_password\request.html.twig           
