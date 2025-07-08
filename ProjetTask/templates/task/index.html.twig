@@ -47,407 +47,408 @@
 			<div class="card-header">
 				<div class="d-flex justify-content-between align-items-center">
 					<h5 class="table-title">Mes tâches</h5>
-
-					<div class="table-actions">
-						<div class="btn-group">
-							<button type="button" class="btn btn-outline-primary statut-filter active" data-target="#tasks-table" data-statut="all">
-								Toutes
-							</button>
-							<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="EN-ATTENTE">
-								En attente
-							</button>
-							<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="EN-COURS">
-								En cours
-							</button>
-							<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="TERMINE">
-								Terminées
-							</button>
+					<a href="{{ path('app_task_my_tasks') }}" class="btn btn-primary">
+						<div class="table-actions">
+							<div class="btn-group">
+								<button type="button" class="btn btn-outline-primary statut-filter active" data-target="#tasks-table" data-statut="all">
+									Toutes
+								</button>
+								<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="EN-ATTENTE">
+									En attente
+								</button>
+								<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="EN-COURS">
+									En cours
+								</button>
+								<button type="button" class="btn btn-outline-primary statut-filter" data-target="#tasks-table" data-statut="TERMINE">
+									Terminées
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="card-body">
-				<div class="table-responsive">
-					<table class="modern-table" id="tasks-table">
-						<thead>
-							<tr>
-								<th>Titre</th>
-								<th>Projet</th>
-								<th>Statut</th>
-								<th>Priorité</th>
-								<th>Date d'échéance</th>
-								<th>Assignée à</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for task in tasks %}
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="modern-table" id="tasks-table">
+							<thead>
 								<tr>
-									<td>{{ task.titre }}</td>
-									<td>
-										<a href="{{ path('app_projet_show', {'id': task.project.id}) }}">
-											{{ task.project.titre }}
-										</a>
-									</td>
-									<td class="statut-cell" data-statut="{{ task.statut }}">
-										<span class="badge
-																							                                        {% if task.statut == 'EN-COURS' %} badge-primary
-																							                                        {% elseif task.statut == 'TERMINE' %} badge-success
-																							                                        {% elseif task.statut == 'EN-ATTENTE' %} badge-warning
-																							                                        {% else %} badge-secondary
-																							                                        {% endif %}">
-											{{ task.statut|replace({'-': ' '})|title }}
-										</span>
-									</td>
-									<td>
-										<span class="badge
-																							                                        {% if task.priority == 'HAUTE' %} badge-danger
-																							                                        {% elseif task.priority == 'MOYENNE' %} badge-warning
-																							                                        {% else %} badge-success
-																							                                        {% endif %}">
-											{{ task.priority|capitalize }}
-										</span>
-									</td>
-									<td>
-										{% if task.dateButoir %}
-											{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
-											<span class="{{ isOverdue ? 'text-danger fw-bold' : '' }}">
-												{{ task.dateButoir|date('d/m/Y') }}
-												{% if isOverdue %}
-													<i class="fas fa-exclamation-circle ms-1" title="En retard"></i>
-												{% endif %}
-											</span>
-										{% else %}
-											<span class="text-muted">Non définie</span>
-										{% endif %}
-									</td>
-									<td>
-										{% if task.assignedUser %}
-											<div class="d-flex align-items-center">
-												<div class="user-avatar me-2">
-													{{ task.assignedUser.prenom|first }}{{ task.assignedUser.nom|first }}
-												</div>
-												<span>{{ task.assignedUser.prenom }}
-													{{ task.assignedUser.nom }}</span>
-											</div>
-										{% else %}
-											<span class="text-muted">Non assignée</span>
-										{% endif %}
-									{% endif %}
+									<th>Titre</th>
+									<th>Projet</th>
+									<th>Statut</th>
+									<th>Priorité</th>
+									<th>Date d'échéance</th>
+									<th>Assignée à</th>
+									<th>Actions</th>
 								</tr>
-							</td>
-							<td>
-								<div class="d-flex">
-									<a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-info me-1" title="Voir">
-										<i class="fas fa-eye"></i>
-									</a>
-
-									{% if is_granted('EDIT', task) %}
-										<a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-warning me-1" title="Modifier">
-											<i class="fas fa-edit"></i>
+							</thead>
+							<tbody>
+								{% for task in tasks %}
+									<tr>
+										<td>{{ task.titre }}</td>
+										<td>
+											<a href="{{ path('app_projet_show', {'id': task.project.id}) }}">
+												{{ task.project.titre }}
+											</a>
+										</td>
+										<td class="statut-cell" data-statut="{{ task.statut }}">
+											<span class="badge
+																																				                                        {% if task.statut == 'EN-COURS' %} badge-primary
+																																				                                        {% elseif task.statut == 'TERMINE' %} badge-success
+																																				                                        {% elseif task.statut == 'EN-ATTENTE' %} badge-warning
+																																				                                        {% else %} badge-secondary
+																																				                                        {% endif %}">
+												{{ task.statut|replace({'-': ' '})|title }}
+											</span>
+										</td>
+										<td>
+											<span class="badge
+																																				                                        {% if task.priority == 'HAUTE' %} badge-danger
+																																				                                        {% elseif task.priority == 'MOYENNE' %} badge-warning
+																																				                                        {% else %} badge-success
+																																				                                        {% endif %}">
+												{{ task.priority|capitalize }}
+											</span>
+										</td>
+										<td>
+											{% if task.dateButoir %}
+												{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
+												<span class="{{ isOverdue ? 'text-danger fw-bold' : '' }}">
+													{{ task.dateButoir|date('d/m/Y') }}
+													{% if isOverdue %}
+														<i class="fas fa-exclamation-circle ms-1" title="En retard"></i>
+													{% endif %}
+												</span>
+											{% else %}
+												<span class="text-muted">Non définie</span>
+											{% endif %}
+										</td>
+										<td>
+											{% if task.assignedUser %}
+												<div class="d-flex align-items-center">
+													<div class="user-avatar me-2">
+														{{ task.assignedUser.prenom|first }}{{ task.assignedUser.nom|first }}
+													</div>
+													<span>{{ task.assignedUser.prenom }}
+														{{ task.assignedUser.nom }}</span>
+												</div>
+											{% else %}
+												<span class="text-muted">Non assignée</span>
+											{% endif %}
+										{% endif %}
+									</tr>
+								</td>
+								<td>
+									<div class="d-flex">
+										<a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-info me-1" title="Voir">
+											<i class="fas fa-eye"></i>
 										</a>
-									{% endif %}
 
-									{% if not task.assignedUser and is_granted('ROLE_USER') %}
-										<button class="btn btn-sm btn-primary me-1 btn-self-assign" title="S'assigner" data-task-id="{{ task.id }}">
-											<i class="fas fa-user-check"></i>
-										</button>
-									{% endif %}
+										{% if is_granted('EDIT', task) %}
+											<a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-warning me-1" title="Modifier">
+												<i class="fas fa-edit"></i>
+											</a>
+										{% endif %}
 
-									{% if is_granted('ROLE_CHEF_PROJET') %}
-										<button class="btn btn-sm btn-secondary me-1 btn-assign" title="Assigner" data-task-id="{{ task.id }}" data-bs-toggle="modal" data-bs-target="#assign-modal">
-											<i class="fas fa-user-plus"></i>
-										</button>
-									{% endif %}
-
-									{% if is_granted('DELETE', task) %}
-										<form method="post" action="{{ path('app_task_delete', {'id': task.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche?');" style="display: inline-block;">
-											<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
-											<button class="btn btn-sm btn-danger" title="Supprimer">
-												<i class="fas fa-trash"></i>
+										{% if not task.assignedUser and is_granted('ROLE_USER') %}
+											<button class="btn btn-sm btn-primary me-1 btn-self-assign" title="S'assigner" data-task-id="{{ task.id }}">
+												<i class="fas fa-user-check"></i>
 											</button>
-										</form>
-									{% endif %}
+										{% endif %}
 
-									{% if task.statut != 'TERMINE' and (task.assignedUser == app.user or is_granted('ROLE_CHEF_PROJET')) %}
-										<button class="btn btn-sm btn-success me-1 btn-complete-task" title="Marquer comme terminée" data-task-id="{{ task.id }}">
-											<i class="fas fa-check"></i>
-										</button>
+										{% if is_granted('ROLE_CHEF_PROJET') %}
+											<button class="btn btn-sm btn-secondary me-1 btn-assign" title="Assigner" data-task-id="{{ task.id }}" data-bs-toggle="modal" data-bs-target="#assign-modal">
+												<i class="fas fa-user-plus"></i>
+											</button>
+										{% endif %}
+
+										{% if is_granted('DELETE', task) %}
+											<form method="post" action="{{ path('app_task_delete', {'id': task.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche?');" style="display: inline-block;">
+												<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+												<button class="btn btn-sm btn-danger" title="Supprimer">
+													<i class="fas fa-trash"></i>
+												</button>
+											</form>
+										{% endif %}
+
+										{% if task.statut != 'TERMINE' and (task.assignedUser == app.user or is_granted('ROLE_CHEF_PROJET')) %}
+											<button class="btn btn-sm btn-success me-1 btn-complete-task" title="Marquer comme terminée" data-task-id="{{ task.id }}">
+												<i class="fas fa-check"></i>
+											</button>
+										{% endif %}
+									</div>
+								</td>
+							</tbody>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="7" class="text-center py-4">
+								<div class="empty-state">
+									<i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+									<h4>Aucune tâche trouvée</h4>
+									<p class="text-muted">Vous n'avez aucune tâche assignée pour le moment.</p>
+									{% if is_granted('ROLE_CHEF_PROJET') %}
+										<a href="{{ path('app_task_new') }}" class="btn btn-primary mt-2">
+											<i class="fas fa-plus"></i>
+											Créer une tâche
+										</a>
 									{% endif %}
 								</div>
 							</td>
-						</tbody>
-					</tr>
-				{% else %}
-					<tr>
-						<td colspan="7" class="text-center py-4">
-							<div class="empty-state">
-								<i class="fas fa-tasks fa-3x text-muted mb-3"></i>
-								<h4>Aucune tâche trouvée</h4>
-								<p class="text-muted">Vous n'avez aucune tâche assignée pour le moment.</p>
-								{% if is_granted('ROLE_CHEF_PROJET') %}
-									<a href="{{ path('app_task_new') }}" class="btn btn-primary mt-2">
-										<i class="fas fa-plus"></i>
-										Créer une tâche
-									</a>
-								{% endif %}
-							</div>
-						</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</div>
-</div></div>{% if pagination is defined and pagination.pages > 1 %}
-<div class="d-flex justify-content-center mt-4">
-	<nav>
-		<ul class="pagination">
-			{% if pagination.current > 1 %}
-				<li class="page-item">
-					<a class="page-link" href="{{ path('app_task_index', {page: 1}) }}">
-						<i class="fas fa-angle-double-left"></i>
-					</a>
-				</li>
-				<li class="page-item">
-					<a class="page-link" href="{{ path('app_task_index', {page: pagination.current - 1}) }}">
-						<i class="fas fa-angle-left"></i>
-					</a>
-				</li>
-			{% else %}
-				<li class="page-item disabled">
-					<span class="page-link">
-						<i class="fas fa-angle-double-left"></i>
-					</span>
-				</li>
-				<li class="page-item disabled">
-					<span class="page-link">
-						<i class="fas fa-angle-left"></i>
-					</span>
-				</li>
-			{% endif %}
-
-			{% for i in max(1, pagination.current - 2)..min(pagination.pages, pagination.current + 2) %}
-				<li class="page-item {{ pagination.current == i ? 'active' : '' }}">
-					<a class="page-link" href="{{ path('app_task_index', {page: i}) }}">{{ i }}</a>
-				</li>
-			{% endfor %}
-
-			{% if pagination.current < pagination.pages %}
-				<li class="page-item">
-					<a class="page-link" href="{{ path('app_task_index', {page: pagination.current + 1}) }}">
-						<i class="fas fa-angle-right"></i>
-					</a>
-				</li>
-				<li class="page-item">
-					<a class="page-link" href="{{ path('app_task_index', {page: pagination.pages}) }}">
-						<i class="fas fa-angle-double-right"></i>
-					</a>
-				</li>
-			{% else %}
-				<li class="page-item disabled">
-					<span class="page-link">
-						<i class="fas fa-angle-right"></i>
-					</span>
-				</li>
-				<li class="page-item disabled">
-					<span class="page-link">
-						<i class="fas fa-angle-double-right"></i>
-					</span>
-				</li>
-			{% endif %}
-		</ul>
-	</nav>
-</div>{% endif %}{# Modal pour assigner un utilisateur #}<div class="modal fade" id="assign-modal" tabindex="-1" aria-hidden="true">
-<div class="modal-dialog">
-	<div class="modal-content">
-		<div class="modal-header">
-			<h5 class="modal-title">Assigner un utilisateur</h5>
-			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 		</div>
-		<div class="modal-body">
-			<div class="form-group mb-3">
-				<input type="text" class="form-control" id="user-search" placeholder="Rechercher un utilisateur...">
-			</div>
+	</div>
+</div>
+{% if pagination is defined and pagination.pages > 1 %}
+	<div class="d-flex justify-content-center mt-4">
+		<nav>
+			<ul class="pagination">
+				{% if pagination.current > 1 %}
+					<li class="page-item">
+						<a class="page-link" href="{{ path('app_task_index', {page: 1}) }}">
+							<i class="fas fa-angle-double-left"></i>
+						</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link" href="{{ path('app_task_index', {page: pagination.current - 1}) }}">
+							<i class="fas fa-angle-left"></i>
+						</a>
+					</li>
+				{% else %}
+					<li class="page-item disabled">
+						<span class="page-link">
+							<i class="fas fa-angle-double-left"></i>
+						</span>
+					</li>
+					<li class="page-item disabled">
+						<span class="page-link">
+							<i class="fas fa-angle-left"></i>
+						</span>
+					</li>
+				{% endif %}
 
-			<div class="user-list">
-				<div class="text-center py-4">
-					<div class="spinner"></div>
-					<p class="text-muted mt-2">Chargement des utilisateurs...</p>
+				{% for i in max(1, pagination.current - 2)..min(pagination.pages, pagination.current + 2) %}
+					<li class="page-item {{ pagination.current == i ? 'active' : '' }}">
+						<a class="page-link" href="{{ path('app_task_index', {page: i}) }}">{{ i }}</a>
+					</li>
+				{% endfor %}
+
+				{% if pagination.current < pagination.pages %}
+					<li class="page-item">
+						<a class="page-link" href="{{ path('app_task_index', {page: pagination.current + 1}) }}">
+							<i class="fas fa-angle-right"></i>
+						</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link" href="{{ path('app_task_index', {page: pagination.pages}) }}">
+							<i class="fas fa-angle-double-right"></i>
+						</a>
+					</li>
+				{% else %}
+					<li class="page-item disabled">
+						<span class="page-link">
+							<i class="fas fa-angle-right"></i>
+						</span>
+					</li>
+					<li class="page-item disabled">
+						<span class="page-link">
+							<i class="fas fa-angle-double-right"></i>
+						</span>
+					</li>
+				{% endif %}
+			</ul>
+		</nav>
+	</div>
+{% endif %}{# Modal pour assigner un utilisateur #}<div class="modal fade" id="assign-modal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Assigner un utilisateur</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group mb-3">
+					<input type="text" class="form-control" id="user-search" placeholder="Rechercher un utilisateur...">
+				</div>
+
+				<div class="user-list">
+					<div class="text-center py-4">
+						<div class="spinner"></div>
+						<p class="text-muted mt-2">Chargement des utilisateurs...</p>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-</div></div></div> <script>
-	document.addEventListener('DOMContentLoaded', function() {
-	    // Logique pour l'auto-assignation
-	    document.querySelectorAll('.btn-self-assign').forEach(button => {
-	        button.addEventListener('click', function() {
-	            const taskId = this.dataset.taskId;
-	            
-	            fetch(`/api/task/${taskId}/assign-self`, {
-	                method: 'POST',
-	                headers: {
-	                    'Content-Type': 'application/json',
-	                    'X-Requested-With': 'XMLHttpRequest',
-	                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-	                }
-	            })
-	            .then(response => response.json())
-	            .then(data => {
-	                if (data.success) {
-	                    showToast('Tâche assignée avec succès', 'success');
-	                    setTimeout(() => window.location.reload(), 1000);
-	                } else {
-	                    showToast(data.message || 'Erreur lors de l\'assignation', 'error');
-	                }
-	            })
-	            .catch(error => {
-	                console.error('Erreur:', error);
-	                showToast('Erreur lors de l\'assignation', 'error');
-	            });
-	        });
-	    });
-	    
-	    // Logique pour marquer une tâche comme terminée
-	    document.querySelectorAll('.btn-complete-task').forEach(button => {
-	        button.addEventListener('click', function() {
-	            const taskId = this.dataset.taskId;
-	            
-	            fetch(`/api/task/${taskId}/complete`, {
-	                method: 'POST',
-	                headers: {
-	                    'Content-Type': 'application/json',
-	                    'X-Requested-With': 'XMLHttpRequest',
-	                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-	                }
-	            })
-	            .then(response => response.json())
-	            .then(data => {
-	                if (data.success) {
-	                    showToast('Tâche marquée comme terminée', 'success');
-	                    setTimeout(() => window.location.reload(), 1000);
-	                } else {
-	                    showToast(data.message || 'Erreur lors de la mise à jour', 'error');
-	                }
-	            })
-	            .catch(error => {
-	                console.error('Erreur:', error);
-	                showToast('Erreur lors de la mise à jour', 'error');
-	            });
-	        });
-	    });
-	    
-	    // Modal d'assignation d'utilisateur
-	    const assignModal = document.getElementById('assign-modal');
-	    if (assignModal) {
-	        assignModal.addEventListener('show.bs.modal', function(event) {
-	            const button = event.relatedTarget;
-	            const taskId = button.dataset.taskId;
-	            
-	            const userList = this.querySelector('.user-list');
-	            userList.innerHTML = '<div class="text-center py-4"><div class="spinner"></div><p class="text-muted mt-2">Chargement des utilisateurs...</p></div>';
-	            
-	            fetch(`/api/users/available?task=${taskId}`, {
-	                headers: {
-	                    'X-Requested-With': 'XMLHttpRequest'
-	                }
-	            })
-	            .then(response => response.json())
-	            .then(data => {
-	                userList.innerHTML = '';
-	                
-	                if (data.users && data.users.length > 0) {
-	                    data.users.forEach(user => {
-	                        userList.innerHTML += `
-	                            <div class="user-item" data-user-id="${user.id}" data-task-id="${taskId}">
-	                                <div class="user-avatar">${user.initials}</div>
-	                                <div class="user-info">
-	                                    <div class="user-name">${user.name}</div>
-	                                    <div class="user-email">${user.email}</div>
-	                                </div>
-	                            </div>
-	                        `;
-	                    });
-	                    
-	                    // Option pour désassigner
-	                    userList.innerHTML += `
-	                        <div class="user-item unassign" data-user-id="0" data-task-id="${taskId}">
-	                            <div class="user-avatar"><i class="fas fa-user-slash"></i></div>
-	                            <div class="user-info">
-	                                <div class="user-name">Désassigner</div>
-	                                <div class="user-email">Retirer l'utilisateur de cette tâche</div>
-	                            </div>
-	                        </div>
-	                    `;
-	                    
-	                    // Ajouter les événements
-	                    document.querySelectorAll('.user-item').forEach(item => {
-	                        item.addEventListener('click', function() {
-	                            const userId = this.dataset.userId;
-	                            const taskId = this.dataset.taskId;
-	                            
-	                            fetch(`/api/task/${taskId}/assign`, {
-	                                method: 'POST',
-	                                headers: {
-	                                    'Content-Type': 'application/json',
-	                                    'X-Requested-With': 'XMLHttpRequest',
-	                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-	                                },
-	                                body: JSON.stringify({ userId: userId })
-	                            })
-	                            .then(response => response.json())
-	                            .then(data => {
-	                                if (data.success) {
-	                                    // Fermer le modal
-	                                    bootstrap.Modal.getInstance(assignModal).hide();
-	                                    
-	                                    showToast(userId === '0' ? 'Tâche désassignée' : 'Tâche assignée', 'success');
-	                                    setTimeout(() => window.location.reload(), 1000);
-	                                } else {
-	                                    showToast(data.message || 'Erreur lors de l\'assignation', 'error');
-	                                }
-	                            })
-	                            .catch(error => {
-	                                console.error('Erreur:', error);
-	                                showToast('Erreur lors de l\'assignation', 'error');
-	                            });
-	                        });
-	                    });
-	                    
-	                    // Logique de recherche
-	                    const searchInput = document.getElementById('user-search');
-	                    if (searchInput) {
-	                        searchInput.addEventListener('keyup', function() {
-	                            const value = this.value.toLowerCase();
-	                            
-	                            document.querySelectorAll('.user-item').forEach(item => {
-	                                const name = item.querySelector('.user-name').textContent.toLowerCase();
-	                                const email = item.querySelector('.user-email').textContent.toLowerCase();
-	                                
-	                                if (name.includes(value) || email.includes(value) || item.classList.contains('unassign')) {
-	                                    item.style.display = '';
-	                                } else {
-	                                    item.style.display = 'none';
-	                                }
-	                            });
-	                        });
-	                    }
-	                } else {
-	                    userList.innerHTML = '<div class="text-center py-3 text-muted">Aucun utilisateur disponible</div>';
-	                }
-	            })
-	            .catch(error => {
-	                console.error('Erreur:', error);
-	                userList.innerHTML = '<div class="text-center py-3 text-danger">Erreur lors du chargement des utilisateurs</div>';
-	            });
-	        });
-	    }
-	});
-	</script>
-    {% endblock %}
-
-    {# Version 1 >01/07/2025 #}{# {% block title %}Toutes les tâches{% endblock %}
+</div></div> <script>
+		document.addEventListener('DOMContentLoaded', function() {
+		    // Logique pour l'auto-assignation
+		    document.querySelectorAll('.btn-self-assign').forEach(button => {
+		        button.addEventListener('click', function() {
+		            const taskId = this.dataset.taskId;
+		            
+		            fetch(`/api/task/${taskId}/assign-self`, {
+		                method: 'POST',
+		                headers: {
+		                    'Content-Type': 'application/json',
+		                    'X-Requested-With': 'XMLHttpRequest',
+		                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+		                }
+		            })
+		            .then(response => response.json())
+		            .then(data => {
+		                if (data.success) {
+		                    showToast('Tâche assignée avec succès', 'success');
+		                    setTimeout(() => window.location.reload(), 1000);
+		                } else {
+		                    showToast(data.message || 'Erreur lors de l\'assignation', 'error');
+		                }
+		            })
+		            .catch(error => {
+		                console.error('Erreur:', error);
+		                showToast('Erreur lors de l\'assignation', 'error');
+		            });
+		        });
+		    });
+		    
+		    // Logique pour marquer une tâche comme terminée
+		    document.querySelectorAll('.btn-complete-task').forEach(button => {
+		        button.addEventListener('click', function() {
+		            const taskId = this.dataset.taskId;
+		            
+		            fetch(`/api/task/${taskId}/complete`, {
+		                method: 'POST',
+		                headers: {
+		                    'Content-Type': 'application/json',
+		                    'X-Requested-With': 'XMLHttpRequest',
+		                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+		                }
+		            })
+		            .then(response => response.json())
+		            .then(data => {
+		                if (data.success) {
+		                    showToast('Tâche marquée comme terminée', 'success');
+		                    setTimeout(() => window.location.reload(), 1000);
+		                } else {
+		                    showToast(data.message || 'Erreur lors de la mise à jour', 'error');
+		                }
+		            })
+		            .catch(error => {
+		                console.error('Erreur:', error);
+		                showToast('Erreur lors de la mise à jour', 'error');
+		            });
+		        });
+		    });
+		    
+		    // Modal d'assignation d'utilisateur
+		    const assignModal = document.getElementById('assign-modal');
+		    if (assignModal) {
+		        assignModal.addEventListener('show.bs.modal', function(event) {
+		            const button = event.relatedTarget;
+		            const taskId = button.dataset.taskId;
+		            
+		            const userList = this.querySelector('.user-list');
+		            userList.innerHTML = '<div class="text-center py-4"><div class="spinner"></div><p class="text-muted mt-2">Chargement des utilisateurs...</p></div>';
+		            
+		            fetch(`/api/users/available?task=${taskId}`, {
+		                headers: {
+		                    'X-Requested-With': 'XMLHttpRequest'
+		                }
+		            })
+		            .then(response => response.json())
+		            .then(data => {
+		                userList.innerHTML = '';
+		                
+		                if (data.users && data.users.length > 0) {
+		                    data.users.forEach(user => {
+		                        userList.innerHTML += `
+		                            <div class="user-item" data-user-id="${user.id}" data-task-id="${taskId}">
+		                                <div class="user-avatar">${user.initials}</div>
+		                                <div class="user-info">
+		                                    <div class="user-name">${user.name}</div>
+		                                    <div class="user-email">${user.email}</div>
+		                                </div>
+		                            </div>
+		                        `;
+		                    });
+		                    
+		                    // Option pour désassigner
+		                    userList.innerHTML += `
+		                        <div class="user-item unassign" data-user-id="0" data-task-id="${taskId}">
+		                            <div class="user-avatar"><i class="fas fa-user-slash"></i></div>
+		                            <div class="user-info">
+		                                <div class="user-name">Désassigner</div>
+		                                <div class="user-email">Retirer l'utilisateur de cette tâche</div>
+		                            </div>
+		                        </div>
+		                    `;
+		                    
+		                    // Ajouter les événements
+		                    document.querySelectorAll('.user-item').forEach(item => {
+		                        item.addEventListener('click', function() {
+		                            const userId = this.dataset.userId;
+		                            const taskId = this.dataset.taskId;
+		                            
+		                            fetch(`/api/task/${taskId}/assign`, {
+		                                method: 'POST',
+		                                headers: {
+		                                    'Content-Type': 'application/json',
+		                                    'X-Requested-With': 'XMLHttpRequest',
+		                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+		                                },
+		                                body: JSON.stringify({ userId: userId })
+		                            })
+		                            .then(response => response.json())
+		                            .then(data => {
+		                                if (data.success) {
+		                                    // Fermer le modal
+		                                    bootstrap.Modal.getInstance(assignModal).hide();
+		                                    
+		                                    showToast(userId === '0' ? 'Tâche désassignée' : 'Tâche assignée', 'success');
+		                                    setTimeout(() => window.location.reload(), 1000);
+		                                } else {
+		                                    showToast(data.message || 'Erreur lors de l\'assignation', 'error');
+		                                }
+		                            })
+		                            .catch(error => {
+		                                console.error('Erreur:', error);
+		                                showToast('Erreur lors de l\'assignation', 'error');
+		                            });
+		                        });
+		                    });
+		                    
+		                    // Logique de recherche
+		                    const searchInput = document.getElementById('user-search');
+		                    if (searchInput) {
+		                        searchInput.addEventListener('keyup', function() {
+		                            const value = this.value.toLowerCase();
+		                            
+		                            document.querySelectorAll('.user-item').forEach(item => {
+		                                const name = item.querySelector('.user-name').textContent.toLowerCase();
+		                                const email = item.querySelector('.user-email').textContent.toLowerCase();
+		                                
+		                                if (name.includes(value) || email.includes(value) || item.classList.contains('unassign')) {
+		                                    item.style.display = '';
+		                                } else {
+		                                    item.style.display = 'none';
+		                                }
+		                            });
+		                        });
+		                    }
+		                } else {
+		                    userList.innerHTML = '<div class="text-center py-3 text-muted">Aucun utilisateur disponible</div>';
+		                }
+		            })
+		            .catch(error => {
+		                console.error('Erreur:', error);
+		                userList.innerHTML = '<div class="text-center py-3 text-danger">Erreur lors du chargement des utilisateurs</div>';
+		            });
+		        });
+		    }
+		});
+		</script>{% endblock %}{# Version 1 >01/07/2025 #}{# {% block title %}Toutes les tâches{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -604,7 +605,7 @@
 
 {% block javascripts %}
     {{ parent() }}
-      <script>
+       <script>
         // Filtrage des tâches
         function filterTasks() {
             const statutFilter = document.getElementById('statutFilter').value;
