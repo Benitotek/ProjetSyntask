@@ -89,11 +89,6 @@ $tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
             'userAssignees' => [], // Si vous avez des utilisateurs assignés
             'projectAssignees' => [], // Si vous avez des projets assignés
             'currentUser' => $user, // Utilisateur actuel
-            // 'currentRole' => $user->getRoles(), // Récupération des rôles de l'utilisateur
-            // 'currentUserId' => $user->getId(), // ID de l'utilisateur actuel
-            // 'currentUserName' => $user->getUsername(), // Nom de l'utilisateur actuel
-            // 'currentUserEmail' => $user->getEmail(), // Email
-            'users' => $users,
             'activities' => $activities,
             'stats' => [
                 'totalProjects' => count($projects),
@@ -106,156 +101,6 @@ $tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
             ],
         ]);
     }
-
-    // Pour une solution vraiment définitive, implémentez des tests fonctionnels qui vérifient le rendu correct des templates:
-    /**
-     * Test pour vérifier que le tableau de bord se charge correctement
-     */
-    // #[Route('/dashboard', name: 'app_dashboard_test')]
-    // public function testDashboard(): Response
-    // {
-    //     $client = static::createClient();
-    //     $client->request('GET', '/dashboard');
-    //     $this->assertResponseIsSuccessful();
-    //     $this->assertSelectorTextContains('h1', 'Tableau de bord'); // Vérifiez que le titre est correct
-    // Vous pouvez ajouter d'autres assertions pour vérifier le contenu du tableau de bord
-    //         return new Response('Dashboard test passed');
-    //     }
-    // public function testDashboardRendersCorrectly()
-    // {
-    //     $client = static::createClient();
-    //     $client->request('GET', '/dashboard');
-
-    //     $this->assertResponseIsSuccessful();
-    //     // Autres assertions...
-    // }
-    // Supprimer ou commenter la deuxième méthode index avec la même route
-    // #[Route('/dashboard', name: 'app_dashboard')]
-    // public function Dashindex(...)
-
-    // Le reste de votre code...
-
-
-    // // Route pour le tableau de bord principal
-    // #[Route('/dashboard', name: 'app_dashboard')]
-    // public function Dashindex(
-    //     Request $request,
-    //     ProjectRepository $projectRepository,
-    //     TaskRepository $taskRepository,
-    //     UserRepository $userRepository
-    // ): Response {
-
-    //     /** @var User $user */
-    //     // Récupération de l'utilisateur actuel
-    //     $user = $this->getUser();
-
-    //     // Vérifier si l'utilisateur est admin
-    //     $isAdmin = false;
-
-    //     // Si vous utilisez les rôles Symfony standards
-    //     if ($this->isGranted('ROLE_ADMIN')) {
-    //         $isAdmin = true;
-    //     }
-    // OU si vous utilisez un enum Role
-    // if ($user->getRole() === Role::ADMIN) {
-    //     $isAdmin = true;
-    // }
-
-    // if ($user->getRole() === 'ROLE_ADMIN') {
-    //     $isAdmin = true;
-    // }
-
-    // // Récupérer les projets en fonction du rôle
-    // if ($isAdmin) {
-    //     // Pour un admin, récupérer TOUS les projets
-    //     $projects = $projectRepository->findAll();
-    // } else {
-    //     // Pour un utilisateur normal, seulement ses projets
-    //     $projects = $projectRepository->findBy(['user' => $user]);
-    // }
-    // Récupérer les projets
-    // $projects = $projectRepository->findBy(['user' => $user]);
-
-    // Récupérer les tâches
-    // $tasks = $taskRepository->findBy(['user' => $user]);
-
-    // Récupération des projets
-    // $projects = $projectRepository->findAll(); // Récupère tous les projets
-    // OU pour récupérer uniquement les projets de l'utilisateur connecté :
-    // $projects = $projectRepository->findByUser($user);
-    // Si vous voulez uniquement les projets actifs
-    // $projects = $projectRepository->findBy(['statut' => 'active']);
-    // Si vous voulez trier les projets
-    // $projects = $projectRepository->findBy([], ['dateCreation' => 'DESC']);
-
-    // Si vous avez une méthode personnalisée dans votre repository
-    // $projects = $projectRepository->findProjectsWithStats();
-
-    // Code existant pour déterminer le statut actuel
-    // $currentStatut = 'votre_logique_pour_determiner_statut';
-
-    // Récupération des tâches (si nécessaire pour d'autres parties du template)
-    // $tasks = $taskRepository->findAll(); 
-    // ou une requête plus spécifique
-    //  Même logique pour les tâches
-    // if ($isAdmin) {
-    //     $tasks = $taskRepository->findAll();
-    // } else {
-    //     $tasks = $taskRepository->findBy(['user' => $user]);
-    // }
-
-    // Préparer les statistiques adaptées au rôle
-    // $stats = [
-    //     'totalProjects' => count($projects),
-    //     'totalTasks' => count($tasks),
-    // Autres statistiques...
-    // ];
-    // Récupération des statistiques ou autres données nécessaires
-
-    // Préparer les statistiques
-    // $stats = [
-    //     'totalProjects' => count($projects),
-    //     'totalTasks' => count($tasks),
-
-    //     // Statistiques des projets par statut
-    //     'projectsByStatus' => [
-    //         'not_started' => count(array_filter($projects, fn($p) => $p->getStatut() === 'not_started')),
-    //         'in_progress' => count(array_filter($projects, fn($p) => $p->getStatut() === 'in_progress')),
-    //         'completed' => count(array_filter($projects, fn($p) => $p->getStatut() === 'completed')),
-    //     ],
-
-    // Statistiques des tâches par statut
-    // 'tasksByStatus' => [
-    //     'not_started' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'not_started')),
-    //     'in_progress' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'in_progress')),
-    //     'completed' => count(array_filter($tasks, fn($t) => $t->getStatut() === 'completed')),
-    // ],
-
-    // Taux de complétion (pourcentage de tâches terminées)
-    // 'completionRate' => count($tasks) > 0
-    //     ? round((count(array_filter($tasks, fn($t) => $t->getStatut() === 'completed')) / count($tasks)) * 100)
-    //     : 0,
-
-    // Statistiques temporelles (tâches par mois/semaine)
-    //     'recentActivity' => $this->calculateRecentActivity($tasks),
-    // ];
-
-    // Si vous avez besoin de statistiques plus avancées, vous pouvez 
-    // utiliser des requêtes DQL personnalisées dans vos repositories
-
-    // return $this->render('dashboard/index.html.twig', [
-    //     'user' => $user,
-    //     'current_statut' => 'dashboard',
-    //     'projects' => $projects,
-    //     'tasks' => $tasks,
-    //     'stats' => $stats, // Ajout de la variable stats
-    //     'isAdmin' => $isAdmin, // Indique si l'utilisateur est admin
-    //     'curent_statut' => $currentStatut, // Ajout de la variable current_statut
-    //     'tachesAssignees' => [],
-    //     'userAssignees' => [],
-    //     'projectAssignees' => [],
-    // ]);
-
 
     /**
      * Calcule l'activité récente basée sur les dates de création des tâches
@@ -279,18 +124,6 @@ $tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
             'lastMonth' => count($tasksLastMonth),
             'total' => count($tasks),
         ];
-
-        // return $this->render('dashboard/index.html.twig', [
-        //     'user' => $user,
-        //     'current_statut' => $currentStatut,
-        //     'projects' => $projects,
-        //     'tasks' => $tasks
-        // ]);
-        // Vérification des rôles de l'utilisateur
-
-        // Différentes vues selon le rôle
-        // Note: Ne pas retourner de Response ici, car cette méthode doit retourner un array
-        // Si vous souhaitez rediriger selon le rôle, faites-le dans l'action du contrôleur, pas ici.
     }
 
     /**
@@ -472,35 +305,4 @@ $tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
         ]);
     }
 }
- 
 
-
-
-
-
-    // // debug rapide a modifier et revoir
-    // #[Route('/chef-projet/dashboard', name: 'app_chef_projet_dashboard')]
-    // public function chefProjetDashboard(): Response
-    // {
-    //     return $this->render('dashboard/index.html.twig', [
-    //         'message' => 'Dashboard Chef de Projet - En cours de développement',
-    //     ]);
-    // }
-
-
-// This code is a Symfony controller for a dashboard that displays statistics and recent projects/tasks for users based on their role.
-// It uses repositories to fetch data and renders a Twig template with the statistics and recent projects/tasks.
-// src/Controller/DashboardController.php
-// This file defines a controller for the dashboard of a Symfony application.
-// It includes methods to fetch and display statistics about projects and tasks based on the user's role.
-
-
-// {
-//     #[Route('/dashboard', name: 'app_dashboard')]
-//     public function index(): Response
-//     {
-//         return $this->render('dashboard/index.html.twig', [
-//             'controller_name' => 'DashboardController',
-//         ]);
-//     }
-// }
