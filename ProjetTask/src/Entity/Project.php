@@ -53,8 +53,9 @@ class Project
     private ?string $budget = null;
 
     // Chef de projet : Un User peut gérer plusieurs projets
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projetsGeres')]
+   
 
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "projetsGeres")]
     #[ORM\JoinColumn(name: "chef_projet_id", referencedColumnName: "id", nullable: true)]
     private ?User $chefProjet = null;
 
@@ -207,7 +208,7 @@ class Project
         return $this->chefProjet;
     }
 
-    public function setChefProjet(?User $chefProjet): static
+    public function setChefProjet(?User $chefProjet): self
     {
         $this->chefProjet = $chefProjet;
         return $this;

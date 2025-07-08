@@ -17,9 +17,9 @@ class Activity
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "activities")]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id", nullable: false)]
+    private User $user;
 
     #[ORM\Column(enumType: ActivityType::class)]
     private ?ActivityType $type = null;
@@ -74,7 +74,7 @@ class Activity
         return $this->user;
     }
 
-    public function setUser(?User $user): static
+    public function setUser(?User $user): self
     {
         $this->user = $user;
         return $this;

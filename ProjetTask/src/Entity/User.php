@@ -44,7 +44,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(enumType: UserRole::class)]
     private ?UserRole $role = UserRole::EMPLOYE;  // Valeur par défaut
 
-    
+
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Length(max: 180)]
     #[Assert\Email]
@@ -75,19 +75,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OrderBy(['requestedAt' => 'DESC'])]
     private Collection $resetPasswordRequests;
 
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'Chef_Projet')]
+    #[ORM\OneToMany(mappedBy: "chefProjet", targetEntity: Project::class)]
     private Collection $projetsGeres;
 
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
     private Collection $projetsAssignes;
 
-    #[ORM\OneToMany(mappedBy: 'assignedUser', targetEntity: Task::class)]
+    #[ORM\OneToMany(mappedBy: "assignedUser", targetEntity: Task::class)]
     private Collection $tachesAssignees;
+
 
     /**
      * @var Collection<int, Activity>
      */
-    #[ORM\OneToMany(targetEntity: Activity::class, mappedBy: 'user')]
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Activity::class)]
     private Collection $activities;
 
     public function __construct()
@@ -249,31 +250,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->projetsGeres;
     }
-
-    public function getProjetsAssignes(): Collection
+    public function addProjetGere(Project $projet): self
     {
-        return $this->projetsAssignes;
+        if (!$this->projetsGeres->contains($projet)) {
+            $this->projetsGeres->add($projet);
+            $projet->setChefProjet($this);
+        }
+
+        return $this;
     }
 
+    public function removeProjetGere(Project $projet): self
+    {
+        if ($this->projetsGeres->removeElement($projet)) {
+            // set the owning side to null (unless already changed)
+            if ($projet->getChefProjet() === $this) {
+                $projet->setChefProjet(null);
+            }
+        }
+
+        return $this;
+    }
+    /**
+     * @return Collection<int, Task>
+     */
     public function getTachesAssignees(): Collection
     {
         return $this->tachesAssignees;
     }
 
-    public function addTacheAssignee(Task $task): static
+    public function addTachesAssignee(Task $tache): self
     {
-        if (!$this->tachesAssignees->contains($task)) {
-            $this->tachesAssignees->add($task);
-            $task->setAssignedUser($this);
+        if (!$this->tachesAssignees->contains($tache)) {
+            $this->tachesAssignees->add($tache);
+            $tache->setAssignedUser($this);
         }
+
         return $this;
     }
 
-    public function removeTacheAssignee(Task $task): static
+    public function removeTachesAssignee(Task $tache): self
     {
-        if ($this->tachesAssignees->removeElement($task) && $task->getAssignedUser() === $this) {
-            $task->setAssignedUser(null);
+        if ($this->tachesAssignees->removeElement($tache)) {
+            // set the owning side to null (unless already changed)
+            if ($tache->getAssignedUser() === $this) {
+                $tache->setAssignedUser(null);
+            }
         }
+
         return $this;
     }
 
@@ -307,7 +331,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->activities;
     }
 
-    public function addActivity(Activity $activity): static
+    public function addActivity(Activity $activity): self
     {
         if (!$this->activities->contains($activity)) {
             $this->activities->add($activity);
@@ -317,7 +341,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function removeActivity(Activity $activity): static
+    public function removeActivity(Activity $activity): self
     {
         if ($this->activities->removeElement($activity)) {
             // set the owning side to null (unless already changed)

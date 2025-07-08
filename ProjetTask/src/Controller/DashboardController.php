@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
+use App\Enum\TaskStatut;
 use App\Repository\ActivityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,6 @@ use Symfony\Component\Security\Core\Role\Role;
 // Si vous avez un service spécifique pour les activités, utilisez-le
 use App\Service\ActivityService; // Si vous avez un service pour les activités
 use Container1mDkSxn\getActivityRepositoryService;
-
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
@@ -32,10 +32,9 @@ class DashboardController extends AbstractController
         ProjectRepository $projectRepository,
         TaskRepository $taskRepository,
         UserRepository $userRepository,
-        ActivityRepository $activityRepository // Correction ici
+        ActivityRepository $activityRepository,
+        EntityManagerInterface $entityManager
     ): Response {
-
-
         // Assurez-vous que l'utilisateur est connecté
         $user = $this->getUser();
         if (!$user) {
@@ -43,10 +42,13 @@ class DashboardController extends AbstractController
         }
 
         // Récupérer les projets
-        $projects = $projectRepository->findAll(); // Ou une requête plus spécifique
+        $projects = $projectRepository->findAll();
 
         // Récupérer les tâches
-        $tasks = $taskRepository->findAll(); // Ou une requête plus spécifique
+        $tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
+
+        // Récupérer les tâches
+        $tasks = $taskRepository->findAll();
 
         // Récupérer les utilisateurs
         $users = $userRepository->findAll();
@@ -54,255 +56,402 @@ class DashboardController extends AbstractController
         // Récupérer les activités récentes
         $activities = $activityRepository->findRecent(10);
 
+        // Projets actifs (pour l'affichage dans le tableau des projets en cours)
+        $activeProjects = $projectRepository->findBy(['statut' => Project::STATUT_EN_COURS], ['dateCreation' => 'DESC']);
+
+        // Récupérer les tâches assignées à l'utilisateur actuel
+        $tachesAssignees = $taskRepository->findBy(['assignedUser' => $user], ['dateCreation' => 'DESC'], 5);
+
         // Calculs pour les statistiques
-        $completedTasks = count(array_filter($tasks, function ($task) {
-            return $task->getStatut() === 'TERMINE'; // Adapter selon votre structure
+        $allTasks = $taskRepository->findAll();
+        
+        $completedTasks = count(array_filter($allTasks, function ($task) {
+            return $task->getStatut() === TaskStatut::TERMINE;
         }));
 
-        $pendingTasks = count(array_filter($tasks, function ($task) {
-            return $task->getStatut() === 'EN-ATTENTE'; // Adapter selon votre structure
+        $pendingTasks = count(array_filter($allTasks, function ($task) {
+            return $task->getStatut() === TaskStatut::EN_ATTENTE;
         }));
 
-        $inProgressTasks = count(array_filter($tasks, function ($task) {
-            return $task->getStatut() === 'EN-COURS'; // Adapter selon votre structure
+        $inProgressTasks = count(array_filter($allTasks, function ($task) {
+            return $task->getStatut() === TaskStatut::EN_COUR;
         }));
-        // Si vous avez besoin d'une tâche spécifique, vous pouvez la récupérer ici
-        // Par exemple, si vous voulez la première tâche ou une tâche spécifique
-        // $task = $taskRepository->findOneBy(['someCondition' => 'value']);
-// Récupérer une tâche valide ou créer un objet vide
-    $task = $taskRepository->findOneBy([], ['id' => 'DESC']) ?? new Task();
+        
+        // Calcul du taux de complétion
+        $completionRate = count($allTasks) > 0 ? ($completedTasks / count($allTasks)) * 100 : 0;
 
-$task = $taskRepository->findOneBy(['statut' => 'En cours']);
-
-$tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
-
+        // Générer les échéances à venir
+        $dueDates = [];
+        
+        // Ajouter les échéances des tâches
+        foreach ($tasks as $task) {
+            if ($task->getDateButoir()) {
+                $dueDates[] = [
+                    'title' => $task->getTitle(),
+                    'date' => $task->getDateButoir(),
+                    'type' => 'task',
+                    'completed' => $task->getStatut() === TaskStatut::TERMINE,
+                    'statut' => $task->getStatutLabel(),
+                    'url' => $this->generateUrl('app_task_show', ['id' => $task->getId()])
+                ];
+            }
+        }
+        
+        // Ajouter les échéances des projets
+        foreach ($projects as $project) {
+            if ($project->getDateButoir()) {
+                $dueDates[] = [
+                    'title' => $project->getTitre(),
+                    'date' => $project->getDateButoir(),
+                    'type' => 'project',
+                    'completed' => $project->getStatut() === Project::STATUT_TERMINE,
+                    'statut' => $project->getStatut(),
+                    'url' => $this->generateUrl('app_projet_show', ['id' => $project->getId()])
+                ];
+            }
+        }
+        
+        // Trier les échéances par date
+        usort($dueDates, function($a, $b) {
+            return $a['date'] <=> $b['date'];
+        });
+        
+        // Limiter à 5 échéances
+        $dueDates = array_slice($dueDates, 0, 5);
+        
+        // Performance de l'équipe (pour admin ou directeur ou chefs de projet)
+        $teamPerformance = [];
+        
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')||$this->isGranted('ROLE_CHEF_PROJET')) {
+            foreach ($users as $teamMember) {
+                $userTasks = $taskRepository->findBy(['assignedUser' => $teamMember]);
+                $userCompletedTasks = count(array_filter($userTasks, function($task) {
+                    return $task->getStatut() === TaskStatut::TERMINE;
+                }));
+                
+                $userOverdueTasks = count(array_filter($userTasks, function($task) {
+                    return $task->isOverdue();
+                }));
+                
+                // Dernière activité de l'utilisateur
+                $lastActivity = $activityRepository->findOneBy(
+                    ['user' => $teamMember],
+                    ['dateCreation' => 'DESC']
+                );
+                
+                $teamPerformance[] = [
+                    'user' => $teamMember,
+                    'assignedTasks' => count($userTasks),
+                    'completedTasks' => $userCompletedTasks,
+                    'completionRate' => count($userTasks) > 0 ? ($userCompletedTasks / count($userTasks)) * 100 : 0,
+                    'overdueTasks' => $userOverdueTasks,
+                    'lastActivity' => $lastActivity ? $lastActivity->getDateCreation() : null
+                ];
+            }
+        }
 
         return $this->render('dashboard/index.html.twig', [
             'projects' => $projects,
             'tasks' => $tasks,
-            'task' => $task, // Si vous avez une tâche spécifique à afficher
-            'user' => $user,
-            'current_statut' => 'dashboard', // Statut actuel pour le template
-            'isAdmin' => $this->isGranted('ROLE_ADMIN'), // Vérification si l'utilisateur est admin
-            'curent_statut' => 'dashboard', // Correction de la variable
-            'tachesAssignees' => [], // Si vous avez des tâches assignées
-            'userAssignees' => [], // Si vous avez des utilisateurs assignés
-            'projectAssignees' => [], // Si vous avez des projets assignés
-            'currentUser' => $user, // Utilisateur actuel
+            'users' => $users,
             'activities' => $activities,
+            'activeProjects' => $activeProjects,
+            'tachesAssignees' => $tachesAssignees,
+            'dueDates' => $dueDates,
+            'teamPerformance' => $teamPerformance,
+            'current_statut' => 'dashboard',
             'stats' => [
                 'totalProjects' => count($projects),
-                'totalTasks' => count($tasks),
+                'totalTasks' => count($allTasks),
                 'completedTasks' => $completedTasks,
                 'pendingTasks' => $pendingTasks,
                 'inProgressTasks' => $inProgressTasks,
                 'totalUsers' => count($users),
-                'completionRate' => count($tasks) > 0 ? ($completedTasks / count($tasks)) * 100 : 0,
+                'completionRate' => $completionRate,
             ],
-        ]);
-    }
-
-    /**
-     * Calcule l'activité récente basée sur les dates de création des tâches
-     */
-    private function calculateRecentActivity(array $tasks): array
-    {
-        $now = new \DateTime();
-        $lastWeek = (new \DateTime())->modify('-7 days');
-        $lastMonth = (new \DateTime())->modify('-30 days');
-
-        $tasksLastWeek = array_filter($tasks, function ($task) use ($lastWeek) {
-            return $task->getDateCreation() >= $lastWeek;
-        });
-
-        $tasksLastMonth = array_filter($tasks, function ($task) use ($lastMonth, $lastWeek) {
-            return $task->getDateCreation() >= $lastMonth && $task->getDateCreation() < $lastWeek;
-        });
-
-        return [
-            'lastWeek' => count($tasksLastWeek),
-            'lastMonth' => count($tasksLastMonth),
-            'total' => count($tasks),
-        ];
-    }
-
-    /**
-     * Tableau de bord pour admin et directeur
-     */
-    private function adminDashboard(
-        ProjectRepository $projectRepository,
-        TaskRepository $taskRepository,
-        UserRepository $userRepository
-    ): Response {
-        // Statistiques globales
-        $stats = [
-            'projets' => [
-                'total' => $projectRepository->countAll(),
-                'en_cours' => $projectRepository->countBystatut([Project::STATUT_EN_COURS]),
-                'en_attente' => $projectRepository->countBystatut([Project::STATUT_EN_ATTENTE]),
-                'termines' => $projectRepository->countBystatut([Project::STATUT_TERMINE]),
-            ],
-            'utilisateurs' => [
-                'actifs' => count($userRepository->findActiveUsers()),
-                'chefs_projet' => count($userRepository->findChefsProjets()),
-            ],
-        ];
-
-        // Projets récents
-        $projetsRecents = $projectRepository->findRecent(5);
-
-        // Tâches en retard
-        $tachesRetard = $taskRepository->findOverdue();
-
-        // Projets avec statistiques budgétaires
-        $projetsBudget = $projectRepository->getProjectsWithBudgetStats();
-
-        return $this->render('dashboard/admin_dashboard.html.twig', [
-            'stats' => $stats,
-            'projets_recents' => $projetsRecents,
-            'taches_retard' => $tachesRetard,
-            'projets_budget' => $projetsBudget,
-        ]);
-    }
-
-    /**
-     * Tableau de bord pour chef de projet
-     */
-    private function chefProjetDashboard(
-        ProjectRepository $projectRepository,
-        TaskRepository $taskRepository,
-        User $user
-    ): Response {
-        // Projets où l'utilisateur est chef
-        $projetsDiriges = $projectRepository->findByChefDeProjet($user);
-
-        // Projets récents avec stats
-        $projetsRecents = $projectRepository->findRecentWithStats($user, 5);
-
-        // Tâches en retard dans les projets gérés
-        $tachesRetard = [];
-        foreach ($projetsDiriges as $projet) {
-            $tachesProjet = $taskRepository->findOverdue();
-            foreach ($tachesProjet as $tache) {
-                if ($tache->getProject() && $tache->getProject()->getChef_Projet() === $user) {
-                    $tachesRetard[] = $tache;
-                }
-            }
-        }
-
-        return $this->render('dashboard/chef_projet.html.twig', [
-            'projets_diriges' => $projetsDiriges,
-            'projets_recents' => $projetsRecents,
-            'taches_retard' => $tachesRetard,
-        ]);
-    }
-
-    /**
-     * Tableau de bord pour employé
-     */
-    private function employeDashboard(
-        ProjectRepository $projectRepository,
-        TaskRepository $taskRepository,
-        User $user
-    ): Response {
-        // Projets où l'utilisateur est membre
-        $projetsAssignes = $projectRepository->findByAssignedUser($user);
-
-        // Tâches assignées à l'utilisateur
-        $tachesAssignees = $taskRepository->findByAssignedUser($user);
-
-        // Tâches en retard
-        $tachesRetard = array_filter($tachesAssignees, function ($tache) {
-            return $tache->isOverdue();
-        });
-
-        // Tâches avec échéance proche
-        $tachesProches = $taskRepository->findTasksWithDeadlineApproaching();
-        $tachesProches = array_filter($tachesProches, function ($tache) use ($user) {
-            return $tache->getAssignedUser() === $user;
-        });
-
-        return $this->render('dashboard/employe.html.twig', [
-            'projets_assignes' => $projetsAssignes,
-            'taches_assignees' => $tachesAssignees,
-            'taches_retard' => $tachesRetard,
-            'taches_proches' => $tachesProches,
-        ]);
-    }
-    // End of DashboardController class restest route suivante verrif et modif a revoir
-
-    #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
-    public function directeurDashboardStats(ProjectRepository $projectRepository, UserRepository $userRepository): Response
-    {
-        // Récupérer tous les projets
-        $projects = $projectRepository->findAll();
-
-        // Calculer les statistiques
-        $totalProjects = count($projects);
-        $activeProjects = 0;
-        $pendingProjects = 0;
-        $completedProjects = 0;
-
-        foreach ($projects as $project) {
-            if ($project->getStatut() === 'EN-COURS') {
-                $activeProjects++;
-            } elseif ($project->getStatut() === 'TERMINE') {
-                $completedProjects++;
-            } else {
-                $pendingProjects++;
-            }
-        }
-
-        // Calculer les pourcentages
-        $percentActive = $totalProjects > 0 ? round(($activeProjects / $totalProjects) * 100) : 0;
-        $percentCompleted = $totalProjects > 0 ? round(($completedProjects / $totalProjects) * 100) : 0;
-        $percentPending = $totalProjects > 0 ? round(($pendingProjects / $totalProjects) * 100) : 0;
-
-        // Nombre total d'employés
-        $totalEmployees = $userRepository->count([]);
-
-        // Budget total (ceci est un exemple, adaptez selon votre modèle de données)
-        $totalBudget = 0;
-        foreach ($projects as $project) {
-            // Assurez-vous que votre entité Project a un getter pour le budget
-            // Si ce n'est pas le cas, vous pouvez omettre cette partie
-            if (method_exists($project, 'getBudget')) {
-                $totalBudget += $project->getBudget() ?? 0;
-            }
-        }
-
-        // Statistiques pour le dashboard
-        $stats = [
-            'total_projects' => $totalProjects,
-            'active_projects' => $activeProjects,
-            'total_employees' => $totalEmployees,
-            'total_budget' => $totalBudget,
-            'percent_active' => $percentActive,
-            'percent_completed' => $percentCompleted,
-            'percent_pending' => $percentPending,
-        ];
-
-        return $this->render('dashboard/directeur_dashboard.html.twig', [
-            'stats' => $stats,
-            'projects' => $projects,
-            // Si vous avez une entité Team, vous pouvez les ajouter ici
-            // 'teams' => $teamRepository->findAll(),
-        ]);
-    }
-
-    #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
-    public function directeurDashboard(): Response
-    {
-        return $this->render('dashboard/directeur_dashboard.html.twig', [
-            'controller_name' => 'DashboardController',
-        ]);
-    }
-    #[Route('/chef-de-projet/dashboard', name: 'app_chef_de_projet_dashboard')]
-    public function chefDeProjetDashboard(): Response
-    {
-        return $this->render('dashboard/chef_de_projet_dashboard.html.twig', [
-            'controller_name' => 'DashboardController',
         ]);
     }
 }
+
+// class DashboardController extends AbstractController
+// {
+//     #[Route('/dashboard', name: 'app_dashboard')]
+//     #[IsGranted('ROLE_USER')]
+//     public function index(
+//         ProjectRepository $projectRepository,
+//         TaskRepository $taskRepository,
+//         UserRepository $userRepository,
+//         ActivityRepository $activityRepository // Correction ici
+//     ): Response {
+
+
+//         // Assurez-vous que l'utilisateur est connecté
+//         $user = $this->getUser();
+//         if (!$user) {
+//             return $this->redirectToRoute('app_login');
+//         }
+
+//         // Récupérer les projets
+//         $projects = $projectRepository->findAll(); // Ou une requête plus spécifique
+
+//         // Récupérer les tâches
+//         $tasks = $taskRepository->findAll(); // Ou une requête plus spécifique
+
+//         // Récupérer les utilisateurs
+//         $users = $userRepository->findAll();
+
+//         // Récupérer les activités récentes
+//         $activities = $activityRepository->findRecent(10);
+
+//         // Calculs pour les statistiques
+//         $completedTasks = count(array_filter($tasks, function ($task) {
+//             return $task->getStatut() === 'TERMINE'; // Adapter selon votre structure
+//         }));
+
+//         $pendingTasks = count(array_filter($tasks, function ($task) {
+//             return $task->getStatut() === 'EN-ATTENTE'; // Adapter selon votre structure
+//         }));
+
+//         $inProgressTasks = count(array_filter($tasks, function ($task) {
+//             return $task->getStatut() === 'EN-COURS'; // Adapter selon votre structure
+//         }));
+//         // Si vous avez besoin d'une tâche spécifique, vous pouvez la récupérer ici
+//         // Par exemple, si vous voulez la première tâche ou une tâche spécifique
+//         // $task = $taskRepository->findOneBy(['someCondition' => 'value']);
+// // Récupérer une tâche valide ou créer un objet vide
+//     $task = $taskRepository->findOneBy([], ['id' => 'DESC']) ?? new Task();
+
+// $task = $taskRepository->findOneBy(['statut' => 'En cours']);
+
+// $tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
+
+
+//         return $this->render('dashboard/index.html.twig', [
+//             'projects' => $projects,
+//             'tasks' => $tasks,
+//             'task' => $task, // Si vous avez une tâche spécifique à afficher
+//             'user' => $user,
+//             'current_statut' => 'dashboard', // Statut actuel pour le template
+//             'isAdmin' => $this->isGranted('ROLE_ADMIN'), // Vérification si l'utilisateur est admin
+//             'curent_statut' => 'dashboard', // Correction de la variable
+//             'tachesAssignees' => [], // Si vous avez des tâches assignées
+//             'userAssignees' => [], // Si vous avez des utilisateurs assignés
+//             'projectAssignees' => [], // Si vous avez des projets assignés
+//             'currentUser' => $user, // Utilisateur actuel
+//             'activities' => $activities,
+//             'stats' => [
+//                 'totalProjects' => count($projects),
+//                 'totalTasks' => count($tasks),
+//                 'completedTasks' => $completedTasks,
+//                 'pendingTasks' => $pendingTasks,
+//                 'inProgressTasks' => $inProgressTasks,
+//                 'totalUsers' => count($users),
+//                 'completionRate' => count($tasks) > 0 ? ($completedTasks / count($tasks)) * 100 : 0,
+//             ],
+//         ]);
+//     }
+
+//     /**
+//      * Calcule l'activité récente basée sur les dates de création des tâches
+//      */
+//     private function calculateRecentActivity(array $tasks): array
+//     {
+//         $now = new \DateTime();
+//         $lastWeek = (new \DateTime())->modify('-7 days');
+//         $lastMonth = (new \DateTime())->modify('-30 days');
+
+//         $tasksLastWeek = array_filter($tasks, function ($task) use ($lastWeek) {
+//             return $task->getDateCreation() >= $lastWeek;
+//         });
+
+//         $tasksLastMonth = array_filter($tasks, function ($task) use ($lastMonth, $lastWeek) {
+//             return $task->getDateCreation() >= $lastMonth && $task->getDateCreation() < $lastWeek;
+//         });
+
+//         return [
+//             'lastWeek' => count($tasksLastWeek),
+//             'lastMonth' => count($tasksLastMonth),
+//             'total' => count($tasks),
+//         ];
+//     }
+
+//     /**
+//      * Tableau de bord pour admin et directeur
+//      */
+//     private function adminDashboard(
+//         ProjectRepository $projectRepository,
+//         TaskRepository $taskRepository,
+//         UserRepository $userRepository
+//     ): Response {
+//         // Statistiques globales
+//         $stats = [
+//             'projets' => [
+//                 'total' => $projectRepository->countAll(),
+//                 'en_cours' => $projectRepository->countBystatut([Project::STATUT_EN_COURS]),
+//                 'en_attente' => $projectRepository->countBystatut([Project::STATUT_EN_ATTENTE]),
+//                 'termines' => $projectRepository->countBystatut([Project::STATUT_TERMINE]),
+//             ],
+//             'utilisateurs' => [
+//                 'actifs' => count($userRepository->findActiveUsers()),
+//                 'chefs_projet' => count($userRepository->findChefsProjets()),
+//             ],
+//         ];
+
+//         // Projets récents
+//         $projetsRecents = $projectRepository->findRecent(5);
+
+//         // Tâches en retard
+//         $tachesRetard = $taskRepository->findOverdue();
+
+//         // Projets avec statistiques budgétaires
+//         $projetsBudget = $projectRepository->getProjectsWithBudgetStats();
+
+//         return $this->render('dashboard/admin_dashboard.html.twig', [
+//             'stats' => $stats,
+//             'projets_recents' => $projetsRecents,
+//             'taches_retard' => $tachesRetard,
+//             'projets_budget' => $projetsBudget,
+//         ]);
+//     }
+
+//     /**
+//      * Tableau de bord pour chef de projet
+//      */
+//     private function chefProjetDashboard(
+//         ProjectRepository $projectRepository,
+//         TaskRepository $taskRepository,
+//         User $user
+//     ): Response {
+//         // Projets où l'utilisateur est chef
+//         $projetsDiriges = $projectRepository->findByChefDeProjet($user);
+
+//         // Projets récents avec stats
+//         $projetsRecents = $projectRepository->findRecentWithStats($user, 5);
+
+//         // Tâches en retard dans les projets gérés
+//         $tachesRetard = [];
+//         foreach ($projetsDiriges as $projet) {
+//             $tachesProjet = $taskRepository->findOverdue();
+//             foreach ($tachesProjet as $tache) {
+//                 if ($tache->getProject() && $tache->getProject()->getChef_Projet() === $user) {
+//                     $tachesRetard[] = $tache;
+//                 }
+//             }
+//         }
+
+//         return $this->render('dashboard/chef_projet.html.twig', [
+//             'projets_diriges' => $projetsDiriges,
+//             'projets_recents' => $projetsRecents,
+//             'taches_retard' => $tachesRetard,
+//         ]);
+//     }
+
+//     /**
+//      * Tableau de bord pour employé
+//      */
+//     private function employeDashboard(
+//         ProjectRepository $projectRepository,
+//         TaskRepository $taskRepository,
+//         User $user
+//     ): Response {
+//         // Projets où l'utilisateur est membre
+//         $projetsAssignes = $projectRepository->findByAssignedUser($user);
+
+//         // Tâches assignées à l'utilisateur
+//         $tachesAssignees = $taskRepository->findByAssignedUser($user);
+
+//         // Tâches en retard
+//         $tachesRetard = array_filter($tachesAssignees, function ($tache) {
+//             return $tache->isOverdue();
+//         });
+
+//         // Tâches avec échéance proche
+//         $tachesProches = $taskRepository->findTasksWithDeadlineApproaching();
+//         $tachesProches = array_filter($tachesProches, function ($tache) use ($user) {
+//             return $tache->getAssignedUser() === $user;
+//         });
+
+//         return $this->render('dashboard/employe.html.twig', [
+//             'projets_assignes' => $projetsAssignes,
+//             'taches_assignees' => $tachesAssignees,
+//             'taches_retard' => $tachesRetard,
+//             'taches_proches' => $tachesProches,
+//         ]);
+//     }
+//     // End of DashboardController class restest route suivante verrif et modif a revoir
+
+//     #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
+//     public function directeurDashboardStats(ProjectRepository $projectRepository, UserRepository $userRepository): Response
+//     {
+//         // Récupérer tous les projets
+//         $projects = $projectRepository->findAll();
+
+//         // Calculer les statistiques
+//         $totalProjects = count($projects);
+//         $activeProjects = 0;
+//         $pendingProjects = 0;
+//         $completedProjects = 0;
+
+//         foreach ($projects as $project) {
+//             if ($project->getStatut() === 'EN-COURS') {
+//                 $activeProjects++;
+//             } elseif ($project->getStatut() === 'TERMINE') {
+//                 $completedProjects++;
+//             } else {
+//                 $pendingProjects++;
+//             }
+//         }
+
+//         // Calculer les pourcentages
+//         $percentActive = $totalProjects > 0 ? round(($activeProjects / $totalProjects) * 100) : 0;
+//         $percentCompleted = $totalProjects > 0 ? round(($completedProjects / $totalProjects) * 100) : 0;
+//         $percentPending = $totalProjects > 0 ? round(($pendingProjects / $totalProjects) * 100) : 0;
+
+//         // Nombre total d'employés
+//         $totalEmployees = $userRepository->count([]);
+
+//         // Budget total (ceci est un exemple, adaptez selon votre modèle de données)
+//         $totalBudget = 0;
+//         foreach ($projects as $project) {
+//             // Assurez-vous que votre entité Project a un getter pour le budget
+//             // Si ce n'est pas le cas, vous pouvez omettre cette partie
+//             if (method_exists($project, 'getBudget')) {
+//                 $totalBudget += $project->getBudget() ?? 0;
+//             }
+//         }
+
+//         // Statistiques pour le dashboard
+//         $stats = [
+//             'total_projects' => $totalProjects,
+//             'active_projects' => $activeProjects,
+//             'total_employees' => $totalEmployees,
+//             'total_budget' => $totalBudget,
+//             'percent_active' => $percentActive,
+//             'percent_completed' => $percentCompleted,
+//             'percent_pending' => $percentPending,
+//         ];
+
+//         return $this->render('dashboard/directeur_dashboard.html.twig', [
+//             'stats' => $stats,
+//             'projects' => $projects,
+//             // Si vous avez une entité Team, vous pouvez les ajouter ici
+//             // 'teams' => $teamRepository->findAll(),
+//         ]);
+//     }
+
+//     #[Route('/directeur/dashboard', name: 'app_directeur_dashboard')]
+//     public function directeurDashboard(): Response
+//     {
+//         return $this->render('dashboard/directeur_dashboard.html.twig', [
+//             'controller_name' => 'DashboardController',
+//         ]);
+//     }
+//     #[Route('/chef-de-projet/dashboard', name: 'app_chef_de_projet_dashboard')]
+//     public function chefDeProjetDashboard(): Response
+//     {
+//         return $this->render('dashboard/chef_de_projet_dashboard.html.twig', [
+//             'controller_name' => 'DashboardController',
+//         ]);
+//     }
+// }
 

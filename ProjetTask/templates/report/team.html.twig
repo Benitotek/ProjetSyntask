@@ -1,0 +1,354 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rapport de performance de l'équipe | SYNTASK
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+	<style>
+		.performance-card {
+			border-radius: 10px;
+			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+			margin-bottom: 1.5rem;
+			overflow: hidden;
+		}
+
+		.performance-header {
+			padding: 1rem;
+			background-color: #f8f9fa;
+			border-bottom: 1px solid #e9ecef;
+		}
+
+		.performance-stat {
+			text-align: center;
+			padding: 1rem;
+			border-right: 1px solid #e9ecef;
+		}
+
+		.performance-stat:last-child {
+			border-right: none;
+		}
+
+		.performance-stat-value {
+			font-size: 1.5rem;
+			font-weight: bold;
+			margin-bottom: 0.25rem;
+		}
+
+		.performance-stat-label {
+			font-size: 0.875rem;
+			color: #6c757d;
+		}
+
+		.chart-container {
+			height: 300px;
+			margin-bottom: 1.5rem;
+		}
+
+		.user-avatar {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			background-color: #6c757d;
+			color: white;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			font-size: 1rem;
+		}
+	</style>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	 <script>
+	        document.addEventListener('DOMContentLoaded', function() {
+	            // Initialiser les charts si nécessaire
+	            if (document.getElementById('completionRateChart')) {
+	                const ctx = document.getElementById('completionRateChart').getContext('2d');
+	                const labels = [];
+	                const data = [];
+	                const backgroundColors = [];
+	                
+	                // Récupérer les données depuis les attributs data-*
+	                document.querySelectorAll('[data-user-name]').forEach(el => {
+	                    labels.push(el.getAttribute('data-user-name'));
+	                    const rate = parseFloat(el.getAttribute('data-completion-rate'));
+	                    data.push(rate);
+	                    
+	                    // Couleur basée sur le taux de complétion
+	                    if (rate < 30) {
+	                        backgroundColors.push('#dc3545'); // danger
+	                    } else if (rate < 70) {
+	                        backgroundColors.push('#ffc107'); // warning
+	                    } else {
+	                        backgroundColors.push('#198754'); // success
+	                    }
+	                });
+	                
+	                new Chart(ctx, {
+	                    type: 'bar',
+	                    data: {
+	                        labels: labels,
+	                        datasets: [{
+	                            label: 'Taux de complétion (%)',
+	                            data: data,
+	                            backgroundColor: backgroundColors,
+	                            borderWidth: 1
+	                        }]
+	                    },
+	                    options: {
+	                        responsive: true,
+	                        maintainAspectRatio: false,
+	                        scales: {
+	                            y: {
+	                                beginAtZero: true,
+	                                max: 100
+	                            }
+	                        }
+	                    }
+	                });
+	            }
+	            
+	            // Écouter les changements dans les filtres
+	            document.getElementById('period-filter').addEventListener('change', function() {
+	                applyFilters();
+	            });
+	            
+	            if (document.getElementById('project-filter')) {
+	                document.getElementById('project-filter').addEventListener('change', function() {
+	                    applyFilters();
+	                });
+	            }
+	            
+	            function applyFilters() {
+	                const period = document.getElementById('period-filter').value;
+	                const projectFilter = document.getElementById('project-filter');
+	                const project = projectFilter ? projectFilter.value : '';
+	                
+	                window.location.href = '{{ path('app_report_team') }}?period=' + period + (project ? '&project=' + project : '');
+	            }
+	        });
+	    </script>
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid py-4">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<div>
+				<h1 class="mb-1">Rapport de performance de l'équipe</h1>
+				<p class="text-muted">Analyse détaillée des performances et de la productivité de l'équipe</p>
+			</div>
+
+			<div class="d-flex gap-2">
+				<select id="period-filter" class="form-select">
+					<option value="week" {{ period == 'week' ? 'selected' : '' }}>Cette semaine</option>
+					<option value="month" {{ period == 'month' ? 'selected' : '' }}>Ce mois</option>
+					<option value="quarter" {{ period == 'quarter' ? 'selected' : '' }}>Ce trimestre</option>
+					<option value="all" {{ period == 'all' ? 'selected' : '' }}>Toutes les périodes</option>
+				</select>
+
+				{% if is_granted('ROLE_CHEF_PROJET') or is_granted('ROLE_ADMIN') %}
+					<select id="project-filter" class="form-select">
+						<option value="">Tous les projets</option>
+						{% for project in projects %}
+							<option value="{{ project.id }}" {{ selectedProject and selectedProject.id == project.id ? 'selected' : '' }}>
+								{{ project.titre }}
+							</option>
+						{% endfor %}
+					</select>
+				{% endif %}
+			</div>
+		</div>
+
+		{# Graphique de synthèse #}
+		<div class="card mb-4">
+			<div class="card-header">
+				<h5 class="card-title">Taux de complétion par membre</h5>
+			</div>
+			<div class="card-body">
+				<div class="chart-container">
+					<canvas id="completionRateChart"></canvas>
+				</div>
+
+				{% for member in teamPerformance %}
+					<div class="d-none" data-user-name="{{ member.user.prenom }} {{ member.user.nom }}" data-completion-rate="{{ member.completionRate|number_format(1) }}"></div>
+				{% endfor %}
+			</div>
+		</div>
+
+		{# Tableau détaillé #}
+		<div class="card">
+			<div class="card-header">
+				<h5 class="card-title">Détails des performances individuelles</h5>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover">
+						<thead>
+							<tr>
+								<th>Membre</th>
+								<th>Tâches assignées</th>
+								<th>Tâches terminées</th>
+								<th>Taux de complétion</th>
+								<th>Tâches en retard</th>
+								<th>Temps de résolution moyen</th>
+								<th>Dernière activité</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for member in teamPerformance %}
+								<tr>
+									<td>
+										<div class="d-flex align-items-center">
+											<div class="user-avatar me-2">
+												{{ member.user.prenom|first }}{{ member.user.nom|first }}
+											</div>
+											<div>
+												<div class="fw-bold">{{ member.user.prenom }}
+													{{ member.user.nom }}</div>
+												<div class="text-muted small">{{ member.user.role|default('Membre') }}</div>
+											</div>
+										</div>
+									</td>
+									<td>{{ member.assignedTasks }}</td>
+									<td>{{ member.completedTasks }}</td>
+									<td>
+										<div class="d-flex align-items-center">
+											<div class="progress flex-grow-1 me-2" style="height: 6px;">
+												<div class="progress-bar
+													                                                    {% if member.completionRate < 30 %}bg-danger
+													                                                    {% elseif member.completionRate < 70 %}bg-warning
+													                                                    {% else %}bg-success{% endif %}" role="progressbar" style="width: {{ member.completionRate }}%" aria-valuenow="{{ member.completionRate }}" aria-valuemin="0" aria-valuemax="100"></div>
+											</div>
+											<span class="text-muted small">{{ member.completionRate|number_format(1) }}%</span>
+										</div>
+									</td>
+									<td>
+										{% if member.overdueTasks > 0 %}
+											<span class="text-danger">{{ member.overdueTasks }}</span>
+										{% else %}
+											<span class="text-success">0</span>
+										{% endif %}
+									</td>
+									<td>
+										{% if member.avgResolutionTime is not null %}
+											{{ member.avgResolutionTime|number_format(1) }}
+											jours
+										{% else %}
+											<span class="text-muted">N/A</span>
+										{% endif %}
+									</td>
+									<td>
+										{% if member.lastActivity %}
+											<span class="text-muted">{{ member.lastActivity|date('d/m/Y H:i') }}</span>
+										{% else %}
+											<span class="text-muted">Aucune activité</span>
+										{% endif %}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+
+				{% if teamPerformance is empty %}
+					<div class="text-center py-4">
+						<i class="fas fa-users fa-2x text-muted mb-2"></i>
+						<p class="text-muted">Aucune donnée de performance disponible</p>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		{# Cards individuelles de performance #}
+		<h2 class="mt-5 mb-4">Fiches détaillées par membre</h2>
+
+		<div class="row">
+			{% for member in teamPerformance %}
+				<div class="col-md-6 col-xl-4 mb-4">
+					<div class="performance-card">
+						<div class="performance-header d-flex justify-content-between align-items-center">
+							<div class="d-flex align-items-center">
+								<div class="user-avatar me-2">
+									{{ member.user.prenom|first }}{{ member.user.nom|first }}
+								</div>
+								<div>
+									<h5 class="mb-0">{{ member.user.prenom }}
+										{{ member.user.nom }}</h5>
+									<div class="text-muted small">{{ member.user.role|default('Membre') }}</div>
+								</div>
+							</div>
+
+							<div>
+								<a href="{{ path('app_user_show', {'id': member.user.id}) }}" class="btn btn-sm btn-outline-primary">
+									<i class="fas fa-eye"></i>
+								</a>
+							</div>
+						</div>
+
+						<div class="row g-0">
+							<div class="col-4 performance-stat">
+								<div class="performance-stat-value">{{ member.assignedTasks }}</div>
+								<div class="performance-stat-label">Tâches assignées</div>
+							</div>
+							<div class="col-4 performance-stat">
+								<div class="performance-stat-value">{{ member.completedTasks }}</div>
+								<div class="performance-stat-label">Tâches terminées</div>
+							</div>
+							<div class="col-4 performance-stat">
+								<div class="performance-stat-value
+										                                    {% if member.completionRate < 30 %}text-danger
+										                                    {% elseif member.completionRate < 70 %}text-warning
+										                                    {% else %}text-success{% endif %}">
+									{{ member.completionRate|number_format(1) }}%
+								</div>
+								<div class="performance-stat-label">Taux de complétion</div>
+							</div>
+						</div>
+
+						<div class="card-body">
+							<h6 class="card-subtitle mb-2 text-muted">Répartition par priorité</h6>
+
+							<div class="mb-3">
+								<div class="d-flex justify-content-between align-items-center mb-1">
+									<span class="small">Priorité haute</span>
+									<span class="small text-danger">{{ member.tasksByPriority.HAUTE }}</span>
+								</div>
+								<div class="progress" style="height: 6px;">
+									<div class="progress-bar bg-danger" role="progressbar" style="width: {% if member.assignedTasks > 0 %}{{ (member.tasksByPriority.HAUTE / member.assignedTasks * 100)|number_format(1) }}{% else %}0{% endif %}%"></div>
+								</div>
+							</div>
+
+							<div class="mb-3">
+								<div class="d-flex justify-content-between align-items-center mb-1">
+									<span class="small">Priorité moyenne</span>
+									<span class="small text-warning">{{ member.tasksByPriority.MOYENNE }}</span>
+								</div>
+								<div class="progress" style="height: 6px;">
+									<div class="progress-bar bg-warning" role="progressbar" style="width: {% if member.assignedTasks > 0 %}{{ (member.tasksByPriority.MOYENNE / member.assignedTasks * 100)|number_format(1) }}{% else %}0{% endif %}%"></div>
+								</div>
+							</div>
+
+							<div>
+								<div class="d-flex justify-content-between align-items-center mb-1">
+									<span class="small">Priorité basse</span>
+									<span class="small text-info">{{ member.tasksByPriority.BASSE }}</span>
+								</div>
+								<div class="progress" style="height: 6px;">
+									<div class="progress-bar bg-info" role="progressbar" style="width: {% if member.assignedTasks > 0 %}{{ (member.tasksByPriority.BASSE / member.assignedTasks * 100)|number_format(1) }}{% else %}0{% endif %}%"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+{% endblock %}

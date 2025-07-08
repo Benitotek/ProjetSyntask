@@ -63,11 +63,49 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Project $project = null;
 
+
+    // Ajout de cette propriété et ses méthodes associées pour pouvoir m'aider:
+    //  -à suivre la date de complétion de la tâche
+    //  -faire les vérifications pour le dashboardindex de base au niveau des TeamMember
+
+    /**
+     * @ORM\Column(type="DATETIME_MUTABLE", nullable=true)
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateCompletion = null;
+
+    public function getDateCompletion(): ?\DateTimeInterface
+    {
+        return $this->dateCompletion;
+    }
+
+    public function setDateCompletion(?\DateTimeInterface $dateCompletion): self
+    {
+        $this->dateCompletion = $dateCompletion;
+        return $this;
+    }
+
+    /**
+     * Vérifie si la tâche est en retard
+     * 
+     * @return bool true si la tâche est en retard, false sinon
+     */
+    public function isOverdue(): bool
+    {
+        // Si pas de date butoir, la tâche ne peut pas être en retard
+        if (!$this->dateButoir) {
+            return false;
+        }
+
+        // Une tâche est en retard si sa date butoir est dépassée et qu'elle n'est pas terminée
+        return $this->dateButoir < new \DateTime() && $this->statut !== TaskStatut::TERMINE;
+    }
+
+
     // #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tachesAssignees')]
     // private ?User $assignedUser = null;
 
-    // Si dans votre base de données, la colonne s'appelle "assigned_user_id" au lieu de "user_id"
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "tachesAssignees")]
     #[ORM\JoinColumn(name: "assigned_user_id", referencedColumnName: "id", nullable: true)]
     private ?User $assignedUser = null;
     /**
@@ -212,7 +250,7 @@ class Task
         return $this->assignedUser;
     }
 
-    public function setAssignedUser(?User $assignedUser): static
+    public function setAssignedUser(?User $assignedUser): self
     {
         $this->assignedUser = $assignedUser;
         return $this;
@@ -249,13 +287,5 @@ class Task
     {
         $this->project = $project;
         return $this;
-    }
-
-    public function isOverdue(): bool
-    {
-        if (!$this->dateButoir || $this->statut === TaskStatut::TERMINE) {
-            return false;
-        }
-        return $this->dateButoir < new \DateTime();
     }
 }

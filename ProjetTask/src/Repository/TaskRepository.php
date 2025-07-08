@@ -18,6 +18,17 @@ class TaskRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Task::class);
     }
+    /**
+     * Trouve les activités récentes
+     */
+    public function findRecent(int $limit = 10): array
+    {
+        return $this->createQueryBuilder('t')
+            ->orderBy('t.dateCreation', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 
     /**
      * Trouve toutes les tâches d'un projet, triées par colonne puis position
@@ -39,13 +50,13 @@ class TaskRepository extends ServiceEntityRepository
      */
     public function findByAssignedUser(User $user): array
     {
-            return $this->createQueryBuilder('t')
-                ->where('t.assignedUser = :user')
-                ->setParameter('user', $user)
-                ->orderBy('t.dateButoir', 'ASC')
-                ->getQuery()
-                ->getResult();
-        }
+        return $this->createQueryBuilder('t')
+            ->where('t.assignedUser = :user')
+            ->setParameter('user', $user)
+            ->orderBy('t.dateButoir', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
     /**
      * Trouve la prochaine position disponible dans une colonne
@@ -100,7 +111,7 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-   
+
     /**
      * Réorganise les positions après suppression
      */
@@ -461,236 +472,5 @@ class TaskRepository extends ServiceEntityRepository
 //         }
 
 //         $entityManager->flush();
-//     }
-// }
-
-
-
-
-    // Version 1.0 VS mais manques de fonctionnalités et autres a revoir  version 2 et 3 en date du 02/07/2025
-//     /**
-//      * Trouver les tâches par projet
-//      */
-//     public function findByProject(Project $project): array
-//     {
-//         return $this->createQueryBuilder('t')
-//             ->where('t.project = :project')
-//             ->setParameter('project', $project)
-//             ->orderBy('t.dateButoir', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-
-//     /**
-//      * Trouver les tâches en retard pour un projet spécifique
-//      */
-//     public function findOverdueByProject(Project $project): array
-//     {
-//         $now = new \DateTime();
-
-//         return $this->createQueryBuilder('t')
-//             ->where('t.project = :project')
-//             ->andWhere('t.dateButoir < :now')
-//             ->andWhere('t.statut != :statut_termine')
-//             ->setParameter('project', $project)
-//             ->setParameter('now', $now)
-//             ->setParameter('statut_termine', 'TERMINE')
-//             ->orderBy('t.dateButoir', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     /**
-//      * Trouver les tâches assignées à un utilisateur
-//      */
-//     public function findByAssignedUser(User $user): array
-//     {
-//         return $this->createQueryBuilder('t')
-//             ->where('t.assignedUser = :user')
-//             ->setParameter('user', $user)
-//             ->orderBy('t.dateButoir', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     /**
-//      * Trouver les tâches avec échéance proche
-//      */
-//     public function findTasksWithDeadlineApproaching(User $user = null): array
-//     {
-//         $now = new \DateTime();
-//         $nextWeek = new \DateTime('+1 week');
-
-//         $qb = $this->createQueryBuilder('t')
-//             ->where('t.dateButoir >= :now')
-//             ->andWhere('t.dateButoir <= :nextWeek')
-//             ->andWhere('t.statut != :statut_termine')
-//             ->setParameter('now', $now)
-//             ->setParameter('nextWeek', $nextWeek)
-//             ->setParameter('statut_termine', 'TERMINE')
-//             ->orderBy('t.dateButoir', 'ASC');
-
-//         if ($user) {
-//             $qb->andWhere('t.assignedUser = :user')
-//                 ->setParameter('user', $user);
-//         }
-
-//         return $qb->getQuery()->getResult();
-//     }
-
-//     /**
-//      * Décaler les positions pour insérer une tâche
-//      */
-//     private function shiftPositionsForInsert(TaskList $column, int $position): void
-//     {
-//         $this->createQueryBuilder('t')
-//             ->update()
-//             ->set('t.position', 't.position + 1')
-//             ->where('t.taskList = :column')
-//             ->andWhere('t.position >= :position')
-//             ->setParameter('column', $column)
-//             ->setParameter('position', $position)
-//             ->getQuery()
-//             ->execute();
-//     }
-
-//     /**
-//      * Réorganiser les positions dans une colonne après suppression
-//      */
-//     public function reorganizePositionsInColumn(TaskList $column, int $startPosition = 1): void
-//     {
-//         $tasks = $this->createQueryBuilder('t')
-//             ->where('t.taskList = :column')
-//             ->setParameter('column', $column)
-//             ->orderBy('t.position', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-
-//         $position = $startPosition;
-//         foreach ($tasks as $task) {
-//             if ($task->getPosition() != $position) {
-//                 $task->setPosition($position);
-//                 $this->getEntityManager()->persist($task);
-//             }
-//             $position++;
-//         }
-
-//         $this->getEntityManager()->flush();
-//     }
-
-//     /**
-//      * Déplace une tâche d'une colonne à une autre
-//      */
-//     public function moveTaskToColumn(Task $task, TaskList $newColumn, int $newPosition): void
-//     {
-//         $em = $this->getEntityManager();
-
-//         // Réorganiser les positions dans l'ancienne colonne
-//         if ($task->getTaskList() && $task->getTaskList() !== $newColumn) {
-//             $this->reorganizePositionsInColumn($task->getTaskList(), $task->getPosition());
-//         }
-
-//         // Faire de la place dans la nouvelle colonne
-//         $this->makeSpaceInColumn($newColumn, $newPosition);
-
-//         // Déplacer la tâche
-//         $task->setTaskList($newColumn);
-//         $task->setPosition($newPosition);
-
-//         $em->persist($task);
-//         $em->flush();
-//     }
-
-
-//     /**
-//      * Fait de la place dans une colonne pour insérer une tâche
-//      */
-//     private function makeSpaceInColumn(TaskList $column, int $position): void
-//     {
-//         $tasks = $this->createQueryBuilder('t')
-//             ->where('t.taskList = :column')
-//             ->andWhere('t.position >= :position')
-//             ->setParameter('column', $column)
-//             ->setParameter('position', $position)
-//             ->orderBy('t.position', 'DESC')
-//             ->getQuery()
-//             ->getResult();
-
-//         $em = $this->getEntityManager();
-//         foreach ($tasks as $task) {
-//             $task->setPosition($task->getPosition() + 1);
-//             $em->persist($task);
-//         }
-//     }
-
-//     /**
-//      * Trouve la prochaine position disponible dans une colonne
-//      */
-//     public function findNextPositionInColumn(TaskList $column): int
-//     {
-//         $result = $this->createQueryBuilder('t')
-//             ->select('MAX(t.position)')
-//             ->where('t.taskList = :column')
-//             ->setParameter('column', $column)
-//             ->getQuery()
-//             ->getSingleScalarResult();
-
-//         return ($result ?? 0) + 1;
-//     }
-//     public function findOverdue(): array
-//     {
-//         return $this->createQueryBuilder('t')
-//             ->where('t.dateButoir < :now')
-//             ->andWhere('t.statut != :completed')
-//             ->setParameter('now', new \DateTime())
-//             ->setParameter('completed', Task::STATUT_TERMINE)
-//             ->orderBy('t.dateButoir', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     public function countOverdueByUser(User $user): int
-//     {
-//         return $this->createQueryBuilder('t')
-//             ->select('COUNT(t.id)')
-//             ->join('t.assignedUsers', 'u')
-//             ->where('u = :user')
-//             ->andWhere('t.dateButoir < :now')
-//             ->andWhere('t.statut != :completed')
-//             ->setParameter('user', $user)
-//             ->setParameter('now', new \DateTime())
-//             ->setParameter('completed', Task::STATUT_TERMINE)
-//             ->getQuery()
-//             ->getSingleScalarResult();
-//     }
-
-//     public function findBystatut(string $statut): array
-//     {
-//         return $this->createQueryBuilder('t')
-//             ->where('t.statut = :statut')
-//             ->setParameter('statut', $statut)
-//             ->orderBy('t.dateCreation', 'DESC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     public function findByPriority(string $priority): array
-//     {
-//         return $this->createQueryBuilder('t')
-//             ->where('t.priorite = :priority')
-//             ->setParameter('priority', $priority)
-//             ->orderBy('t.dateCreation', 'DESC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     public function findRecentTasks(int $limit = 10): array
-//     {
-//         return $this->createQueryBuilder('t')
-//             ->orderBy('t.dateCreation', 'DESC')
-//             ->setMaxResults($limit)
-//             ->getQuery()
-//             ->getResult();
 //     }
 // }
