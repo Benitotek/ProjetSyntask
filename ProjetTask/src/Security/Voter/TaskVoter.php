@@ -167,5 +167,5 @@ class TaskVoter extends Voter
                 self::ASSIGN => ['ROLE_USER'],
             ];
         }
-    
+    }    
                   
