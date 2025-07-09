@@ -59,6 +59,20 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?TaskList $taskList = null;
 
+#[ORM\ManyToOne(targetEntity: User::class)]
+#[ORM\JoinColumn(name: "created_by_id", referencedColumnName: "id", nullable: true)]
+private ?User $createdBy = null;
+
+public function getCreatedBy(): ?User
+{
+    return $this->createdBy;
+}
+
+public function setCreatedBy(?User $createdBy): self
+{
+    $this->createdBy = $createdBy;
+    return $this;
+}
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Project $project = null;
