@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes tâches{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Mes tâches</h1>
+    
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group">
+                <a href="{{ path('app_task_my_tasks', {'filter': 'all'}) }}" class="btn btn-outline-primary {% if app.request.query.get('filter') == 'all' or app.request.query.get('filter') is null %}active{% endif %}">Toutes</a>
+                <a href="{{ path('app_task_my_tasks', {'filter': 'pending'}) }}" class="btn btn-outline-primary {% if app.request.query.get('filter') == 'pending' %}active{% endif %}">En attente</a>
+                <a href="{{ path('app_task_my_tasks', {'filter': 'in_progress'}) }}" class="btn btn-outline-primary {% if app.request.query.get('filter') == 'in_progress' %}active{% endif %}">En cours</a>
+                <a href="{{ path('app_task_my_tasks', {'filter': 'completed'}) }}" class="btn btn-outline-primary {% if app.request.query.get('filter') == 'completed' %}active{% endif %}">Terminées</a>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="input-group">
+                <input type="text" id="task-search" class="form-control" placeholder="Rechercher une tâche...">
+                <button class="btn btn-outline-secondary" type="button" id="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if tasks|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{{ knp_pagination_sortable(tasks, 'Titre', 't.titre') }}</th>
+                        <th>{{ knp_pagination_sortable(tasks, 'Projet', 'p.nom') }}</th>
+                        <th>{{ knp_pagination_sortable(tasks, 'Priorité', 't.priorite') }}</th>
+                        <th>{{ knp_pagination_sortable(tasks, 'Statut', 't.statut') }}</th>
+                        <th>{{ knp_pagination_sortable(tasks, 'Date limite', 't.dateButoir') }}</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                        <tr class="{% if task.dateButoir and task.dateButoir|date('Y-m-d') < 'now'|date('Y-m-d') and task.statut != 'TERMINE' %}table-danger{% endif %}">
+                            <td>{{ task.titre }}</td>
+                            <td>{% if task.project %}{{ task.project.nom }}{% else %}-{% endif %}</td>
+                            <td>
+                                {% if task.priorite %}
+                                    {% if task.priorite.value == 'HAUTE' %}
+                                        <span class="badge bg-danger">Haute</span>
+                                    {% elseif task.priorite.value == 'MOYENNE' %}
+                                        <span class="badge bg-warning">Moyenne</span>
+                                    {% elseif task.priorite.value == 'BASSE' %}
+                                        <span class="badge bg-success">Basse</span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if task.statut %}
+                                    {% if task.statut.value == 'EN_ATTENTE' %}
+                                        <span class="badge bg-secondary">En attente</span>
+                                    {% elseif task.statut.value == 'EN_COURS' %}
+                                        <span class="badge bg-primary">En cours</span>
+                                    {% elseif task.statut.value == 'TERMINE' %}
+                                        <span class="badge bg-success">Terminée</span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{% if task.dateButoir %}{{ task.dateButoir|date('d/m/Y') }}{% else %}-{% endif %}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if task.statut and task.statut.value != 'TERMINE' %}
+                                        <a href="{{ path('app_task_mark_completed', {'id': task.id}) }}" class="btn btn-sm btn-outline-success" title="Marquer comme terminée">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="navigation">
+            {{ knp_pagination_render(tasks) }}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Vous n'avez aucune tâche assignée. 
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('task-search');
+        const searchButton = document.getElementById('search-button');
+        
+        function performSearch() {
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                window.location.href = "{{ path('app_task_my_tasks') }}" + "?search=" + encodeURIComponent(searchTerm);
+            }
+        }
+        
+        searchButton.addEventListener('click', performSearch);
+        
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    });
+</script>
+{% endblock %}

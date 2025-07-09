@@ -22,7 +22,7 @@ use App\Repository\UserRepository;
 use App\Service\ActivityLogger;
 
 // Version 2-3 Test du 02/07/2025
-
+// Debut version 3 09/07/2025
 
 class TaskController extends AbstractController
 {
@@ -102,8 +102,51 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
         $user = $this->getUser();
 
         if (!$user) {
-            throw $this->createAccessDeniedException();
+            throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page.');
         }
+
+        $queryBuilder = $this->entityManager->createQueryBuilder()
+        ->select('t', 'p')
+        ->from(Task::class, 't')
+        ->leftJoin('t.project', 'p')
+        ->where('t.assignedUser = :user')
+        ->setParameter('user', $user)
+        ->orderBy('t.dateEcheance', 'ASC');
+    
+    // Appliquer les filtres si nécessaire
+    $filter = $request->query->get('filter');
+    if ($filter) {
+        switch ($filter) {
+            case 'pending':
+                $queryBuilder->andWhere('t.statut = :statut')
+                    ->setParameter('statut', TaskStatut::EN_ATTENTE);
+                break;
+            case 'in_progress':
+                $queryBuilder->andWhere('t.statut = :statut')
+                    ->setParameter('statut', TaskStatut::EN_COUR);
+                break;
+            case 'completed':
+                $queryBuilder->andWhere('t.statut = :statut')
+                    ->setParameter('statut', TaskStatut::TERMINE);
+                break;
+        }
+    }
+    
+    // Recherche
+    $search = $request->query->get('search');
+    if ($search) {
+        $queryBuilder->andWhere('t.titre LIKE :search OR t.description LIKE :search')
+            ->setParameter('search', '%' . $search . '%');
+    }
+    
+    $query = $queryBuilder->getQuery();
+    
+    $tasks = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        10
+    );
+
 
         // Récupérer les tâches assignées à l'utilisateur
         $tasks = $taskRepository->findByAssignedUser($user);
@@ -325,35 +368,109 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
             'position' => $position
         ]);
     }
+/**
+ * @Route("/task/{id}/assign-user", name="app_task_assign_user", methods={"POST"})
+ */
+public function assignUser(Request $request, Task $task): Response
+{
+    if (!$this->isGranted('TASK_ASSIGN', $task)) {
+        throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour assigner cette tâche.');
+    }
+    
+    $userId = $request->request->get('user_id');
+    
+    if (!$userId) {
+        $this->addFlash('error', 'Aucun utilisateur sélectionné.');
+        return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
+    }
+    
+    $user = $this->entityManager->getRepository(User::class)->find($userId);
+    
+    if (!$user) {
+        $this->addFlash('error', 'Utilisateur non trouvé.');
+        return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
+    }
+    
+    $task->setAssignedUser($user);
+    
+    // Enregistrer l'activité
+    $activity = new Activity();
+    $activity->setUser($this->getUser());
+    $activity->setType(ActivityType::TASK_ASSIGNED);
+    $activity->setTask($task);
+    $activity->setDescription('a assigné la tâche "' . $task->getTitre() . '" à ' . $user->getFullName());
+    
+    $this->entityManager->persist($activity);
+    $this->entityManager->flush();
+    
+    $this->addFlash('success', 'Tâche assignée à ' . $user->getFullName() . ' avec succès.');
+    
+    return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
+}
+/**
+ * @Route("/task/{id}", name="app_task_show", methods={"GET"})
+ */
+public function show(Task $task): Response
+{
+    // Vérifier l'accès
+    if (!$this->isGranted('TASK_VIEW', $task)) {
+        throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir cette tâche.');
+    }
+    
+    // Récupérer les utilisateurs disponibles pour l'assignation
+    $availableUsers = [];
+    if ($this->isGranted('TASK_ASSIGN', $task)) {
+        // Si c'est un projet, récupérer les membres du projet
+        if ($task->getProject()) {
+            $availableUsers = $this->entityManager->getRepository(User::class)
+                ->createQueryBuilder('u')
+                ->leftJoin('u.projetsGeres', 'pg')
+                ->leftJoin('u.projetsMembres', 'pm')
+                ->where('pg.id = :projectId OR pm.id = :projectId')
+                ->setParameter('projectId', $task->getProject()->getId())
+                ->getQuery()
+                ->getResult();
+        } else {
+            // Sinon, récupérer tous les utilisateurs
+            $availableUsers = $this->entityManager->getRepository(User::class)->findAll();
+        }
+    }
+    
+    return $this->render('task/show.html.twig', [
+        'task' => $task,
+        'available_users' => $availableUsers,
+    ]);
+}
 
     /**
      * Assigner une tâche à un utilisateur
      */
-    #[Route('/{id}/assign/{userId}', name: 'app_task_assign_user', methods: ['POST'])]
-    public function assignUser(
-        Task $task,
-        int $userId,
-        UserRepository $userRepository,
-        EntityManagerInterface $entityManager,
-        Request $request
-    ): Response {
-        $project = $task->getProject();
 
-        // Vérifier les droits pour assigner des tâches
-        if (!$this->canAssignTasks($project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour assigner cette tâche');
-        }
+    // #[Route('/{id}/assign/{userId}', name: 'app_task_assign_user', methods: ['POST'])]
+    // public function assignUser(
+    //     Task $task,
+    //     int $userId,
+    //     UserRepository $userRepository,
+    //     EntityManagerInterface $entityManager,
+    //     Request $request
+    // ): Response {
+    //     $project = $task->getProject();
 
-        $user = $userRepository->find($userId);
+    //     // Vérifier les droits pour assigner des tâches
+    //     if (!$this->canAssignTasks($project)) {
+    //         throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour assigner cette tâche');
+    //     }
 
-        if (!$user) {
-            if ($request->isXmlHttpRequest()) {
-                return new JsonResponse(['error' => 'Utilisateur non trouvé'], 404);
-            }
+    //     $user = $userRepository->find($userId);
 
-            $this->addFlash('error', 'Utilisateur non trouvé');
-            return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
-        }
+    //     if (!$user) {
+    //         if ($request->isXmlHttpRequest()) {
+    //             return new JsonResponse(['error' => 'Utilisateur non trouvé'], 404);
+    //         }
+
+    //         $this->addFlash('error', 'Utilisateur non trouvé');
+    //         return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+    //     }
 
         // Vérifier que l'utilisateur est membre du projet
         if (!$project->getMembres()->contains($user) && $project->getChefProjet() !== $user) {

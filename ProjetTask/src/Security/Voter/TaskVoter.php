@@ -14,8 +14,8 @@ class TaskVoter extends Voter
 {
     public const VIEW = 'VIEW';
     public const EDIT = 'EDIT';
-    public const DELETE = 'DELETE';
-    public const ASSIGN = 'ASSIGN';
+    public const DELETE = 'TASK_DELETE';
+    public const ASSIGN = 'TASK_ASSIGN';
 
     /**
      * Détermine si ce voter supporte l'attribut et le sujet donnés
@@ -55,8 +55,37 @@ class TaskVoter extends Voter
         if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
             return true;
         }
+ return match($attribute) {
+            self::VIEW => $this->canView($task, $user),
+            self::EDIT => $this->canEdit($task, $user),
+            self::DELETE => $this->canDelete($task, $user),
+            self::ASSIGN => $this->canAssign($task, $user),
+            default => false,
 
-        $project = $task->getProject();
+        };
+         $project = $task->getProject();
+    }
+    /**
+     * Vérifie si l'utilisateur peut voir la tâche  
+     * @param Task $task
+     * @param User $user
+     * @return bool
+     */
+       private function canView(Task $task, User $user): bool
+    {
+        // L'utilisateur peut voir la tâche s'il en est le créateur ou l'assigné
+        if ($task->getCreatedBy() === $user || $task->getAssignedUser() === $user) {
+            return true;
+        }
+
+        // Si la tâche fait partie d'un projet, l'utilisateur peut la voir s'il est membre ou chef du projet
+        if ($task->getProject()) {
+            return $task->getProject()->getChefProjet() === $user || 
+                  
+        }
+
+        return false;
+    
 
         switch ($attribute) {
             case self::VIEW:
