@@ -51,7 +51,8 @@ class TaskVoter extends Voter
         $task = $subject;
 
         // Les administrateurs et directeurs ont tous les droits
-        if (in_array('ROLE_ADMIN', $user->getrole()) || in_array('ROLE_DIRECTEUR', $user->getrole())) {
+        $roles = method_exists($user, 'getRoles') ? $user->getRoles() : (array) $user->getRole();
+        if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
             return true;
         }
 
@@ -65,7 +66,7 @@ class TaskVoter extends Voter
                 }
 
                 // Le chef de projet peut voir les tâches
-                if ($project->getChef_Projet() === $user) {
+                if ($project->getChefProjet() === $user) {
                     return true;
                 }
 
@@ -74,7 +75,7 @@ class TaskVoter extends Voter
             case self::EDIT:
             case self::DELETE:
                 // Seul le chef de projet peut modifier/supprimer les tâches
-                if ($project->getChef_Projet() === $user) {
+                if ($project->getChefProjet() === $user) {
                     return true;
                 }
                 
@@ -87,7 +88,7 @@ class TaskVoter extends Voter
             
             case self::ASSIGN:
                 // Seul le chef de projet peut assigner des tâches
-                if ($project->getChef_Projet() === $user) {
+                if ($project->getChefProjet() === $user) {
                     return true;
                 }
                                 // Si l'utilisateur est un membre du projet, il peut être assigné

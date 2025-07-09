@@ -16,6 +16,7 @@ use App\Entity\User;
 use App\Enum\TaskPriority;
 use App\Enum\TaskStatut;
 use App\Form\TaskType;
+use App\Repository\TaskListRepository;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\ActivityLogger;
@@ -26,26 +27,46 @@ use App\Service\ActivityLogger;
 class TaskController extends AbstractController
 {
     #[Route('/task', name: 'app_task_index', methods: ['GET'])]
-    public function index(TaskRepository $taskRepository): Response
-    {
-        // Pour admin/directeur, tout voir. Sinon, adapter la logique selon le rôle.
-        $user = $this->getUser();
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-            $tasks = $taskRepository->findAll();
-        } else {
-            $tasks = $taskRepository->findByAssignedUser($user);
-        }
- // Ajoutez une tâche individuelle si nécessaire
- $task = $taskRepository->findOneBy(['statut' => 'En cours']);
+public function index(TaskRepository $taskRepository, TaskListRepository $taskListRepository): Response
+{
+    $user = $this->getUser();
 
-        return $this->render('task/index.html.twig', [
-            'tasks' => $tasks,
-            'task' => $task,
-            // Passer l'utilisateur pour les permissions
-            'user' => $user,
-            'task' => $task,
-        ])->setStatusCode(Response::HTTP_OK);
+    if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+        $tasks = $taskRepository->findAll();
+    } else {
+        $tasks = $taskRepository->findByAssignedUser($user);
     }
+
+    // Récupérer une liste de tâches par défaut (exemple : la première trouvée)
+    $taskList = $taskListRepository->findOneBy([]);
+
+    return $this->render('task/index.html.twig', [
+        'tasks' => $tasks,
+        'user' => $user,
+        'taskList' => $taskList,
+    ]);
+}
+//     #[Route('/task', name: 'app_task_index', methods: ['GET'])]
+//     public function index(TaskRepository $taskRepository): Response
+//     {
+//         // Pour admin/directeur, tout voir. Sinon, adapter la logique selon le rôle.
+//         $user = $this->getUser();
+//         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+//             $tasks = $taskRepository->findAll();
+//         } else {
+//             $tasks = $taskRepository->findByAssignedUser($user);
+//         }
+//  // Ajoutez une tâche individuelle si nécessaire
+//  $task = $taskRepository->findOneBy(['statut' => 'En cours']);
+
+//         return $this->render('task/index.html.twig', [
+//             'tasks' => $tasks,
+//             'task' => $task,
+//             // Passer l'utilisateur pour les permissions
+//             'user' => $user,
+//             'task' => $task,
+//         ])->setStatusCode(Response::HTTP_OK);
+//     }
     /**
      * Liste des tâches d'un projet
      */
