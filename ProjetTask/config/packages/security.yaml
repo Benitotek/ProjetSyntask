@@ -93,7 +93,7 @@ security:
 
         # Routes des projets
         - { path: ^/project, role: ROLE_EMPLOYE }
-
+        - { path: ^/mes-projects, role: ROLE_CHEF_PROJET }
         # Normaliser le chemin de kanban
         - { path: ^/project/\d+/kanban, role: ROLE_EMPLOYE }
         # Pages publiques
@@ -121,7 +121,7 @@ security:
         # Zones restreintes aux chefs de projet
         - { path: ^/tasklist, role: ROLE_CHEF_PROJET }
         - { path: ^/statistiques, role: ROLE_CHEF_PROJET }
-
+        
         # Zones accessibles aux employés et supérieurs
         - { path: ^/dashboard, role: ROLE_EMPLOYE }
         - { path: ^/project, role: ROLE_EMPLOYE }

@@ -168,14 +168,14 @@
 									<div
 										class="team-avatars">
 										{# Si le chef de project s'appelle Chef_project dans l'entité #}
-										{% if project.Chef_project %}
-											<div class="team-avatar chef" title="Chef de project: {{ project.Chef_project.fullName }}">
-												{{ project.Chef_project.prenom|slice(0, 1)|upper }}{{ project.Chef_project.nom|slice(0, 1)|upper }}
+										{% if project.chefproject %}
+											<div class="team-avatar chef" title="Chef de project: {{ project.chefproject.fullName }}">
+												{{ project.chefproject.prenom|slice(0, 1)|upper }}{{ project.chefproject.nom|slice(0, 1)|upper }}
 											</div>
 										{% endif %}
-										{% if project.Chef_project is not empty %}
-											<div class="team-avatar chef" title="Chef de project: {{ project.Chef_project.prenom }} {{ project.Chef_project.nom }}">
-												{{ project.Chef_project.prenom|slice(0, 1)|upper }}{{ project.Chef_project.nom|slice(0, 1)|upper }}
+										{% if project.chefproject is not empty %}
+											<div class="team-avatar chef" title="Chef de project: {{ project.chefproject.prenom }} {{ project.chefproject.nom }}">
+												{{ project.chefproject.prenom|slice(0, 1)|upper }}{{ project.chefproject.nom|slice(0, 1)|upper }}
 											</div>
 										{% endif %}
 										{# Afficher les membres du project #}

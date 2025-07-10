@@ -52,31 +52,24 @@ class Project
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $budget = null;
 
-    // Chef de project : Un User peut gérer plusieurs projects
-   
+    // CORRECTION : Propriété estArchive correctement mappée
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $estArchive = false;
 
+    // Chef de project : Un User peut gérer plusieurs projects
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "projectsGeres")]
     #[ORM\JoinColumn(name: "chef_project_id", referencedColumnName: "id", nullable: true)]
     private ?User $chefproject = null;
 
-    // Membres : ManyToMany
+    // Membres : ManyToMany
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projectsAssignes')]
-
     private Collection $membres;
-
-
-
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: TaskList::class, cascade: ['persist', 'remove'])]
     private Collection $taskLists;
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $tasks;
-
-    /**
-     * @var Collection<int, User>
-     */
-    private Collection $users;
 
     public function __construct()
     {
@@ -85,10 +78,7 @@ class Project
         $this->tasks = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
-        $this->users = new ArrayCollection();
-        // ... other constructor code
     }
-
 
     public function getId(): ?int
     {
@@ -103,7 +93,6 @@ class Project
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
-
         return $this;
     }
 
@@ -115,7 +104,6 @@ class Project
     public function setStatut(string $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 
@@ -127,7 +115,6 @@ class Project
     public function setDateCreation(\DateTimeInterface $dateCreation): static
     {
         $this->dateCreation = $dateCreation;
-
         return $this;
     }
 
@@ -139,7 +126,6 @@ class Project
     public function setDateMaj(\DateTimeInterface $dateMaj): static
     {
         $this->dateMaj = $dateMaj;
-
         return $this;
     }
 
@@ -151,7 +137,6 @@ class Project
     public function setDateButoir(\DateTimeInterface $dateButoir): static
     {
         $this->dateButoir = $dateButoir;
-
         return $this;
     }
 
@@ -163,7 +148,6 @@ class Project
     public function setDateReelle(\DateTimeInterface $dateReelle): static
     {
         $this->dateReelle = $dateReelle;
-
         return $this;
     }
 
@@ -175,7 +159,6 @@ class Project
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -187,7 +170,6 @@ class Project
     public function setReference(string $reference): static
     {
         $this->reference = $reference;
-
         return $this;
     }
 
@@ -199,7 +181,6 @@ class Project
     public function setBudget(string $budget): static
     {
         $this->budget = $budget;
-
         return $this;
     }
 
@@ -299,23 +280,21 @@ class Project
         }
         return $this;
     }
+
     public function removeTask(Task $task): self
     {
         if ($this->tasks->removeElement($task)) {
-            // set the owning side to null (unless already changed)
             if ($task->getProject() === $this) {
                 $task->setProject(null);
             }
         }
-
         return $this;
     }
+
     public function __toString(): string
     {
         return $this->titre ?: 'Nouveau project';
     }
-
-    private bool $estArchive = false;
 
     public function isEstArchive(): bool
     {
@@ -325,28 +304,6 @@ class Project
     public function setEstArchive(bool $estArchive): self
     {
         $this->estArchive = $estArchive;
-        return $this;
-    }
-
-    /**
-     * @return Collection
-     */
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addUser($user): self
-    {
-        if (!$this->users->contains($user)) {
-            $this->users[] = $user;
-        }
-        return $this;
-    }
-
-    public function removeUser($user): self
-    {
-        $this->users->removeElement($user);
         return $this;
     }
 }

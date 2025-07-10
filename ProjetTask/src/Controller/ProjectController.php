@@ -345,31 +345,25 @@ class ProjectController extends AbstractController
     /**
      * Méthode pour vérifier si l'utilisateur a le droit de voir ou modifier un project
      */
-    private function canViewProject(Project $project): bool
-    {
-        // Toujours vérifier si l'utilisateur existe
-        $user = $this->getUser();
-        if (!$user) {
-            return false;
-        }
-
-        // Vérification explicite du rôle admin/directeur
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-            return true;
-        }
-
-        // Vérification du chef de projet 
-        if ($project->getChefproject() && $project->getChefproject()->getId() === $user->getUserIdentifier()) {
-            return true;
-        }
-
-        // Vérification de l'appartenance comme membre
-        foreach ($project->getMembres() as $membre) {
-            if ($membre->getId() === $user->getUserIdentifier()) {
-                return true;
-            }
-        }
-
+ private function canViewProject(Project $project): bool
+{
+    /** @var User $user */
+    $user = $this->getUser();
+    if (!$user) {
         return false;
     }
+
+    // Vérification explicite du rôle admin/directeur
+    if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+        return true;
+    }
+
+    // Vérification du chef de projet 
+    if ($project->getChefproject() && $project->getChefproject()->getId() === $user->getId()) {
+        return true;
+    }
+
+    // Vérification de l'appartenance comme membre 
+    return $project->getMembres()->contains($user);
+}
 }
