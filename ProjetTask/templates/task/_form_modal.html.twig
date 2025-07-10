@@ -1,0 +1,46 @@
+{{ form_start(form, {'attr': {'id': 'taskForm'}}) }}
+    <div class="mb-3">
+        {{ form_label(form.titre) }}
+        {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.titre) }}
+    </div>
+    
+    <div class="mb-3">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.priorite) }}
+            {{ form_widget(form.priorite, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.priorite) }}
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.statut) }}
+            {{ form_widget(form.statut, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.statut) }}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.dateEcheance) }}
+            {{ form_widget(form.dateEcheance, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.dateEcheance) }}
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.assignedUser) }}
+            {{ form_widget(form.assignedUser, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.assignedUser) }}
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </div>
+{{ form_end(form) }}

@@ -4,7 +4,7 @@
 
 :root {
   --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary-hover: #17eac4f4;
   --secondary-color: #64748b;
   --success-color: #10b981;
   --danger-color: #ef4444;
@@ -231,7 +231,7 @@ a:hover {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--text-muted);
+  color: rgba(240, 89, 240, 0.938);
 }
 
 .sidebar-link {
@@ -246,7 +246,7 @@ a:hover {
 .sidebar-link:hover,
 .sidebar-link.active {
   background-color: rgba(79, 70, 229, 0.1);
-  color: var(--primary-color);
+  color:rgba(240, 89, 240, 0.938);
 }
 
 .sidebar-icon {
@@ -797,7 +797,7 @@ a:hover {
 }
 
 .due-date-item.overdue {
-  background-color: rgba(239, 68, 68, 0.05);
+  background-color: rgba(181, 12, 12, 0.816);
 }
 
 .due-date-icon {
@@ -818,7 +818,7 @@ a:hover {
 }
 
 .due-date-icon.project {
-  background-color: var(--info-color);
+  background-color: rgba(240, 89, 240, 0.938);
 }
 
 .due-date-content {
@@ -855,7 +855,7 @@ a:hover {
 }
 
 .kanban-column {
-  background-color: #f8fafc;
+  background-color: #f8fafc8a;
   border-radius: 8px;
   width: 300px;
   min-width: 300px;
@@ -955,7 +955,7 @@ a:hover {
   border-radius: 6px;
   padding: 12px;
   text-align: center;
-  color: var(--primary-color);
+  color: rgb(176, 93, 240);
   cursor: pointer;
   transition: background-color 0.2s;
 }

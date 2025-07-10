@@ -31,12 +31,15 @@ C:\Users\durri\ProjetTask\ProjetTask\templates\reset_password\reset.html.twig
 C:\Users\durri\ProjetTask\ProjetTask\templates\security\login.html.twig                   
 C:\Users\durri\ProjetTask\ProjetTask\templates\task\edit.html.twig                        
 C:\Users\durri\ProjetTask\ProjetTask\templates\task\index.html.twig                       
+C:\Users\durri\ProjetTask\ProjetTask\templates\task\my_tasks.html.twig                    
 C:\Users\durri\ProjetTask\ProjetTask\templates\task\new.html.twig                         
 C:\Users\durri\ProjetTask\ProjetTask\templates\task\show.html.twig                        
+C:\Users\durri\ProjetTask\ProjetTask\templates\task\_form_modal.html.twig                 
 C:\Users\durri\ProjetTask\ProjetTask\templates\tasklist\index.html.twig                   
+C:\Users\durri\ProjetTask\ProjetTask\templates\tasklist\kanban.html.twig                  
 C:\Users\durri\ProjetTask\ProjetTask\templates\tasklist\show.html.twig                    
-C:\Users\durri\ProjetTask\ProjetTask\templates\tasklist\TaskList.html.twig                
 C:\Users\durri\ProjetTask\ProjetTask\templates\tasklist\tasks.html.twig                   
+C:\Users\durri\ProjetTask\ProjetTask\templates\tasklist\_form_modal.html.twig             
 C:\Users\durri\ProjetTask\ProjetTask\templates\user\base.html.twig                        
 C:\Users\durri\ProjetTask\ProjetTask\templates\user\delete.html.twig                      
 C:\Users\durri\ProjetTask\ProjetTask\templates\user\edit.html.twig                        

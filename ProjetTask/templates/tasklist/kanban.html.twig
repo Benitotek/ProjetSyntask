@@ -1,0 +1,485 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TaskListKanban -
+	{{ project.name }}
+{% endblock %}
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+{% endblock %}
+{% block body %}
+	<div class="container-fluid mt-4">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<div>
+				<h1>{{ project.nom }}</h1>
+				<p class="text-muted">
+					<i class="fas fa-user"></i>
+					Chef de projet:
+					{% if project.chefProjet %}
+						{{ project.chefProjet.prenom }}
+						{{ project.chefProjet.nom }}
+					{% else %}
+						Non assigné
+					{% endif %}
+					|
+					<i class="fas fa-calendar"></i>
+					Date de début:
+					{{ project.dateDebut ? project.dateDebut|date('d/m/Y') : 'Non définie' }}
+				</p>
+			</div>
+			<div class="btn-group">
+				<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-outline-primary">
+					<i class="fas fa-info-circle"></i>
+					Détails
+				</a>
+				{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+					<button type="button" class="btn btn-primary" id="addColumnBtn">
+						<i class="fas fa-plus"></i>
+						Ajouter une colonne
+					</button>
+				{% endif %}
+			</div>
+		</div>
+		<div class="kanban-container" id="kanbanContainer">
+			{% for taskList in taskLists %}
+				<div class="kanban-column" data-column-id="{{ taskList.id }}">
+					<div class="kanban-column-header" style="background-color: {{ taskList.couleur ? taskList.couleur.getCssColor() : '#f8f9fa' }}; color: {{ taskList.couleur ? taskList.couleur.getTextColor() : '#212529' }};">
+						<div>
+							<h5 class="mb-0">{{ taskList.nom }}</h5>
+							<div class="small">{{ taskList.tasks|length }}
+								tâche(s)</div>
+						</div>
+						{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+							<div class="dropdown">
+								<button class="btn btn-sm btn-link text-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+									<i class="fas fa-ellipsis-v"></i>
+								</button>
+								<ul class="dropdown-menu dropdown-menu-end">
+									<li>
+										<a class="dropdown-item add-task-btn" href="#" data-column-id="{{ taskList.id }}">
+											<i class="fas fa-plus"></i>
+											Ajouter une tâche
+										</a>
+									</li>
+									<li>
+										<a class="dropdown-item edit-column-btn" href="#" data-column-id="{{ taskList.id }}">
+											<i class="fas fa-edit"></i>
+											Modifier la colonne
+										</a>
+									</li>
+									<li>
+										<a class="dropdown-item delete-column-btn" href="#" data-column-id="{{ taskList.id }}">
+											<i class="fas fa-trash"></i>
+											Supprimer la colonne
+										</a>
+									</li>
+								</ul>
+							</div>
+						{% endif %}
+					</div>
+					{% set progressPercentage = 0 %}
+					{% set completedTasks = 0 %}
+					{% for task in taskList.tasks %}
+						{% if task.statut and task.statut.value == 'TERMINE' %}
+							{% set completedTasks = completedTasks + 1 %}
+						{% endif %}
+					{% endfor %}
+
+					{% if taskList.tasks|length > 0 %}
+						{% set progressPercentage = (completedTasks / taskList.tasks|length) * 100 %}
+					{% endif %}
+
+					<div class="column-progress">
+						<div class="column-progress-bar" style="width: {{ progressPercentage }}%; --progress-color: {{ taskList.couleur ? taskList.couleur.getCssColor() : '#28a745' }};"></div>
+					</div>
+					<div class="kanban-column-body" data-column-id="{{ taskList.id }}">
+						{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+							<div class="add-task-form" id="addTaskForm_{{ taskList.id }}">
+								<form action="{{ path('app_task_new', {'taskListId': taskList.id}) }}" method="post">
+									<div class="mb-2">
+										<input type="text" name="titre" class="form-control form-control-sm" placeholder="Titre de la tâche" required>
+									</div>
+									<div class="mb-2">
+										<textarea name="description" class="form-control form-control-sm" placeholder="Description (optionnelle)" rows="2"></textarea>
+									</div>
+									<div class="mb-2">
+										<select name="priorite" class="form-select form-select-sm">
+											<option value="">-- Priorité --</option>
+											<option value="BASSE">Basse</option>
+											<option value="MOYENNE">Moyenne</option>
+											<option value="HAUTE">Haute</option>
+										</select>
+									</div>
+									<div class="mb-2">
+										<input type="date" name="dateEcheance" class="form-control form-control-sm" placeholder="Date d'échéance">
+									</div>
+									<div class="mb-2">
+										<select name="assignedUser" class="form-select form-select-sm">
+											<option value="">-- Assigner à --</option>
+											{% for member in members %}
+												<option value="{{ member.id }}">{{ member.prenom }}
+													{{ member.nom }}</option>
+											{% endfor %}
+										</select>
+									</div>
+									<div class="d-flex justify-content-between">
+										<button type="submit" class="btn btn-sm btn-primary">Ajouter</button>
+										<button type="button" class="btn btn-sm btn-outline-secondary cancel-add-task" data-column-id="{{ taskList.id }}">Annuler</button>
+									</div>
+								</form>
+							</div>
+						{% endif %}
+						{% for task in taskList.tasks %}
+
+							<div class="task-card{% if task.dateEcheance and task.dateEcheance < 'now'|date('Y-m-d') and task.statut.value != 'TERMINE' %} overdue{% endif %}" data-task-id="{{ task.id }}" draggable="true">
+								<div class="task-card-title">{{ task.titre }}</div>
+								{% if task.description %}
+
+									<div class="task-card-description small text-muted">
+										{{ task.description|length > 50 ? task.description|slice(0, 50) ~ '...' : task.description }}
+									</div>
+								{% endif %}
+								<div class="task-card-footer">
+									<div>
+										{% if task.priorite %}
+											<span class="priority-badge priority-{{ task.priorite.value }}">
+												{{ task.priorite.value == 'HAUTE' ? 'Haute' : (task.priorite.value == 'MOYENNE' ? 'Moyenne' : 'Basse') }}
+											</span>
+										{% endif %}
+									</div>
+									<div class="d-flex align-items-center">
+										{% if task.dateEcheance %}
+											<span class="me-2 small{% if task.dateEcheance < 'now'|date('Y-m-d') and task.statut.value != 'TERMINE' %} text-danger{% endif %}" title="Date d'échéance">
+												<i class="fas fa-calendar-alt"></i>
+												{{ task.dateEcheance|date('d/m/Y') }}
+											</span>
+										{% endif %}
+										{% if task.assignedUser %}
+
+											<div class="user-avatar" title="{{ task.assignedUser.prenom }} {{ task.assignedUser.nom }}">
+												{{ task.assignedUser.prenom|slice(0, 1) }}{{ task.assignedUser.nom|slice(0, 1) }}
+											</div>
+										{% endif %}
+									</div>
+								</div>
+								<div class="task-actions">
+									<div class="btn-group btn-group-sm">
+										<a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir">
+											<i class="fas fa-eye"></i>
+										</a>
+										{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+											<a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
+												<i class="fas fa-edit"></i>
+											</a>
+											<button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-task-id="{{ task.id }}" title="Supprimer">
+												<i class="fas fa-trash"></i>
+											</button>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						{% else %}
+							<div class="text-center text-muted py-3">
+								<i class="fas fa-tasks fa-2x mb-2"></i>
+								<p>Aucune tâche dans cette colonne</p>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+			{% endfor %}
+			{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+
+				<div class="add-column-btn" id="addColumnPlaceholder">
+					<i class="fas fa-plus me-2"></i>
+					Ajouter une colonne
+				</div>
+			{% endif %}
+		</div>
+	</div>
+	<!-- Modal pour ajouter/modifier une colonne -->
+	<div class="modal fade" id="columnModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="columnModalTitle">Ajouter une colonne</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div
+					class="modal-body" id="columnModalBody">
+					<!-- Le contenu sera chargé via AJAX -->
+					<div class="text-center py-3">
+						<div class="spinner-border text-primary" role="status">
+							<span class="visually-hidden">Chargement...</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal pour confirmer la suppression d'une colonne -->
+	<div class="modal fade" id="deleteColumnModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Confirmer la suppression</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer cette colonne ?</p>
+					<p class="text-danger">Cette action est irréversible.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form id="deleteColumnForm" method="post">
+						<input type="hidden" name="_token" id="deleteColumnToken">
+						<button type="submit" class="btn btn-danger">Supprimer</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal pour confirmer la suppression d'une tâche -->
+	<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Confirmer la suppression</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer cette tâche ?</p>
+					<p class="text-danger">Cette action est irréversible.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form id="deleteTaskForm" method="post">
+						<input type="hidden" name="_token" id="deleteTaskToken">
+						<button type="submit" class="btn btn-danger">Supprimer</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+{% block javascripts %}
+	{{ parent() }}
+
+	 <script> 
+		
+			 // ==================== DRAG & DROP FUNCTIONALITY ====================
+			  const taskCards = document.querySelectorAll('.task-card'); 
+			 const columnBodies = document.querySelectorAll('.kanban-column-body');
+			  let draggedTask = null;
+			  // Initialiser le drag & drop pour les tâches
+			  taskCards.forEach(card => { card.addEventListener('dragstart', function(e) {
+			  draggedTask = card; setTimeout(() => { card.classList.add('dragging'); }, 0); });
+			  card.addEventListener('dragend', function() { card.classList.remove('dragging');
+			  draggedTask = null;
+			  columnBodies.forEach(column => { column.classList.remove('drag-over');
+			  });
+			  });
+			  }); 
+			 // Gérer le drop dans les colonnes
+			  columnBodies.forEach(column => { column.addEventListener('dragover', function(e) { e.preventDefault();
+			  column.classList.add('drag-over');
+			  }); 
+			 column.addEventListener('dragleave', function() { column.classList.remove('drag-over');
+			  });
+			  column.addEventListener('drop', function(e) { e.preventDefault();
+			  column.classList.remove('drag-over');
+			  if (draggedTask) { const taskId = draggedTask.dataset.taskId; const columnId = column.dataset.columnId;
+			  // Déterminer la position dans la nouvelle colonne 
+			 const tasksInColumn = Array.from(column.querySelectorAll('.task-card'));
+			  let position = tasksInColumn.length;
+			  // Déplacer visuellement la tâche draggedTask.remove();
+			  column.appendChild(draggedTask);
+			  // Envoyer une requête AJAX pour mettre à jour la position en base de données
+			  fetch(`/task/${taskId}/move`, { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ taskListId: columnId, position: position }) })
+			  .then(response => response.json()) .then(data => { if (!data.success) {
+			  // En cas d'erreur, rafraîchir la page location.reload(); } }) 
+			 .catch(error => { console.error('Erreur lors du déplacement de la tâche:', error);
+			  location.reload();
+			  });
+			  } });
+			  });
+	
+			  // ==================== MODAL FUNCTIONALITY ==================== 
+			 const columnModal = new bootstrap.Modal(document.getElementById('columnModal')); 
+			 const deleteColumnModal = new bootstrap.Modal(document.getElementById('deleteColumnModal'));
+			  const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
+			  // Ouvrir le modal d'ajout de colonne document.getElementById('addColumnBtn').addEventListener('click', function() { document.getElementById('columnModalTitle').textContent = 'Ajouter une colonne';
+			  fetch(`{{ path('app_tasklist_new', {'projectId': project.id}) }}`) 
+			 .then(response => response.text())
+			 .then(html => { document.getElementById('columnModalBody').innerHTML = html;
+			  columnModal.show(); }); }); document.getElementById('addColumnPlaceholder').addEventListener('click', function() { document.getElementById('addColumnBtn').click(); });
+			 
+			  // Ouvrir le modal de modification de colonne
+			  document.querySelectorAll('.edit-column-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+			  const columnId = this.dataset.columnId;
+			  document.getElementById('columnModalTitle').textContent = 'Modifier la colonne';
+			  fetch(`{{ path('app_tasklist_edit', {'id': 'COLUMN_ID'}) }}`.replace('COLUMN_ID', columnId)) 
+			 .then(response => response.text()) 
+			 .then(html => { document.getElementById('columnModalBody').innerHTML = html; columnModal.show();
+			  });
+			  });
+			  });
+	
+			  // Ouvrir le modal de suppression de colonne
+			  document.querySelectorAll('.delete-column-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+			  const columnId = this.dataset.columnId;
+			  document.getElementById('deleteColumnForm').action = `{{ path('app_tasklist_delete', {'id': 'COLUMN_ID'}) }}`.replace('COLUMN_ID', columnId);
+			  document.getElementById('deleteColumnToken').value = `{{ csrf_token('delete') }}` + columnId;
+			  deleteColumnModal.show();
+			  });
+			  });
+	
+			  // Ouvrir le modal de suppression de tâche 
+			 document.querySelectorAll('.delete-task-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+			  const taskId = this.dataset.taskId;
+			  document.getElementById('deleteTaskForm').action = `{{ path('app_task_delete', {'id': 'TASK_ID'}) }}`.replace('TASK_ID', taskId);
+			  document.getElementById('deleteTaskToken').value = `{{ csrf_token('delete') }}` + taskId;
+			  deleteTaskModal.show();
+			  });
+			  });
+	
+			  // ==================== AJOUT DE TÂCHE RAPIDE ====================
+			  document.querySelectorAll('.add-task-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault(); 
+			 const columnId = this.dataset.columnId;
+			  const formContainer = document.getElementById(`addTaskForm_${columnId}`);
+			  formContainer.style.display = 'block';
+			  });
+			  });
+			  document.querySelectorAll('.cancel-add-task').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+			  const columnId = this.dataset.columnId;
+			  const formContainer = document.getElementById(`addTaskForm_${columnId}`);
+			  formContainer.style.display = 'none';
+			  });
+			  });
+			 
+			  // ==================== RÉORDONNEMENT DES COLONNES ==================== // 
+			 Implémentation simple du drag & drop pour les colonnes 
+			 const columns = document.querySelectorAll('.kanban-column');
+			 const container = document.getElementById('kanbanContainer'); 
+			 let draggedColumn = null; columns.forEach(column => { column.addEventListener('dragstart', function(e) { // S'assurer que l'événement ne se propage pas aux éléments enfants if (e.target.classList.contains('task-card')) { return;
+			  }
+			  draggedColumn = column; setTimeout(() => { column.classList.add('dragging');
+			  },
+			  0);
+			  });
+			  column.addEventListener('dragend', function() { if (draggedColumn) { column.classList.remove('dragging');
+			 
+			  // Récupérer l'ordre actuel des colonnes 
+			 const newOrder = Array.from(container.querySelectorAll('.kanban-column')).map((col, index) => { return { id: col.dataset.columnId, position: index };
+			  });
+			 
+			  // Envoyer une requête AJAX pour mettre à jour l'ordre 
+			 fetch(`{{ path('app_tasklist_reorder', {'projectId': project.id}) }}`, { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ columns: newOrder }) }) 
+			 .then(response => response.json()) 
+			 .then(data => { if (!data.success) { 
+			 // En cas d'erreur, rafraîchir la page 
+			 location.reload(); } }) 
+			 .catch(error => { console.error('Erreur lors de la réorganisation des colonnes:', error); 
+			 location.reload();
+			  }); 
+			 draggedColumn = null; } });
+			  }); 
+			 container.addEventListener('dragover', function(e) { e.preventDefault(); 
+			 if (!draggedColumn) return;
+			 
+			  // Trouver la colonne la plus proche du curseur 
+			 const afterElement = getDragAfterElement(container, e.clientX); if (afterElement == null) { container.appendChild(draggedColumn); } 
+			 else { container.insertBefore(draggedColumn, afterElement); }
+			  });
+			  function getDragAfterElement(container, x) { const draggableElements = [...container.querySelectorAll('.kanban-column:not(.dragging)')]; 
+			 return draggableElements.reduce((closest, child) => { const box = child.getBoundingClientRect(); 
+			 const offset = x - box.left - box.width / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; }
+			 else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; }
+			  });
+	
+			  </script>
+{% endblock %}
+{# {% block javascripts %}
+	{{ parent() }}
+	   <script>
+	  // document.addEventListener('DOMContentLoaded', function() {
+			let currentColumnId = null;
+	
+	// Ajouter une nouvelle colonne
+	function addColumn() {
+	document.getElementById('columnModalLabel').textContent = 'Ajouter une colonne';
+	document.getElementById('column-id').value = '';
+	document.getElementById('column-name').value = '';
+	document.getElementById('columnForm').action = '{{ path('column_new') }}';
+	new bootstrap.Modal(document.getElementById('columnModal')).show();
+	}
+	
+	// Éditer une colonne
+	function editColumn(id, name) {
+	document.getElementById('columnModalLabel').textContent = 'Modifier la colonne';
+	document.getElementById('column-id').value = id;
+	document.getElementById('column-name').value = name;
+	document.getElementById('columnForm').action = '/column/' + id + '/edit';
+	new bootstrap.Modal(document.getElementById('columnModal')).show();
+	}
+	
+	// Supprimer une colonne
+	function deleteColumn(id) {
+	currentColumnId = id;
+	new bootstrap.Modal(document.getElementById('deleteModal')).show();
+	}
+	
+	// Ajouter une tâche (placeholder)
+	function addTask(columnId) { // Rediriger vers la création de tâche ou ouvrir un modal
+	alert('Fonction d\'ajout de tâche à implémenter pour la colonne ' + columnId);
+	}
+	
+	// Gérer la soumission du formulaire de colonne
+	document.getElementById('columnForm').addEventListener('submit', function (e) {
+	e.preventDefault();
+	
+	const formData = new FormData(this);
+	const url = this.action;
+	
+	fetch(url, {
+	method: 'POST',
+	body: formData,
+	headers: {
+	'X-Requested-With': 'XMLHttpRequest'
+	}
+	}).then(response => response.json()).then(data => {
+	if (data.success) {
+	location.reload();
+	} else {
+	alert('Erreur lors de l\'enregistrement');
+	}
+	}).catch(error => {
+	console.error('Erreur:', error);
+	alert('Erreur lors de l\'enregistrement');
+	});
+	});
+	
+	// Confirmer la suppression
+	document.getElementById('confirmDelete').addEventListener('click', function () {
+	if (currentColumnId) {
+	const formData = new FormData();
+	formData.append('_token', '{{ csrf_token('delete' ~ '') }}' + currentColumnId);
+	
+	fetch('/column/' + currentColumnId + '/delete', {
+	method: 'POST',
+	body: formData,
+	headers: {
+	'X-Requested-With': 'XMLHttpRequest'
+	}
+	}).then(response => response.json()).then(data => {
+	if (data.success) {
+	location.reload();
+	} else {
+	alert('Erreur lors de la suppression');
+	}
+	}).catch(error => {
+	console.error('Erreur:', error);
+	alert('Erreur lors de la suppression');
+	});
+	}
+	});
+		</script>{% endblock %}
+#}
