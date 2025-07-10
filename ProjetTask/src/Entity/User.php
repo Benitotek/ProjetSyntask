@@ -156,12 +156,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        // Si la propriété roles est null ou vide, utiliser un tableau vide
+        $roles = $this->roles ?: [];
 
-        // Si $roles est vide, utiliser le rôle par défaut
-        if (empty($roles)) {
-            $roles[] = 'ROLE_USER';
+        // Convertir l'enum en rôles Symfony si nécessaire
+        if ($this->role) {
+            switch ($this->role) {
+                case UserRole::ADMIN:
+                    $roles[] = 'ROLE_ADMIN';
+                    $roles[] = 'ROLE_DIRECTEUR';
+                    $roles[] = 'ROLE_CHEF_PROJET';
+                    $roles[] = 'ROLE_EMPLOYE';
+                    break;
+                case UserRole::DIRECTEUR:
+                    $roles[] = 'ROLE_DIRECTEUR';
+                    $roles[] = 'ROLE_CHEF_PROJET';
+                    $roles[] = 'ROLE_EMPLOYE';
+                    break;
+                case UserRole::CHEF_PROJET:  // Correction ici
+                    $roles[] = 'ROLE_CHEF_PROJET';
+                    $roles[] = 'ROLE_EMPLOYE';
+                    break;
+                case UserRole::MEMBRE:
+                case UserRole::EMPLOYE:
+                    $roles[] = 'ROLE_EMPLOYE';
+                    break;
+            }
         }
+
+        // Garantir que ROLE_USER est toujours présent
+        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }

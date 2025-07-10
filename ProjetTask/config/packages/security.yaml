@@ -19,7 +19,7 @@ security:
             #     class: App\Entity\User
             #     property: email
 
-                # Firewall pour les outils de développement
+            # Firewall pour les outils de développement
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -79,8 +79,8 @@ security:
     # Hiérarchie des rôles
     role_hierarchy:
         ROLE_EMPLOYE: [ROLE_USER]
-        ROLE_CHEF_project: [ROLE_EMPLOYE]
-        ROLE_DIRECTEUR: [ROLE_CHEF_project]
+        ROLE_CHEF_PROJET: [ROLE_EMPLOYE] # Corrigé ici (PROJET au lieu de project)
+        ROLE_DIRECTEUR: [ROLE_CHEF_PROJET]
         ROLE_ADMIN: [ROLE_DIRECTEUR, ROLE_ALLOWED_TO_SWITCH]
 
     # # Easy way to control access for large sections of your site
@@ -121,6 +121,13 @@ security:
         # Zones restreintes aux chefs de projet
         - { path: ^/tasklist, role: ROLE_CHEF_PROJET }
         - { path: ^/statistiques, role: ROLE_CHEF_PROJET }
+
+        # Zones accessibles aux employés et supérieurs
+        - { path: ^/dashboard, role: ROLE_EMPLOYE }
+        - { path: ^/project, role: ROLE_EMPLOYE }
+        - { path: ^/task, role: ROLE_EMPLOYE }
+        - { path: ^/mes-taches, role: ROLE_EMPLOYE }
+        - { path: ^/profile, role: ROLE_EMPLOYE }
 
         # Par défaut, tout requiert une authentification
         - { path: ^/, role: ROLE_EMPLOYE }

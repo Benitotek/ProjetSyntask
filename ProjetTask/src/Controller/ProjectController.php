@@ -87,7 +87,7 @@ class ProjectController extends AbstractController
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
             // Afficher tous les projects pour les administrateurs et les directeurs
             $projects = $projectRepository->findAll();
-        } elseif ($this->isGranted('ROLE_CHEF_project')) {
+        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
             // Afficher uniquement les projects dont l'utilisateur est chef
             $projects = $projectRepository->findByChefDeproject($user);
         } else {
@@ -105,7 +105,7 @@ class ProjectController extends AbstractController
      * Création d'un nouveau project
      */
     #[Route('/new', name: 'app_project_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_CHEF_project')]
+    #[IsGranted('ROLE_CHEF_PROJET')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $project = new Project();
@@ -139,7 +139,7 @@ class ProjectController extends AbstractController
     public function show(Project $project): Response
     {
         // Vérifier que l'utilisateur a le droit de voir ce project
-        $this->denyAccessUnlessGranted('VIEW', $project);
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
 
         return $this->render('project/show.html.twig', [
             'project' => $project,
@@ -153,7 +153,7 @@ class ProjectController extends AbstractController
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que l'utilisateur a le droit de modifier ce project
-        $this->denyAccessUnlessGranted('EDIT', $project);
+        $this->denyAccessUnlessGranted('PROJECT_EDIT', $project);
 
         $form = $this->createForm(ProjectTypeForm::class, $project);
         $form->handleRequest($request);
@@ -178,7 +178,7 @@ class ProjectController extends AbstractController
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que l'utilisateur a le droit de supprimer ce project
-        $this->denyAccessUnlessGranted('DELETE', $project);
+        $this->denyAccessUnlessGranted('PROJECT_DELETE', $project);
 
         if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
             $entityManager->remove($project);
@@ -293,8 +293,8 @@ class ProjectController extends AbstractController
         }
 
         // Vérifier que l'utilisateur a le rôle CHEF_project
-        if (!in_array('ROLE_CHEF_project', $user->getrole())) {
-            $this->addFlash('error', 'L\'utilisateur doit avoir le rôle CHEF_project pour être assigné comme chef de project');
+        if (!in_array('ROLE_CHEF_PROJET', $user->getrole())) {
+            $this->addFlash('error', 'L\'utilisateur doit avoir le rôle CHEF_PROJET pour être assigné comme chef de project');
             return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
         }
 

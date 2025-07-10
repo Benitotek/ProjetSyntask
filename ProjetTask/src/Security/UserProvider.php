@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
@@ -23,7 +24,7 @@ class UserProvider implements UserProviderInterface
         $user = $this->userRepository->findOneBy(['email' => $identifier]);
 
         if (!$user) {
-            throw new \Exception("User not found");
+            throw new UserNotFoundException(sprintf('Utilisateur "%s" non trouvé.', $identifier));
         }
 
         // Synchroniser les rôles basés sur l'enum
@@ -36,6 +37,11 @@ class UserProvider implements UserProviderInterface
 
     public function refreshUser(UserInterface $user): UserInterface
     {
+        if (!$user instanceof User) {
+            throw new \InvalidArgumentException('Invalid user class');
+        }
+
+        // Recharger l'utilisateur avec le bon identifiant
         return $this->loadUserByIdentifier($user->getUserIdentifier());
     }
 
