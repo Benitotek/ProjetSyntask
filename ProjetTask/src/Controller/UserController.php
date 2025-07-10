@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
+    // Route pour afficher la liste des utilisateurs
     #[Route('/', name: 'app_user_index', methods: ['GET'])]
     public function index(UserRepository $userRepository): Response
     {

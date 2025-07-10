@@ -58,7 +58,7 @@ class UserTypeForm extends AbstractType
             'choices' => [
                 'Employé' => UserRole::EMPLOYE,
                 'Admin' => UserRole::ADMIN,
-                'Chef de project' => UserRole::CHEF_project,
+                'Chef de project' => UserRole::CHEF_PROJET,
                 'Directeur' => UserRole::DIRECTEUR,
             ],
             'attr' => ['class' => 'form-check-input'],
@@ -134,6 +134,8 @@ class UserTypeForm extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+             'can_choose_role' => false,
+        'is_edit' => false,
         ]);
     }
 }

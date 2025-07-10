@@ -28,7 +28,7 @@ class AdminController extends AbstractController
         $this->emailVerifier = $emailVerifier;
     }
     #[IsGranted('ROLE_ADMIN')]
-
+// Route pour créer un nouvel utilisateur
     #[Route('/user/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function newUser(
         Request $request,
@@ -126,7 +126,7 @@ class AdminController extends AbstractController
     #[Route('/admin/projects', name: 'app_admin_projects')]
     public function projects(ProjectRepository $projectRepository): Response
     {
-        $projects = $projectRepository->findBy(['owner' => $this->getUser()]);
+        $projects = $projectRepository->findBy(['chefproject' => $this->getUser()]);
         return $this->render('admin/projects.html.twig', [
             'projects' => $projects,
             'activePage' => 'projects',
