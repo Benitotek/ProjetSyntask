@@ -17,15 +17,15 @@ controllers:
 #     controller: App\Controller\DirecteurDashboardController::index
 #     methods: [GET]
 
-# # Routes pour les projets
+# # Routes pour les projects
 # project_index:
 #     path: /projects
 #     controller: App\Controller\ProjectController::index
 #     methods: [GET]
 
-# mes_projets:
-#     path: /mes-projets
-#     controller: App\Controller\ProjectController::mesProjet
+# mes_projects:
+#     path: /mes-projects
+#     controller: App\Controller\ProjectController::mesproject
 #     methods: [GET]
 
 # project_show:

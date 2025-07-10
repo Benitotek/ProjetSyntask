@@ -37,7 +37,7 @@ class RegistrationForm extends AbstractType
                 'label' => 'Rôle',
                 'choices' => [
                     'Employé' => 'ROLE_EMPLOYE',
-                    'Chef de projet' => 'ROLE_CHEF_PROJET',
+                    'Chef de project' => 'ROLE_CHEF_project',
                     'Directeur' => 'ROLE_DIRECTEUR',
                     'Administrateur' => 'ROLE_ADMIN',
                 ],

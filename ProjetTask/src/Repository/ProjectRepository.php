@@ -24,18 +24,18 @@ class ProjectRepository extends ServiceEntityRepository
     // MAJ V2-V3 date du 02/07/2025
 
     /**
-     * Trouve les projets dont un utilisateur est chef ou membre, avec filtrage par statut optionnel
+     * Trouve les projects dont un utilisateur est chef ou membre, avec filtrage par statut optionnel
      * 
      * @param User $user L'utilisateur concerné
-     * @param string $statut Le statut des projets à retourner ('tous' pour tous les projets)
+     * @param string $statut Le statut des projects à retourner ('tous' pour tous les projects)
      * @return Project[] Retourne un tableau d'objets Project
      */
    
     /**
-     * Trouve les projets récents avec stats
+     * Trouve les projects récents avec stats
      * 
-     * @param User|null $user Si fourni, limite aux projets de l'utilisateur
-     * @param int $limit Nombre maximum de projets à retourner
+     * @param User|null $user Si fourni, limite aux projects de l'utilisateur
+     * @param int $limit Nombre maximum de projects à retourner
      * @return Project[]
      */
     public function findRecentWithStats(?User $user = null, int $limit = 5): array
@@ -50,7 +50,7 @@ class ProjectRepository extends ServiceEntityRepository
 
         if ($user) {
             $qb->leftJoin('p.membres', 'm')
-                ->where('p.chefProjet = :user') 
+                ->where('p.chefproject = :user') 
                 ->orWhere('m = :user')
                 ->setParameter('user', $user);
         }
@@ -59,15 +59,15 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les projets où l'utilisateur est chef de projet
+     * Trouve les projects où l'utilisateur est chef de project
      * 
-     * @param User $user Le chef de projet
+     * @param User $user Le chef de project
      * @return Project[]
      */
-    public function findByChefDeProjet(User $user): array
+    public function findByChefDeproject(User $user): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.chefProjet = :user')  
+            ->where('p.chefproject = :user')  
             ->setParameter('user', $user)
             ->orderBy('p.dateCreation', 'DESC')
             ->getQuery()
@@ -75,7 +75,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les projets où l'utilisateur est membre
+     * Trouve les projects où l'utilisateur est membre
      * 
      * @param User $user L'utilisateur membre
      * @return Project[]
@@ -92,7 +92,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les projets assignés à un utilisateur (où il est membre mais pas chef)
+     * Trouve les projects assignés à un utilisateur (où il est membre mais pas chef)
      * 
      * @param User $user L'utilisateur assigné
      * @return Project[]
@@ -102,7 +102,7 @@ class ProjectRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->leftJoin('p.membres', 'm')
             ->where('m = :user')
-            ->andWhere('p.chefProjet != :user')  
+            ->andWhere('p.chefproject != :user')  
             ->setParameter('user', $user)
             ->orderBy('p.dateCreation', 'DESC')
             ->getQuery()
@@ -110,9 +110,9 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Compte tous les projets
+     * Compte tous les projects
      * 
-     * @return int Le nombre de projets
+     * @return int Le nombre de projects
      */
     public function countAll(): int
     {
@@ -123,10 +123,10 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Compte les projets avec un statut spécifique
+     * Compte les projects avec un statut spécifique
      * 
      * @param array $statuts Tableau des statuts à compter
-     * @return int Le nombre de projets correspondant aux statuts
+     * @return int Le nombre de projects correspondant aux statuts
      */
     public function countBystatut(array $statuts): int
     {
@@ -139,9 +139,9 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les projets récents
+     * Trouve les projects récents
      * 
-     * @param int $limit Nombre maximum de projets à retourner
+     * @param int $limit Nombre maximum de projects à retourner
      * @return Project[]
      */
     public function findRecent(int $limit = 5): array
@@ -154,7 +154,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère des statistiques budgétaires sur les projets
+     * Récupère des statistiques budgétaires sur les projects
      * 
      * @return array Tableau associatif de statistiques
      */
@@ -179,7 +179,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les projets où l'utilisateur est membre avec un statut spécifique
+     * Trouve les projects où l'utilisateur est membre avec un statut spécifique
      */
     public function findProjectsAsMemberBystatut(User $user, string $statut): array
     {
@@ -194,13 +194,13 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve tous les projets liés à un utilisateur (chef de projet ou membre)
+     * Trouve tous les projects liés à un utilisateur (chef de project ou membre)
      */
     public function findProjectsByUser(User $user, string $statut = 'tous'): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.membres', 'm')
-            ->where('p.chefProjet = :user')
+            ->where('p.chefproject = :user')
             ->orWhere('m.id = :userId')
             ->setParameter('user', $user)
             ->setParameter('userId', $user->getId());
@@ -215,7 +215,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
  
-     // Trouve les projets par statut
+     // Trouve les projects par statut
      
     public function findByStatut(string $statut): array
     {
@@ -223,7 +223,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les projets non archivés
+     * Trouve les projects non archivés
      */
     public function findActiveProjects(): array
     {
@@ -236,13 +236,13 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les projets d'un utilisateur non archivés
+     * Trouve les projects d'un utilisateur non archivés
      */
     public function findActiveProjectsByUser(User $user): array
     {
         return $this->createQueryBuilder('p')
             ->leftJoin('p.membres', 'm')
-            ->where('p.chefProjet = :user')
+            ->where('p.chefproject = :user')
             ->orWhere('m.id = :userId')
             ->andWhere('p.estArchive = :archived')
             ->setParameter('user', $user)
@@ -282,17 +282,17 @@ class ProjectRepository extends ServiceEntityRepository
 //     // MAJ V2-V3 date du 02/07/2025
 
 //     /**
-//      * Trouve les projets dont un utilisateur est chef ou membre, avec filtrage par statut optionnel
+//      * Trouve les projects dont un utilisateur est chef ou membre, avec filtrage par statut optionnel
 //      * 
 //      * @param User $user L'utilisateur concerné
-//      * @param string $statut Le statut des projets à retourner ('tous' pour tous les projets)
+//      * @param string $statut Le statut des projects à retourner ('tous' pour tous les projects)
 //      * @return Project[] Retourne un tableau d'objets Project
 //      */
 //     public function findProjectsByUser(User $user, string $statut = 'tous'): array
 //     {
 //         $qb = $this->createQueryBuilder('p')
 //             ->leftJoin('p.membres', 'm')
-//             ->where('p.Chef_Projet = :user')
+//             ->where('p.Chef_project = :user')
 //             ->orWhere('m = :user')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC');
@@ -306,10 +306,10 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve les projets récents avec stats
+//      * Trouve les projects récents avec stats
 //      * 
-//      * @param User|null $user Si fourni, limite aux projets de l'utilisateur
-//      * @param int $limit Nombre maximum de projets à retourner
+//      * @param User|null $user Si fourni, limite aux projects de l'utilisateur
+//      * @param int $limit Nombre maximum de projects à retourner
 //      * @return Project[]
 //      */
 //     public function findRecentWithStats(?User $user = null, int $limit = 5): array
@@ -324,7 +324,7 @@ class ProjectRepository extends ServiceEntityRepository
 
 //         if ($user) {
 //             $qb->leftJoin('p.membres', 'm')
-//                 ->where('p.Chef_Projet = :user')
+//                 ->where('p.Chef_project = :user')
 //                 ->orWhere('m = :user')
 //                 ->setParameter('user', $user);
 //         }
@@ -333,15 +333,15 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve les projets où l'utilisateur est chef de projet
+//      * Trouve les projects où l'utilisateur est chef de project
 //      * 
-//      * @param User $user Le chef de projet
+//      * @param User $user Le chef de project
 //      * @return Project[]
 //      */
-//     public function findByChefDeProjet(User $user): array
+//     public function findByChefDeproject(User $user): array
 //     {
 //         return $this->createQueryBuilder('p')
-//             ->where('p.Chef_Projet = :user')
+//             ->where('p.Chef_project = :user')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC')
 //             ->getQuery()
@@ -349,7 +349,7 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve les projets où l'utilisateur est membre
+//      * Trouve les projects où l'utilisateur est membre
 //      * 
 //      * @param User $user L'utilisateur membre
 //      * @return Project[]
@@ -366,7 +366,7 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve les projets assignés à un utilisateur (où il est membre mais pas chef)
+//      * Trouve les projects assignés à un utilisateur (où il est membre mais pas chef)
 //      * 
 //      * @param User $user L'utilisateur assigné
 //      * @return Project[]
@@ -376,7 +376,7 @@ class ProjectRepository extends ServiceEntityRepository
 //         return $this->createQueryBuilder('p')
 //             ->leftJoin('p.membres', 'm')
 //             ->where('m = :user')
-//             ->andWhere('p.Chef_Projet != :user')
+//             ->andWhere('p.Chef_project != :user')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC')
 //             ->getQuery()
@@ -384,9 +384,9 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Compte tous les projets
+//      * Compte tous les projects
 //      * 
-//      * @return int Le nombre de projets
+//      * @return int Le nombre de projects
 //      */
 //     public function countAll(): int
 //     {
@@ -397,10 +397,10 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Compte les projets avec un statut spécifique
+//      * Compte les projects avec un statut spécifique
 //      * 
 //      * @param array $statuts Tableau des statuts à compter
-//      * @return int Le nombre de projets correspondant aux statuts
+//      * @return int Le nombre de projects correspondant aux statuts
 //      */
 //     public function countBystatut(array $statuts): int
 //     {
@@ -413,9 +413,9 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve les projets récents
+//      * Trouve les projects récents
 //      * 
-//      * @param int $limit Nombre maximum de projets à retourner
+//      * @param int $limit Nombre maximum de projects à retourner
 //      * @return Project[]
 //      */
 //     public function findRecent(int $limit = 5): array
@@ -428,7 +428,7 @@ class ProjectRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Récupère des statistiques budgétaires sur les projets
+//      * Récupère des statistiques budgétaires sur les projects
 //      * 
 //      * @return array Tableau associatif de statistiques
 //      */
@@ -447,7 +447,7 @@ class ProjectRepository extends ServiceEntityRepository
 // VERSION 1 STABLES mais avec des soucis ou manques date du new changement le 02/07/2025
 
 // /**
-//  * Compter tous les projets
+//  * Compter tous les projects
 //  */
 // public function countAll(): int
 // {
@@ -458,7 +458,7 @@ class ProjectRepository extends ServiceEntityRepository
 // }
 
 // /**
-//  * Trouver les projets récents
+//  * Trouver les projects récents
 //  */
 // public function findRecent(int $limit = 5): array
 // {
@@ -470,23 +470,23 @@ class ProjectRepository extends ServiceEntityRepository
 // }
 
 // // /**
-// //  * Trouver les projets récents avec statistiques
+// //  * Trouver les projects récents avec statistiques
 // //  */
 // public function findRecentWithStats(User $user, int $limit = 5): array
 // {
 //     // Cette méthode doit être implémentée selon vos besoins
-//     // Par exemple, elle pourrait renvoyer des projets avec le nombre de tâches par statut
-//     return $this->findByChef_Projet($user, $limit);
+//     // Par exemple, elle pourrait renvoyer des projects avec le nombre de tâches par statut
+//     return $this->findByChef_project($user, $limit);
 // }
 
 // /**
-//  * Trouver les projets par chef de projet
+//  * Trouver les projects par chef de project
 //  * (Méthode déplacée ou renommée pour éviter les doublons)
 //  */
-// public function findByChef_Projet(User $user, $limit): array
+// public function findByChef_project(User $user, $limit): array
 // {
 //     $qb = $this->createQueryBuilder('p')
-//         ->where('p.Chef_Projet = :user')
+//         ->where('p.Chef_project = :user')
 //         ->setParameter('user', $user)
 //         ->orderBy('p.dateCreation', 'DESC');
 
@@ -498,7 +498,7 @@ class ProjectRepository extends ServiceEntityRepository
 // }
 
 // /**
-//  * Trouver les projets où l'utilisateur est membre
+//  * Trouver les projects où l'utilisateur est membre
 //  */
 // public function findProjectsAsMember(User $user): array
 // {
@@ -510,7 +510,7 @@ class ProjectRepository extends ServiceEntityRepository
 //         ->getResult();
 // }
 // /**
-//  * Trouve les projets où l'utilisateur est membre et qui ont un statut spécifique
+//  * Trouve les projects où l'utilisateur est membre et qui ont un statut spécifique
 //  */
 // public function findProjectsAsMemberBystatut(User $user, string $statut): array
 // {
@@ -525,12 +525,12 @@ class ProjectRepository extends ServiceEntityRepository
 // }
 
 // /**
-//  * Obtenir des statistiques budgétaires sur les projets (requête SQL brute)
+//  * Obtenir des statistiques budgétaires sur les projects (requête SQL brute)
 //  */
 // public function getProjectsWithBudgetStatsRaw(): array
 // {
 //     // Cette méthode doit retourner des statistiques budgétaires
-//     // Par exemple, regrouper les projets par statut et calculer le budget total
+//     // Par exemple, regrouper les projects par statut et calculer le budget total
 //     $conn = $this->getEntityManager()->getConnection();
 
 //     $sql = '
@@ -554,7 +554,7 @@ class ProjectRepository extends ServiceEntityRepository
 // {
 //     return $this->createQueryBuilder('p')
 //         ->join('p.membres', 'm')
-//         ->where('m = :user OR p.Chef_Projet = :user')
+//         ->where('m = :user OR p.Chef_project = :user')
 //         ->setParameter('user', $user)
 //         ->orderBy('p.dateCreation', 'DESC')
 //         ->getQuery()
@@ -576,7 +576,7 @@ class ProjectRepository extends ServiceEntityRepository
 // }
 
 /**
- * Trouve les projets récents d'un utilisateur avec leurs statistiques
+ * Trouve les projects récents d'un utilisateur avec leurs statistiques
  */
 // public function findRecentWithStats(User $user, int $limit = 5): array
 // {
@@ -584,7 +584,7 @@ class ProjectRepository extends ServiceEntityRepository
 //         ->leftJoin('p.tasks', 't')
 //         ->leftJoin('p.membres', 'm')
 //         ->addSelect('COUNT(t.id) as taskCount')
-//         ->where('m = :user OR p.chefDeProjet = :user')
+//         ->where('m = :user OR p.chefDeproject = :user')
 //         ->setParameter('user', $user)
 //         ->groupBy('p.id')
 //         ->orderBy('p.dateCreation', 'DESC')
@@ -615,7 +615,7 @@ class ProjectRepository extends ServiceEntityRepository
 //             ->getResult();
 //     }
 //     /**
-//      * Compter les projets par statut
+//      * Compter les projects par statut
 //      */
 //     public function countBystatut(array $statuts): int
 //     {
@@ -669,7 +669,7 @@ class ProjectRepository extends ServiceEntityRepository
 //     public function findProjectsByUser(User $user): array
 //     {
 //         return $this->createQueryBuilder('p')
-//             ->where('p.Chef_Projet = :user')
+//             ->where('p.Chef_project = :user')
 //             ->orWhere(':user MEMBER OF p.membres')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC')

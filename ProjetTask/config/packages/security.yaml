@@ -78,8 +78,8 @@ security:
     # Hiérarchie des rôles
     role_hierarchy:
         ROLE_EMPLOYE: [ROLE_USER]
-        ROLE_CHEF_PROJET: [ROLE_EMPLOYE]
-        ROLE_DIRECTEUR: [ROLE_CHEF_PROJET]
+        ROLE_CHEF_project: [ROLE_EMPLOYE]
+        ROLE_DIRECTEUR: [ROLE_CHEF_project]
         ROLE_ADMIN: [ROLE_DIRECTEUR, ROLE_ALLOWED_TO_SWITCH]
 
     # # Easy way to control access for large sections of your site
@@ -111,18 +111,18 @@ security:
 
         # Dashboards spécifiques
         - { path: ^/directeur, role: ROLE_DIRECTEUR }
-        - { path: ^/chef-projet, role: ROLE_CHEF_PROJET }
+        - { path: ^/chef-project, role: ROLE_CHEF_project }
         - { path: ^/employe, role: ROLE_EMPLOYE }
 
-        # Routes des projets (accessibles selon les rôles)
+        # Routes des projects (accessibles selon les rôles)
         - { path: ^/projects, role: ROLE_EMPLOYE }
-        - { path: ^/mes-projets, role: ROLE_EMPLOYE }
+        - { path: ^/mes-projects, role: ROLE_EMPLOYE }
         - { path: ^/project, role: ROLE_EMPLOYE }
 
         # Routes des tâches
         - { path: ^/tasks, role: ROLE_EMPLOYE }
         - { path: ^/task, role: ROLE_EMPLOYE }
-        - { path: ^/tasklist, role: ROLE_CHEF_PROJET } # Seuls les chefs peuvent gérer les colonnes
+        - { path: ^/tasklist, role: ROLE_CHEF_project } # Seuls les chefs peuvent gérer les colonnes
 
         # API authentifiée
         - { path: ^/api, role: ROLE_EMPLOYE }
@@ -132,7 +132,7 @@ security:
         - { path: ^/mon-profil, role: ROLE_EMPLOYE }
 
         # Statistiques
-        - { path: ^/statistiques, role: ROLE_CHEF_PROJET }
+        - { path: ^/statistiques, role: ROLE_CHEF_project }
 
         # # Dashboard par défaut (accessible à tous les utilisateurs connectés)
         - { path: ^/dashboard, role: ROLE_EMPLOYE }

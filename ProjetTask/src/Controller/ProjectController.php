@@ -32,9 +32,9 @@ class ProjectController extends AbstractController
     }
     //VERSION AVEC 2 BOUTONS (tableau de bord et stats )?
     /**
-     * Affiche les projets de l'utilisateur connecté
+     * Affiche les projects de l'utilisateur connecté
      */
-   #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
+   #[Route('/mes-projects', name: 'app_mes_projects', methods: ['GET'])]
 public function mesProjects(Request $request, ProjectRepository $projectRepository): Response
 {
     /** @var User $user */
@@ -47,29 +47,29 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     // Récupérer le statut sélectionné depuis la requête
     $current_statut = $request->query->get('statut', 'tous');
     
-    // Récupérer les projets selon le statut sélectionné
+    // Récupérer les projects selon le statut sélectionné
     if ($current_statut !== 'tous') {
         // Si un statut spécifique est demandé
         $projectsAsManager = $projectRepository->findBy([
-            'chefProjet' => $user,  // CORRECTION: chefProjet au lieu de ChefProjet
+            'chefproject' => $user,  // CORRECTION: chefproject au lieu de Chefproject
             'statut' => $current_statut
         ]);
 
-        // Récupérer les projets où l'utilisateur est membre avec le statut spécifié
+        // Récupérer les projects où l'utilisateur est membre avec le statut spécifié
         $projectsAsMember = $projectRepository->findProjectsAsMemberBystatut($user, $current_statut);
     } else {
-        // Tous les projets
-        $projectsAsManager = $projectRepository->findBy(['chefProjet' => $user]); // CORRECTION: chefProjet
+        // Tous les projects
+        $projectsAsManager = $projectRepository->findBy(['chefproject' => $user]); // CORRECTION: chefproject
         $projectsAsMember = $projectRepository->findProjectsAsMember($user);
     }
 
-    // Fusionner les deux collections de projets
+    // Fusionner les deux collections de projects
     $projects = array_merge($projectsAsManager, $projectsAsMember);
 
     // Éliminer les doublons potentiels
     $projects = array_unique($projects, SORT_REGULAR);
 
-    return $this->render('project/mes_projets.html.twig', [
+    return $this->render('project/mes_projects.html.twig', [
         'projects' => $projects,
         'current_statut' => $current_statut,
         'user' => $user,
@@ -77,21 +77,21 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 }
     // Test Version 2-3 date 02/07/2025
     /**
-     * Liste de tous les projets (avec filtres selon les permissions)
+     * Liste de tous les projects (avec filtres selon les permissions)
      */
-    #[Route('/', name: 'app_projet_index', methods: ['GET'])]
+    #[Route('/', name: 'app_project_index', methods: ['GET'])]
     public function index(ProjectRepository $projectRepository): Response
     {
         $user = $this->getUser();
 
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-            // Afficher tous les projets pour les administrateurs et les directeurs
+            // Afficher tous les projects pour les administrateurs et les directeurs
             $projects = $projectRepository->findAll();
-        } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
-            // Afficher uniquement les projets dont l'utilisateur est chef
-            $projects = $projectRepository->findByChefDeProjet($user);
+        } elseif ($this->isGranted('ROLE_CHEF_project')) {
+            // Afficher uniquement les projects dont l'utilisateur est chef
+            $projects = $projectRepository->findByChefDeproject($user);
         } else {
-            // Afficher uniquement les projets dont l'utilisateur est membre
+            // Afficher uniquement les projects dont l'utilisateur est membre
             $projects = $projectRepository->findByMembre($user);
         }
 
@@ -102,14 +102,14 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     }
 
     /**
-     * Création d'un nouveau projet
+     * Création d'un nouveau project
      */
-    #[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_CHEF_PROJET')]
+    #[Route('/new', name: 'app_project_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_CHEF_project')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $project = new Project();
-        $project->setChefProjet($this->getUser());
+        $project->setChefproject($this->getUser());
         $project->setDateCreation(new \DateTime());
 
         $form = $this->createForm(ProjectTypeForm::class, $project);
@@ -122,8 +122,8 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
             $entityManager->persist($project);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Projet créé avec succès');
-            return $this->redirectToRoute('app_projet_index');
+            $this->addFlash('success', 'project créé avec succès');
+            return $this->redirectToRoute('app_project_index');
         }
 
         return $this->render('project/new.html.twig', [
@@ -133,12 +133,12 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     }
 
     /**
-     * Affichage des détails d'un projet
+     * Affichage des détails d'un project
      */
-    #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_project_show', methods: ['GET'])]
     public function show(Project $project): Response
     {
-        // Vérifier que l'utilisateur a le droit de voir ce projet
+        // Vérifier que l'utilisateur a le droit de voir ce project
         $this->denyAccessUnlessGranted('VIEW', $project);
 
         return $this->render('project/show.html.twig', [
@@ -147,12 +147,12 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     }
 
     /**
-     * Modification d'un projet
+     * Modification d'un project
      */
     #[Route('/{id}/edit', name: 'app_project_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         $this->denyAccessUnlessGranted('EDIT', $project);
 
         $form = $this->createForm(ProjectTypeForm::class, $project);
@@ -161,8 +161,8 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            $this->addFlash('success', 'Projet modifié avec succès');
-            return $this->redirectToRoute('app_projet_index');
+            $this->addFlash('success', 'project modifié avec succès');
+            return $this->redirectToRoute('app_project_index');
         }
 
         return $this->render('project/edit.html.twig', [
@@ -172,42 +172,42 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     }
 
     /**
-     * Suppression d'un projet
+     * Suppression d'un project
      */
-    #[Route('/{id}/delete', name: 'app_projet_delete', methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'app_project_delete', methods: ['POST'])]
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        // Vérifier que l'utilisateur a le droit de supprimer ce projet
+        // Vérifier que l'utilisateur a le droit de supprimer ce project
         $this->denyAccessUnlessGranted('DELETE', $project);
 
         if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
             $entityManager->remove($project);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Projet supprimé avec succès');
+            $this->addFlash('success', 'project supprimé avec succès');
         }
 
-        return $this->redirectToRoute('app_projet_index');
+        return $this->redirectToRoute('app_project_index');
     }
 
     /**
-     * Affichage du kanban d'un projet
+     * Affichage du kanban d'un project
      */
-    #[Route('/{id}/kanban', name: 'app_projet_kanban', methods: ['GET'])]
+    #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
     public function kanban(Project $project, TaskListRepository $taskListRepository, UserRepository $userRepository): Response
     {
-        // Vérifier que l'utilisateur a le droit de voir ce projet
+        // Vérifier que l'utilisateur a le droit de voir ce project
         $this->denyAccessUnlessGranted('VIEW', $project);
 
         // Récupérer les colonnes avec leurs tâches
         $taskLists = $taskListRepository->findByProjectWithTasks($project);
 
-        // Récupérer les utilisateurs pouvant être assignés aux tâches (membres du projet)
+        // Récupérer les utilisateurs pouvant être assignés aux tâches (membres du project)
         $availableUsers = $project->getMembres()->toArray();
 
-        // Ajouter le chef de projet s'il n'est pas déjà membre
-        if (!in_array($project->getChefProjet(), $availableUsers)) {
-            $availableUsers[] = $project->getChefProjet();
+        // Ajouter le chef de project s'il n'est pas déjà membre
+        if (!in_array($project->getChefproject(), $availableUsers)) {
+            $availableUsers[] = $project->getChefproject();
         }
 
         return $this->render('project/kanban.html.twig', [
@@ -218,16 +218,16 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     }
 
     /**
-     * Gestion des membres d'un projet
+     * Gestion des membres d'un project
      */
-    #[Route('/{id}/members', name: 'app_projet_members', methods: ['GET', 'POST'])]
+    #[Route('/{id}/members', name: 'app_project_members', methods: ['GET', 'POST'])]
     public function manageMembers(
         Request $request,
         Project $project,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         $this->denyAccessUnlessGranted('EDIT', $project);
 
         if ($request->isMethod('POST')) {
@@ -240,14 +240,14 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
                 if ($user) {
                     if ($action === 'add' && !$project->getMembres()->contains($user)) {
                         $project->addMembre($user);
-                        $this->addFlash('success', $user->getFullName() . ' ajouté au projet avec succès');
+                        $this->addFlash('success', $user->getFullName() . ' ajouté au project avec succès');
                     } elseif ($action === 'remove' && $project->getMembres()->contains($user)) {
-                        // Vérifier qu'il n'est pas le chef de projet
-                        if ($project->getChefProjet() === $user) {
-                            $this->addFlash('error', 'Vous ne pouvez pas retirer le chef de projet');
+                        // Vérifier qu'il n'est pas le chef de project
+                        if ($project->getChefproject() === $user) {
+                            $this->addFlash('error', 'Vous ne pouvez pas retirer le chef de project');
                         } else {
                             $project->removeMembre($user);
-                            $this->addFlash('success', $user->getFullName() . ' retiré du projet avec succès');
+                            $this->addFlash('success', $user->getFullName() . ' retiré du project avec succès');
                         }
                     }
 
@@ -261,19 +261,19 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
             }
         }
 
-        // Récupérer tous les utilisateurs qui pourraient être ajoutés au projet
+        // Récupérer tous les utilisateurs qui pourraient être ajoutés au project
         $availableUsers = $userRepository->findUserNotInProject($project);
 
-        return $this->render('projet/members.html.twig', [
+        return $this->render('project/members.html.twig', [
             'project' => $project,
             'available_users' => $availableUsers,
         ]);
     }
 
     /**
-     * Assigner un chef de projet
+     * Assigner un chef de project
      */
-    #[Route('/{id}/assign-manager/{userId}', name: 'app_projet_assign_manager', methods: ['POST'])]
+    #[Route('/{id}/assign-manager/{userId}', name: 'app_project_assign_manager', methods: ['POST'])]
     #[IsGranted('ROLE_DIRECTEUR')]
     public function assignManager(
         Project $project,
@@ -286,36 +286,36 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 
         if (!$user) {
             $this->addFlash('error', 'Utilisateur non trouvé');
-            return $this->redirectToRoute('app_projet_members', ['id' => $project->getId()]);
+            return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
         }
 
-        // Vérifier que l'utilisateur a le rôle CHEF_PROJET
-        if (!in_array('ROLE_CHEF_PROJET', $user->getrole())) {
-            $this->addFlash('error', 'L\'utilisateur doit avoir le rôle CHEF_PROJET pour être assigné comme chef de projet');
-            return $this->redirectToRoute('app_projet_members', ['id' => $project->getId()]);
+        // Vérifier que l'utilisateur a le rôle CHEF_project
+        if (!in_array('ROLE_CHEF_project', $user->getrole())) {
+            $this->addFlash('error', 'L\'utilisateur doit avoir le rôle CHEF_project pour être assigné comme chef de project');
+            return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
         }
 
-        $project->setChefProjet($user);
+        $project->setChefproject($user);
 
-        // Ajouter automatiquement le chef de projet aux membres s'il n'y est pas déjà
+        // Ajouter automatiquement le chef de project aux membres s'il n'y est pas déjà
         if (!$project->getMembres()->contains($user)) {
             $project->addMembre($user);
         }
 
         $entityManager->flush();
 
-        $this->addFlash('success', $user->getFullName() . ' a été assigné comme chef de projet');
+        $this->addFlash('success', $user->getFullName() . ' a été assigné comme chef de project');
 
         // Si AJAX, retourner une réponse JSON
         if ($request->isXmlHttpRequest()) {
             return new JsonResponse(['success' => true]);
         }
 
-        return $this->redirectToRoute('app_projet_members', ['id' => $project->getId()]);
+        return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
     }
 
     /**
-     * Crée les colonnes par défaut pour un nouveau projet
+     * Crée les colonnes par défaut pour un nouveau project
      */
     private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
     {
@@ -340,7 +340,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     }
 
     /**
-     * Méthode pour vérifier si l'utilisateur a le droit de voir ou modifier un projet
+     * Méthode pour vérifier si l'utilisateur a le droit de voir ou modifier un project
      */
     private function canAccessProject(Project $project): bool
     {
@@ -355,12 +355,12 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
             return true;
         }
 
-        // Les chefs de projet peuvent voir les projets qu'ils dirigent
-        if ($this->isGranted('ROLE_CHEF_PROJET') && $project->getChefProjet() === $user) {
+        // Les chefs de project peuvent voir les projects qu'ils dirigent
+        if ($this->isGranted('ROLE_CHEF_project') && $project->getChefproject() === $user) {
             return true;
         }
 
-        // Les membres du projet peuvent voir le projet
+        // Les membres du project peuvent voir le project
         return $project->getMembres()->contains($user);
     }
 }
@@ -368,8 +368,8 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 // Version1 avec  les bouton marche pas pour stats et le Tableau de bord Test New Version
 
     // CETTE PARTIE MARCHE MAIS N'EST PAS COMPATIBLE AVEC 2 BOUTONS(tableau de bord et stats )
-    // #[Route('/mes-projets', name: 'app_mes_projets', methods: ['GET'])]
-    // #[IsGranted('ROLE_CHEF_PROJET')]
+    // #[Route('/mes-projects', name: 'app_mes_projects', methods: ['GET'])]
+    // #[IsGranted('ROLE_CHEF_project')]
     // public function myProjects(ProjectRepository $projectRepository, Request $request): Response
     // {
     //     /** @var User $user */
@@ -382,26 +382,26 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     //     $current_statut = $request->query->get('statut', 'tous');
     //     $projects = $projectRepository->findProjectsByUser($user, $current_statut,);
 
-    //     return $this->render('project/mes_projets.html.twig', [
+    //     return $this->render('project/mes_projects.html.twig', [
     //         'projects' => $projects,
     //         'current_statut' => $current_statut,
     //         'user' => $user,
     //     ]);
     // }
 
-    // #[Route('/', name: 'app_projet_index', methods: ['GET'])]
+    // #[Route('/', name: 'app_project_index', methods: ['GET'])]
     // public function index(ProjectRepository $projectRepository): Response
     // {
     //     $user = $this->getUser();
 
     //     if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-    //         // Afficher tous les projets pour les administrateurs et les directeurs
+    //         // Afficher tous les projects pour les administrateurs et les directeurs
     //         $projects = $projectRepository->findAll();
-    //     } elseif ($this->isGranted('ROLE_CHEF_PROJET')) {
-    //         // Afficher uniquement les projets dont l'utilisateur est chef
-    //         $projects = $projectRepository->findByChef_Projet($user, []);
+    //     } elseif ($this->isGranted('ROLE_CHEF_project')) {
+    //         // Afficher uniquement les projects dont l'utilisateur est chef
+    //         $projects = $projectRepository->findByChef_project($user, []);
     //     } else {
-    //         // Afficher uniquement les projets dont l'utilisateur est membre
+    //         // Afficher uniquement les projects dont l'utilisateur est membre
     //         $projects = $projectRepository->findByMembre($user);
     //     }
 
@@ -410,12 +410,12 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     //     ]);
     // }
 
-    // #[Route('/new', name: 'app_projet_new', methods: ['GET', 'POST'])]
-    // #[IsGranted('ROLE_CHEF_PROJET')]
+    // #[Route('/new', name: 'app_project_new', methods: ['GET', 'POST'])]
+    // #[IsGranted('ROLE_CHEF_project')]
     // public function new(Request $request, EntityManagerInterface $entityManager): Response
     // {
     //     $project = new Project();
-    //     $project->setChef_Projet($this->getUser());
+    //     $project->setChef_project($this->getUser());
     //     $project->setDateCreation(new \DateTime());
 
     //     $form = $this->createForm(ProjectTypeForm::class, $project);
@@ -428,22 +428,22 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
     //         $entityManager->persist($project);
     //         $entityManager->flush();
 
-    //         return $this->redirectToRoute('app_projet_index', [], Response::HTTP_SEE_OTHER);
+    //         return $this->redirectToRoute('app_project_index', [], Response::HTTP_SEE_OTHER);
     //     }
 
-    //     return $this->render('projet/new.html.twig', [
+    //     return $this->render('project/new.html.twig', [
     //         'project' => $project,
     //         'form' => $form,
     //     ]);
     // }
 
-    // #[Route('/{id}', name: 'app_projet_show', methods: ['GET'])]
+    // #[Route('/{id}', name: 'app_project_show', methods: ['GET'])]
     // public function show(Project $project): Response
     // {
-    //     // Vérifier que l'utilisateur a le droit de voir ce projet
+    //     // Vérifier que l'utilisateur a le droit de voir ce project
     //     $this->denyAccessUnlessGranted('VIEW', $project);
 
-    //     return $this->render('projet/show.html.twig', [
+    //     return $this->render('project/show.html.twig', [
     //         'project' => $project,
     //     ]);
     // }
@@ -451,7 +451,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //     #[Route('/{id}/edit', name: 'app_project_edit', methods: ['GET', 'POST'])]
 //     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
 //     {
-//         // Vérifier que l'utilisateur a le droit de modifier ce projet
+//         // Vérifier que l'utilisateur a le droit de modifier ce project
 //         $this->denyAccessUnlessGranted('EDIT', $project);
 
 //         $form = $this->createForm(ProjectTypeForm::class, $project);
@@ -460,19 +460,19 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //         if ($form->isSubmitted() && $form->isValid()) {
 //             $entityManager->flush();
 
-//             return $this->redirectToRoute('app_projet_index', [], Response::HTTP_SEE_OTHER);
+//             return $this->redirectToRoute('app_project_index', [], Response::HTTP_SEE_OTHER);
 //         }
 
-//         return $this->render('projet/edit.html.twig', [
+//         return $this->render('project/edit.html.twig', [
 //             'project' => $project,
 //             'form' => $form,
 //         ]);
 //     }
 
-//     #[Route('/{id}', name: 'app_projet_delete', methods: ['POST'])]
+//     #[Route('/{id}', name: 'app_project_delete', methods: ['POST'])]
 //     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
 //     {
-//         // Vérifier que l'utilisateur a le droit de supprimer ce projet
+//         // Vérifier que l'utilisateur a le droit de supprimer ce project
 //         $this->denyAccessUnlessGranted('DELETE', $project);
 
 //         if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
@@ -480,7 +480,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //             $entityManager->flush();
 //         }
 
-//         return $this->redirectToRoute('app_projet_index', [], Response::HTTP_SEE_OTHER);
+//         return $this->redirectToRoute('app_project_index', [], Response::HTTP_SEE_OTHER);
 //     }
 
 //     private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
@@ -501,14 +501,14 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //     }
 // }
 
-// #[Route('/projet/view')]
+// #[Route('/project/view')]
 // // #[IsGranted('ROLE_EMPLOYE')]
 // class ProjectViewController extends AbstractController
 // {
 //     /**
-//      * Vue Kanban d'un projet
+//      * Vue Kanban d'un project
 //      */
-//     #[Route('/{id}/kanban', name: 'app_projet_view_kanban', methods: ['GET'])]
+//     #[Route('/{id}/kanban', name: 'app_project_view_kanban', methods: ['GET'])]
 //     public function ProjectKanban(
 //         Project $project,
 //         TaskListRepository $taskListRepository
@@ -522,16 +522,16 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //         // Mettre à jour automatiquement les couleurs
 //         $taskListRepository->updateAutoColorsForProject($project);
 
-//         return $this->render('projet/view/kanban.html.twig', [
+//         return $this->render('project/view/kanban.html.twig', [
 //             'project' => $project,
 //             'taskLists' => $taskLists,
 //         ]);
 //     }
 
 //     /**
-//      * Vue globale des tâches d'un projet
+//      * Vue globale des tâches d'un project
 //      */
-//     #[Route('/{id}/tasks', name: 'app_projet_view_tasks', methods: ['GET'])]
+//     #[Route('/{id}/tasks', name: 'app_project_view_tasks', methods: ['GET'])]
 //     public function allTasks(
 //         Project $project,
 //         Request $request,
@@ -545,7 +545,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //         $priority = $request->query->get('priority');
 //         $assignee = $request->query->get('assignee');
 
-//         // Récupérer toutes les tâches du projet
+//         // Récupérer toutes les tâches du project
 //         $tasks = $taskRepository->findByProject($project);
 
 //         // Appliquer les filtres
@@ -567,7 +567,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //             });
 //         }
 
-//         return $this->render('projet/view/all_tasks.html.twig', [
+//         return $this->render('project/view/all_tasks.html.twig', [
 //             'project' => $project,
 //             'tasks' => $tasks,
 //             'filters' => [
@@ -581,7 +581,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //     /**
 //      * API pour réorganiser les tâches (AJAX)
 //      */
-//     #[Route('/{id}/reorder-tasks', name: 'app_projet_reorder_tasks', methods: ['POST'])]
+//     #[Route('/{id}/reorder-tasks', name: 'app_project_reorder_tasks', methods: ['POST'])]
 //     public function reorderTasks(
 //         Project $project,
 //         Request $request,
@@ -610,7 +610,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //     /**
 //      * Filtre les tâches par statut
 //      */
-//     #[Route('/{id}/filter-by-statut/{statut}', name: 'app_projet_filter_by_statut')]
+//     #[Route('/{id}/filter-by-statut/{statut}', name: 'app_project_filter_by_statut')]
 //     public function filterBystatut(
 //         Project $project,
 //         string $statut,
@@ -624,7 +624,7 @@ public function mesProjects(Request $request, ProjectRepository $projectReposito
 //             return $task->getStatut() === $statut;
 //         });
 
-//         return $this->render('projet/view/all_tasks.html.twig', [
+//         return $this->render('project/view/all_tasks.html.twig', [
 //             'project' => $project,
 //             'tasks' => $filteredTasks,
 //             'filters' => [

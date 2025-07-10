@@ -66,10 +66,10 @@
 						<label for="assignee" class="form-label">Assigné à</label>
 						<select name="assignee" id="assignee" class="form-select">
 							<option value="">Tous les membres</option>
-							{% if project.Chef_Projet %}
-								<option value="{{ project.Chef_Projet.id }}" {% if filters.assignee == project.Chef_Projet.id %} selected {% endif %}>
-									{{ project.Chef_Projet.fullName }}
-									(Chef de projet)
+							{% if project.Chef_project %}
+								<option value="{{ project.Chef_project.id }}" {% if filters.assignee == project.Chef_project.id %} selected {% endif %}>
+									{{ project.Chef_project.fullName }}
+									(Chef de project)
 								</option>
 							{% endif %}
 

@@ -16,7 +16,7 @@ C:\Users\durri\ProjetTask\ProjetTask\templates\partials\_sidebar.html.twig
 C:\Users\durri\ProjetTask\ProjetTask\templates\partials\_topbar.html.twig                 
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\index.html.twig                    
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\kanban.html.twig                   
-C:\Users\durri\ProjetTask\ProjetTask\templates\project\mes_projets.html.twig              
+C:\Users\durri\ProjetTask\ProjetTask\templates\project\mes_projects.html.twig              
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\new.html.twig                      
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\show.html.twig                     
 C:\Users\durri\ProjetTask\ProjetTask\templates\project\view\all_tasks.html.twig           

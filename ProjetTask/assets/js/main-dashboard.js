@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * Initialise les graphiques du tableau de bord
  */
 function initCharts() {
-    // Graphique de progression des projets
+    // Graphique de progression des projects
     const projectProgressCtx = document.getElementById('chart-project-progress');
 
     if (projectProgressCtx && typeof Chart !== 'undefined') {
@@ -181,7 +181,7 @@ function initCharts() {
 }
 
 /**
- * Initialise les statistiques des projets
+ * Initialise les statistiques des projects
  */
 function initProjectStats() {
     const projectStats = document.getElementById('project-stats');
@@ -212,10 +212,10 @@ function initProjectStats() {
                     projectStats.dataset.loaded = 'true';
                 })
                 .catch(error => {
-                    console.error('Erreur lors du chargement des statistiques des projets:', error);
+                    console.error('Erreur lors du chargement des statistiques des projects:', error);
                     projectStats.innerHTML = `
                     <div class="alert alert-danger">
-                        Impossible de charger les statistiques des projets
+                        Impossible de charger les statistiques des projects
                     </div>
                 `;
                 });
@@ -533,7 +533,7 @@ function initFilters() {
             const projectId = this.value;
             const url = new URL(window.location.href);
 
-            // Mettre à jour le paramètre de projet dans l'URL
+            // Mettre à jour le paramètre de project dans l'URL
             if (projectId === 'all') {
                 url.searchParams.delete('project');
             } else {

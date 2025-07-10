@@ -58,7 +58,7 @@ class ActivityLogger
     {
         $this->log(
             ActivityType::PROJECT_CREATE,
-            "a créé le projet",
+            "a créé le project",
             $projectId,
             "/project/{$projectId}",
             $user

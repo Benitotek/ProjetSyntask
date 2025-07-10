@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mes Projets
+{% block title %}Mes projects
 {% endblock %}
 
 {% block stylesheets %}
@@ -43,9 +43,9 @@
 							</a>
 						</li>
 						<li class="nav-item active">
-							<a href="{{ path('app_mes_projets') }}" class="nav-link">
+							<a href="{{ path('app_mes_projects') }}" class="nav-link">
 								<i class="icon-projects"></i>
-								Mes projets
+								Mes projects
 							</a>
 						</li>
 						<li class="nav-item">
@@ -74,12 +74,12 @@
 			<!-- Contenu principal -->
 			<main class="main-content">
 				<div class="content-header">
-					<h1 class="page-title">Mes Projets</h1>
+					<h1 class="page-title">Mes projects</h1>
 					<div class="header-actions">
 						{% if is_granted('ROLE_DIRECTEUR') %}
-							<a href="{{ path('app_projet_new') }}" class="btn btn-primary">
+							<a href="{{ path('app_project_new') }}" class="btn btn-primary">
 								<i class="icon-plus"></i>
-								Nouveau Projet
+								Nouveau project
 							</a>
 						{% endif %}
 					</div>
@@ -88,7 +88,7 @@
 				{# <!-- Filtres --> Partie Ok mais sans les 2 bouton Tableau de bord et statistiques Voir Modif dashbordController ProjectRepository etc..
 								<div class="filters-section">
 									<div class="filter-tabs">
-										<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
+										<a href="{{ path('app_mes_projects') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
 											Tous
 										</a>
 										{% if current_statut is defined %}
@@ -100,13 +100,13 @@
 				{# Valeur par défaut si current_statut n'existe pas #}
 				{# <span class="badge bg-secondary">tous</span>
 				
-											<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
+											<a href="{{ path('app_mes_projects', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
 												En attente
 											</a>
-											<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
+											<a href="{{ path('app_mes_projects', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
 												En cours
 											</a>
-											<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
+											<a href="{{ path('app_mes_projects', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
 												Terminés
 				
 											</a>
@@ -116,21 +116,21 @@
 				{# Remplacez la section des filtres par celle-ci #}
 				<!-- Filtres -->
 					<div class="filters-section"> <div class="filter-tabs">
-						<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut == 'tous' %}active{% endif %}">
+						<a href="{{ path('app_mes_projects') }}" class="filter-tab {% if current_statut == 'tous' %}active{% endif %}">
 							Tous
 						</a>
-						<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
+						<a href="{{ path('app_mes_projects', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
 							En attente
 						</a>
-						<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
+						<a href="{{ path('app_mes_projects', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
 							En cours
 						</a>
-						<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
+						<a href="{{ path('app_mes_projects', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
 							Terminés
 						</a>
 					</div>
 				</div>
-				<!-- Liste des projets -->
+				<!-- Liste des projects -->
 				<div class="projects-grid">
 					{% for project in projects %}
 						<div class="project-card">
@@ -167,18 +167,18 @@
 								<div class="project-team">
 									<div
 										class="team-avatars">
-										{# Si le chef de projet s'appelle Chef_Projet dans l'entité #}
-										{% if project.Chef_Projet %}
-											<div class="team-avatar chef" title="Chef de projet: {{ project.Chef_Projet.fullName }}">
-												{{ project.Chef_Projet.prenom|slice(0, 1)|upper }}{{ project.Chef_Projet.nom|slice(0, 1)|upper }}
+										{# Si le chef de project s'appelle Chef_project dans l'entité #}
+										{% if project.Chef_project %}
+											<div class="team-avatar chef" title="Chef de project: {{ project.Chef_project.fullName }}">
+												{{ project.Chef_project.prenom|slice(0, 1)|upper }}{{ project.Chef_project.nom|slice(0, 1)|upper }}
 											</div>
 										{% endif %}
-										{% if project.Chef_Projet is not empty %}
-											<div class="team-avatar chef" title="Chef de projet: {{ project.Chef_Projet.prenom }} {{ project.Chef_Projet.nom }}">
-												{{ project.Chef_Projet.prenom|slice(0, 1)|upper }}{{ project.Chef_Projet.nom|slice(0, 1)|upper }}
+										{% if project.Chef_project is not empty %}
+											<div class="team-avatar chef" title="Chef de project: {{ project.Chef_project.prenom }} {{ project.Chef_project.nom }}">
+												{{ project.Chef_project.prenom|slice(0, 1)|upper }}{{ project.Chef_project.nom|slice(0, 1)|upper }}
 											</div>
 										{% endif %}
-										{# Afficher les membres du projet #}
+										{# Afficher les membres du project #}
 										{% if project.membres is defined and project.membres|length > 0 %}
 											{% for membre in project.membres|slice(0, 3) %}
 												<div class="team-avatar" title="{{ membre.prenom }} {{ membre.nom }}">
@@ -191,9 +191,9 @@
 												</div>
 											{% endif %}
 										{% endif %}
-										{# {% if project.chefDeProjet %}
-											<div class="team-avatar chef" title="Chef de projet: {{ project.chefDeProjet.username }}">
-												{{ project.chefDeProjet.username|slice(0, 2)|upper }}
+										{# {% if project.chefDeproject %}
+											<div class="team-avatar chef" title="Chef de project: {{ project.chefDeproject.username }}">
+												{{ project.chefDeproject.username|slice(0, 2)|upper }}
 											</div>
 										{% endif %}
 										{% for membre in project.membres|slice(0, 3) %}
@@ -225,11 +225,11 @@
 							</div>
 
 							<div class="project-actions">
-								<a href="{{ path('app_projet_kanban', {'id': project.id}) }}" class="btn btn-primary btn-sm">
+								<a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn btn-primary btn-sm">
 									<i class="icon-kanban"></i>
 									Kanban
 								</a>
-								<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn btn-secondary btn-sm">
+								<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-secondary btn-sm">
 									<i class="icon-eye"></i>
 									Détails
 								</a>
@@ -238,11 +238,11 @@
 					{% else %}
 						<div class="empty-state">
 							<div class="empty-icon">📁</div>
-							<h3>Aucun projet trouvé</h3>
-							<p>Vous n'avez pas encore de projets assignés.</p>
+							<h3>Aucun project trouvé</h3>
+							<p>Vous n'avez pas encore de projects assignés.</p>
 							{% if is_granted('ROLE_DIRECTEUR') %}
-								<a href="{{ path('app_projet_new') }}" class="btn btn-primary">
-									Créer un nouveau projet
+								<a href="{{ path('app_project_new') }}" class="btn btn-primary">
+									Créer un nouveau project
 								</a>
 							{% endif %}
 						</div>

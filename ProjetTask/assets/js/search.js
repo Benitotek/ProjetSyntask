@@ -144,12 +144,12 @@ function performSearch(query) {
                     documents: data.results.filter(r => r.type === 'document')
                 };
 
-                // Afficher les projets
+                // Afficher les projects
                 if (groupedResults.projects.length > 0) {
                     resultsHtml += `
                     <div class="search-results-category">
                         <div class="search-results-category-title">
-                            <i class="fas fa-project-diagram"></i> Projets
+                            <i class="fas fa-project-diagram"></i> projects
                         </div>
                         <div class="search-results-category-items">
                 `;

@@ -87,7 +87,7 @@
 		<nav aria-label="breadcrumb" class="mb-4">
 			<ol class="breadcrumb">
 				<li class="breadcrumb-item">
-					<a href="{{ path('project_index') }}">Projets</a>
+					<a href="{{ path('project_index') }}">projects</a>
 				</li>
 				<li class="breadcrumb-item">
 					<a href="{{ path('app_project_kanban', {id: project.id}) }}">{{ project.name }}</a>
@@ -115,7 +115,7 @@
 								</p>
 							</div>
 
-							{% if is_granted('ROLE_CHEF_PROJET') and is_granted('PROJECT_EDIT', project) %}
+							{% if is_granted('ROLE_CHEF_project') and is_granted('PROJECT_EDIT', project) %}
 								<div class="btn-group">
 									<button class="btn btn-outline-primary btn-sm" onclick="editColumn()">
 										<i class="fas fa-edit"></i>
@@ -216,7 +216,7 @@
 					</div>
 					<div class="card-body">
 						<dl class="row">
-							<dt class="col-sm-4">Projet :</dt>
+							<dt class="col-sm-4">project :</dt>
 							<dd class="col-sm-8">
 								<a href="{{ path('app_project_show', {id: project.id}) }}">{{ project.name }}</a>
 							</dd>
@@ -264,7 +264,7 @@
 								</button>
 							{% endif %}
 
-							{% if is_granted('ROLE_CHEF_PROJET') and is_granted('PROJECT_EDIT', project) %}
+							{% if is_granted('ROLE_CHEF_project') and is_granted('PROJECT_EDIT', project) %}
 								<button class="btn btn-outline-warning btn-sm" onclick="editColumn()">
 									<i class="fas fa-edit"></i>
 									Modifier colonne
@@ -389,7 +389,7 @@ headers: {
 'X-Requested-With': 'XMLHttpRequest'
 }
 }).then(response => response.json()).then(data => {
-if (data.success) { // Rediriger vers le kanban du projet
+if (data.success) { // Rediriger vers le kanban du project
 window.location.href = '{{ path("app_project_kanban", {id: project.id}) }}';
 } else {
 alert('Erreur lors de la suppression');

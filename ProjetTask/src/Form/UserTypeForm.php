@@ -58,7 +58,7 @@ class UserTypeForm extends AbstractType
             'choices' => [
                 'Employé' => UserRole::EMPLOYE,
                 'Admin' => UserRole::ADMIN,
-                'Chef de projet' => UserRole::CHEF_PROJET,
+                'Chef de project' => UserRole::CHEF_project,
                 'Directeur' => UserRole::DIRECTEUR,
             ],
             'attr' => ['class' => 'form-check-input'],
@@ -70,7 +70,7 @@ class UserTypeForm extends AbstractType
         //     'label' => 'Rôles',
         //     'choices' => [
         //         'Employé' => 'ROLE_EMPLOYE',
-        //         'Chef de projet' => 'ROLE_CHEF_PROJET',
+        //         'Chef de project' => 'ROLE_CHEF_project',
         //         'Directeur' => 'ROLE_DIRECTEUR',
         //         'Administrateur' => 'ROLE_ADMIN',
         //     ],

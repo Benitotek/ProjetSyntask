@@ -52,15 +52,15 @@ class Project
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $budget = null;
 
-    // Chef de projet : Un User peut gérer plusieurs projets
+    // Chef de project : Un User peut gérer plusieurs projects
    
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "projetsGeres")]
-    #[ORM\JoinColumn(name: "chef_projet_id", referencedColumnName: "id", nullable: true)]
-    private ?User $chefProjet = null;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "projectsGeres")]
+    #[ORM\JoinColumn(name: "chef_project_id", referencedColumnName: "id", nullable: true)]
+    private ?User $chefproject = null;
 
     // Membres : ManyToMany
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projetsAssignes')]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projectsAssignes')]
 
     private Collection $membres;
 
@@ -203,14 +203,14 @@ class Project
         return $this;
     }
 
-    public function getChefProjet(): ?User
+    public function getChefproject(): ?User
     {
-        return $this->chefProjet;
+        return $this->chefproject;
     }
 
-    public function setChefProjet(?User $chefProjet): self
+    public function setChefproject(?User $chefproject): self
     {
-        $this->chefProjet = $chefProjet;
+        $this->chefproject = $chefproject;
         return $this;
     }
 
@@ -312,7 +312,7 @@ class Project
     }
     public function __toString(): string
     {
-        return $this->titre ?: 'Nouveau Projet';
+        return $this->titre ?: 'Nouveau project';
     }
 
     private bool $estArchive = false;

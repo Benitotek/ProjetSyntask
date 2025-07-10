@@ -371,7 +371,7 @@ function confirmAction(title, message, callback) {
 }
 
 /**
- * Mise à jour en temps réel du statut des tâches et projets
+ * Mise à jour en temps réel du statut des tâches et projects
  */
 function updatestatut(element, url, statutValue) {
     const initialstatut = element.dataset.statut;
@@ -476,7 +476,7 @@ function initUserAssignment() {
 }
 
 /**
- * Assigner un utilisateur à une entité (tâche ou projet)
+ * Assigner un utilisateur à une entité (tâche ou project)
  */
 function assignUser(entityType, entityId, userId) {
     ajaxAction(`/api/${entityType}/${entityId}/assign`, 'POST', {

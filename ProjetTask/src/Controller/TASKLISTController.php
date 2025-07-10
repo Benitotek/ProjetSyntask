@@ -21,7 +21,7 @@ use Doctrine\Migrations\Version\Version;
 class TaskListController extends AbstractController
 {
     /**
-     * Affiche la vue Kanban d'un projet
+     * Affiche la vue Kanban d'un project
      */
     #[Route('/project/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
     public function kanban(
@@ -29,9 +29,9 @@ class TaskListController extends AbstractController
         TaskListRepository $taskListRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        // Vérifier que l'utilisateur a le droit de voir ce projet
+        // Vérifier que l'utilisateur a le droit de voir ce project
         if (!$this->canViewProject($project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce project');
         }
 
         // Récupérer les colonnes avec leurs tâches
@@ -43,10 +43,10 @@ class TaskListController extends AbstractController
             $taskLists = $taskListRepository->findByProjectWithTasks($project);
         }
 
-        // Récupérer les membres du projet pour l'assignation des tâches
+        // Récupérer les membres du project pour l'assignation des tâches
         $members = $project->getMembres()->toArray();
-        if (!in_array($project->getChefProjet(), $members)) {
-            $members[] = $project->getChefProjet();
+        if (!in_array($project->getChefproject(), $members)) {
+            $members[] = $project->getChefproject();
         }
 
         return $this->render('tasklist/kanban.html.twig', [
@@ -57,7 +57,7 @@ class TaskListController extends AbstractController
     }
 
     /**
-     * Crée les colonnes par défaut pour un projet
+     * Crée les colonnes par défaut pour un project
      */
     private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
     {
@@ -82,7 +82,7 @@ class TaskListController extends AbstractController
     }
 
     /**
-     * Vérifie si l'utilisateur peut voir un projet
+     * Vérifie si l'utilisateur peut voir un project
      */
     private function canViewProject($project): bool
     {
@@ -97,12 +97,12 @@ class TaskListController extends AbstractController
             return true;
         }
 
-        // Les chefs de projet peuvent voir les projets qu'ils dirigent
-        if ($project->getChefProjet() === $user) {
+        // Les chefs de project peuvent voir les projects qu'ils dirigent
+        if ($project->getChefproject() === $user) {
             return true;
         }
 
-        // Les membres du projet peuvent voir le projet
+        // Les membres du project peuvent voir le project
         return $project->getMembres()->contains($user);
     }
     /**
@@ -117,12 +117,12 @@ class TaskListController extends AbstractController
         $project = $entityManager->getRepository(Project::class)->find($projectId);
 
         if (!$project) {
-            throw $this->createNotFoundException('Projet non trouvé');
+            throw $this->createNotFoundException('project non trouvé');
         }
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
-        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefProjet() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce projet');
+        // Vérifier que l'utilisateur a le droit de modifier ce project
+        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefproject() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce project');
         }
 
         $taskList = new TaskList();
@@ -171,9 +171,9 @@ class TaskListController extends AbstractController
     ): Response {
         $project = $taskList->getProject();
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
-        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefProjet() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce projet');
+        // Vérifier que l'utilisateur a le droit de modifier ce project
+        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefproject() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce project');
         }
 
         $form = $this->createForm(TaskListType::class, $taskList);
@@ -213,9 +213,9 @@ class TaskListController extends AbstractController
     ): Response {
         $project = $taskList->getProject();
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
-        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefProjet() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce projet');
+        // Vérifier que l'utilisateur a le droit de modifier ce project
+        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefproject() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce project');
         }
 
         // Vérifier le token CSRF
@@ -230,7 +230,7 @@ class TaskListController extends AbstractController
         return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     }
     /**
-     * Réorganise les colonnes d'un projet
+     * Réorganise les colonnes d'un project
      */
     #[Route('/project/{projectId}/tasklists/reorder', name: 'app_tasklist_reorder', methods: ['POST'])]
     public function reorderColumns(
@@ -241,12 +241,12 @@ class TaskListController extends AbstractController
         $project = $entityManager->getRepository(Project::class)->find($projectId);
 
         if (!$project) {
-            throw $this->createNotFoundException('Projet non trouvé');
+            throw $this->createNotFoundException('project non trouvé');
         }
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
-        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefProjet() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce projet');
+        // Vérifier que l'utilisateur a le droit de modifier ce project
+        if (!$this->isGranted('ROLE_ADMIN') && $project->getChefproject() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce project');
         }
 
         $data = json_decode($request->getContent(), true);
@@ -286,12 +286,12 @@ class TaskListController extends AbstractController
         $project = $entityManager->getRepository(Project::class)->find($projectId);
 
         if (!$project) {
-            throw $this->createNotFoundException('Le projet n\'existe pas');
+            throw $this->createNotFoundException('Le project n\'existe pas');
         }
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         if (!$this->canModifyProject($project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour ajouter une colonne à ce projet');
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour ajouter une colonne à ce project');
         }
 
         $taskList = new TaskList();
@@ -317,7 +317,7 @@ class TaskListController extends AbstractController
             }
 
             $this->addFlash('success', 'Colonne ajoutée avec succès');
-            return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
         }
 
         if ($request->isXmlHttpRequest()) {
@@ -342,7 +342,7 @@ class TaskListController extends AbstractController
     {
         $project = $taskList->getProject();
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         if (!$this->canModifyProject($project)) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier cette colonne');
         }
@@ -362,7 +362,7 @@ class TaskListController extends AbstractController
             }
 
             $this->addFlash('success', 'Colonne modifiée avec succès');
-            return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
         }
 
         if ($request->isXmlHttpRequest()) {
@@ -391,7 +391,7 @@ class TaskListController extends AbstractController
     ): Response {
         $project = $taskList->getProject();
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         if (!$this->canModifyProject($project)) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour supprimer cette colonne');
         }
@@ -406,7 +406,7 @@ class TaskListController extends AbstractController
             }
 
             $this->addFlash('error', 'Cette colonne contient des tâches et ne peut pas être supprimée');
-            return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
         }
 
         if ($this->isCsrfTokenValid('delete' . $taskList->getId(), $request->request->get('_token'))) {
@@ -427,7 +427,7 @@ class TaskListController extends AbstractController
             return new JsonResponse(['success' => false], 400);
         }
 
-        return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+        return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     }
 
     /**
@@ -443,10 +443,10 @@ class TaskListController extends AbstractController
         $project = $entityManager->getRepository(Project::class)->find($projectId);
 
         if (!$project) {
-            return new JsonResponse(['error' => 'Projet non trouvé'], 404);
+            return new JsonResponse(['error' => 'project non trouvé'], 404);
         }
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         if (!$this->canModifyProject($project)) {
             return new JsonResponse(['error' => 'Vous n\'avez pas les droits pour réorganiser ces colonnes'], 403);
         }
@@ -457,7 +457,7 @@ class TaskListController extends AbstractController
             return new JsonResponse(['error' => 'Données invalides'], 400);
         }
 
-        // Vérifier que toutes les colonnes appartiennent au projet
+        // Vérifier que toutes les colonnes appartiennent au project
         foreach ($data['columns'] as $columnData) {
             if (!isset($columnData['id'])) {
                 continue;
@@ -466,7 +466,7 @@ class TaskListController extends AbstractController
             $taskList = $taskListRepository->find($columnData['id']);
 
             if (!$taskList || $taskList->getProject() !== $project) {
-                return new JsonResponse(['error' => 'Une colonne n\'appartient pas à ce projet'], 400);
+                return new JsonResponse(['error' => 'Une colonne n\'appartient pas à ce project'], 400);
             }
         }
 
@@ -477,7 +477,7 @@ class TaskListController extends AbstractController
     }
 
     /**
-     * Vérifie si l'utilisateur peut modifier un projet
+     * Vérifie si l'utilisateur peut modifier un project
      */
     private function canModifyProject($project): bool
     {
@@ -492,7 +492,7 @@ class TaskListController extends AbstractController
             return true;
         }
 
-        // Les chefs de projet peuvent modifier les projets qu'ils dirigent
-        return $project->getChef_Projet() === $user;
+        // Les chefs de project peuvent modifier les projects qu'ils dirigent
+        return $project->getChef_project() === $user;
     }
 }

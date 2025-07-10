@@ -494,7 +494,7 @@ function initAddTask() {
             const columnId = this.closest('.kanban-column').dataset.columnId;
             const projectId = document.querySelector('.kanban-container').dataset.projectId;
             
-            // Pré-remplir le formulaire avec la colonne et le projet
+            // Pré-remplir le formulaire avec la colonne et le project
             const form = document.querySelector('#task-form');
             if (form) {
                 form.reset();
@@ -891,7 +891,7 @@ function initDatepicker() {
     }
 }
 /**
- * kanban.js - Gestion du tableau Kanban pour les projets
+ * kanban.js - Gestion du tableau Kanban pour les projects
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -965,7 +965,7 @@ function initKanban() {
             
             // Remplir le formulaire
             document.getElementById('task_statut').value = statut;
-            document.getElementById('task_projet').value = projectId;
+            document.getElementById('task_project').value = projectId;
             
             modal.show();
         });

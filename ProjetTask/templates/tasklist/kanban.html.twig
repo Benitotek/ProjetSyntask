@@ -13,10 +13,10 @@
 				<h1>{{ project.nom }}</h1>
 				<p class="text-muted">
 					<i class="fas fa-user"></i>
-					Chef de projet:
-					{% if project.chefProjet %}
-						{{ project.chefProjet.prenom }}
-						{{ project.chefProjet.nom }}
+					Chef de project:
+					{% if project.chefproject %}
+						{{ project.chefproject.prenom }}
+						{{ project.chefproject.nom }}
 					{% else %}
 						Non assigné
 					{% endif %}
@@ -31,7 +31,7 @@
 					<i class="fas fa-info-circle"></i>
 					Détails
 				</a>
-				{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+				{% if is_granted('ROLE_ADMIN') or project.chefproject == app.user %}
 					<button type="button" class="btn btn-primary" id="addColumnBtn">
 						<i class="fas fa-plus"></i>
 						Ajouter une colonne
@@ -48,7 +48,7 @@
 							<div class="small">{{ taskList.tasks|length }}
 								tâche(s)</div>
 						</div>
-						{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+						{% if is_granted('ROLE_ADMIN') or project.chefproject == app.user %}
 							<div class="dropdown">
 								<button class="btn btn-sm btn-link text-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
 									<i class="fas fa-ellipsis-v"></i>
@@ -92,7 +92,7 @@
 						<div class="column-progress-bar" style="width: {{ progressPercentage }}%; --progress-color: {{ taskList.couleur ? taskList.couleur.getCssColor() : '#28a745' }};"></div>
 					</div>
 					<div class="kanban-column-body" data-column-id="{{ taskList.id }}">
-						{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+						{% if is_granted('ROLE_ADMIN') or project.chefproject == app.user %}
 							<div class="add-task-form" id="addTaskForm_{{ taskList.id }}">
 								<form action="{{ path('app_task_new', {'taskListId': taskList.id}) }}" method="post">
 									<div class="mb-2">
@@ -166,7 +166,7 @@
 										<a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir">
 											<i class="fas fa-eye"></i>
 										</a>
-										{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+										{% if is_granted('ROLE_ADMIN') or project.chefproject == app.user %}
 											<a href="{{ path('app_task_edit', {'id': task.id}) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
 												<i class="fas fa-edit"></i>
 											</a>
@@ -186,7 +186,7 @@
 					</div>
 				</div>
 			{% endfor %}
-			{% if is_granted('ROLE_ADMIN') or project.chefProjet == app.user %}
+			{% if is_granted('ROLE_ADMIN') or project.chefproject == app.user %}
 
 				<div class="add-column-btn" id="addColumnPlaceholder">
 					<i class="fas fa-plus me-2"></i>

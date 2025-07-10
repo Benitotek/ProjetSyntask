@@ -40,9 +40,9 @@
                     </a>
                 </li>
                 <li class="nav-item active">
-                    <a href="{{ path('app_mes_projets') }}" class="nav-link">
+                    <a href="{{ path('app_mes_projects') }}" class="nav-link">
                         <i class="icon-projects"></i>
-                        Mes projets
+                        Mes projects
                     </a>
                 </li>
                 <li class="nav-item">
@@ -70,11 +70,11 @@
 
     <!-- Contenu principal -->
     <main class="main-content">
-        <!-- Header du projet -->
+        <!-- Header du project -->
         <div class="content-header">
             <div class="header-main">
                 <div class="breadcrumb">
-                    <a href="{{ path('app_mes_projets') }}">Mes Projets</a>
+                    <a href="{{ path('app_mes_projects') }}">Mes projects</a>
                     <span class="separator">></span>
                     <span>{{ project.nom }}</span>
                 </div>
@@ -89,7 +89,7 @@
                     <i class="icon-kanban"></i>
                     Vue Kanban
                 </a>
-                {% if is_granted('ROLE_DIRECTEUR') or project.chefDeProjet == app.user %}
+                {% if is_granted('ROLE_DIRECTEUR') or project.chefDeproject == app.user %}
                     <a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn btn-secondary">
                         <i class="icon-edit"></i>
                         Modifier
@@ -106,7 +106,7 @@
                     
                     <div class="info-grid">
                         <div class="info-item">
-                            <label>Nom du projet</label>
+                            <label>Nom du project</label>
                             <div class="info-value">{{ project.nom }}</div>
                         </div>
                         
@@ -159,18 +159,18 @@
                     {% endif %}
                 </div>
 
-                <!-- Équipe du projet -->
+                <!-- Équipe du project -->
                 <div class="info-card">
-                    <h2 class="card-title">Équipe du projet</h2>
+                    <h2 class="card-title">Équipe du project</h2>
                     
-                    {% if project.chefDeProjet %}
+                    {% if project.chefDeproject %}
                         <div class="team-section">
-                            <h3 class="team-role">Chef de projet</h3>
+                            <h3 class="team-role">Chef de project</h3>
                             <div class="team-member chef">
-                                <div class="member-avatar">{{ project.chefDeProjet.username|slice(0, 2)|upper }}</div>
+                                <div class="member-avatar">{{ project.chefDeproject.username|slice(0, 2)|upper }}</div>
                                 <div class="member-info">
-                                    <div class="member-name">{{ project.chefDeProjet.username }}</div>
-                                    <div class="member-email">{{ project.chefDeProjet.email }}</div>
+                                    <div class="member-name">{{ project.chefDeproject.username }}</div>
+                                    <div class="member-email">{{ project.chefDeproject.email }}</div>
                                 </div>
                             </div>
                         </div>
@@ -242,7 +242,7 @@
                         <div class="activity-item">
                             <div class="activity-icon">✅</div>
                             <div class="activity-content">
-                                <div class="activity-text">Projet créé</div>
+                                <div class="activity-text">project créé</div>
                                 <div class="activity-date">{{ project.dateCreation|date('d/m/Y') }}</div>
                             </div>
                         </div>
@@ -304,7 +304,7 @@
         }
         
         function archiveProject() {
-            if (confirm('Êtes-vous sûr de vouloir archiver ce projet ?')) {
+            if (confirm('Êtes-vous sûr de vouloir archiver ce project ?')) {
                 // Logique d'archivage
                 window.location.href = '{{ path("project_archive", {"id": project.id}) }}';
             }

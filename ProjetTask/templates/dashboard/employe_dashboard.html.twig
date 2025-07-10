@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détail du projet -
-	{{ project.name ?? 'Nouveau projet' }}
+{% block title %}Détail du project -
+	{{ project.name ?? 'Nouveau project' }}
 {% endblock %}
 
 {% block stylesheets %}
@@ -46,9 +46,9 @@
 							</a>
 						</li>
 						<li class="nav-item active">
-							<a href="{{ path('app_projets') }}" class="nav-link">
+							<a href="{{ path('app_projects') }}" class="nav-link">
 								<i class="icon-projects"></i>
-								Mes projets
+								Mes projects
 							</a>
 						</li>
 						<li class="nav-item">
@@ -84,7 +84,7 @@
 				<div class="project-detail-card">
 					<form method="post" action="{{ path('app_project_save', {'id': project.id|default(0)}) }}">
 						<div class="form-group">
-							<label for="project_name">nom du projet</label>
+							<label for="project_name">nom du project</label>
 							<input type="text" id="project_name" name="project[name]" value="{{ project.name|default('') }}" class="form-input">
 						</div>
 
@@ -132,11 +132,11 @@
 
 						<div class="comment-section">
 							<div class="comment-input-wrapper">
-								<input type="text" class="comment-input" placeholder="Ajouter un commentaire pour les chefs du projet">
+								<input type="text" class="comment-input" placeholder="Ajouter un commentaire pour les chefs du project">
 								<button type="button" class="comment-submit-btn">Envoyer</button>
 							</div>
 							<div class="comment-help-text">
-								Ajouter un commentaire pour les chefs du projet
+								Ajouter un commentaire pour les chefs du project
 							</div>
 						</div>
 
@@ -180,12 +180,12 @@
 	        <div class="col-md-4 mb-4">
 	            <div class="card">
 	                <div class="card-header">
-	                    Mes projets
+	                    Mes projects
 	                </div>
 	                <div class="card-body">
-	                    <h5 class="card-title">Projets en cours</h5>
-	                    <p class="card-text">Accédez aux projets auxquels vous participez.</p>
-	                    <a href="{{ path('app_project_index') }}" class="btn btn-primary">Voir mes projets</a>
+	                    <h5 class="card-title">projects en cours</h5>
+	                    <p class="card-text">Accédez aux projects auxquels vous participez.</p>
+	                    <a href="{{ path('app_project_index') }}" class="btn btn-primary">Voir mes projects</a>
 	                </div>
 	            </div>
 	        </div>

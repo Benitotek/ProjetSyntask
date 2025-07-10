@@ -582,7 +582,7 @@ body::before {
 
 /* Simulation du header SYNTASK */
 .container::before {
-    content: " SYNTASK SYSTÈME GÉRANTS LES GESTION DE PROJET";
+    content: " SYNTASK SYSTÈME GÉRANTS LES GESTION DE project";
     position: fixed;
     top: 0;
     left: 0;

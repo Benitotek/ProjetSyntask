@@ -31,8 +31,8 @@
 					<div class="text-muted small">
 						{% if is_granted('ROLE_ADMIN') %}
 							Administrateur
-						{% elseif is_granted('ROLE_CHEF_PROJET') %}
-							Chef de projet
+						{% elseif is_granted('ROLE_CHEF_project') %}
+							Chef de project
 						{% elseif is_granted('ROLE_DIRECTEUR') %}
 							Directeur
 						{% else %}

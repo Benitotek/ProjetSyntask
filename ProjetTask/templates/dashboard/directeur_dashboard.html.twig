@@ -41,7 +41,7 @@
                 <h4 class="nav-title">Tableaux de bord</h4>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="#" class="nav-link active">Projets</a>
+                        <a href="#" class="nav-link active">projects</a>
                     </li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">Tâches</a>
@@ -68,7 +68,7 @@
                 <h2 class="section-title">Résumé global</h2>
                 <div class="summary-cards">
                     <div class="summary-card summary-card--active">
-                        <span class="card-label">Projets Actifs</span>
+                        <span class="card-label">projects Actifs</span>
                         <span class="card-value">12</span>
                     </div>
                     <div class="summary-card summary-card--waiting">
@@ -91,7 +91,7 @@
                 <div class="analytics-grid">
                     <!-- Graphique circulaire des avancements -->
                     <div class="analytics-card chart-card">
-                        <h3 class="card-title">Avancements des projets</h3>
+                        <h3 class="card-title">Avancements des projects</h3>
                         <div class="chart-container">
                             <div class="pie-chart">
                                 <svg class="chart-svg" viewBox="0 0 100 100">
@@ -109,7 +109,7 @@
 
                     <!-- Graphique performances par chef -->
                     <div class="analytics-card performance-card">
-                        <h3 class="card-title">Performance par chef de projet</h3>
+                        <h3 class="card-title">Performance par chef de project</h3>
                         <div class="performance-bars">
                             <div class="performance-item">
                                 <span class="manager-name">Chef A</span>
@@ -137,20 +137,20 @@
                 </div>
             </section>
 
-            <!-- Section projets critiques -->
+            <!-- Section projects critiques -->
             <section class="projects-section">
-                <h3 class="section-subtitle">Projets critiques</h3>
+                <h3 class="section-subtitle">projects critiques</h3>
                 <div class="projects-table">
                     <div class="table-header">
-                        <div class="table-cell">Nom du projet</div>
-                        <div class="table-cell">Chef de projet</div>
+                        <div class="table-cell">Nom du project</div>
+                        <div class="table-cell">Chef de project</div>
                         <div class="table-cell">Date butoir</div>
                         <div class="table-cell">statut</div>
                         <div class="table-cell">Progression</div>
                     </div>
                     <div class="table-row">
                         <div class="table-cell">
-                            <span class="project-name">Projet Alpha</span>
+                            <span class="project-name">project Alpha</span>
                         </div>
                         <div class="table-cell">Marie Dubois</div>
                         <div class="table-cell">15/07/2025</div>
@@ -168,7 +168,7 @@
                     </div>
                     <div class="table-row">
                         <div class="table-cell">
-                            <span class="project-name">Projet Beta</span>
+                            <span class="project-name">project Beta</span>
                         </div>
                         <div class="table-cell">Jean Martin</div>
                         <div class="table-cell">20/07/2025</div>
@@ -186,7 +186,7 @@
                     </div>
                     <div class="table-row">
                         <div class="table-cell">
-                            <span class="project-name">Projet Gamma</span>
+                            <span class="project-name">project Gamma</span>
                         </div>
                         <div class="table-cell">Sophie Laurent</div>
                         <div class="table-cell">25/07/2025</div>
@@ -210,7 +210,7 @@
 
 
 
-{# test vue chef_projet et ancienne directeur a modif ATTENTION au block debut fin body etc #}
+{# test vue chef_project et ancienne directeur a modif ATTENTION au block debut fin body etc #}
 
 {# <div class="dashboard-container">
 		<div class="row">
@@ -232,9 +232,9 @@
 					</li>
 				{% endif %}
 
-				{% if is_granted('ROLE_CHEF_PROJET') %}
+				{% if is_granted('ROLE_CHEF_project') %}
 					<li>
-						<a href="{{ path('app_chef_projet_dashboard') }}">Dashboard Chef de Projet</a>
+						<a href="{{ path('app_chef_project_dashboard') }}">Dashboard Chef de project</a>
 					</li>
 				{% endif %}
 
@@ -258,7 +258,7 @@
 					<div class="card-body">
 						<div class="d-flex justify-content-between">
 							<div>
-								<h5>Projets totaux</h5>
+								<h5>projects totaux</h5>
 								<h2>{{ stats.total_projects ?? '0' }}</h2>
 							</div>
 							<div class="align-self-center">
@@ -274,7 +274,7 @@
 					<div class="card-body">
 						<div class="d-flex justify-content-between">
 							<div>
-								<h5>Projets actifs</h5>
+								<h5>projects actifs</h5>
 								<h2>{{ stats.active_projects ?? '0' }}</h2>
 							</div>
 							<div class="align-self-center">
@@ -325,7 +325,7 @@
 					<div class="card-header">
 						<h5>
 							<i class="fas fa-chart-bar"></i>
-							Vue d'ensemble des projets
+							Vue d'ensemble des projects
 						</h5>
 					</div>
 					<div class="card-body">
@@ -333,9 +333,9 @@
 							<table class="table table-hover">
 								<thead>
 									<tr>
-										<th>Projet</th>
+										<th>project</th>
 										<th>Statut</th>
-										<th>Chef de projet</th>
+										<th>Chef de project</th>
 										<th>Progression</th>
 										<th>Budget</th>
 										<th>Actions</th>
@@ -356,7 +356,7 @@
 														{{ project.statut }}
 													</span>
 												</td>
-												<td>{{ project.chefDeProjet ? project.chefDeProjet.fullName : 'Non assigné' }}</td>
+												<td>{{ project.chefDeproject ? project.chefDeproject.fullName : 'Non assigné' }}</td>
 												<td>
 													<div class="progress">
 														<div class="progress-bar" style="width: {{ project.progress ?? 0 }}%">{{ (project.progress ?? 0)|round }}%</div>
@@ -375,7 +375,7 @@
 										{% endfor %}
 									{% else %}
 										<tr>
-											<td colspan="6" class="text-center">Aucun projet disponible</td>
+											<td colspan="6" class="text-center">Aucun project disponible</td>
 										</tr>
 									{% endif %}
 								</tbody>
@@ -390,12 +390,12 @@
 					<div class="card-header">
 						<h5>
 							<i class="fas fa-chart-pie"></i>
-							Distribution des projets
+							Distribution des projects
 						</h5>
 					</div>
 					<div class="card-body">
 						<div class="mb-4">
-							<h6>Statut des projets</h6>
+							<h6>Statut des projects</h6>
 							<div class="progress mb-2" style="height: 25px;">
 								<div class="progress-bar bg-warning" style="width: {{ stats.percent_pending ?? 0 }}%" role="progressbar">
 									À faire ({{ stats.percent_pending ?? 0 }}%)
@@ -417,7 +417,7 @@
 										<li class="list-group-item d-flex justify-content-between align-items-center">
 											{{ team.name }}
 											<span class="badge bg-primary rounded-pill">{{ team.project_count ?? 0 }}
-												projets</span>
+												projects</span>
 										</li>
 									{% endfor %}
 								{% else %}

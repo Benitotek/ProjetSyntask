@@ -12,7 +12,7 @@ final class HomeController extends AbstractController
     public function index(): Response
     {
         return $this->render('home/index.html.twig', [
-            'message' => 'Bienvenue sur la page Home de mon Projet SYNTASK!',
+            'message' => 'Bienvenue sur la page Home de mon project SYNTASK!',
         ]);
     }
 }

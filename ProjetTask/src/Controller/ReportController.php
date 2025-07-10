@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ReportController extends AbstractController
 {
     #[Route('/reports/team', name: 'app_report_team')]
-    #[IsGranted('ROLE_CHEF_PROJET')]
+    #[IsGranted('ROLE_CHEF_project')]
     public function teamReport(
         Request $request,
         UserRepository $userRepository,
@@ -30,7 +30,7 @@ class ReportController extends AbstractController
         // Période de filtrage (peut être passée en paramètre)
         $period = $request->query->get('period', 'month');
 
-        // Récupération du projet si spécifié
+        // Récupération du project si spécifié
         $projectId = $request->query->get('project');
         $project = null;
         if ($projectId) {
@@ -43,7 +43,7 @@ class ReportController extends AbstractController
         foreach ($users as $teamMember) {
             // Recherche des tâches par utilisateur
             if ($project) {
-                // Si un projet est sélectionné, filtrer les tâches de ce projet
+                // Si un project est sélectionné, filtrer les tâches de ce project
                 $userTasks = array_filter($taskRepository->findByAssignedUser($teamMember), function ($task) use ($project) {
                     return $task->getTaskList() && $task->getTaskList()->getProject() && $task->getTaskList()->getProject()->getId() === $project->getId();
                 });
@@ -134,7 +134,7 @@ class ReportController extends AbstractController
             return $b['completionRate'] <=> $a['completionRate'];
         });
 
-        // Récupération des projets pour le filtre
+        // Récupération des projects pour le filtre
         $projects = $projectRepository->findAll();
 
         return $this->render('report/team.html.twig', [

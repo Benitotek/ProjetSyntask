@@ -34,7 +34,7 @@ class ProjectVoter extends Voter
     }
 
     /**
-     * Vérifie si l'utilisateur a le droit d'accéder au projet selon l'attribut donné
+     * Vérifie si l'utilisateur a le droit d'accéder au project selon l'attribut donné
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
@@ -55,13 +55,13 @@ class ProjectVoter extends Voter
 
         switch ($attribute) {
             case self::VIEW:
-                // Les membres du projet peuvent le voir
+                // Les membres du project peuvent le voir
                 if ($project->getMembres()->contains($user)) {
                     return true;
                 }
 
-                // Le chef de projet peut voir le projet
-                if ($project->getChef_Projet() === $user) {
+                // Le chef de project peut voir le project
+                if ($project->getChef_project() === $user) {
                     return true;
                 }
 
@@ -70,8 +70,8 @@ class ProjectVoter extends Voter
             case self::EDIT:
             case self::DELETE:
             case self::ASSIGN_TASKS:
-                // Seul le chef de projet peut modifier/supprimer le projet ou assigner des tâches
-                if ($project->getChef_Projet() === $user) {
+                // Seul le chef de project peut modifier/supprimer le project ou assigner des tâches
+                if ($project->getChef_project() === $user) {
                     return true;
                 }
 
@@ -117,12 +117,12 @@ class ProjectVoter extends Voter
 //             return true;
 //         }
 
-//         // Chef de projet peut voir ses projets
-//         if (in_array('ROLE_CHEF_PROJET', $user->getrole()) && $project->getChef_Projet() === $user) {
+//         // Chef de project peut voir ses projects
+//         if (in_array('ROLE_CHEF_project', $user->getrole()) && $project->getChef_project() === $user) {
 //             return true;
 //         }
 
-//         // Employé peut voir les projets où il est membre
+//         // Employé peut voir les projects où il est membre
 //         return $project->getMembres()->contains($user);
 //     }
 
@@ -133,8 +133,8 @@ class ProjectVoter extends Voter
 //             return true;
 //         }
 
-//         // Chef de projet peut éditer ses projets
-//         if (in_array('ROLE_CHEF_PROJET', $user->getrole()) && $project->getChef_Projet() === $user) {
+//         // Chef de project peut éditer ses projects
+//         if (in_array('ROLE_CHEF_project', $user->getrole()) && $project->getChef_project() === $user) {
 //             return true;
 //         }
 

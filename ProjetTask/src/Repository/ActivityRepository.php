@@ -49,7 +49,7 @@ class ActivityRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les activités liées à un projet
+     * Récupère les activités liées à un project
      */
     public function findByProject(string $projectId, int $limit = 10): array
     {

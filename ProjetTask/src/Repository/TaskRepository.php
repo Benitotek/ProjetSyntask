@@ -31,7 +31,7 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve toutes les tâches d'un projet, triées par colonne puis position
+     * Trouve toutes les tâches d'un project, triées par colonne puis position
      */
     public function findByProject(Project $project): array
     {
@@ -267,9 +267,9 @@ class TaskRepository extends ServiceEntityRepository
 //     }
 //     // version 2 et 3 en date du 02/07/2025
 //     /**
-//      * Trouve toutes les tâches d'un projet, ordonnées par colonne puis position
+//      * Trouve toutes les tâches d'un project, ordonnées par colonne puis position
 //      * 
-//      * @param Project $project Le projet concerné
+//      * @param Project $project Le project concerné
 //      * @return Task[] Retourne un tableau d'objets Task
 //      */
 //     public function findByProject(Project $project): array

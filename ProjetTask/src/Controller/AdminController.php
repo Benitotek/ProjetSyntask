@@ -132,6 +132,6 @@ class AdminController extends AbstractController
             'activePage' => 'projects',
         ]);
     }
-// project/view/kanban.html.twig test voir mes-projets? a la place de /admin/projects
+// project/view/kanban.html.twig test voir mes-projects? a la place de /admin/projects
  
 }

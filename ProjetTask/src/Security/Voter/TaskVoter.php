@@ -78,10 +78,10 @@ class TaskVoter extends Voter
             return true;
         }
 
-        // Si la tâche fait partie d'un projet, l'utilisateur peut la voir s'il est membre ou chef du projet
+        // Si la tâche fait partie d'un project, l'utilisateur peut la voir s'il est membre ou chef du project
         if ($task->getProject()) {
             $project = $task->getProject();
-            if ($project->getChefProjet() === $user) {
+            if ($project->getChefproject() === $user) {
                 return true;
             }
             if ($project->getMembres() && $project->getMembres()->contains($user)) {
@@ -124,11 +124,11 @@ class TaskVoter extends Voter
      */
     private function canAssign(Task $task, User $user): bool
     {
-        // L'utilisateur peut assigner la tâche s'il en est le créateur ou chef du projet
+        // L'utilisateur peut assigner la tâche s'il en est le créateur ou chef du project
         if ($task->getCreatedBy() === $user) {
             return true;
         }
-        if ($task->getProject() && $task->getProject()->getChefProjet() === $user) {
+        if ($task->getProject() && $task->getProject()->getChefproject() === $user) {
             return true;
         }
         return false;

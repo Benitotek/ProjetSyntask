@@ -89,14 +89,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Trouver tous les chefs de projet
+     * Trouver tous les chefs de project
      */
-    public function findChefsProjets(): array
+    public function findChefsprojects(): array
     {
         // ✅ CORRIGÉ : Utiliser l'enum au lieu de string
         return $this->createQueryBuilder('u')
             ->where('u.role = :role')
-            ->setParameter('role', UserRole::CHEF_PROJET)
+            ->setParameter('role', UserRole::CHEF_project)
             ->orderBy('u.nom', 'ASC')
             ->getQuery()
             ->getResult();

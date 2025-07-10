@@ -13,7 +13,7 @@ src\Repository\ProjectRepository.php:20:    public function __construct(ManagerR
 $registry)
 src\Repository\ProjectRepository.php:41:    public function findRecentWithStats(?User $user 
 = null, int $limit = 5): array
-src\Repository\ProjectRepository.php:67:    public function findByChefDeProjet(User $user): 
+src\Repository\ProjectRepository.php:67:    public function findByChefDeproject(User $user): 
 array
 src\Repository\ProjectRepository.php:83:    public function findByMembre(User $user): array
 src\Repository\ProjectRepository.php:100:    public function findByAssignedUser(User 
@@ -42,7 +42,7 @@ src\Repository\ProjectRepository.php:291://     public function findProjectsByUs
 $user, string $statut = 'tous'): array
 src\Repository\ProjectRepository.php:315://     public function findRecentWithStats(?User 
 $user = null, int $limit = 5): array
-src\Repository\ProjectRepository.php:341://     public function findByChefDeProjet(User 
+src\Repository\ProjectRepository.php:341://     public function findByChefDeproject(User 
 $user): array
 src\Repository\ProjectRepository.php:357://     public function findByMembre(User $user): 
 array
@@ -60,7 +60,7 @@ src\Repository\ProjectRepository.php:463:// public function findRecent(int $limi
 array
 src\Repository\ProjectRepository.php:475:// public function findRecentWithStats(User $user, 
 int $limit = 5): array
-src\Repository\ProjectRepository.php:486:// public function findByChef_Projet(User $user, 
+src\Repository\ProjectRepository.php:486:// public function findByChef_project(User $user, 
 $limit): array
 src\Repository\ProjectRepository.php:503:// public function findProjectsAsMember(User 
 $user): array
@@ -179,7 +179,7 @@ updatePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPasswo
 src\Repository\UserRepository.php:73:    public function 
 upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
 src\Repository\UserRepository.php:81:    public function countActive(): int
-src\Repository\UserRepository.php:94:    public function findChefsProjets(): array
+src\Repository\UserRepository.php:94:    public function findChefsprojects(): array
 src\Repository\UserRepository.php:108:    public function findActiveUsers(?string $statut = 
 null): array
 src\Repository\UserRepository.php:129:    public function updateAllUserrole(): int

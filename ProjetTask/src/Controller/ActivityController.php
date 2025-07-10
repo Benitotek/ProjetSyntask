@@ -45,7 +45,7 @@ class ActivityController extends AbstractController
     #[Route('/project/{id}/activities', name: 'app_project_activities')]
     public function projectActivities(string $id, ActivityRepository $activityRepository): Response
     {
-        // Récupérer les activités liées à ce projet
+        // Récupérer les activités liées à ce project
         $activities = $activityRepository->findByProject($id, 20);
         
         return $this->render('activity/project.html.twig', [

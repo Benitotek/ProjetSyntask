@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tous les Projets
+{% block title %}Tous les projects
 {% endblock %}
 
 {% block stylesheets %}
@@ -42,13 +42,13 @@
 							</a>
 						</li>
 						<li class="nav-item active">
-							<a href="{{ path('app_mes_projets') }}" class="nav-link">
+							<a href="{{ path('app_mes_projects') }}" class="nav-link">
 								<i class="icon-projects"></i>
-								Projets
+								projects
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ path('app_mes_projets') }}" class="nav-link">
+							<a href="{{ path('app_mes_projects') }}" class="nav-link">
 								<i class="icon-stats"></i>
 								Statistiques
 							</a>
@@ -72,12 +72,12 @@
 			<!-- Contenu principal -->
 			<main class="main-content">
 				<div class="content-header">
-					<h1 class="page-title">Gestion des Projets</h1>
+					<h1 class="page-title">Gestion des projects</h1>
 					<div class="header-actions">
 						{% if is_granted('ROLE_DIRECTEUR') %}
-							<a href="{{ path('app_projet_new') }}" class="btn btn-primary">
+							<a href="{{ path('app_project_new') }}" class="btn btn-primary">
 								<i class="icon-plus"></i>
-								Nouveau Projet
+								Nouveau project
 							</a>
 						{% endif %}
 					</div>
@@ -89,7 +89,7 @@
 						<div class="stat-icon">📊</div>
 						<div class="stat-content">
 							<div class="stat-number">{{ projects|length }}</div>
-							<div class="stat-label">Total Projets</div>
+							<div class="stat-label">Total projects</div>
 						</div>
 					</div>
 					<div class="stat-card">
@@ -119,34 +119,34 @@
 				<div class="filters-section">
 					<div class="search-filters">
 						<div class="search-box">
-							<input type="text" placeholder="Rechercher un projet..." class="search-input">
+							<input type="text" placeholder="Rechercher un project..." class="search-input">
 							<i class="icon-search"></i>
 						</div>
 						<div class="filter-tabs">
-							<a href="{{ path('app_mes_projets') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
+							<a href="{{ path('app_mes_projects') }}" class="filter-tab {% if current_statut is not defined %}active{% endif %}">
 								Tous
 							</a>
-							<a href="{{ path('app_mes_projets', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
+							<a href="{{ path('app_mes_projects', {'statut': 'EN-ATTENTE'}) }}" class="filter-tab {% if current_statut == 'EN-ATTENTE' %}active{% endif %}">
 								En attente
 							</a>
-							<a href="{{ path('app_mes_projets', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
+							<a href="{{ path('app_mes_projects', {'statut': 'EN-COURS'}) }}" class="filter-tab {% if current_statut == 'EN-COURS' %}active{% endif %}">
 								En cours
 							</a>
-							<a href="{{ path('app_mes_projets', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
+							<a href="{{ path('app_mes_projects', {'statut': 'TERMINE'}) }}" class="filter-tab {% if current_statut == 'TERMINE' %}active{% endif %}">
 								Terminés
 							</a>
 						</div>
 					</div>
 				</div>
 
-				<!-- Tableau des projets -->
+				<!-- Tableau des projects -->
 				<div class="projects-table-container">
 					<table class="projects-table">
 						<thead>
 							<tr>
-								<th>Projet</th>
+								<th>project</th>
 								<th>Statut</th>
-								<th>Chef de Projet</th>
+								<th>Chef de project</th>
 								<th>Équipe</th>
 								<th>Progression</th>
 								<th>Échéance</th>
@@ -170,10 +170,10 @@
 										</span>
 									</td>
 									<td>
-										{% if project.ChefProjet %}
+										{% if project.Chefproject %}
 											<div class="user-info-cell">
-												<div class="user-avatar">{{ project.ChefProjet.username|slice(0, 2)|upper }}</div>
-												{{ project.ChefProjet.username }}
+												<div class="user-avatar">{{ project.Chefproject.username|slice(0, 2)|upper }}</div>
+												{{ project.Chefproject.username }}
 											</div>
 										{% else %}
 											<span class="text-muted">Non assigné</span>
@@ -221,14 +221,14 @@
 									</td>
 									<td>
 										<div class="action-buttons">
-											<a href="{{ path('app_projet_kanban', {'id': project.id}) }}" class="btn-icon" title="Vue Kanban">
+											<a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn-icon" title="Vue Kanban">
 												<i class="icon-kanban"></i>
 											</a>
-											<a href="{{ path('app_projet_show', {'id': project.id}) }}" class="btn-icon" title="Voir détails">
+											<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn-icon" title="Voir détails">
 												<i class="icon-eye"></i>
 											</a>
-											{% if is_granted('ROLE_DIRECTEUR') or project.Chef_Projet == app.user %}
-												<a href="{{ path('app_projet_new', {'id': project.id}) }}" class="btn-icon" title="Modifier">
+											{% if is_granted('ROLE_DIRECTEUR') or project.Chef_project == app.user %}
+												<a href="{{ path('app_project_new', {'id': project.id}) }}" class="btn-icon" title="Modifier">
 													<i class="icon-edit"></i>
 												</a>
 											{% endif %}
@@ -240,8 +240,8 @@
 									<td colspan="7" class="empty-table">
 										<div class="empty-state">
 											<div class="empty-icon">📁</div>
-											<h3>Aucun projet trouvé</h3>
-											<p>Aucun projet ne correspond aux critères sélectionnés.</p>
+											<h3>Aucun project trouvé</h3>
+											<p>Aucun project ne correspond aux critères sélectionnés.</p>
 										</div>
 									</td>
 								</tr>

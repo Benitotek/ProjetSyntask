@@ -25,9 +25,9 @@ enum ActivityType: string
     public function label(): string
     {
         return match ($this) {
-            self::PROJECT_CREATE => 'Création de projet',
-            self::PROJECT_UPDATE => 'Mise à jour de projet',
-            self::PROJECT_DELETE => 'Suppression de projet',
+            self::PROJECT_CREATE => 'Création de project',
+            self::PROJECT_UPDATE => 'Mise à jour de project',
+            self::PROJECT_DELETE => 'Suppression de project',
 
             self::TASK_CREATE => 'Création de tâche',
             self::TASK_UPDATE => 'Mise à jour de tâche',

@@ -128,7 +128,7 @@ src\Controller\TaskController.php:30:public function index(TaskRepository $taskR
 TaskListRepository $taskListRepository): Response
 src\Controller\TaskController.php:50://     public function index(TaskRepository 
 $taskRepository): Response
-src\Controller\TaskController.php:75:    public function projectTasks(Project $project, 
+src\Controller\TaskController.php:75:    public function ProjetTasks(Project $project, 
 TaskRepository $taskRepository): Response
 src\Controller\TaskController.php:99:    public function myTasks(TaskRepository 
 $taskRepository, EntityManagerInterface $entityManager): Response

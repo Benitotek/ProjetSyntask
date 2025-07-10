@@ -18,9 +18,9 @@ class TaskListRepository extends ServiceEntityRepository
     // V2 date changement 02/07/2025 
 
     /**
-     * Trouve les colonnes d'un projet avec leurs tâches
+     * Trouve les colonnes d'un project avec leurs tâches
      * 
-     * @param Project $project Le projet concerné
+     * @param Project $project Le project concerné
      * @return TaskList[] Retourne un tableau d'objets TaskList avec leurs tâches
      */
     public function findByProjectWithTasks(Project $project): array
@@ -36,9 +36,9 @@ class TaskListRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve la position maximale des colonnes d'un projet
+     * Trouve la position maximale des colonnes d'un project
      * 
-     * @param Project $project Le projet concerné
+     * @param Project $project Le project concerné
      * @return int La position maximale
      */
     public function findMaxPositionByProject(Project $project): int
@@ -54,9 +54,9 @@ class TaskListRepository extends ServiceEntityRepository
     }
 
     /**
-     * Réorganise les positions des colonnes d'un projet
+     * Réorganise les positions des colonnes d'un project
      * 
-     * @param Project $project Le projet concerné
+     * @param Project $project Le project concerné
      */
     public function reorganizePositions(Project $project): void
     {
@@ -75,7 +75,7 @@ class TaskListRepository extends ServiceEntityRepository
     /**
      * Réordonne les colonnes selon un tableau de positions
      * 
-     * @param Project $project Le projet concerné
+     * @param Project $project Le project concerné
      * @param array $columns Tableau associatif [id => position]
      */
     public function reorderColumns(Project $project, array $columns): void
@@ -98,7 +98,7 @@ class TaskListRepository extends ServiceEntityRepository
     /**
      * Met à jour automatiquement les couleurs des colonnes selon leur position
      * 
-     * @param Project $project Le projet concerné
+     * @param Project $project Le project concerné
      */
     public function updateAutoColorsForProject(Project $project): void
     {
@@ -142,7 +142,7 @@ class TaskListRepository extends ServiceEntityRepository
     // }
 
     // /**
-    //  * Trouve une colonne par son ID et son projet
+    //  * Trouve une colonne par son ID et son project
     //  */
     // public function findOneByIdAndProject(int $id, Project $project): ?TaskList
     // {
@@ -155,7 +155,7 @@ class TaskListRepository extends ServiceEntityRepository
     //         ->getOneOrNullResult();
     // }
 //     /**
-//      * Crée les colonnes par défaut pour un nouveau projet
+//      * Crée les colonnes par défaut pour un nouveau project
 //      */
 //     public function createDefaultColumns(Project $project): void
 //     {
@@ -184,7 +184,7 @@ class TaskListRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve les colonnes par projet
+//      * Trouve les colonnes par project
 //      */
 //     public function findByProject(Project $project): array
 //     {
@@ -197,7 +197,7 @@ class TaskListRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve la position maximale dans un projet
+//      * Trouve la position maximale dans un project
 //      */
 //     public function findMaxPositionByProject(Project $project): int
 //     {
@@ -279,7 +279,7 @@ class TaskListRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Met à jour automatiquement les couleurs de toutes les colonnes d'un projet
+//      * Met à jour automatiquement les couleurs de toutes les colonnes d'un project
 //      */
 //     public function updateAutoColorsForProject(Project $project): void
 //     {
@@ -314,7 +314,7 @@ class TaskListRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Calcule les statistiques de couleur pour un projet
+//      * Calcule les statistiques de couleur pour un project
 //      */
 //     public function getColorStatsForProject(Project $project): array
 //     {
@@ -337,7 +337,7 @@ class TaskListRepository extends ServiceEntityRepository
 //     }
 
 //     /**
-//      * Trouve la colonne avec le plus de retard dans un projet
+//      * Trouve la colonne avec le plus de retard dans un project
 //      */
 //     public function findMostDelayedColumn(Project $project): ?TaskList
 //     {

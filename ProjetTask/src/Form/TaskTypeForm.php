@@ -92,10 +92,10 @@ class TaskType extends AbstractType
     private function getProjectMembers(Project $project): array
     {
         $members = $project->getMembres()->toArray();
-        $chefProjet = $project->getChef_Projet();
+        $chefproject = $project->getChef_project();
 
-        if ($chefProjet && !in_array($chefProjet, $members, true)) {
-            $members[] = $chefProjet;
+        if ($chefproject && !in_array($chefproject, $members, true)) {
+            $members[] = $chefproject;
         }
 
         return $members;

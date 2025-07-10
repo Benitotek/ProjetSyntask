@@ -68,17 +68,17 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
 //         ])->setStatusCode(Response::HTTP_OK);
 //     }
     /**
-     * Liste des tâches d'un projet
+     * Liste des tâches d'un project
      */
     #[Route('/project/{id}/tasks', name: 'app_task_project_tasks', methods: ['GET'])]
     #[IsGranted('ROLE_EMPLOYE')]
-    public function projectTasks(Project $project, TaskRepository $taskRepository): Response
+    public function ProjetTasks(Project $project, TaskRepository $taskRepository): Response
     {
-        // Vérifier que l'utilisateur a le droit de voir ce projet
+        // Vérifier que l'utilisateur a le droit de voir ce project
         if (!$this->canViewProject($project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce project');
         }
-        // Récupérer les tâches du projet
+        // Récupérer les tâches du project
         $tasks = $taskRepository->findBy(['project' => $project], ['position' => 'ASC']);
          // Ajoutez une tâche individuelle si nécessaire
     $task = $taskRepository->findOneBy(['someCondition' => 'value']);
@@ -193,7 +193,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
     {
         $project = $task->getProject();
 
-        // Vérifier que l'utilisateur a le droit de voir ce projet
+        // Vérifier que l'utilisateur a le droit de voir ce project
         if (!$this->canViewProject($project)) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir cette tâche');
         }
@@ -211,7 +211,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
     {
         $project = $task->getProject();
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         if (!$this->canModifyProject($project)) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier cette tâche');
         }
@@ -233,7 +233,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
             }
 
             $this->addFlash('success', 'Tâche modifiée avec succès');
-            return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
         }
 
         if ($request->isXmlHttpRequest()) {
@@ -259,7 +259,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
     {
         $project = $task->getProject();
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         if (!$this->canModifyProject($project)) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour supprimer cette tâche');
         }
@@ -288,7 +288,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
             return new JsonResponse(['success' => false], 400);
         }
 
-        return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+        return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     }
 
     /**
@@ -303,7 +303,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
     ): JsonResponse {
         $project = $task->getProject();
 
-        // Vérifier que l'utilisateur a le droit de modifier ce projet
+        // Vérifier que l'utilisateur a le droit de modifier ce project
         if (!$this->canModifyProject($project)) {
             return new JsonResponse(['error' => 'Vous n\'avez pas les droits pour déplacer cette tâche'], 403);
         }
@@ -361,17 +361,17 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
     //         }
 
     //         $this->addFlash('error', 'Utilisateur non trouvé');
-    //         return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+    //         return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     //     }
 
-    //         // Vérifier que l'utilisateur est membre du projet
-    //         if (!$project->getMembres()->contains($user) && $project->getChefProjet() !== $user) {
+    //         // Vérifier que l'utilisateur est membre du project
+    //         if (!$project->getMembres()->contains($user) && $project->getChefproject() !== $user) {
     //             if ($request->isXmlHttpRequest()) {
-    //                 return new JsonResponse(['error' => 'L\'utilisateur n\'est pas membre du projet'], 400);
+    //                 return new JsonResponse(['error' => 'L\'utilisateur n\'est pas membre du project'], 400);
     //             }
     //
-    //             $this->addFlash('error', 'L\'utilisateur n\'est pas membre du projet');
-    //             return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+    //             $this->addFlash('error', 'L\'utilisateur n\'est pas membre du project');
+    //             return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     //         }
     //
     //         $task->setAssignedUser($user);
@@ -386,7 +386,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
     //         }
     //
     //         $this->addFlash('success', 'Tâche assignée à ' . $user->getFullName());
-    //         return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+    //         return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     //     }
 
     /**
@@ -413,11 +413,11 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
         }
 
         $this->addFlash('success', 'Assignation de la tâche retirée');
-        return $this->redirectToRoute('app_projet_kanban', ['id' => $project->getId()]);
+        return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     }
 
     /**
-     * Vérifie si l'utilisateur peut voir un projet
+     * Vérifie si l'utilisateur peut voir un project
      */
     private function canViewProject($project): bool
     {
@@ -432,17 +432,17 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
             return true;
         }
 
-        // Les chefs de projet peuvent voir les projets qu'ils dirigent
-        if ($project->getChefProjet() === $user) {
+        // Les chefs de project peuvent voir les projects qu'ils dirigent
+        if ($project->getChefproject() === $user) {
             return true;
         }
 
-        // Les membres du projet peuvent voir le projet
+        // Les membres du project peuvent voir le project
         return $project->getMembres()->contains($user);
     }
 
     /**
-     * Vérifie si l'utilisateur peut modifier un projet
+     * Vérifie si l'utilisateur peut modifier un project
      */
     private function canModifyProject($project): bool
     {
@@ -457,8 +457,8 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
             return true;
         }
 
-        // Les chefs de projet peuvent modifier les projets qu'ils dirigent
-        return $project->getChefProjet() === $user;
+        // Les chefs de project peuvent modifier les projects qu'ils dirigent
+        return $project->getChefproject() === $user;
     }
 
     /**
@@ -477,8 +477,8 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
             return true;
         }
 
-        // Les chefs de projet peuvent assigner des tâches dans leurs projets
-        return $project->getChef_Projet() === $user;
+        // Les chefs de project peuvent assigner des tâches dans leurs projects
+        return $project->getChef_project() === $user;
     }
 }
 
@@ -501,7 +501,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
 //         $taskList = $entityManager->getRepository(TaskList::class)->find($taskListId);
         
 //         if (!$project || !$taskList || $taskList->getProject() !== $project) {
-//             throw $this->createNotFoundException('Projet ou colonne non trouvé');
+//             throw $this->createNotFoundException('project ou colonne non trouvé');
 //         }
         
 //         // Vérifier les permissions
@@ -550,7 +550,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
 //         $project = $entityManager->getRepository(Project::class)->find($projectId);
         
 //         if (!$project || $task->getProject() !== $project) {
-//             throw $this->createNotFoundException('Tâche ou projet non trouvé');
+//             throw $this->createNotFoundException('Tâche ou project non trouvé');
 //         }
         
 //         // Vérifier les permissions
@@ -596,7 +596,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
 //         $project = $entityManager->getRepository(Project::class)->find($projectId);
         
 //         if (!$project || $task->getProject() !== $project) {
-//             throw $this->createNotFoundException('Tâche ou projet non trouvé');
+//             throw $this->createNotFoundException('Tâche ou project non trouvé');
 //         }
         
 //         // Vérifier les permissions
@@ -641,15 +641,15 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
 //         $user = $entityManager->getRepository(User::class)->find($userId);
         
 //         if (!$project || $task->getProject() !== $project || !$user) {
-//             throw $this->createNotFoundException('Tâche, projet ou utilisateur non trouvé');
+//             throw $this->createNotFoundException('Tâche, project ou utilisateur non trouvé');
 //         }
         
 //         // Vérifier les permissions
 //         $this->denyAccessUnlessGranted('EDIT', $project);
         
-//         // Vérifier que l'utilisateur est bien membre du projet
-//         if (!$project->getMembres()->contains($user) && $project->getChef_Projet() !== $user) {
-//             throw $this->createAccessDeniedException('Cet utilisateur n\'est pas membre du projet');
+//         // Vérifier que l'utilisateur est bien membre du project
+//         if (!$project->getMembres()->contains($user) && $project->getChef_project() !== $user) {
+//             throw $this->createAccessDeniedException('Cet utilisateur n\'est pas membre du project');
 //         }
         
 //         $task->setAssignedUser($user);
@@ -676,7 +676,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
 //         $project = $entityManager->getRepository(Project::class)->find($projectId);
         
 //         if (!$project || $task->getProject() !== $project) {
-//             throw $this->createNotFoundException('Tâche ou projet non trouvé');
+//             throw $this->createNotFoundException('Tâche ou project non trouvé');
 //         }
         
 //         // Vérifier les permissions
@@ -717,7 +717,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
 //         $project = $entityManager->getRepository(Project::class)->find($projectId);
         
 //         if (!$project || $task->getProject() !== $project) {
-//             throw $this->createNotFoundException('Tâche ou projet non trouvé');
+//             throw $this->createNotFoundException('Tâche ou project non trouvé');
 //         }
         
 //         // Vérifier les permissions

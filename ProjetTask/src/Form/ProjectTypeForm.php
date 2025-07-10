@@ -22,7 +22,7 @@ class ProjectTypeForm extends AbstractType
     {
         $builder
             ->add('titre', TextType::class, [
-                'label' => 'Titre du projet',
+                'label' => 'Titre du project',
                 'attr' => ['class' => 'form-control'],
                 'constraints' => [
                     new NotBlank(['message' => 'Le titre est requis']),
@@ -62,19 +62,19 @@ class ProjectTypeForm extends AbstractType
                 ],
                 'attr' => ['class' => 'form-select']
             ])
-            ->add('ChefProjet', EntityType::class, [
-                'label' => 'Chef de projet',
+            ->add('Chefproject', EntityType::class, [
+                'label' => 'Chef de project',
                 'class' => User::class,
                 'choice_label' => 'fullName',
                 'query_builder' => function (UserRepository $repo) {
                     return $repo->createQueryBuilder('u')
                         ->where('u.role LIKE :role')
                         ->andWhere('u.estActif = true')
-                        ->setParameter('role', '%ROLE_CHEF_PROJET%')
+                        ->setParameter('role', '%ROLE_CHEF_project%')
                         ->orderBy('u.nom', 'ASC');
                 },
                 'required' => false,
-                'placeholder' => 'Sélectionner un chef de projet',
+                'placeholder' => 'Sélectionner un chef de project',
                 'attr' => ['class' => 'form-select']
             ])
             ->add('membres', EntityType::class, [
@@ -111,7 +111,7 @@ class ProjectTypeForm extends AbstractType
     //         ->add('description')
     //         ->add('reference')
     //         ->add('budget')
-    //         ->add('chefDeProjet', EntityType::class, [
+    //         ->add('chefDeproject', EntityType::class, [
     //             'class' => User::class,
     //             'choice_label' => 'id',
     //         ])

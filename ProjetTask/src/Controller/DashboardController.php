@@ -20,7 +20,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security as SecurityBundleSecurity;
 use Symfony\Component\Security\Core\Role\Role;
 // use App\Repository\ActivityRepository; // Correction ici
-// Assurez-vous que le namespace est correct pour votre projet
+// Assurez-vous que le namespace est correct pour votre project
 // Si vous avez un service spécifique pour les activités, utilisez-le
 use App\Service\ActivityService; // Si vous avez un service pour les activités
 use Container1mDkSxn\getActivityRepositoryService;
@@ -41,7 +41,7 @@ class DashboardController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // Récupérer les projets
+        // Récupérer les projects
         $projects = $projectRepository->findAll();
 
         // Récupérer les tâches
@@ -56,7 +56,7 @@ class DashboardController extends AbstractController
         // Récupérer les activités récentes
         $activities = $activityRepository->findRecent(10);
 
-        // Projets actifs (pour l'affichage dans le tableau des projets en cours)
+        // projects actifs (pour l'affichage dans le tableau des projects en cours)
         $activeProjects = $projectRepository->findBy(['statut' => Project::STATUT_EN_COURS], ['dateCreation' => 'DESC']);
 
         // Récupérer les tâches assignées à l'utilisateur actuel
@@ -97,7 +97,7 @@ class DashboardController extends AbstractController
             }
         }
         
-        // Ajouter les échéances des projets
+        // Ajouter les échéances des projects
         foreach ($projects as $project) {
             if ($project->getDateButoir()) {
                 $dueDates[] = [
@@ -106,7 +106,7 @@ class DashboardController extends AbstractController
                     'type' => 'project',
                     'completed' => $project->getStatut() === Project::STATUT_TERMINE,
                     'statut' => $project->getStatut(),
-                    'url' => $this->generateUrl('app_projet_show', ['id' => $project->getId()])
+                    'url' => $this->generateUrl('app_project_show', ['id' => $project->getId()])
                 ];
             }
         }
@@ -119,10 +119,10 @@ class DashboardController extends AbstractController
         // Limiter à 5 échéances
         $dueDates = array_slice($dueDates, 0, 5);
         
-        // Performance de l'équipe (pour admin ou directeur ou chefs de projet)
+        // Performance de l'équipe (pour admin ou directeur ou chefs de project)
         $teamPerformance = [];
         
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')||$this->isGranted('ROLE_CHEF_PROJET')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')||$this->isGranted('ROLE_CHEF_project')) {
             foreach ($users as $teamMember) {
                 $userTasks = $taskRepository->findBy(['assignedUser' => $teamMember]);
                 $userCompletedTasks = count(array_filter($userTasks, function($task) {

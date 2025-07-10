@@ -75,11 +75,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OrderBy(['requestedAt' => 'DESC'])]
     private Collection $resetPasswordRequests;
 
-    #[ORM\OneToMany(mappedBy: "chefProjet", targetEntity: Project::class)]
-    private Collection $projetsGeres;
+    #[ORM\OneToMany(mappedBy: "chefproject", targetEntity: Project::class)]
+    private Collection $projectsGeres;
 
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'membres')]
-    private Collection $projetsAssignes;
+    private Collection $projectsAssignes;
 
     #[ORM\OneToMany(mappedBy: "assignedUser", targetEntity: Task::class)]
     private Collection $tachesAssignees;
@@ -94,8 +94,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
 
-        $this->projetsGeres = new ArrayCollection();
-        $this->projetsAssignes = new ArrayCollection();
+        $this->projectsGeres = new ArrayCollection();
+        $this->projectsAssignes = new ArrayCollection();
         $this->tachesAssignees = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
@@ -246,26 +246,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->prenom . ' ' . $this->nom;
     }
 
-    public function getProjetsGeres(): Collection
+    public function getprojectsGeres(): Collection
     {
-        return $this->projetsGeres;
+        return $this->projectsGeres;
     }
-    public function addProjetGere(Project $projet): self
+    public function addprojectGere(Project $project): self
     {
-        if (!$this->projetsGeres->contains($projet)) {
-            $this->projetsGeres->add($projet);
-            $projet->setChefProjet($this);
+        if (!$this->projectsGeres->contains($project)) {
+            $this->projectsGeres->add($project);
+            $project->setChefproject($this);
         }
 
         return $this;
     }
 
-    public function removeProjetGere(Project $projet): self
+    public function removeprojectGere(Project $project): self
     {
-        if ($this->projetsGeres->removeElement($projet)) {
+        if ($this->projectsGeres->removeElement($project)) {
             // set the owning side to null (unless already changed)
-            if ($projet->getChefProjet() === $this) {
-                $projet->setChefProjet(null);
+            if ($project->getChefproject() === $this) {
+                $project->setChefproject(null);
             }
         }
 
