@@ -30,8 +30,10 @@ class TaskListController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         // Vérifier que l'utilisateur a le droit de voir ce project
-        if (!$this->canViewProject($project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce project');
+
+        // Utilisation du voter
+        if (!$this->isGranted('PROJECT_VIEW', $project)) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
         }
 
         // Récupérer les colonnes avec leurs tâches
@@ -84,26 +86,32 @@ class TaskListController extends AbstractController
     /**
      * Vérifie si l'utilisateur peut voir un project
      */
-    private function canViewProject($project): bool
+    private function canViewProject(Project $project): bool
     {
+        // Toujours vérifier si l'utilisateur existe
         $user = $this->getUser();
-
         if (!$user) {
             return false;
         }
 
-        // Les administrateurs et directeurs peuvent tout voir
+        // Vérification explicite du rôle admin/directeur
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
             return true;
         }
 
-        // Les chefs de project peuvent voir les projects qu'ils dirigent
-        if ($project->getChefproject() === $user) {
+        // Vérification du chef de projet 
+        if ($project->getChefproject() && $project->getChefproject()->getId() === $user->getUserIdentifier()) {
             return true;
         }
 
-        // Les membres du project peuvent voir le project
-        return $project->getMembres()->contains($user);
+        // Vérification de l'appartenance comme membre
+        foreach ($project->getMembres() as $membre) {
+            if ($membre->getId() === $user->getUserIdentifier()) {
+                return true;
+            }
+        }
+
+        return false;
     }
     /**
      * Affiche le formulaire pour créer une nouvelle colonne

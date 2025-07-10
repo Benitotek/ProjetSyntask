@@ -5,42 +5,46 @@ namespace App\Security;
 use App\Entity\Project;
 use App\Entity\User;
 use Doctrine\Migrations\Version\Version;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+// Version3 debut 10/07/2025
+
+/**
+ * ProjectVoter
+ *
+ * This voter handles permissions for viewing, editing, deleting, and managing members of projects.
+ * It checks if the user has the necessary roles and permissions based on their relationship to the project.
+ */
 class ProjectVoter extends Voter
 {
-    public const VIEW = 'VIEW';
-    public const EDIT = 'EDIT';
-    public const DELETE = 'DELETE';
-    public const ASSIGN_TASKS = 'ASSIGN_TASKS';
+    const VIEW = 'PROJECT_VIEW';
+    const EDIT = 'PROJECT_EDIT';
+    const DELETE = 'PROJECT_DELETE';
+    const MANAGE_MEMBERS = 'PROJECT_MANAGE_MEMBERS';
 
-    /**
-     * Détermine si ce voter supporte l'attribut et le sujet donnés
-     */
-    protected function supports(string $attribute, mixed $subject): bool
+    private $security;
+
+    public function __construct(Security $security)
     {
-        // Si ce n'est pas un des attributs qu'on gère, retourner false
-        if (!in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::ASSIGN_TASKS])) {
-            return false;
-        }
-
-        // N'accepter que les objets Project
-        if (!$subject instanceof Project) {
-            return false;
-        }
-
-        return true;
+        $this->security = $security;
     }
 
-    /**
-     * Vérifie si l'utilisateur a le droit d'accéder au project selon l'attribut donné
-     */
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    protected function supports(string $attribute, $subject): bool
+    {
+        return in_array($attribute, [
+            self::VIEW,
+            self::EDIT,
+            self::DELETE,
+            self::MANAGE_MEMBERS
+        ]) && $subject instanceof Project;
+    }
+
+    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
 
-        // L'utilisateur doit être connecté
         if (!$user instanceof User) {
             return false;
         }
@@ -49,36 +53,58 @@ class ProjectVoter extends Voter
         $project = $subject;
 
         // Les administrateurs et directeurs ont tous les droits
-        if (in_array('ROLE_ADMIN', $user->getrole()) || in_array('ROLE_DIRECTEUR', $user->getrole())) {
+        if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_DIRECTEUR')) {
             return true;
         }
 
+        // Vérification des droits selon l'attribut
         switch ($attribute) {
             case self::VIEW:
-                // Les membres du project peuvent le voir
-                if ($project->getMembres()->contains($user)) {
-                    return true;
-                }
-
-                // Le chef de project peut voir le project
-                if ($project->getChef_project() === $user) {
-                    return true;
-                }
-
-                break;
-
+                return $this->canView($project, $user);
             case self::EDIT:
+                return $this->canEdit($project, $user);
             case self::DELETE:
-            case self::ASSIGN_TASKS:
-                // Seul le chef de project peut modifier/supprimer le project ou assigner des tâches
-                if ($project->getChef_project() === $user) {
-                    return true;
-                }
-
-                break;
+                return $this->canDelete($project, $user);
+            case self::MANAGE_MEMBERS:
+                return $this->canManageMembers($project, $user);
         }
 
         return false;
+    }
+
+    private function canView(Project $project, User $user): bool
+    {
+        // Le chef de projet peut voir le projet
+        if ($project->getChefproject() && $project->getChefproject()->getId() === $user->getId()) {
+            return true;
+        }
+
+        // Les membres peuvent voir le projet
+        foreach ($project->getMembres() as $membre) {
+            if ($membre->getId() === $user->getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function canEdit(Project $project, User $user): bool
+    {
+        // Seuls les chefs de projet peuvent éditer
+        return $project->getChefproject() && $project->getChefproject()->getId() === $user->getId();
+    }
+
+    private function canDelete(Project $project, User $user): bool
+    {
+        // Seuls les chefs de projet peuvent supprimer
+        return $project->getChefproject() && $project->getChefproject()->getId() === $user->getId();
+    }
+
+    private function canManageMembers(Project $project, User $user): bool
+    {
+        // Seuls les chefs de projet peuvent gérer les membres
+        return $project->getChefproject() && $project->getChefproject()->getId() === $user->getId();
     }
 }
 

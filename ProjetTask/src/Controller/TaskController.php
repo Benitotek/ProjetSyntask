@@ -27,46 +27,46 @@ use App\Service\ActivityLogger;
 class TaskController extends AbstractController
 {
     #[Route('/task', name: 'app_task_index', methods: ['GET'])]
-public function index(TaskRepository $taskRepository, TaskListRepository $taskListRepository): Response
-{
-    $user = $this->getUser();
+    public function index(TaskRepository $taskRepository, TaskListRepository $taskListRepository): Response
+    {
+        $user = $this->getUser();
 
-    if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-        $tasks = $taskRepository->findAll();
-    } else {
-        $tasks = $taskRepository->findByAssignedUser($user);
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+            $tasks = $taskRepository->findAll();
+        } else {
+            $tasks = $taskRepository->findByAssignedUser($user);
+        }
+
+        // Récupérer une liste de tâches par défaut (exemple : la première trouvée)
+        $taskList = $taskListRepository->findOneBy([]);
+
+        return $this->render('task/index.html.twig', [
+            'tasks' => $tasks,
+            'user' => $user,
+            'taskList' => $taskList,
+        ]);
     }
+    //     #[Route('/task', name: 'app_task_index', methods: ['GET'])]
+    //     public function index(TaskRepository $taskRepository): Response
+    //     {
+    //         // Pour admin/directeur, tout voir. Sinon, adapter la logique selon le rôle.
+    //         $user = $this->getUser();
+    //         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+    //             $tasks = $taskRepository->findAll();
+    //         } else {
+    //             $tasks = $taskRepository->findByAssignedUser($user);
+    //         }
+    //  // Ajoutez une tâche individuelle si nécessaire
+    //  $task = $taskRepository->findOneBy(['statut' => 'En cours']);
 
-    // Récupérer une liste de tâches par défaut (exemple : la première trouvée)
-    $taskList = $taskListRepository->findOneBy([]);
-
-    return $this->render('task/index.html.twig', [
-        'tasks' => $tasks,
-        'user' => $user,
-        'taskList' => $taskList,
-    ]);
-}
-//     #[Route('/task', name: 'app_task_index', methods: ['GET'])]
-//     public function index(TaskRepository $taskRepository): Response
-//     {
-//         // Pour admin/directeur, tout voir. Sinon, adapter la logique selon le rôle.
-//         $user = $this->getUser();
-//         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-//             $tasks = $taskRepository->findAll();
-//         } else {
-//             $tasks = $taskRepository->findByAssignedUser($user);
-//         }
-//  // Ajoutez une tâche individuelle si nécessaire
-//  $task = $taskRepository->findOneBy(['statut' => 'En cours']);
-
-//         return $this->render('task/index.html.twig', [
-//             'tasks' => $tasks,
-//             'task' => $task,
-//             // Passer l'utilisateur pour les permissions
-//             'user' => $user,
-//             'task' => $task,
-//         ])->setStatusCode(Response::HTTP_OK);
-//     }
+    //         return $this->render('task/index.html.twig', [
+    //             'tasks' => $tasks,
+    //             'task' => $task,
+    //             // Passer l'utilisateur pour les permissions
+    //             'user' => $user,
+    //             'task' => $task,
+    //         ])->setStatusCode(Response::HTTP_OK);
+    //     }
     /**
      * Liste des tâches d'un project
      */
@@ -80,15 +80,13 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
         }
         // Récupérer les tâches du project
         $tasks = $taskRepository->findBy(['project' => $project], ['position' => 'ASC']);
-         // Ajoutez une tâche individuelle si nécessaire
-    $task = $taskRepository->findOneBy(['someCondition' => 'value']);
+        // Ajoutez une tâche individuelle si nécessaire
+        $task = $taskRepository->findOneBy(['someCondition' => 'value']);
         return $this->render('task/project_tasks.html.twig', [
             'project' => $project,
             'tasks' => $tasks,
             'task' => $task,
         ])->setStatusCode(Response::HTTP_OK);
-
-    
     }
 
     /**
@@ -131,7 +129,7 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
         EntityManagerInterface $entityManager,
         ActivityLogger $activityLogger
     ): Response {
-         $task = new Task();
+        $task = new Task();
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
 
@@ -152,16 +150,16 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
             'form' => $form,
         ]);
     }
-     #[Route('/task/{id}/status', name: 'app_task_status_change', methods: ['POST'])]
+    #[Route('/task/{id}/status', name: 'app_task_status_change', methods: ['POST'])]
     public function changeStatus(
-        Task $task, 
-        Request $request, 
+        Task $task,
+        Request $request,
         EntityManagerInterface $entityManager,
         ActivityLogger $activityLogger
     ): Response {
         $oldStatus = $task->getStatut()->label();
         $newStatus = $request->request->get('status');
-        
+
         // Convertir la valeur en enum TaskStatut
         try {
             $enumStatus = TaskStatut::from($newStatus);
@@ -419,26 +417,35 @@ public function index(TaskRepository $taskRepository, TaskListRepository $taskLi
     /**
      * Vérifie si l'utilisateur peut voir un project
      */
-    private function canViewProject($project): bool
+    /**
+     * Vérifie si l'utilisateur peut voir un project
+     */
+    private function canViewProject(Project $project): bool
     {
+        // Toujours vérifier si l'utilisateur existe
         $user = $this->getUser();
-
         if (!$user) {
             return false;
         }
 
-        // Les administrateurs et directeurs peuvent tout voir
+        // Vérification explicite du rôle admin/directeur
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
             return true;
         }
 
-        // Les chefs de project peuvent voir les projects qu'ils dirigent
-        if ($project->getChefproject() === $user) {
+        // Vérification du chef de projet 
+        if ($project->getChefproject() && $project->getChefproject()->getId() === $user->getUserIdentifier()) {
             return true;
         }
 
-        // Les membres du project peuvent voir le project
-        return $project->getMembres()->contains($user);
+        // Vérification de l'appartenance comme membre
+        foreach ($project->getMembres() as $membre) {
+            if ($membre->getId() === $user->getUserIdentifier()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

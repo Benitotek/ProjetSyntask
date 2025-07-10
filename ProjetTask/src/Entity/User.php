@@ -44,6 +44,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(enumType: UserRole::class)]
     private ?UserRole $role = UserRole::EMPLOYE;  // Valeur par défaut
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private array $roles = [];
 
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Length(max: 180)]
@@ -152,14 +154,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->role = $role;
         return $this;
     }
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
 
+        // Si $roles est vide, utiliser le rôle par défaut
+        if (empty($roles)) {
+            $roles[] = 'ROLE_USER';
+        }
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+        return $this;
+    }
     /**
      * Returns an array of roles as expected by Symfony.
      */
-    public function getRoles(): array
-    {
-        return [$this->role?->value ?? UserRole::EMPLOYE->value];
-    }
+    // public function getRoles(): array
+    // {
+    //     return [$this->role?->value ?? UserRole::EMPLOYE->value];
+    // }
 
     public function hasRole(string $role): bool
     {

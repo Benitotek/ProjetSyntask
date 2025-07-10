@@ -25,7 +25,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         // Convertir la string en enum
         $roleEnum = UserRole::from($roleValue);
-        
+
         return $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
             ->where('u.role = :role')
@@ -39,9 +39,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function findByRole(string $roleValue): array
     {
-        // ✅ CORRIGÉ : Convertir la string en enum
+        //  Convertir la string en enum
         $roleEnum = UserRole::from($roleValue);
-        
+
         return $this->createQueryBuilder('u')
             ->where('u.role = :role')
             ->setParameter('role', $roleEnum)
@@ -93,7 +93,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function findChefsprojects(): array
     {
-        // ✅ CORRIGÉ : Utiliser l'enum au lieu de string
+        //  Utiliser l'enum au lieu de string
         return $this->createQueryBuilder('u')
             ->where('u.role = :role')
             ->setParameter('role', UserRole::CHEF_project)
