@@ -1,11 +1,14 @@
 {# templates/project/new.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer un project{% endblock %}
-
+{% block title %}Créer un projet{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/project-form.css') }}">
+{% endblock %}
 {% block body %}
 <div class="container mt-4">
-    <h1>Créer un nouveau project</h1>
+    <h1>Créer un nouveau projet</h1>
 
     {{ form_start(form) }}
         <div class="mb-3">

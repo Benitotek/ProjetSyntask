@@ -1,6 +1,10 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Mes tâches{% endblock %}
+{% block stylesheets %} 
+    {{ parent() }}
+<link rel="stylesheet" href="{{ asset('styles/mes-taches.css') }}">
+{% endblock %}
 
 {% block body %}
 <div class="container mt-4">

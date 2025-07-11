@@ -227,7 +227,7 @@
 											<a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn-icon" title="Voir détails">
 												<i class="icon-eye"></i>
 											</a>
-											{% if is_granted('ROLE_DIRECTEUR') or project.Chef_project == app.user %}
+											{% if is_granted('ROLE_DIRECTEUR') or project.Chefproject == app.user %}
 												<a href="{{ path('app_project_new', {'id': project.id}) }}" class="btn-icon" title="Modifier">
 													<i class="icon-edit"></i>
 												</a>

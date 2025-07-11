@@ -1,0 +1,118 @@
+/* Conteneur principal */
+.container {
+    max-width: 1200px;
+}
+
+/* Titre principal */
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Boutons de filtre */
+.btn-group .btn-outline-primary {
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
+}
+
+.btn-group .btn-outline-primary.active,
+.btn-group .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+/* Champ de recherche */
+.input-group input.form-control {
+    border-radius: 0.375rem 0 0 0.375rem;
+    border-right: none;
+}
+
+.input-group .btn {
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+
+/* Table des tâches */
+.table {
+    background-color: #fff;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+/* Lignes en retard */
+.table-danger {
+    background-color: #ffe5e5 !important;
+}
+
+/* Badges de priorité */
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+/* Badges de statut */
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.badge.bg-primary {
+    background-color: #007bff !important;
+}
+
+.badge.bg-success {
+    background-color: #198754 !important;
+}
+
+/* Boutons d'action */
+.btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-group .btn-sm:hover {
+    transform: scale(1.05);
+}
+
+/* Message vide */
+.alert.alert-info {
+    font-size: 1rem;
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+/* Pagination */
+.navigation {
+    margin-top: 1.5rem;
+    text-align: center;
+}
