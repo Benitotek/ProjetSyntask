@@ -87,16 +87,33 @@ class ActivityLogger
         );
     }
 
-    public function logTaskAssignment(string $taskId, string $taskTitle, string $assignedToUsername, ?User $user = null): void
-    {
-        $this->log(
-            ActivityType::TASK_ASSIGN,
-            "a assigné la tâche à {$assignedToUsername}",
-            $taskId,
-            "/task/{$taskId}",
-            $user
-        );
-    }
+public function logTaskAssignment(string $taskId, string $taskTitle, string $assignedToUsername, ?User $user = null): void
+{
+    $this->log(
+        ActivityType::TASK_ASSIGN,
+        "a assigné la tâche à {$assignedToUsername}",
+        $taskId,
+        "/task/{$taskId}",
+        $user
+    );
+}
 
+public function logTaskCompletion(string $taskId, string $taskTitle): void
+{
+    // Créez le message à enregistrer
+    $message = sprintf("Tâche #%s (%s) terminée à %s\n", $taskId, $taskTitle, date('Y-m-d H:i:s'));
+
+    // Chemin du fichier log
+    $logFile = $this->getLogFilePath();
+
+    // Écrire dans le fichier
+    file_put_contents($logFile, $message, FILE_APPEND);
+}
+
+private function getLogFilePath(): string
+{
+    // Utiliser le répertoire de logs standard d'un projet Symfony
+    return __DIR__ . '/../../var/log/task_activity.log';
+}
     // Ajoutez d'autres méthodes spécifiques selon  besoins a voir dans le futur comment je développerais l'application
 }

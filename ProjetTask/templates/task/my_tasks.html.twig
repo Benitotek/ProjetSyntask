@@ -25,24 +25,24 @@
         </div>
     </div>
 
-    {% if tasks|length > 0 %}
+    {% if pagination|length > 0 %}
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>{{ knp_pagination_sortable(tasks, 'Titre', 't.titre') }}</th>
-                        <th>{{ knp_pagination_sortable(tasks, 'project', 'p.nom') }}</th>
-                        <th>{{ knp_pagination_sortable(tasks, 'Priorité', 't.priorite') }}</th>
-                        <th>{{ knp_pagination_sortable(tasks, 'Statut', 't.statut') }}</th>
-                        <th>{{ knp_pagination_sortable(tasks, 'Date limite', 't.dateButoir') }}</th>
+                        <th>{{ knp_pagination_sortable(pagination, 'Titre', 't.titre') }}</th>
+                        <th>{{ knp_pagination_sortable(pagination, 'project', 'p.nom') }}</th>
+                        <th>{{ knp_pagination_sortable(pagination, 'Priorité', 't.priorite') }}</th>
+                        <th>{{ knp_pagination_sortable(pagination, 'Statut', 't.statut') }}</th>
+                        <th>{{ knp_pagination_sortable(pagination, 'Date limite', 't.dateButoir') }}</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for task in tasks %}
+                    {% for task in pagination %}
                         <tr class="{% if task.dateButoir and task.dateButoir|date('Y-m-d') < 'now'|date('Y-m-d') and task.statut != 'TERMINE' %}table-danger{% endif %}">
-                            <td>{{ task.titre }}</td>
-                            <td>{% if task.project %}{{ task.project.nom }}{% else %}-{% endif %}</td>
+                            <td>{{ task.title }}</td>
+                            <td>{% if task.project %}{{ task.project.titre }}{% else %}-{% endif %}</td>
                             <td>
                                 {% if task.priorite %}
                                     {% if task.priorite.value == 'HAUTE' %}
@@ -92,7 +92,7 @@
         </div>
         
         <div class="navigation">
-            {{ knp_pagination_render(tasks) }}
+            {{ knp_pagination_render(pagination) }}
         </div>
     {% else %}
         <div class="alert alert-info">

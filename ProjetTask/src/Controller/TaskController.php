@@ -20,6 +20,7 @@ use App\Repository\TaskListRepository;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\ActivityLogger;
+use Knp\Component\Pager\PaginatorInterface;
 
 // Version 2-3 Test du 02/07/2025
 // Debut version 3 09/07/2025
@@ -94,14 +95,9 @@ class TaskController extends AbstractController
      */
     #[Route('/mes-taches', name: 'app_task_my_tasks', methods: ['GET'])]
     #[IsGranted('ROLE_EMPLOYE')]
-    public function myTasks(TaskRepository $taskRepository, EntityManagerInterface $entityManager): Response
+    public function myTasks(TaskRepository $taskRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
     {
-        /** @var User $user */
         $user = $this->getUser();
-
-        if (!$user) {
-            throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page.');
-        }
 
         $queryBuilder = $entityManager->createQueryBuilder()
             ->select('t', 'p')
@@ -109,16 +105,32 @@ class TaskController extends AbstractController
             ->leftJoin('t.project', 'p')
             ->where('t.assignedUser = :user')
             ->setParameter('user', $user)
-            ->orderBy('t.dateEcheance', 'ASC');
+            ->orderBy('t.dateButoir', 'ASC');
 
-        // Récupérer les tâches assignées à l'utilisateur
-        $tasks = $taskRepository->findByAssignedUser($user);
+        // Pagination
+        $pagination = $paginator->paginate(
+            $queryBuilder, // La requête ou le query builder
+            $request->query->getInt('page', 1), // La page demandée
+            10 // Nombre d'éléments par page
+        );
 
         return $this->render('task/my_tasks.html.twig', [
-            'tasks' => $tasks,
+            'pagination' => $pagination,
         ]);
     }
 
+    #[Route('/task/{id}/complete', name: 'app_task_mark_completed')]
+    public function markCompleted(Task $task, EntityManagerInterface $em, ActivityLogger $logger): Response
+    {
+        // Logique pour marquer la tâche comme terminée
+        $task->setStatut(TaskStatut::TERMINE);
+        $em->flush();
+
+        // Optionnel : log de l'activité
+        $logger->logTaskCompletion($task->getId(), $task->getTitle());
+
+        return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
+    }
     /**
      * Création d'une nouvelle tâche
      */
