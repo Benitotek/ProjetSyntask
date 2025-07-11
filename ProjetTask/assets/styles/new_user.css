@@ -1,72 +1,134 @@
+/* Style global du formulaire */
+body {
+    background-color: #4aa8d8; /* Bleu clair */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #222;
+    margin: 0;
+    padding: 20px;
+}
 
-    body {
-        background-color: #45B8DB; /* Fond bleu */
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-    }
+/* Conteneur principal */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
 
-    .form-container {
-        background: linear-gradient(to bottom, #e0e0e0, #bdbdbd); /* dégradé gris */
-        border-radius: 15px;
-        padding: 30px;
-        max-width: 400px;
-        margin: 80px auto;
-        box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    }
+/* Formulaire centré avec max-width */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
 
-    .form-group {
-        margin-bottom: 20px;
-    }
+/* Groupe de champ */
+.form-group {
+    margin-bottom: 20px;
+}
 
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
+/* Labels en gras */
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
 
-    input[type="text"],
-    input[type="email"],
-    select {
-        width: 100%;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
+/* Champs input, select, textarea */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+}
 
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-    }
+/* Focus sur champ */
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #4aa8d8;
+    outline: none;
+    box-shadow: 0 0 6px #4aa8d8a0;
+}
 
-    .checkbox-group input[type="checkbox"] {
-        margin-right: 8px;
-    }
+/* Radio & Checkbox spacing */
+.form-group input[type="radio"],
+.form-group input[type="checkbox"] {
+    margin-right: 8px;
+    vertical-align: middle;
+}
 
-    .form-actions {
-        display: flex;
-        justify-content: space-between;
-    }
+/* Label des radios/checkbox inline */
+.form-group label[for] {
+    display: inline-block;
+    margin-right: 20px;
+    font-weight: 500;
+    color: #444;
+}
 
-    .btn {
-        padding: 10px 20px;
-        border-radius: 5px;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-    }
+/* Erreurs */
+.form-errors, .form-error {
+    color: #d93025;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
 
-    .btn-primary {
-        background-color: #4CAF50;
-        color: white;
-    }
+/* Actions formulaire */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+}
 
-    .btn-secondary {
-        background-color: #e0e0e0;
-        color: #333;
-    }
+/* Boutons */
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
 
-    h1 {
-        text-align: center;
-        margin-bottom: 30px;
-    }
+/* Bouton Annuler */
+.btn-secondary {
+    background-color: #aaa;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background-color: #888;
+}
+
+/* Bouton Enregistrer */
+.btn-primary {
+    background-color: #2a9df4;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background-color: #2381d6;
+}
+
+/* Icône dans le bouton */
+.btn-primary i {
+    font-size: 1.2rem;
+}

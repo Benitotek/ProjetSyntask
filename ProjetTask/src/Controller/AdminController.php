@@ -36,7 +36,9 @@ class AdminController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         $user = new User();
-        $form = $this->createForm(UserTypeForm::class, $user);
+        $form = $this->createForm(UserTypeForm::class, $user, [
+    'can_choose_role' => true,
+]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
