@@ -1,26 +1,28 @@
 ﻿
-src\Controller\ActivityController.php:20:    public function index(ActivityRepository 
-$activityRepository): Response
-src\Controller\ActivityController.php:35:    public function all(ActivityRepository 
-$activityRepository): Response
-src\Controller\ActivityController.php:46:    public function projectActivities(string $id, 
-ActivityRepository $activityRepository): Response
-src\Controller\ActivityController.php:58:public function activityIndex(ActivityRepository 
-$activityRepository): Response
-src\Controller\ActivityController.php:71://     public function index(): Response
-src\Controller\AdminController.php:26:    public function __construct(EmailVerifier 
-$emailVerifier)
+src\Controller\ActivityController.php:20:    public function 
+index(ActivityRepository $activityRepository): Response
+src\Controller\ActivityController.php:35:    public function 
+all(ActivityRepository $activityRepository): Response
+src\Controller\ActivityController.php:46:    public function 
+projectActivities(string $id, ActivityRepository $activityRepository): Response
+src\Controller\ActivityController.php:58:public function 
+activityIndex(ActivityRepository $activityRepository): Response
+src\Controller\ActivityController.php:71://     public function index(): 
+Response
+src\Controller\AdminController.php:26:    public function 
+__construct(EmailVerifier $emailVerifier)
 src\Controller\AdminController.php:33:    public function newUser(
 src\Controller\AdminController.php:64:    public function index(UserRepository 
 $userRepository): Response
-src\Controller\AdminController.php:76:    public function addUser(Request $request): 
-Response
+src\Controller\AdminController.php:76:    public function addUser(Request 
+$request): Response
 src\Controller\AdminController.php:89:    public function logout(): Response
-src\Controller\AdminController.php:98:    public function Admindashboard(): Response
-src\Controller\AdminController.php:115:    public function UserList(UserRepository 
-$userRepository): Response
-src\Controller\AdminController.php:127:    public function projects(ProjectRepository 
-$projectRepository): Response
+src\Controller\AdminController.php:98:    public function Admindashboard(): 
+Response
+src\Controller\AdminController.php:115:    public function 
+UserList(UserRepository $userRepository): Response
+src\Controller\AdminController.php:127:    public function 
+projects(ProjectRepository $projectRepository): Response
 src\Controller\DashboardController.php:31:    public function index(
 src\Controller\DashboardController.php:68:        $completedTasks = 
 count(array_filter($allTasks, function ($task) {
@@ -29,70 +31,41 @@ count(array_filter($allTasks, function ($task) {
 src\Controller\DashboardController.php:76:        $inProgressTasks = 
 count(array_filter($allTasks, function ($task) {
 src\Controller\HomeController.php:12:    public function index(): Response
-src\Controller\ProjectController.php:29:    public function __construct(Security $security)
-src\Controller\ProjectController.php:38:public function mesProjects(Request $request, 
-ProjectRepository $projectRepository): Response
-src\Controller\ProjectController.php:83:    public function index(ProjectRepository 
-$projectRepository): Response
-src\Controller\ProjectController.php:109:    public function new(Request $request, 
+src\Controller\ProjectController.php:29:    public function 
+__construct(Security $security)
+src\Controller\ProjectController.php:38:    public function 
+mesProjects(Request $request, ProjectRepository $projectRepository): Response
+src\Controller\ProjectController.php:83:    public function 
+index(ProjectRepository $projectRepository): Response
+src\Controller\ProjectController.php:109:    public function new(Request 
+$request, EntityManagerInterface $entityManager): Response
+src\Controller\ProjectController.php:139:    public function show(Project 
+$project): Response
+src\Controller\ProjectController.php:153:    public function edit(Request 
+$request, Project $project, EntityManagerInterface $entityManager): Response
+src\Controller\ProjectController.php:178:    public function delete(Request 
+$request, Project $project, EntityManagerInterface $entityManager): Response
+src\Controller\ProjectController.php:197:    public function kanban(Project 
+$project, TaskListRepository $taskListRepository, UserRepository 
+$userRepository): Response
+src\Controller\ProjectController.php:227:    public function manageMembers(
+src\Controller\ProjectController.php:281:    public function assignManager(
+src\Controller\ProjectController.php:323:    private function 
+createDefaultTaskLists(Project $project, EntityManagerInterface 
+$entityManager): void
+src\Controller\ProjectController.php:348: private function 
+canViewProject(Project $project): bool
+src\Controller\RegistrationController.php:25:    public function 
+__construct(private EmailVerifier $emailVerifier)
+src\Controller\RegistrationController.php:31:    public function 
+register(Request $request, UserPasswordHasherInterface $userPasswordHasher, 
 EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:139:    public function show(Project $project): 
-Response
-src\Controller\ProjectController.php:153:    public function edit(Request $request, Project 
-$project, EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:178:    public function delete(Request $request, 
-Project $project, EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:197:    public function kanban(Project $project, 
-TaskListRepository $taskListRepository, UserRepository $userRepository): Response
-src\Controller\ProjectController.php:224:    public function manageMembers(
-src\Controller\ProjectController.php:278:    public function assignManager(
-src\Controller\ProjectController.php:320:    private function 
-createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
-src\Controller\ProjectController.php:345:    private function canAccessProject(Project 
-$project): bool
-src\Controller\ProjectController.php:373:    // public function 
-myProjects(ProjectRepository $projectRepository, Request $request): Response
-src\Controller\ProjectController.php:393:    // public function index(ProjectRepository 
-$projectRepository): Response
-src\Controller\ProjectController.php:415:    // public function new(Request $request, 
-EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:441:    // public function show(Project $project): 
-Response
-src\Controller\ProjectController.php:452://     public function edit(Request $request, 
-Project $project, EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:473://     public function delete(Request $request, 
-Project $project, EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:486://     private function 
-createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
-src\Controller\ProjectController.php:512://     public function ProjectKanban(
-src\Controller\ProjectController.php:535://     public function allTasks(
-src\Controller\ProjectController.php:553://             $tasks = array_filter($tasks, 
-function ($task) use ($statut) {
-src\Controller\ProjectController.php:559://             $tasks = array_filter($tasks, 
-function ($task) use ($priority) {
-src\Controller\ProjectController.php:565://             $tasks = array_filter($tasks, 
-function ($task) use ($assignee) {
-src\Controller\ProjectController.php:585://     public function reorderTasks(
-src\Controller\ProjectController.php:614://     public function filterBystatut(
-src\Controller\ProjectController.php:623://         $filteredTasks = array_filter($tasks, 
-function ($task) use ($statut) {
-src\Controller\ProjectController.php:640://     public function filterByPriority(
-src\Controller\ProjectController.php:649://         $filteredTasks = array_filter($tasks, 
-function ($task) use ($priority) {
-src\Controller\ProjectController.php:666://     public function filterByUser(
-src\Controller\ProjectController.php:682://         $filteredTasks = array_filter($tasks, 
-function ($task) use ($user) {
-src\Controller\RegistrationController.php:25:    public function __construct(private 
-EmailVerifier $emailVerifier)
-src\Controller\RegistrationController.php:31:    public function register(Request $request, 
-UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): 
-Response
-src\Controller\RegistrationController.php:58:    public function verifyUserEmail(Request 
-$request, TranslatorInterface $translator): Response
+src\Controller\RegistrationController.php:58:    public function 
+verifyUserEmail(Request $request, TranslatorInterface $translator): Response
 src\Controller\ReportController.php:20:    public function teamReport(
 src\Controller\ReportController.php:47:                $userTasks = 
-array_filter($taskRepository->findByAssignedUser($teamMember), function ($task) use 
-($project) {
+array_filter($taskRepository->findByAssignedUser($teamMember), function 
+($task) use ($project) {
 src\Controller\ReportController.php:69:                $userTasks = 
 array_filter($userTasks, function ($task) use ($date) {
 src\Controller\ReportController.php:75:            $userCompletedTasks = 
@@ -101,83 +74,99 @@ src\Controller\ReportController.php:79:            $userOverdueTasks =
 count(array_filter($userTasks, function ($task) {
 src\Controller\ReportController.php:91:            $completedTasksWithDates = 
 array_filter($userTasks, function ($task) {
-src\Controller\ReportController.php:133:        usort($teamPerformance, function ($a, $b) {
+src\Controller\ReportController.php:133:        usort($teamPerformance, 
+function ($a, $b) {
 src\Controller\ResetPasswordController.php:28:    public function __construct(
-src\Controller\ResetPasswordController.php:38:    public function request(Request $request, 
-MailerInterface $mailer, TranslatorInterface $translator): Response
-src\Controller\ResetPasswordController.php:60:    public function checkEmail(): Response
-src\Controller\ResetPasswordController.php:77:    public function reset(Request $request, 
-UserPasswordHasherInterface $passwordHasher, TranslatorInterface $translator, ?string 
-$token = null): Response
+src\Controller\ResetPasswordController.php:38:    public function 
+request(Request $request, MailerInterface $mailer, TranslatorInterface 
+$translator): Response
+src\Controller\ResetPasswordController.php:60:    public function 
+checkEmail(): Response
+src\Controller\ResetPasswordController.php:77:    public function 
+reset(Request $request, UserPasswordHasherInterface $passwordHasher, 
+TranslatorInterface $translator, ?string $token = null): Response
 src\Controller\ResetPasswordController.php:132:    private function 
-processSendingPasswordResetEmail(string $emailFormData, MailerInterface $mailer, 
-TranslatorInterface $translator): RedirectResponse
+processSendingPasswordResetEmail(string $emailFormData, MailerInterface 
+$mailer, TranslatorInterface $translator): RedirectResponse
 src\Controller\SecurityController.php:17:    public function 
 __construct(CsrfTokenManagerInterface $csrf)
-src\Controller\SecurityController.php:30:    public function generateCsrfToken(Request 
-$request): JsonResponse
-src\Controller\SecurityController.php:44:    public function login(AuthenticationUtils 
-$authenticationUtils, Request $request): Response
+src\Controller\SecurityController.php:30:    public function 
+generateCsrfToken(Request $request): JsonResponse
+src\Controller\SecurityController.php:44:    public function 
+login(AuthenticationUtils $authenticationUtils, Request $request): Response
 src\Controller\SecurityController.php:55:    // public function 
 login(\Symfony\Component\HttpFoundation\Request $request, AuthenticationUtils 
 $authenticationUtils): Response
 src\Controller\SecurityController.php:77:    public function logout(): void
-src\Controller\SecurityController.php:83:    public function register(): Response
-src\Controller\SecurityController.php:91:    public function forgotPassword(): Response
-src\Controller\TaskController.php:30:public function index(TaskRepository $taskRepository, 
-TaskListRepository $taskListRepository): Response
-src\Controller\TaskController.php:50://     public function index(TaskRepository 
-$taskRepository): Response
-src\Controller\TaskController.php:75:    public function ProjetTasks(Project $project, 
-TaskRepository $taskRepository): Response
-src\Controller\TaskController.php:99:    public function myTasks(TaskRepository 
-$taskRepository, EntityManagerInterface $entityManager): Response
-src\Controller\TaskController.php:128:    public function new(
-src\Controller\TaskController.php:156:    public function changeStatus(
-src\Controller\TaskController.php:192:    public function show(Task $task): Response
-src\Controller\TaskController.php:210:    public function edit(Request $request, Task 
-$task, EntityManagerInterface $entityManager): Response
-src\Controller\TaskController.php:258:    public function delete(Request $request, Task 
-$task, EntityManagerInterface $entityManager): Response
-src\Controller\TaskController.php:298:    public function moveTask(
-src\Controller\TaskController.php:342:    // public function assignUser(
-src\Controller\TaskController.php:396:    public function unassignTask(
-src\Controller\TaskController.php:422:    private function canViewProject($project): bool
-src\Controller\TaskController.php:447:    private function canModifyProject($project): bool
-src\Controller\TaskController.php:467:    private function canAssignTasks($project): bool
-src\Controller\TaskController.php:493://     public function new(
-src\Controller\TaskController.php:544://     public function edit(
-src\Controller\TaskController.php:589://     public function delete(
-src\Controller\TaskController.php:633://     public function assign(
-src\Controller\TaskController.php:669://     public function changestatut(
-src\Controller\TaskController.php:710://     public function setPriority(
-src\Controller\TaskListController.php:27:    public function kanban(
-src\Controller\TaskListController.php:62:    private function 
-createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
-src\Controller\TaskListController.php:87:    private function canViewProject($project): bool
-src\Controller\TaskListController.php:112:    public function ViewformColumn(
-src\Controller\TaskListController.php:167:    public function EditformColumn(
-src\Controller\TaskListController.php:209:    public function deleteColumn(
-src\Controller\TaskListController.php:236:    public function reorderColumns(
-src\Controller\TaskListController.php:280:    public function newColum(
-src\Controller\TaskListController.php:341:    public function edit(Request $request, 
-TaskList $taskList, EntityManagerInterface $entityManager): Response
-src\Controller\TaskListController.php:386:    public function delete(
-src\Controller\TaskListController.php:437:    public function DragDropReorderColumns(
-src\Controller\TaskListController.php:482:    private function canModifyProject($project): 
-bool
-src\Controller\UserController.php:24:    public function index(UserRepository 
-$userRepository): Response
-src\Controller\UserController.php:38:    public function myProfile(Request $request, 
-EntityManagerInterface $em): Response
-src\Controller\UserController.php:63:public function new(
-src\Controller\UserController.php:103:    // public function show(User $user): Response
-src\Controller\UserController.php:111:    public function edit(Request $request, User 
-$user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): 
+src\Controller\SecurityController.php:83:    public function register(): 
 Response
-src\Controller\UserController.php:136:    public function delete(Request $request, User 
+src\Controller\SecurityController.php:91:    public function forgotPassword(): 
+Response
+src\Controller\TaskController.php:31:    public function index(TaskRepository 
+$taskRepository, TaskListRepository $taskListRepository): Response
+src\Controller\TaskController.php:51:    //     public function 
+index(TaskRepository $taskRepository): Response
+src\Controller\TaskController.php:76:    public function ProjetTasks(Project 
+$project, TaskRepository $taskRepository): Response
+src\Controller\TaskController.php:98:    public function 
+myTasks(TaskRepository $taskRepository, EntityManagerInterface $entityManager, 
+PaginatorInterface $paginator, Request $request): Response
+src\Controller\TaskController.php:123:    public function markCompleted(Task 
+$task, EntityManagerInterface $em, ActivityLogger $logger): Response
+src\Controller\TaskController.php:138:    public function new(
+src\Controller\TaskController.php:166:    public function changeStatus(
+src\Controller\TaskController.php:202:    public function show(Task $task): 
+Response
+src\Controller\TaskController.php:220:    public function edit(Request 
+$request, Task $task, EntityManagerInterface $entityManager): Response
+src\Controller\TaskController.php:268:    public function delete(Request 
+$request, Task $task, EntityManagerInterface $entityManager): Response
+src\Controller\TaskController.php:308:    public function moveTask(
+src\Controller\TaskController.php:352:    // public function assignUser(
+src\Controller\TaskController.php:406:    public function unassignTask(
+src\Controller\TaskController.php:435:    private function 
+canViewProject(Project $project): bool
+src\Controller\TaskController.php:466:    private function 
+canModifyProject($project): bool
+src\Controller\TaskController.php:486:    private function 
+canAssignTasks($project): bool
+src\Controller\TaskController.php:512://     public function new(
+src\Controller\TaskController.php:563://     public function edit(
+src\Controller\TaskController.php:608://     public function delete(
+src\Controller\TaskController.php:652://     public function assign(
+src\Controller\TaskController.php:688://     public function changestatut(
+src\Controller\TaskController.php:729://     public function setPriority(
+src\Controller\TaskListController.php:27:    public function kanban(
+src\Controller\TaskListController.php:64:    private function 
+createDefaultTaskLists(Project $project, EntityManagerInterface 
+$entityManager): void
+src\Controller\TaskListController.php:89:    private function 
+canViewProject(Project $project): bool
+src\Controller\TaskListController.php:120:    public function ViewformColumn(
+src\Controller\TaskListController.php:175:    public function EditformColumn(
+src\Controller\TaskListController.php:217:    public function deleteColumn(
+src\Controller\TaskListController.php:244:    public function reorderColumns(
+src\Controller\TaskListController.php:288:    public function newColum(
+src\Controller\TaskListController.php:349:    public function edit(Request 
+$request, TaskList $taskList, EntityManagerInterface $entityManager): Response
+src\Controller\TaskListController.php:394:    public function delete(
+src\Controller\TaskListController.php:445:    public function 
+DragDropReorderColumns(
+src\Controller\TaskListController.php:490:    private function 
+canModifyProject($project): bool
+src\Controller\UserController.php:25:    public function index(UserRepository 
+$userRepository): Response
+src\Controller\UserController.php:39:    public function myProfile(Request 
+$request, EntityManagerInterface $em): Response
+src\Controller\UserController.php:64:public function new(
+src\Controller\UserController.php:104:    // public function show(User $user): 
+Response
+src\Controller\UserController.php:112:    public function edit(Request 
+$request, User $user, EntityManagerInterface $entityManager, 
+UserPasswordHasherInterface $passwordHasher): Response
+src\Controller\UserController.php:137:    public function delete(Request 
+$request, User $user, EntityManagerInterface $entityManager): Response
+src\Controller\UserController.php:152:    // public function togglestatut(User 
 $user, EntityManagerInterface $entityManager): Response
-src\Controller\UserController.php:151:    // public function togglestatut(User $user, 
-EntityManagerInterface $entityManager): Response
 
 
