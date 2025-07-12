@@ -13,6 +13,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Tag;
+use App\Entity\Comment;
+
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Table(name: 'task')]
@@ -59,20 +62,47 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?TaskList $taskList = null;
 
-#[ORM\ManyToOne(targetEntity: User::class)]
-#[ORM\JoinColumn(name: "created_by_id", referencedColumnName: "id", nullable: true)]
-private ?User $createdBy = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: "created_by_id", referencedColumnName: "id", nullable: true)]
+    private ?User $createdBy = null;
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(mappedBy: 'task', targetEntity: Comment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['dateCreation' => 'DESC'])]
+    private Collection $comments;
 
-public function getCreatedBy(): ?User
-{
-    return $this->createdBy;
-}
+    /**
+     * @var Collection<int, Tag>
+     */
+    #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'tasks')]
+    #[ORM\JoinTable(name: 'task_tag')]
+    private Collection $tags;
 
-public function setCreatedBy(?User $createdBy): self
-{
-    $this->createdBy = $createdBy;
-    return $this;
-}
+    /**
+     * Relation auto-référencée pour les sous-tâches
+     * @var Collection<int, Task>
+     */
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'sousTask')]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
+    private ?Task $parent = null;
+
+    /**
+     * @var Collection<int, Task>
+     */
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['persist'])]
+    private Collection $sousTask;
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+        return $this;
+    }
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Project $project = null;
@@ -130,6 +160,9 @@ public function setCreatedBy(?User $createdBy): self
 
     public function __construct()
     {
+        $this->comments = new ArrayCollection();
+        $this->tags = new ArrayCollection();
+        $this->sousTask = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->assignedUsers = new ArrayCollection();
     }
@@ -302,4 +335,126 @@ public function setCreatedBy(?User $createdBy): self
         $this->project = $project;
         return $this;
     }
+
+    // Puis j'ajoute ces méthodes à la fin de la classe pour gérer les commentaires et les tags associés à la tâche:
+
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setTask($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getTask() === $this) {
+                $comment->setTask(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Tag>
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): static
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): static
+    {
+        $this->tags->removeElement($tag);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getSousTask(): Collection
+    {
+        return $this->sousTask;
+    }
+
+    public function addSousTask(Task $sousTask): static
+    {
+        if (!$this->sousTask->contains($sousTask)) {
+            $this->sousTask->add($sousTask);
+            $sousTask->setParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSousTask(Task $sousTask): static
+    {
+        if ($this->sousTask->removeElement($sousTask)) {
+            // set the owning side to null (unless already changed)
+            if ($sousTask->getParent() === $this) {
+                $sousTask->setParent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent instanceof self ? $this->parent : null;
+    }
+
+    public function setParent(?self $parent): static
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    /**
+     * Vérifie si cette tâche est une sous-tâche
+     */
+    public function isSousTask(): bool
+    {
+        return $this->parent !== null;
+    }
+
+    /**
+     * Calcule le nombre de commentaires non lus
+     */
+
+    // public function getUnreadCommentsCount(User $user): int
+    // {
+    //     $count = 0;
+    //     foreach ($this->comments as $comment) {
+    //         if ($comment->getAuteur() !== $user && !$comment->isEstLue()) { {
+    //                 $count++;
+    //             }
+
+    //             return $count;
+    //         }
+    //     }
+    // }
 }

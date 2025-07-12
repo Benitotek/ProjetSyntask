@@ -249,7 +249,7 @@ class ProjectController extends AbstractController
                         if ($project->getChefproject() === $user) {
                             $this->addFlash('error', 'Vous ne pouvez pas retirer le chef de project');
                         } else {
-                            $project->removeMembre($user);
+                           
                             $this->addFlash('success', $user->getFullName() . ' retiré du project avec succès');
                         }
                     }

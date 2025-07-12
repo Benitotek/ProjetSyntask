@@ -1,0 +1,202 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commentaires -
+	{{ task.title }}
+	| SYNTASK
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/comments.css') }}">
+	<meta name="csrf-token" content="{{ csrf_token('comment_operations') }}">
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	 <script src="{{ asset('js/comments.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid py-4">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<div>
+				<h1 class="mb-0">Commentaires</h1>
+				<p class="text-muted">
+					Tâche:
+					<a href="{{ path('app_task_show', {'id': task.id}) }}">{{ task.title }}</a>
+					{% if task.project %}
+						| Projet:
+						<a href="{{ path('app_project_show', {'id': task.project.id}) }}">{{ task.project.titre }}</a>
+					{% endif %}
+				</p>
+			</div>
+
+			<div class="d-flex gap-2">
+				<a href="{{ path('app_task_show', {'id': task.id}) }}" class="btn btn-outline-primary">
+					<i class="fas fa-arrow-left"></i>
+					Retour à la tâche
+				</a>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="card-header">
+				<h5 class="card-title mb-0">Commentaires ({{ comments|length }})</h5>
+			</div>
+			<div
+				class="card-body">
+				<!-- Formulaire d'ajout de commentaire -->
+				<div class="comment-form mb-4">
+					{{ form_start(commentForm, {'action': path('app_task_comment_add', {'id': task.id}), 'attr': {'id': 'comment-form'}}) }}
+					{{ form_row(commentForm.contenu, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre commentaire...'}}) }}
+					<div class="d-flex justify-content-end mt-2">
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-paper-plane"></i>
+							Ajouter un commentaire
+						</button>
+					</div>
+					{{ form_end(commentForm) }}
+				</div>
+
+				<!-- Liste des commentaires -->
+				<div class="comments-container" id="comments-list">
+					{% if comments|length > 0 %}
+						{% for comment in comments %}
+							<div class="comment" id="comment-{{ comment.id }}">
+								<div class="comment-header">
+									<div class="comment-author">
+										<div class="user-avatar me-2">
+											{{ comment.auteur.prenom|first }}{{ comment.auteur.nom|first }}
+										</div>
+										<div>
+											<div class="author-name">{{ comment.auteur.prenom }}
+												{{ comment.auteur.nom }}</div>
+											<div class="comment-date">
+												{{ comment.dateCreation|date('d/m/Y à H:i') }}
+												{% if comment.dateModification %}
+													<span class="text-muted">(Modifié le
+														{{ comment.dateModification|date('d/m/Y à H:i') }})</span>
+												{% endif %}
+											</div>
+										</div>
+									</div>
+
+									<div class="comment-actions">
+										{% if app.user == comment.auteur or is_granted('ROLE_ADMIN') %}
+											<div class="dropdown">
+												<button class="btn btn-sm btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fas fa-ellipsis-v"></i>
+												</button>
+												<ul class="dropdown-menu dropdown-menu-end">
+													<li>
+														<a class="dropdown-item edit-comment-button" href="#" data-comment-id="{{ comment.id }}">
+															<i class="fas fa-edit"></i>
+															Modifier
+														</a>
+													</li>
+													<li>
+														<form method="post" action="{{ path('app_comment_delete', {'id': comment.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire?');" style="display: inline-block;">
+															<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+															<button class="dropdown-item text-danger">
+																<i class="fas fa-trash"></i>
+																Supprimer
+															</button>
+														</form>
+													</li>
+												</ul>
+											</div>
+										{% endif %}
+									</div>
+								</div>
+
+								<div class="comment-content">
+									<div class="comment-text">{{ comment.contenu|nl2br }}</div>
+								</div>
+
+								<!-- Formulaire d'édition caché -->
+								<div class="comment-edit-form d-none" id="edit-form-{{ comment.id }}">
+									<form method="post" action="{{ path('app_comment_edit', {'id': comment.id}) }}">
+										<textarea name="comment[contenu]" class="form-control mb-2" rows="3">{{ comment.contenu }}</textarea>
+										<div class="d-flex justify-content-end gap-2">
+											<button type="button" class="btn btn-sm btn-outline-secondary cancel-edit-button">
+												Annuler
+											</button>
+											<button type="submit" class="btn btn-sm btn-primary">
+												Enregistrer
+											</button>
+										</div>
+									</form>
+								</div>
+
+							</div>
+						</div>
+					{% endfor %}
+				{% else %}
+					<div class="text-center py-5">
+						<i class="fas fa-comments fa-3x text-muted mb-3"></i>
+						<p class="text-muted">Aucun commentaire pour cette tâche</p>
+						<p>Soyez le premier à ajouter un commentaire.</p>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Confirmer la suppression</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+			</div>
+			<div class="modal-body">
+				Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+				<form id="delete-comment-form" method="post" action="">
+					<input type="hidden" name="_token" value="">
+					<button type="submit" class="btn btn-danger">Supprimer</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+ <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion de l'édition des commentaires
+    document.querySelectorAll('.edit-comment-button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.commentId;
+            const commentElement = document.getElementById('comment-' + commentId);
+            const commentContent = commentElement.querySelector('.comment-content');
+            const editForm = commentElement.querySelector('.comment-edit-form');
+            
+            // Afficher le formulaire d'édition et cacher le contenu
+            commentContent.classList.add('d-none');
+            editForm.classList.remove('d-none');
+        });
+    });
+    
+    // Annulation de l'édition
+    document.querySelectorAll('.cancel-edit-button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const editForm = this.closest('.comment-edit-form');
+            const commentElement = this.closest('.comment');
+            const commentContent = commentElement.querySelector('.comment-content');
+            
+            // Cacher le formulaire et afficher le contenu
+            editForm.classList.add('d-none');
+            commentContent.classList.remove('d-none');
+        });
+    });
+});
+</script>{% endblock %}

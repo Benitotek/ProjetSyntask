@@ -24,7 +24,14 @@ class Project
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre du projet est obligatoire")]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: "Le titre doit comporter au moins {{ limit }} caractères",
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::STRING, length: 20)]
@@ -63,23 +70,40 @@ class Project
 
     // Membres : ManyToMany
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projectsAssignes')]
+    #[ORM\JoinTable(name: "project_members")]
     private Collection $membres;
 
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Activity::class, orphanRemoval: true)]
+    #[ORM\OrderBy(["dateCreation" => "DESC"])]
+    private Collection $activities;
+
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: TaskList::class, cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(["position" => "ASC"])]
     private Collection $taskLists;
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Task::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $tasks;
 
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Tag::class, orphanRemoval: true)]
+    private Collection $tags;
+
     public function __construct()
     {
+        $this->activities = new ArrayCollection();
+        $this->membres = new ArrayCollection();
+        $this->tags = new ArrayCollection();
         $this->membres = new ArrayCollection();
         $this->taskLists = new ArrayCollection();
+        $this->statut = 'EN_COURS';
         $this->tasks = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
     }
-
+    #[ORM\PreUpdate]
+    public function setUpdatedValue()
+    {
+        $this->dateMaj = new \DateTime();
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -207,16 +231,80 @@ class Project
     {
         if (!$this->membres->contains($membre)) {
             $this->membres->add($membre);
+            // Ajouter également le créateur comme membre s'il ne l'est pas déjà
+            if ($this->getChefproject() && !$this->membres->contains($this->getChefproject())) {
+                $this->membres->add($this->getChefproject());
+            }
         }
+
         return $this;
     }
 
     public function removeMembre(User $membre): static
     {
-        $this->membres->removeElement($membre);
+        // Ne pas retirer le créateur du projet
+        if ($membre !== $this->getChefproject()) {
+            $this->membres->removeElement($membre);
+        }
+        return $this;
+    }
+    /**
+     * Vérifie si un utilisateur est membre du projet
+     */
+    public function isMembre(User $user): bool
+    {
+        return $this->membres->contains($user);
+    }
+
+    /**
+     * Obtenir les chefs de projet parmi les membres
+     */
+    public function getChefsProjets(): array
+    {
+        return $this->membres->filter(function (User $user) {
+            return $user->hasRole('ROLE_CHEF_PROJET');
+        })->toArray();
+    }
+
+    /**
+     * Obtenir les employés parmi les membres
+     */
+    public function getEmployes(): array
+    {
+        return $this->membres->filter(function (User $user) {
+            return $user->hasRole('ROLE_EMPLOYE') && !$user->hasRole('ROLE_CHEF_PROJET');
+        })->toArray();
+    }
+
+    /**
+     * @return Collection<int, Tag>
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+            $tag->setProject($this);
+        }
+
         return $this;
     }
 
+    public function removeTag(Tag $tag): self
+    {
+        if ($this->tags->removeElement($tag)) {
+            // set the owning side to null (unless already changed)
+            if ($tag->getProject() === $this) {
+                $tag->setProject(null);
+            }
+        }
+
+        return $this;
+    }
     /**
      * @return Collection<int, TaskList>
      */
@@ -277,6 +365,7 @@ class Project
     {
         if (!$this->tasks->contains($task)) {
             $this->tasks->add($task);
+            $task->setProject($this);
         }
         return $this;
     }
@@ -288,6 +377,37 @@ class Project
                 $task->setProject(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Activity>
+     */
+    public function getActivities(): Collection
+    {
+        return $this->activities;
+    }
+
+    public function addActivity(Activity $activity): self
+    {
+        if (!$this->activities->contains($activity)) {
+            $this->activities->add($activity);
+            $activity->setUser($this->getChefproject());
+        }
+
+        return $this;
+    }
+
+    public function removeActivity(Activity $activity): self
+    {
+        if ($this->activities->removeElement($activity)) {
+            // set the owning side to null (unless already changed)
+            if ($activity->getAction() === $this)
+                $activity->setAction('null', null);
+            // CORRECTION: Set action to null if removing activity
+        }
+
+
         return $this;
     }
 
@@ -305,5 +425,9 @@ class Project
     {
         $this->estArchive = $estArchive;
         return $this;
+    }
+    public function getTargetUrl(): ?string
+    {
+        return $this->getTargetUrl();
     }
 }
