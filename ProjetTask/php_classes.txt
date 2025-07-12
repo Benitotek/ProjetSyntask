@@ -1,89 +1,69 @@
 ﻿
 src\Kernel.php:8:class Kernel extends BaseKernel
-src\Command\DiagnoseEnumProblemCommand.php:17:class DiagnoseEnumProblemCommand 
-extends Command
-src\Command\FixUserRolesCommand.php:19:class FixUserRolesCommand extends 
-Command
-src\Command\HashUserPasswordsCommand.php:11:class HashUserPasswordsCommand 
-extends Command
-src\Command\HashUserPasswordsCommand.php:61:// class HashUserPasswordsCommand 
-extends Command
-src\Command\HashUserPasswordsCommand.php:101:// class HashUserPasswordsCommand 
-extends Command
-src\Command\UpdateTaskCompletionDatesCommand.php:18:class 
-UpdateTaskCompletionDatesCommand extends Command
-src\Controller\ActivityController.php:11:class ActivityController extends 
-AbstractController
-src\Controller\AdminController.php:22:class AdminController extends 
-AbstractController
-src\Controller\DashboardController.php:27:class DashboardController extends 
-AbstractController
-src\Controller\HomeController.php:9:final class HomeController extends 
-AbstractController
-src\Controller\ProjectController.php:25:class ProjectController extends 
-AbstractController
-src\Controller\RegistrationController.php:23:class RegistrationController 
-extends AbstractController
-src\Controller\ReportController.php:16:class ReportController extends 
-AbstractController
-src\Controller\ResetPasswordController.php:24:class ResetPasswordController 
-extends AbstractController
-src\Controller\SecurityController.php:13:class SecurityController extends 
-AbstractController
-src\Controller\TaskController.php:28:class TaskController extends 
-AbstractController
-src\Controller\TaskListController.php:21:class TaskListController extends 
-AbstractController
-src\Controller\UserController.php:21:class UserController extends 
-AbstractController
+src\Command\DiagnoseEnumProblemCommand.php:17:class DiagnoseEnumProblemCommand extends Command
+src\Command\FixUserRolesCommand.php:19:class FixUserRolesCommand extends Command
+src\Command\HashUserPasswordsCommand.php:11:class HashUserPasswordsCommand extends Command
+src\Command\HashUserPasswordsCommand.php:61:// class HashUserPasswordsCommand extends Command
+src\Command\HashUserPasswordsCommand.php:101:// class HashUserPasswordsCommand extends Command
+src\Command\UpdateTaskCompletionDatesCommand.php:18:class UpdateTaskCompletionDatesCommand extends Command
+src\Controller\ActivityController.php:11:class ActivityController extends AbstractController
+src\Controller\AdminController.php:22:class AdminController extends AbstractController
+src\Controller\CommentController.php:21:class CommentController extends AbstractController
+src\Controller\DashboardController.php:27:class DashboardController extends AbstractController
+src\Controller\HomeController.php:9:final class HomeController extends AbstractController
+src\Controller\NotificationController.php:17:class NotificationController extends AbstractController
+src\Controller\ProjectController.php:25:class ProjectController extends AbstractController
+src\Controller\ProjectMemberController.php:17:class ProjectMemberController extends AbstractController
+src\Controller\RegistrationController.php:23:class RegistrationController extends AbstractController
+src\Controller\ReportController.php:16:class ReportController extends AbstractController
+src\Controller\ResetPasswordController.php:24:class ResetPasswordController extends AbstractController
+src\Controller\SecurityController.php:13:class SecurityController extends AbstractController
+src\Controller\TagController.php:17:class TagController extends AbstractController
+src\Controller\TaskController.php:28:class TaskController extends AbstractController
+src\Controller\TaskListController.php:21:class TaskListController extends AbstractController
+src\Controller\UserController.php:21:class UserController extends AbstractController
 src\Entity\Activity.php:13:class Activity
+src\Entity\Comment.php:15:class Comment
+src\Entity\Notification.php:11:class Notification
 src\Entity\Project.php:14:class Project
-src\Entity\ResetPasswordRequest.php:11:class ResetPasswordRequest implements 
-ResetPasswordRequestInterface
-src\Entity\Task.php:19:class Task
+src\Entity\ResetPasswordRequest.php:11:class ResetPasswordRequest implements ResetPasswordRequestInterface
+src\Entity\Tag.php:13:class Tag
+src\Entity\Task.php:22:class Task
 src\Entity\TaskList.php:14:class TaskList
-src\Entity\User.php:23:class User implements UserInterface, 
-PasswordAuthenticatedUserInterface
+src\Entity\User.php:23:class User implements UserInterface, PasswordAuthenticatedUserInterface
 src\EventListener\UserRoleSynchronizer.php:14:class UserRoleSynchronizer
-src\Form\ChangePasswordForm.php:15:class ChangePasswordForm extends 
-AbstractType
+src\Form\ChangePasswordForm.php:15:class ChangePasswordForm extends AbstractType
+src\Form\CommentTypeForm.php:15:class CommentTypeForm extends AbstractType
 src\Form\ProjectTypeForm.php:19:class ProjectTypeForm extends AbstractType
 src\Form\RegistrationForm.php:20:class RegistrationForm extends AbstractType
-src\Form\ResetPasswordRequestForm.php:11:class ResetPasswordRequestForm 
-extends AbstractType
+src\Form\ResetPasswordRequestForm.php:11:class ResetPasswordRequestForm extends AbstractType
+src\Form\TagTypeForm.php:17:class TagTypeForm extends AbstractType
 src\Form\TaskListTypeForm.php:16:class TaskListType extends AbstractType
 src\Form\TaskListTypeForm.php:57:// class TaskListTypeForm extends AbstractType
 src\Form\TaskTypeForm.php:24:class TaskType extends AbstractType
 src\Form\TaskTypeForm.php:110:// class TaskType extends AbstractType
 src\Form\UserTypeForm.php:20:class UserTypeForm extends AbstractType
-src\Repository\ActivityRepository.php:18:class ActivityRepository extends 
-ServiceEntityRepository
-src\Repository\ProjectRepository.php:18:class ProjectRepository extends 
-ServiceEntityRepository
-src\Repository\ProjectRepository.php:276:// class ProjectRepository extends 
-ServiceEntityRepository
-src\Repository\ResetPasswordRequestRepository.php:16:class 
-ResetPasswordRequestRepository extends ServiceEntityRepository implements 
+src\Repository\ActivityRepository.php:18:class ActivityRepository extends ServiceEntityRepository
+src\Repository\CommentRepository.php:11:class CommentRepository extends ServiceEntityRepository
+src\Repository\NotificationRepository.php:18:class NotificationRepository extends ServiceEntityRepository
+src\Repository\ProjectRepository.php:18:class ProjectRepository extends ServiceEntityRepository
+src\Repository\ProjectRepository.php:276:// class ProjectRepository extends ServiceEntityRepository
+src\Repository\ResetPasswordRequestRepository.php:16:class ResetPasswordRequestRepository extends ServiceEntityRepository implements 
 ResetPasswordRequestRepositoryInterface
-src\Repository\TaskListRepository.php:12:class TaskListRepository extends 
-ServiceEntityRepository
-src\Repository\TaskRepository.php:15:class TaskRepository extends 
-ServiceEntityRepository
-src\Repository\TaskRepository.php:262:// class TaskRepository extends 
-ServiceEntityRepository
-src\Repository\UserRepository.php:14:class UserRepository extends 
-ServiceEntityRepository implements PasswordUpgraderInterface
+src\Repository\TagRepository.php:14:class TagRepository extends ServiceEntityRepository
+src\Repository\TaskListRepository.php:12:class TaskListRepository extends ServiceEntityRepository
+src\Repository\TaskRepository.php:15:class TaskRepository extends ServiceEntityRepository
+src\Repository\TaskRepository.php:262:// class TaskRepository extends ServiceEntityRepository
+src\Repository\UserRepository.php:14:class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 src\Security\EmailVerifier.php:13:class EmailVerifier
-src\Security\LoginFormAuthenticator.php:19:class LoginFormAuthenticator 
-extends AbstractLoginFormAuthenticator
+src\Security\LoginFormAuthenticator.php:19:class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 src\Security\RoleConverter.php:8:class RoleConverter
-src\Security\UserProvider.php:11:class UserProvider implements 
-UserProviderInterface
-src\Security\UserProvider.php:50:        return User::class === $class || 
-is_subclass_of($class, User::class);
+src\Security\UserProvider.php:11:class UserProvider implements UserProviderInterface
+src\Security\UserProvider.php:50:        return User::class === $class || is_subclass_of($class, User::class);
 src\Security\Voter\ProjectVoter.php:20:class ProjectVoter extends Voter
 src\Security\Voter\TaskVoter.php:14:class TaskVoter extends Voter
 src\Service\ActivityLogger.php:12:class ActivityLogger
+src\Service\NotificationService.php:12:class NotificationService
 src\Twig\AppExtension.php:9:class AppExtension extends AbstractExtension
 
 
