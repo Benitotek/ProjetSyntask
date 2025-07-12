@@ -49,6 +49,28 @@ class ActivityLogger
 
         $this->entityManager->persist($activity);
         $this->entityManager->flush();
+    }    
+    /**
+     * Log an activity for a user.
+     *
+     * @param \App\Entity\User|null $user
+     * @param string $action
+     * @param string $description
+     * @param string $type
+     * @param int|string|null $entityId
+     */
+    public function logActivity($user, string $action, string $description, string $type, $entityId = null): void
+    {
+         //Implement your logging logic here, e.g., save to database or file
+         //Example:
+         $activity = new Activity();
+         $activity->setUser($user);
+         $activity->setAction($action);
+         $activity->setDescription($description);
+         $activity->setType($type);
+         $activity->setEntityId($entityId);
+         $this->entityManager->persist($activity);
+         $this->entityManager->flush();
     }
 
     /**
