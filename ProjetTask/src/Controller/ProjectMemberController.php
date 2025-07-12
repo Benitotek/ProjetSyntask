@@ -15,110 +15,91 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/project')]
 class ProjectMemberController extends AbstractController
-{
-    private EntityManagerInterface $entityManager;
-    private ActivityLogger $activityLogger;
-    private NotificationService $notificationService;
-
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        ActivityLogger $activityLogger,
-        NotificationService $notificationService
-    ) {
-        $this->entityManager = $entityManager;
-        $this->activityLogger = $activityLogger;
-        $this->notificationService = $notificationService;
+#[Route('/{projectId}/members/{userId}/remove', name: 'app_project_members_remove', methods: ['POST'])]
+#[IsGranted('ROLE_CHEF_PROJET')]
+public function removeMember(
+    int $projectId,
+    int $userId,
+    Request $request,
+    UserRepository $userRepository
+): Response {
+    $project = $this->entityManager->getRepository(Project::class)->find($projectId);
+    if (!$project) {
+        throw $this->createNotFoundException('Projet non trouvé');
     }
 
-    #[Route('/{id}/members', name: 'app_project_members')]
-    #[IsGranted('VIEW', 'project')]
-    public function members(Project $project): Response
-    {
-        // Séparer les membres par rôle
-        $chefsProjets = [];
-        $employes = [];
+    // Vérifier si l'utilisateur a le droit de modifier ce projet
+    $this->denyAccessUnlessGranted('EDIT', $project);
 
-        foreach ($project->getMembres() as $membre) {
-            if ($membre->hasRole('ROLE_CHEF_PROJET')) {
-                $chefsProjets[] = $membre;
-            } else {
-                $employes[] = $membre;
-            }
-        }
-
-        return $this->render('project/members.html.twig', [
-            'project' => $project,
-            'chefsProjets' => $chefsProjets,
-            'employes' => $employes,
-        ]);
+    // Vérifier le token CSRF
+    if (!$this->isCsrfTokenValid('remove_member' . $userId, $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token CSRF invalide.');
+        return $this->redirectToRoute('app_project_members', ['id' => $projectId]);
     }
 
-    #[Route('/{id}/members/add', name: 'app_project_members_add', methods: ['POST'])]
-    #[IsGranted('EDIT', 'project')]
-    public function addMember(Project $project, Request $request, UserRepository $userRepository): Response
-    {
-        // Vérifier le token CSRF
-        if (!$this->isCsrfTokenValid('add_member' . $project->getId(), $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
-        }
-
-        $userId = $request->request->get('user_id');
-        if (!$userId) {
-            $this->addFlash('error', 'Veuillez sélectionner un utilisateur.');
-            return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
-        }
-
-        $user = $userRepository->find($userId);
-        if (!$user) {
-            $this->addFlash('error', 'Utilisateur introuvable.');
-            return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
-        }
-
-        // Vérifier si l'utilisateur est déjà membre
-        if ($project->getMembres()->contains($user)) {
-            $this->addFlash('info', 'Cet utilisateur est déjà membre du projet.');
-            return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
-        }
-
-        // Ajouter l'utilisateur comme membre
-        $project->addMembre($user);
-        $this->entityManager->flush();
-
-        // Créer une notification pour l'utilisateur
-        $this->notificationService->createNotification(
-            $user,
-            'Ajout à un projet',
-            'Vous avez été ajouté au projet "' . $project->getTitre() . '".',
-            '/project/' . $project->getId(),
-            'info'
-        );
-
-        // Enregistrer l'activité
-        $this->activityLogger->logActivity(
-            $this->getUser(),
-            'a ajouté',
-            $user->getPrenom() . ' ' . $user->getNom() . ' au projet',
-            'project_member',
-            $project->getId()
-        );
-
-        $this->addFlash('success', $user->getPrenom() . ' ' . $user->getNom() . ' a été ajouté au projet avec succès.');
-        return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
+    $user = $userRepository->find($userId);
+    if (!$user) {
+        $this->addFlash('error', 'Utilisateur introuvable.');
+        return $this->redirectToRoute('app_project_members', ['id' => $projectId]);
     }
 
-    #[Route('/{projectId}/members/{userId}/remove', name: 'app_project_members_remove', methods: ['POST'])]
-    #[IsGranted('ROLE_CHEF_PROJET')]
-    public function removeMember(
-        int $projectId,
-        int $userId,
-        Request $request,
-        UserRepository $userRepository
-    ): Response {
-        $project = $this->entityManager->getRepository(Project::class)->find($projectId);
-        if (!$project) {
-            throw $this->createNotFoundException('Projet non trouvé');
+    // Vérifier si l'utilisateur est membre
+    if (!$project->getMembres()->contains($user)) {
+        $this->addFlash('error', 'Cet utilisateur n\'est pas membre du projet.');
+        return $this->redirectToRoute('app_project_members', ['id' => $projectId]);
+    }
+
+    // Empêcher la suppression du créateur du projet
+    if ($project->getCreatedBy() === $user) {
+        $this->addFlash('error', 'Vous ne pouvez pas retirer le créateur du projet.');
+        return $this->redirectToRoute('app_project_members', ['id' => $projectId]);
+    }
+
+    // Retirer l'utilisateur des membres
+    $project->removeMembre($user);
+
+    // Retirer également les assignations de tâches pour cet utilisateur dans ce projet
+    foreach ($project->getTasks() as $task) {
+        if ($task->getAssignedUser() === $user) {
+            $task->setAssignedUser(null);
         }
+    }
+    $this->entityManager->flush();
+
+    // Créer une notification pour l'utilisateur
+    $this->notificationService->createNotification(
+        $user,
+        'Retrait d\'un projet',
+        'Vous avez été retiré du projet "' . $project->getTitre() . '".',
+        '/project/' . $projectId,
+        'warning'
+    );
+
+    // Enregistrer l'activité
+    $this->activityLogger->logActivity(
+        $this->getUser(),
+        'a retiré',
+        $user->getPrenom() . ' ' . $user->getNom() . ' du projet',
+        'project_member',
+        $projectId
+    );
+
+    $this->addFlash('success', $user->getPrenom() . ' ' . $user->getNom() . ' a été retiré du projet avec succès.');
+    return $this->redirectToRoute('app_project_members', ['id' => $projectId]);
+}
+    $activityLogger->log(
+        ActivityType::USER_ACTION, // Utilisez le type d'activité approprié
+        'Ajout d\'un membre au projet', // Action décrivant l'activité
+        $project->getTitre(), // Cible de l'activité
+        null, // URL cible, peut être null si non nécessaire
+        $user // Utilisateur qui a effectué l'action
+    );
+
+    // Créer une notification pour l'utilisateur
+    $this->notificationService->notify($user, 'Vous avez été ajouté au projet ' . $project->getTitre());
+
+    $this->addFlash('success', 'Membre ajouté avec succès.');
+    return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
 
         // Vérifier si l'utilisateur a le droit de modifier ce projet
         $this->denyAccessUnlessGranted('EDIT', $project);
