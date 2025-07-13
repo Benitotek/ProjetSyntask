@@ -59,7 +59,7 @@ class Project
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $budget = null;
 
-    // CORRECTION : Propriété estArchive correctement mappée
+    //  Propriété estArchive correctement mappée
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $estArchive = false;
 
