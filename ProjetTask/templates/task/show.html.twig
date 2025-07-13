@@ -1,9 +1,7 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}
 	{{ task.title }}
 {% endblock %}
-
 {% block stylesheets %}
 	{{ parent() }}
 	<style>
@@ -55,168 +53,191 @@
 		}
 	</style>
 {% endblock %}
-
 {% block body %}
-<div
-	class="container">
-	<!-- Breadcrumb -->
-	<nav aria-label="breadcrumb" class="mb-4">
-		<ol class="breadcrumb">
-			<li class="breadcrumb-item">
-				<a href="{{ path('app_task_index') }}">Tâches</a>
-			</li>
-			{% if task.taskList %}
-				<li class="breadcrumb-item">
-					<a href="{{ path('app_project_kanban', {id: task.taskList.project.id}) }}">{{ task.taskList.project.name }}</a>
-				</li>
-				<li class="breadcrumb-item">
-					<a href="{{ path('app_tasklist_show', {id: task.taskList.id}) }}">{{ task.taskList.name }}</a>
-				</li>
-			{% endif %}
-			<li class="breadcrumb-item active">{{ task.title }}</li>
-		</ol>
-	</nav>
-
-	<!-- En-tête de la tâche -->
-	<div class="task-header">
-		<div class="d-flex justify-content-between align-items-start">
-			<div>
-				<h1 class="mb-2">{{ task.title }}</h1>
-				<div class="d-flex align-items-center">
-					{% if task.priority %}
-						<span class="badge task-priority-{{ task.priority }} me-3">
-							Priorité
-							{{ task.priority == 'high' ? 'Élevée' : (task.priority == 'medium' ? 'Moyenne' : 'Faible') }}
-						</span>
-					{% endif %}
-
-					{% if task.statut %}
-						<span class="badge bg-light text-dark">
-							{% if task.statut == 'todo' %}À faire
-								{% elseif task.statut == 'in_progress' %}En cours
-								{% elseif task.statut == 'review' %}En révision
-								{% elseif task.statut == 'done' %}Terminé
-							{% else %}
-								{{ task.statut }}
-							{% endif %}
-						</span>
-					{% endif %}
-				</div>
-			</div>
-
-			<!-- Actions -->
-			<div class="action-buttons">
-				{% if is_granted('TASK_EDIT', task) %}
-					<a href="{{ path('app_task_edit', {id: task.id}) }}" class="btn btn-light">
-						<i class="fas fa-edit"></i>
-						Modifier
+	<div	class="container">
+		<!-- Breadcrumb -->
+		<nav	aria-label="breadcrumb"	class="mb-4">
+			<ol	class="breadcrumb">
+				<li	class="breadcrumb-item">
+					<a	href="{{ path('app_task_index') }}">
+						Tâches
 					</a>
+				</li>
+				{% if task.taskList %}
+					<li	class="breadcrumb-item">
+						<a	href="{{ path('app_project_kanban', {id: task.taskList.project.id}) }}">
+							{{ task.taskList.project.titre }}
+						</a>
+					</li>
+					<li	class="breadcrumb-item">
+						<a	href="{{ path('app_tasklist_show', {id: task.taskList.id}) }}">
+							{{ task.taskList.nom }}
+						</a>
+					</li>
 				{% endif %}
-
-				{% if is_granted('TASK_DELETE', task) %}
-					<button class="btn btn-outline-light" onclick="deleteTask()">
-						<i class="fas fa-trash"></i>
-						Supprimer
-					</button>
-				{% endif %}
-			</div>
-		</div>
-	</div>
-
-	<div
-		class="row">
-		<!-- Contenu principal -->
-		<div
-			class="col-md-8">
-			<!-- Description -->
-			{% if task.description %}
-				<div class="card info-card mb-4">
-					<div class="card-header">
-						<h5 class="mb-0">
-							<i class="fas fa-align-left"></i>
-							Description</h5>
-					</div>
-					<div class="card-body">
-						<div class="task-description">
-							{{ task.description|nl2br }}
-						</div>
+				<li	class="breadcrumb-item active">
+					{{ task.title }}
+				</li>
+			</ol>
+		</nav>
+		<!-- En-tête de la tâche -->
+		<div	class="task-header">
+			<div	class="d-flex justify-content-between align-items-start">
+				<div>
+					<h1	class="mb-2">
+						{{ task.title }}
+					</h1>
+					<div	class="d-flex align-items-center">
+						{% if task.priorite.value %}
+							<span	class="badge task-priority-{{ task.priorite.value }} me-3">
+								Priorité
+								{{ task.priorite.value == 'high' ? 'Élevée' : (task.priorite.value == 'medium' ? 'Moyenne' : 'Faible') }}
+							</span>
+						{% endif %}
+						{% if task.statut %}
+							<span	class="badge bg-light text-dark">
+								{% if task.statut == 'todo' %}
+									À faire
+								{% elseif task.statut == 'in_progress' %}
+									En cours
+								{% elseif task.statut == 'review' %}
+									En révision
+								{% elseif task.statut == 'done' %}
+									Terminé
+								{% else %}
+									{{ task.statut }}
+								{% endif %}
+							</span>
+						{% endif %}
 					</div>
 				</div>
-			{% endif %}
-
-			<!-- Commentaires (placeholder) -->
-			<div class="card info-card">
-				<div class="card-header">
-					<h5 class="mb-0">
-						<i class="fas fa-comments"></i>
-						Commentaires</h5>
-				</div>
-				<div class="card-body">
-					<div class="text-center text-muted py-4">
-						<i class="fas fa-comment-slash fa-2x mb-2"></i>
-						<p>Aucun commentaire pour le moment.</p>
-						<button class="btn btn-outline-primary btn-sm">
-							<i class="fas fa-plus"></i>
-							Ajouter un commentaire
+				<!-- Actions -->
+				<div	class="action-buttons">
+					{% if is_granted('TASK_EDIT', task) %}
+						<a	href="{{ path('app_task_edit', {id: task.id}) }}"	class="btn btn-light">
+							<i	class="fas fa-edit"></i>
+							Modifier
+						</a>
+					{% endif %}
+					{% if is_granted('TASK_DELETE', task) %}
+						<button	class="btn btn-outline-light"	onclick="deleteTask()">
+							<i	class="fas fa-trash"></i>
+							Supprimer
 						</button>
-					</div>
+					{% endif %}
 				</div>
 			</div>
 		</div>
-
-		<!-- Sidebar -->
-		<div
-			class="col-md-4">
-			<!-- Informations générales -->
-			<div class="card info-card mb-4">
-				<div class="card-header">
-					<h5 class="mb-0">
-						<i class="fas fa-info-circle"></i>
-						Informations</h5>
-				</div>
-				{# Section d'assignation d'utilisateur dans templates/task/show.html.twig #}
-				{% if is_granted('TASK_ASSIGN', task) %}
-					<div class="card mt-3">
-						<div class="card-header">
-							<h5 class="mb-0">Assigner à un utilisateur</h5>
+		<div	class="row">
+			<!-- Contenu principal -->
+			<div	class="col-md-8">
+				<!-- Description -->
+				{% if task.description %}
+					<div	class="card info-card mb-4">
+						<div	class="card-header">
+							<h5	class="mb-0">
+								<i	class="fas fa-align-left"></i>
+								Description
+							</h5>
 						</div>
-						<div class="card-body">
-							<form action="{{ path('app_task_assign_user', {'id': task.id}) }}" method="post">
-								<div class="mb-3">
-									<label for="user_id" class="form-label">Sélectionner un utilisateur</label>
-									<select name="user_id" id="user_id" class="form-select" required>
-										<option value="">-- Sélectionner un utilisateur --</option>
-										{% for user in available_users %}
-											<option value="{{ user.id }}" {% if task.assignedUser and task.assignedUser.id == user.id %} selected {% endif %}>
-												{{ user.fullName }}
-												({{ user.email }})
-											</option>
-										{% endfor %}
-									</select>
-								</div>
-								<button type="submit" class="btn btn-primary">Assigner</button>
-							</form>
+						<div	class="card-body">
+							<div	class="task-description">
+								{{ task.description|nl2br }}
+							</div>
 						</div>
 					</div>
 				{% endif %}
-				{# <div class="card-body">
-				                    <div class="row mb-3">
-				                        <div class="col-12">
-				                            <div class="info-label">Assigné à</div>
-				                            <div class="info-value">
-				                                {% if task.assignedUser %}
-				                                    <i class="fas fa-user"></i> {{ task.assignedUser.email }}
-				                                {% else %}
-				                                    <span class="text-muted">Non assigné</span>
-				                                {% endif %}
-				                            </div>
-				                        </div>
-				                    </div> #}
-
-				<div class="row mb-3">
-					<div class="col-12">
-						<div class="info-label">Date d'échéance</div>
-						<div class="info-value">
-							{% if task.dueDate %}
-								<i class="fas fa-calendar"></i>
-								<span
+				<!-- Commentaires (placeholder) -->
+				<div	class="card info-card">
+					<div	class="card-header">
+						<h5	class="mb-0">
+							<i	class="fas fa-comments"></i>
+							Commentaires
+						</h5>
+					</div>
+					<div	class="card-body">
+						<div	class="text-center text-muted py-4">
+							<i	class="fas fa-comment-slash fa-2x mb-2"></i>
+							<p>
+								Aucun commentaire pour le moment.
+							</p>
+							<button	class="btn btn-outline-primary btn-sm">
+								<i	class="fas fa-plus"></i>
+								Ajouter un commentaire
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Sidebar -->
+			<div	class="col-md-4">
+				<!-- Informations générales -->
+				<div	class="card info-card mb-4">
+					<div	class="card-header">
+						<h5	class="mb-0">
+							<i	class="fas fa-info-circle"></i>
+							Informations
+						</h5>
+					</div>
+					{% if is_granted('TASK_ASSIGN', task) %}
+						<div	class="card mt-3">
+							<div	class="card-header">
+								<h5	class="mb-0">
+									Assigner à un utilisateur
+								</h5>
+							</div>
+							<div	class="card-body">
+								<form	action="{{ path('app_task_assign_user', {'id': task.id}) }}"	method="post">
+									<div	class="mb-3">
+										<label	for="user_id"	class="form-label">
+											Sélectionner un utilisateur
+										</label>
+										<select	name="user_id"	id="user_id"	class="form-select"	required>
+											<option	value="">
+												-- Sélectionner un utilisateur --
+											</option>
+											{% for user in available_users %}
+												<option	value="{{ user.id }}"	{% if task.assignedUser and task.assignedUser.id == user.id %}	selected	{% endif %}>
+													{{ user.fullName }}
+													(
+													{{ user.email }}
+													)
+												</option>
+											{% endfor %}
+										</select>
+									</div>
+									<button	type="submit"	class="btn btn-primary">
+										Assigner
+									</button>
+								</form>
+							</div>
+						</div>
+					{% endif %}
+					<div	class="row mb-3 mt-3 px-3">
+						<div	class="col-12">
+							<div	class="info-label">
+								Date d'échéance
+							</div>
+							<div	class="info-value">
+								{% if task.dueDate %}
+									<i	class="fas fa-calendar"></i>
+									<span>
+										{{ task.dueDate|date('d/m/Y') }}
+									</span>
+								{% else %}
+									<span	class="text-muted">
+										Non définie
+									</span>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+				</div>
+			<!-- fin card info -->
+			</div>
+		<!-- fin col-md-4 -->
+		</div>
+	<!-- fin row -->
+	</div>
+<!-- fin container -->
+{% endblock %}

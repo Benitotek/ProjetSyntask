@@ -30,21 +30,37 @@ class CommentController extends AbstractController
         $this->entityManager = $entityManager;
         $this->activityLogger = $activityLogger;
     }
+#[Route('/task/{id}/comments', name: 'app_task_comments')]
+#[IsGranted('ROLE_EMPLOYE')]
+public function index(
+    Task $task,
+    CommentRepository $commentRepository,
+    Request $request,
+    EntityManagerInterface $em
+): Response {
+    $this->denyAccessUnlessGranted('VIEW', $task);
 
-    #[Route('/task/{id}/comments', name: 'app_task_comments')]
-    #[IsGranted('ROLE_EMPLOYE')]
-    public function index(Task $task, CommentRepository $commentRepository): Response
-    {
-        $this->denyAccessUnlessGranted('VIEW', $task);
+    $comments = $commentRepository->findByTask($task);
 
-        $comments = $commentRepository->findByTask($task);
+    $comment = new Comment();
+    $comment->setTask($task); // lie le commentaire à la tâche
+    $form = $this->createForm(CommentTypeForm::class, $comment);
+    $form->handleRequest($request);
 
-        return $this->render('task/comments.html.twig', [
-            'task' => $task,
-            'comments' => $comments,
-        ]);
+    if ($form->isSubmitted() && $form->isValid()) {
+        $comment->setAuteur($this->getUser()); // si tu as une relation avec User
+        $em->persist($comment);
+        $em->flush();
+
+        return $this->redirectToRoute('app_task_comments', ['id' => $task->getId()]);
     }
 
+    return $this->render('task/comments.html.twig', [
+        'task' => $task,
+        'comments' => $comments,
+        'commentForm' => $form->createView(),
+    ]);
+}
     #[Route('/task/{id}/comment/add', name: 'app_task_comment_add', methods: ['POST'])]
     #[IsGranted('ROLE_EMPLOYE')]
     public function add(Task $task, Request $request): Response

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Enum;
 
 enum TaskPriority: string
@@ -14,4 +15,5 @@ enum TaskPriority: string
             self::EN_ATTENTE => 'En attente',
         };
     }
+
 }

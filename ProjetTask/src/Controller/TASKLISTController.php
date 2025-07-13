@@ -114,6 +114,16 @@ class TaskListController extends AbstractController
         return false;
     }
     /**
+     * Affiche les détails d'une colonne
+     */
+    #[Route('/tasklists/{id}', name: 'app_tasklist_show', methods: ['GET'])]
+    public function show(TaskList $taskList): Response
+    {
+        return $this->render('task_list/show.html.twig', [
+            'taskList' => $taskList,
+        ]);
+    }
+    /**
      * Affiche le formulaire pour créer une nouvelle colonne
      */
     #[Route('/project/{projectId}/tasklist/new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
