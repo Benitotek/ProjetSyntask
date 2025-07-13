@@ -18,6 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use App\Repository\TaskListRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
 
@@ -77,30 +78,159 @@ class TaskType extends AbstractType
                 'placeholder' => 'Choisir un utilisateur',
                 'choices' => $this->getProjectMembers($project),
             ]);
-    }
-
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'data_class' => Task::class,
-        ]);
-
-        $resolver->setRequired('project');
-        $resolver->setAllowedTypes('project', Project::class);
-    }
-
-    private function getProjectMembers(Project $project): array
-    {
-        $members = $project->getMembres()->toArray();
-        $chefproject = $project->getChefproject();
-
-        if ($chefproject && !in_array($chefproject, $members, true)) {
-            $members[] = $chefproject;
+          // Ajout du champ TaskList seulement s'il y a des listes disponibles
+        if ($project && $project->getTaskLists()->count() > 0) {
+            $builder->add('taskList', EntityType::class, [
+                'class' => TaskList::class,
+                'choices' => $project->getTaskLists(),
+                'choice_label' => 'titre',
+                'label' => 'Liste',
+                'placeholder' => 'Choisir une liste...',
+                'required' => true,
+                'attr' => ['class' => 'form-select']
+            ]);
         }
 
-        return $members;
+        $builder
+            ->add('dateButoir', DateType::class, [
+                'label' => 'Date limite',
+                'required' => false,
+                'widget' => 'single_text',
+                'html5' => true,
+                'attr' => [
+                    'class' => 'form-control'
+                ]
+            ])
+            ->add('priority', TextType::class, [
+                'label' => 'Priorité',
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-select priority-select'
+                ],
+                'empty_data' => 'MOYENNE'
+            ]);
+        
+            // Gestion du statut selon les droits
+            if ($options['edit_mode'] && $this->isGranted('ROLE_CHEF_PROJET')) {
+                $builder->add('status', TextType::class, [
+                    'label' => 'Statut',
+                    'required' => true,
+                    'attr' => [
+                        'class' => 'form-select status-select'
+                    ]
+                ]);
+            }
+        // Ajout du champ Tags
+        if ($project && $project->getTags()->count() > 0) {
+            $builder->add('tags', ChoiceType::class, [
+                'label' => 'Tags',
+                'choices' => $project->getTags()->toArray(),
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
+                'choice_label' => function ($tag) {
+                    return $tag->getNom();
+                },
+                'expanded' => true,
+                'multiple' => true,
+            ]);
+        } elseif ($project) {
+            // Si le projet a des tags, on utilise EntityType pour les afficher
+            $builder->add('tags', EntityType::class, [
+                'class' => Tag::class,
+                'choice_label' => 'nom',
+                'query_builder' => function (EntityRepository $er) use ($project) {
+                    return $er->createQueryBuilder('t')
+                        ->where('t.project = :project')
+                        ->setParameter('project', $project)
+                        ->orderBy('t.nom', 'ASC');
+                },
+                'label' => 'Tags',
+                'required' => false,
+                'multiple' => true,
+                'expanded' => false,
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
+            ]);
+            // Si le projet n'a pas de tags, on utilise ChoiceType pour les afficher
+        } else {
+            $builder->add('tags', ChoiceType::class, [
+                'label' => 'Tags',
+                'choices' => [],
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
+                'expanded' => true,
+                'multiple' => true,
+            ]);
+            // Si le projet n'a pas de membres, on utilise ChoiceType pour les afficher
+            $builder->add('assignedUser', ChoiceType::class, [
+                'label' => 'Assigné à',
+                'choices' => [],
+                'attr' => [
+                    'class' => 'form-select',
+                ],
+                'placeholder' => 'Choisir un utilisateur',
+            ]);
+            // Si le projet n'a pas de listes, on utilise ChoiceType pour les afficher
+            $builder->add('taskList', ChoiceType::class, [
+                'label' => 'Liste',
+                'choices' => [],
+                'attr' => [
+                    'class' => 'form-select',
+                ],
+                'placeholder' => 'Choisir une liste...',
+            ]);
+            // Si le projet n'a pas de tags et de listes, on utilise ChoiceType pour les afficher
+            $builder->add('tags', ChoiceType::class, [
+                'label' => 'Tags',
+                'choices' => [],
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
+                'expanded' => true,
+                'multiple' => true,
+            ]);
+        }
     }
-}
+
+    // /**
+    //  * Récupère les membres du projet pour les afficher dans le champ d'assignation.
+    //  *
+    //  * @param Project $project
+    //  * @return User[]
+    //  */
+    // {
+    //     $members = $project->getMembres();
+    //     $users = [];
+
+    //     foreach ($members as $member) {
+    //         if ($member instanceof User) {
+    //             $users[] = $member;
+    //         }
+    //     }
+
+    //     return $users;
+    // }
+    // /**
+    //  * Configure les options du formulaire.
+    //  *
+    //  * @param OptionsResolver $resolver
+    //  */
+
+//     public function configureOptions(OptionsResolver $resolver): void
+//     {
+//         $resolver->setDefaults([
+//             'data_class' => Task::class,
+//             'project' => null,
+//             'edit_mode' => false, // Indique si le formulaire est en mode édition
+//         ]);
+//     }
+// }
+// }
+
+
 
 /**
  * TaskTypeForm is a form type for creating and editing Task entities.
@@ -205,3 +335,4 @@ class TaskType extends AbstractType
 //         ]);
 //     }
 // }
+}

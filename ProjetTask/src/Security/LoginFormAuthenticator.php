@@ -51,11 +51,11 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         // Redirection en fonction du rôle
         $user = $token->getUser();
 
-        if (in_array('ROLE_ADMIN', $user->getrole())) {
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return new RedirectResponse($this->urlGenerator->generate('app_admin_dashboard'));
-        } elseif (in_array('ROLE_DIRECTEUR', $user->getrole())) {
+        } elseif (in_array('ROLE_DIRECTEUR', $user->getRoles())) {
             return new RedirectResponse($this->urlGenerator->generate('app_directeur_dashboard'));
-        } elseif (in_array('ROLE_CHEF_project', $user->getrole())) {
+        } elseif (in_array('ROLE_CHEF_project', $user->getRoles())) {
             return new RedirectResponse($this->urlGenerator->generate('app_chef_project_dashboard'));
         } else {
             return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));

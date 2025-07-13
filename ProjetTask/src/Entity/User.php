@@ -394,4 +394,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    /**
+     * Retourne les initiales de l'utilisateur
+     */
+    public function getInitials(): string
+    {
+        return mb_substr($this->prenom, 0, 1) . mb_substr($this->nom, 0, 1);
+    }
+
+    /**
+     * Retourne les tâches non terminées assignées à l'utilisateur
+     */
+    public function getOpenTasks(): array
+    {
+        return $this->tachesAssignees->filter(function (Task $task) {
+            return $task->getStatut() !== 'terminée' && !$task->isOverdue();
+        })->toArray();
+    }
+
+    /**
+     * Retourne les tâches en retard assignées à l'utilisateur
+     */
+    public function getOverdueTasks(): array
+    {
+        return $this->tachesAssignees->filter(function (Task $task) {
+            return $task->isOverdue();
+        })->toArray();
+    }
+
+    /**
+     * Vérifie si l'utilisateur est membre d'un projet spécifique
+     */
+    public function isProjectMember(Project $project): bool
+    {
+        // Si l'utilisateur est le créateur du projet
+        if ($project->getChefproject() === $this) {
+            return true;
+        }
+
+        // Si l'utilisateur est dans la liste des membres
+        if ($project->getMembres()->contains($this)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est assigné à une tâche spécifique
+     */
+    public function isTaskAssignee(Task $task): bool
+    {
+        return $task->getAssignedUser() === $this;
+    }
+
+    /**
+     * Vérifie si l'utilisateur a le rôle de chef de projet pour un projet spécifique
+     * Vérifie si l'utilisateur est chef de projet (rôle) ET membre du projet
+     */
+    public function isChefProjetOf(Project $project): bool
+    {
+        return $this->hasRole('ROLE_CHEF_PROJET') && $project->getMembres()->contains($this);
+    }
 }

@@ -28,13 +28,13 @@ class Task
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    /**
-     * @Symfony\Component\Validator\Constraints\NotBlank(message="Le titre est requis")
-     * @Symfony\Component\Validator\Constraints\Length(
-     *      max=100,
-     *      maxMessage="Le titre ne peut pas dépasser 100 caractères"
-     * )
-     */
+   #[Assert\NotBlank(message: "Le titre de la tâche est obligatoire")]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: "Le titre doit comporter au moins {{ limit }} caractères",
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -440,7 +440,100 @@ class Task
     {
         return $this->parent !== null;
     }
-
+/**
+     * Vérifie si la tâche est en retard
+     */
+    public function TaskisOverdue(): bool
+    {
+        return $this->dateButoir !== null 
+            && $this->dateButoir < new \DateTime() 
+            && $this->statut !== 'TERMINE';
+    }
+    
+    /**
+     * Vérifie si la tâche arrive à échéance bientôt (dans les 2 jours)
+     */
+    public function isComingSoon(): bool
+    {
+        if ($this->dateButoir === null || $this->statut === 'TERMINE') {
+            return false;
+        }
+        
+        $today = new \DateTime();
+        $diff = $today->diff($this->dateButoir);
+        
+        return $diff->days <= 2 && $diff->invert === 0; // invert = 0 signifie que dateLimite est dans le futur
+    }
+    
+    /**
+     * Vérifie si un utilisateur spécifique est membre de ce projet
+     */
+    public function isMembre(User $user): bool
+    {
+        // Vérifier si l'utilisateur est l'assigné ou le créateur
+        if ($this->assignedUser === $user || $this->createdBy === $user) {
+            return true;
+        }
+        
+        // Vérifier si l'utilisateur est un membre du projet
+        return $this->project->isMembre($user);
+    }
+    
+    /**
+     * Retourne le label de priorité pour l'affichage
+     */
+    public function getPriorityLabel(): string
+    {
+        return match($this->priorite) {
+            'URGENT' => 'Urgente',
+            'HAUTE' => 'Haute',
+            'BASSE' => 'Basse',
+            default => 'Moyenne', // MOYENNE ou autre
+        };
+    }
+    
+    /**
+     * Retourne le label de statut pour l'affichage
+     */
+    public function getStatusLabel(): string
+    {
+        return match($this->statut) {
+            'A_FAIRE' => 'À faire',
+            'EN_COURS' => 'En cours',
+            'EN_REVUE' => 'En revue',
+            'BLOQUEE' => 'Bloquée',
+            'COMPLETEE' => 'Complétée',
+            default => $this->statut->label(), // Pour les autres cas, on utilise le label de l'énumération
+        };
+    }
+    
+    /**
+     * Retourne la classe de couleur correspondant au statut
+     */
+    public function getStatusColor(): string
+    {
+        return match($this->statut) {
+            'A_FAIRE' => 'secondary',
+            'EN_COURS' => 'primary',
+            'EN_REVUE' => 'warning',
+            'BLOQUEE' => 'danger',
+            'COMPLETEE' => 'success',
+            default => 'light',
+        };
+    }
+    
+    /**
+     * Retourne la classe de couleur correspondant à la priorité
+     */
+    public function getPriorityColor(): string
+    {
+        return match($this->priorite) {
+            'URGENT' => 'danger',
+            'HAUTE' => 'warning',
+            'BASSE' => 'info',
+            default => 'secondary', // MOYENNE ou autre
+        };
+    }
     /**
      * Calcule le nombre de commentaires non lus
      */

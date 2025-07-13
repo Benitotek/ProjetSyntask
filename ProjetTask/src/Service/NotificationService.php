@@ -6,38 +6,46 @@ use App\Entity\Notification;
 use App\Entity\User;
 use App\Entity\Task;
 use App\Entity\Project;
+use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
-
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class NotificationService
 {
     private EntityManagerInterface $entityManager;
-    
-    public function __construct(EntityManagerInterface $entityManager)
-    {
+    private UrlGeneratorInterface $urlGenerator;
+    private NotificationRepository $notificationRepository;
+
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        UrlGeneratorInterface $urlGenerator,
+        NotificationRepository $notificationRepository
+    ) {
         $this->entityManager = $entityManager;
+        $this->urlGenerator = $urlGenerator;
+        $this->notificationRepository = $notificationRepository;
     }
     
     /**
      * Crée une notification pour un utilisateur
      */
-    public function createNotification(
-        ?User $user,
+     public function createNotification(
+        User $user,
         string $titre,
-        string $message = null,
-        string $lien = null,
+        ?string $message = null,
+        ?string $lien = null,
         string $type = 'info'
     ): Notification {
         $notification = new Notification();
-        $notification->setUser($user)
-            ->setTitre($titre)
-            ->setMessage($message)
-            ->setLien($lien)
-            ->setType($type);
-            
+        $notification
+                    ->setTitre($titre)
+                    ->setMessage($message)
+                    ->setLien($lien)
+                    ->setType($type);
+
         $this->entityManager->persist($notification);
         $this->entityManager->flush();
-        
+
         return $notification;
     }
     /**
@@ -160,5 +168,15 @@ class NotificationService
         }
         
         $this->entityManager->flush();
+    }
+    /**
+     * Supprimer les anciennes notifications
+     */
+    public function cleanOldNotifications(int $daysToKeep = 30): int
+    {
+        $date = new \DateTime();
+        $date->modify('-' . $daysToKeep . ' days');
+        
+        return $this->notificationRepository->deleteOldReadNotifications($date);
     }
 }

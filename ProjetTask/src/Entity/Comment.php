@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Comment
 {
     #[ORM\Id]
@@ -24,7 +25,7 @@ class Comment
     #[Assert\NotBlank(message: "Le contenu du commentaire est obligatoire")]
     private ?string $contenu = null;
 
-      #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -76,9 +77,9 @@ class Comment
         return $this->dateMaj;
     }
 
-    public function setdateMaj(?\DateTimeInterface $dateModification): static
+    public function setdateMaj(?\DateTimeInterface $dateMaj): static
     {
-        $this->dateMaj = $dateModification;
+        $this->dateMaj = $dateMaj;
         return $this;
     }
 

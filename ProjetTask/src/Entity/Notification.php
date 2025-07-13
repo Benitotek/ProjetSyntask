@@ -27,16 +27,16 @@ class Notification
     #[ORM\Column]
     private ?bool $estLue = false;
 
-     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
-    
+
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'notifications')]
     #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id", nullable: false)]
     private ?User $user = null;
-    
+
     #[ORM\Column(length: 30)]
     private ?string $type = 'info'; // info, success, warning, error
-    
+
     public function __construct()
     {
         $this->dateCreation = new \DateTime();
@@ -126,11 +126,17 @@ class Notification
 
     public function setType(string $type): static
     {
+        $validTypes = ['info', 'success', 'warning', 'danger'];
+
+        if (!in_array($type, $validTypes)) {
+            $type = 'info'; // Type par défaut
+        }
+
         $this->type = $type;
 
         return $this;
     }
-     /**
+    /**
      * Marque la notification comme lue
      */
     public function markAsRead(): static
@@ -138,17 +144,17 @@ class Notification
         $this->estLue = true;
         return $this;
     }
-    
+
     /**
      * Génère l'icône CSS appropriée en fonction du type
      */
     public function getIconClass(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'success' => 'fa-check-circle',
             'warning' => 'fa-exclamation-triangle',
             'error' => 'fa-times-circle',
-            default => 'fa-info-circle'
+            default => 'fa-info-circle'// info ou autre
         };
     }
 }

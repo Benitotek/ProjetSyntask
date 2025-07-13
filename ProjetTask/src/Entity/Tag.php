@@ -38,6 +38,7 @@ class Tag
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
+        $this->couleur = '#' . substr(md5(rand()), 0, 6); // Couleur aléatoire par défaut
     }
 
     public function getId(): ?int
@@ -120,5 +121,12 @@ class Tag
         $textColor = $luminance > 0.5 ? '#000000' : '#FFFFFF';
 
         return "background-color: {$this->couleur}; color: {$textColor};";
+    }
+    /**
+     * Indique si le tag est global (non associé à un projet spécifique)
+     */
+    public function isGlobal(): bool
+    {
+        return $this->project === null;
     }
 }
