@@ -328,6 +328,13 @@ a:hover {
   border-bottom-right-radius: 8px;
 }
 
+.card-actions {
+  padding: 15px 20px;
+  border-top: 1px solid var(--border-color);
+  background-color: #fff;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
 /* Carte de statistiques */
 .stats-card {
   display: flex;
