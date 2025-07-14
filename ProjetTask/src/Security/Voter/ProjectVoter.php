@@ -9,7 +9,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-// Version3 debut 10/07/2025// Version3.1  10/07/2025 AVOIR BUG ROLES SI OK OU A REAIRE
+// Version3 debut 10/07/2025 Big Bug//  Version3.2 14/07/2025 
 
 /**
  * ProjectVoter
@@ -30,20 +30,26 @@ class ProjectVoter extends Voter
     {
         $this->security = $security;
     }
-
-    protected function supports(string $attribute, $subject): bool
+    protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [
-            self::VIEW,
-            self::EDIT,
-            self::DELETE,
-            self::MANAGE_MEMBERS
-        ]) && $subject instanceof Project;
+        // Si l'attribut n'est pas un de ceux qu'on gère, on ne vote pas
+        if (!in_array($attribute, [self::VIEW, self::EDIT, self::DELETE])) {
+            return false;
+        }
+
+        // On ne vote que pour les objets Project
+        if (!$subject instanceof Project) {
+            return false;
+        }
+
+        return true;
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
+
+        // L'utilisateur doit être connecté
 
         if (!$user instanceof User) {
             return false;
@@ -88,6 +94,30 @@ class ProjectVoter extends Voter
 
         return false;
     }
+    //  // Vérifier si l'utilisateur est le créateur du projet
+    //     $isCreator = $project->getCreatedBy()->getId() === $user->getId();
+
+    //     // Vérifier si l'utilisateur est chef de projet ET membre du projet
+    //     $isChefProjet = $this->security->isGranted('ROLE_CHEF_PROJET') && $project->isMembre($user);
+
+    //     // Vérifier si l'utilisateur est simplement membre du projet
+    //     $isMembre = $project->isMembre($user);
+
+    //     switch ($attribute) {
+    //         case self::VIEW:
+    //             // Tous les membres du projet peuvent voir le projet
+    //             return $isMembre;
+
+    //         case self::EDIT:
+    //             // Seuls le créateur et les chefs de projet membres peuvent modifier
+    //             return $isCreator || $isChefProjet;
+
+    //         case self::DELETE:
+    //             // Seuls le créateur et les directeurs peuvent supprimer
+    //             return $isCreator || $this->security->isGranted('ROLE_DIRECTEUR');
+    //     }
+
+    //     return false;
 
     private function canEdit(Project $project, User $user): bool
     {
@@ -107,4 +137,3 @@ class ProjectVoter extends Voter
         return $project->getChefProject() && $project->getChefProject()->getId() === $user->getId();
     }
 }
-
