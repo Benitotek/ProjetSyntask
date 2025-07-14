@@ -90,6 +90,7 @@ security:
     access_control:
         # Administration (mettre ces règles en premier)
         - { path: ^/admin, role: ROLE_ADMIN }
+        - { path: ^/signup, roles: PUBLIC_ACCESS }
 
         # Routes des projets
         - { path: ^/project, role: ROLE_EMPLOYE }
