@@ -116,6 +116,8 @@ class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Définir le créateur du projet
+            $project->setCreatedBy($this->getUser());
             // Créer les colonnes par défaut
             $this->createDefaultTaskLists($project, $entityManager);
 
@@ -293,7 +295,7 @@ class ProjectController extends AbstractController
         }
 
         // Vérifier que l'utilisateur a le rôle CHEF_project
-        if (!in_array('ROLE_CHEF_PROJET', $user->getrole())) {
+        if (!in_array('ROLE_CHEF_PROJET', $user->getRoles())) {
             $this->addFlash('error', 'L\'utilisateur doit avoir le rôle CHEF_PROJET pour être assigné comme chef de project');
             return $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
         }

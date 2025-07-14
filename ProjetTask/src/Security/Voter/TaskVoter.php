@@ -13,10 +13,11 @@ use App\Entity\User;
  */
 class TaskVoter extends Voter
 {
-    public const VIEW = 'VIEW';
-    public const EDIT = 'EDIT';
-    public const DELETE = 'TASK_DELETE';
-    public const ASSIGN = 'TASK_ASSIGN';
+    const VIEW = 'VIEW';
+    const EDIT = 'EDIT';
+    const DELETE = 'TASK_DELETE';
+    const ASSIGN = 'TASK_ASSIGN';
+    const CHANGE_STATUS = 'CHANGE_STATUS';
 
     /**
      * Détermine si ce voter supporte l'attribut et le sujet donnés
@@ -24,7 +25,7 @@ class TaskVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         // Si ce n'est pas un des attributs qu'on gère, retourner false
-        if (!in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::ASSIGN])) {
+        if (!in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::ASSIGN, self::CHANGE_STATUS])) {
             return false;
         }
 
@@ -50,17 +51,19 @@ class TaskVoter extends Voter
 
         /** @var Task $task */
         $task = $subject;
+        $project = $task->getProject();
 
         // Les administrateurs et directeurs ont tous les droits
         $roles = method_exists($user, 'getRoles') ? $user->getRoles() : (array) $user->getRole();
         if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
             return true;
         }
-        return match($attribute) {
+        return match ($attribute) {
             self::VIEW => $this->canView($task, $user),
             self::EDIT => $this->canEdit($task, $user),
             self::DELETE => $this->canDelete($task, $user),
             self::ASSIGN => $this->canAssign($task, $user),
+            self::CHANGE_STATUS => $this->canChangeStatus($task, $user),
             default => false,
         };
     }
@@ -144,6 +147,7 @@ class TaskVoter extends Voter
             self::EDIT,
             self::DELETE,
             self::ASSIGN,
+            self::CHANGE_STATUS
         ];
     }
     /**
@@ -160,12 +164,93 @@ class TaskVoter extends Voter
      */
     public static function getRequiredRoles(): array
     {
-            return [
-                self::VIEW => ['ROLE_USER'],
-                self::EDIT => ['ROLE_USER'],
-                self::DELETE => ['ROLE_USER'],
-                self::ASSIGN => ['ROLE_USER'],
-            ];
+        return [
+            self::VIEW => ['ROLE_USER'],
+            self::EDIT => ['ROLE_USER'],
+            self::DELETE => ['ROLE_USER'],
+            self::ASSIGN => ['ROLE_USER'],
+            self::CHANGE_STATUS => ['ROLE_USER'],
+        ];
+    }
+
+    private function canChangeStatus(Task $task, User $user): bool
+
+
+    {
+        // L'utilisateur peut changer le statut de la tâche s'il en est le crianateur ou chef du project
+        if ($task->getCreatedBy() === $user) {
+            return true;
         }
-    }    
-                  
+        if ($task->getProject() && $task->getProject()->getChefproject() === $user) {
+            return true;
+        }
+        // Récupérer le projet de la tâche
+        $subject = $task->getProject();
+        /** @var Project $project */
+        $project = $subject;
+
+
+
+        if (!$user instanceof User) {
+            return false;
+        }
+
+
+        // Vérifier si l'utilisateur est le créateur du projet
+        $isProjectCreator = $project->getCreatedBy() === $user;
+
+        // Vérifier si l'utilisateur est chef du projet
+        $isChefProjet = $project->getChefproject() === $user;
+
+        // Vérifier si l'utilisateur est le créateur de la tâche
+        $isTaskCreator = $task->getCreatedBy() === $user;
+
+        // Vérifier si l'utilisateur est assigné à cette tâche
+        $isAssignee = $task->getAssignedUser() === $user;
+
+        // Vérifier si l'utilisateur est membre du projet
+        $isProjectMember = $project->isMembre($user);
+
+        // Retourner le résultat selon l'attribut
+        // On utilise un switch pour éviter les conditions multiples
+        // Les attributs gérés par ce voter sont VIEW, EDIT, DELETE, ASSIGN et CHANGE_STATUS
+        // Les rôles requis pour chaque attribut sont décrits dans getRequiredRoles()
+        // L'attribut CHANGE_STATUS est spécifique à notre application et n'est pas géré par ce voter directement
+        // Cependant, on peut utiliser le switch pour éviter les conditions multiples et rendre le code plus concis et lisible
+        // return match($attribute) {
+        //     self::VIEW => $isProjectMember,
+        //     self::EDIT => $isProjectCreator || $isChefProjet || $isTaskCreator || $isAssignee,
+        //     self::DELETE => $isProjectCreator || $isChefProjet || $isTaskCreator,
+        //     self::CHANGE_STATUS => $isProjectCreator || $isChefProjet || $isTaskCreator || $isAssignee,
+        //     self::ASSIGN => $isProjectCreator || $isChefProjet,
+        //     default => false,
+        // };
+
+        //     switch ($attribute) {
+
+        //         case self::VIEW:
+        //             // Tous les membres du projet peuvent voir la tâche
+        //             return $isProjectMember;
+
+        //         case self::EDIT:
+        //             // Peuvent modifier: créateur du projet, chefs de projet, créateur de la tâche, assigné
+        //             return $isProjectCreator || $isChefProjet || $isTaskCreator || $isAssignee;
+
+        //         case self::DELETE:
+        //             // Peuvent supprimer: créateur du projet, chefs de projet, créateur de la tâche
+        //             return $isProjectCreator || $isChefProjet || $isTaskCreator;
+
+        //         case self::CHANGE_STATUS:
+        //             // Peuvent changer le statut: créateur du projet, chefs de projet, créateur de la tâche, assigné
+        //             return $isProjectCreator || $isChefProjet || $isTaskCreator || $isAssignee;
+
+        //         case self::ASSIGN:
+        //             // Peuvent assigner: créateur du projet, chefs de projet
+        //             return $isProjectCreator || $isChefProjet;
+        //     }
+
+        return false;
+        // }
+
+    }
+}

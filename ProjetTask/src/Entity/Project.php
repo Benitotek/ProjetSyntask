@@ -68,6 +68,10 @@ class Project
     #[ORM\JoinColumn(name: "chef_project_id", referencedColumnName: "id", nullable: true)]
     private ?User $chefproject = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $createdBy = null;
+
     // Membres : ManyToMany
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projectsAssignes')]
     #[ORM\JoinTable(name: "project_members")]
@@ -219,6 +223,15 @@ class Project
         return $this;
     }
 
+    public function getCreatedBy():?User
+    {
+        return $this->createdBy;
+    }
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+        return $this;
+    }
     /**
      * @return Collection<int, User>
      */
