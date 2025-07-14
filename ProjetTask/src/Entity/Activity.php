@@ -36,9 +36,24 @@ class Activity
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="activities")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $project;
+
     public function __construct()
     {
         $this->dateCreation = new \DateTime();
+    }
+    public function getProject(): ?Project
+    {
+        return $this->project;
+    }
+    public function setProject(?Project $project): self
+    {
+        $this->project = $project;
+        return $this;
     }
     public function getFunctions(): array
     {
@@ -101,7 +116,11 @@ class Activity
         $this->action = $action;
         return $this;
     }
-
+    public function setDescription(string $description): static
+    {
+        $this->action = $description;
+        return $this;
+    }
     public function getTarget(): ?string
     {
         return $this->target;
