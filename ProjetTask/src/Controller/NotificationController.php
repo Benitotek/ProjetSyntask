@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/notifications')]
-#[IsGranted('ROLE_EMPLOYE')]
+
 class NotificationController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
@@ -27,7 +27,8 @@ class NotificationController extends AbstractController
         $this->notificationService = $notificationService;
     }
 
-    #[Route('', name: 'app_notifications')]
+    #[Route('/', name: 'app_notifications')]
+    #[IsGranted('ROLE_EMPLOYE')]
     public function index(NotificationRepository $notificationRepository): Response
     {
         $user = $this->getUser();
@@ -51,21 +52,27 @@ class NotificationController extends AbstractController
 
         // Vérifier le token CSRF
         if (!$this->isCsrfTokenValid('mark_read' . $notification->getId(), $request->request->get('_token'))) {
-            return $this->json(['success' => false, 'message' => 'Token CSRF invalide'], 400);
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_notifications');
         }
 
         $notification->setEstLue(true);
         $this->entityManager->flush();
 
+        $this->addFlash('success', 'Notification marquée comme lue.');
+
         // Si la requête est en AJAX
         if ($request->isXmlHttpRequest()) {
             return $this->json(['success' => true]);
         }
-
-        return $this->redirectToRoute('app_notifications');
+        // Rediriger vers la page précédente ou vers la liste des notifications
+        $referer = $request->headers->get('referer');
+        return $referer ? $this->redirect($referer) : $this->redirectToRoute('app_notifications');
     }
 
     #[Route('/mark-all-read', name: 'app_notifications_mark_all_read', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+
     public function markAllAsRead(Request $request): Response
     {
         // Vérifier le token CSRF
@@ -85,6 +92,7 @@ class NotificationController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'app_notification_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function delete(Notification $notification, Request $request): Response
     {
         // Vérifier que la notification appartient à l'utilisateur connecté
@@ -142,6 +150,29 @@ class NotificationController extends AbstractController
 
         return $this->json([
             'count' => $count
+        ]);
+    }
+    #[Route('/api/recent', name: 'api_notifications_recent')]
+    #[IsGranted('ROLE_USER')]
+    public function getRecent(NotificationRepository $notificationRepository): Response
+    {
+        $notifications = $notificationRepository->findRecentByUser($this->getUser(), 5);
+
+        $formattedNotifications = array_map(function ($notification) {
+            return [
+                'id' => $notification->getId(),
+                'titre' => $notification->getTitre(),
+                'message' => $notification->getMessage(),
+                'lien' => $notification->getLien(),
+                'dateCreation' => $notification->getDateCreation()->format('d/m/Y H:i'),
+                'estLue' => $notification->isEstLue(),
+                'type' => $notification->getType(),
+                'iconClass' => $notification->getIconClass()
+            ];
+        }, $notifications);
+
+        return $this->json([
+            'notifications' => $formattedNotifications
         ]);
     }
 }

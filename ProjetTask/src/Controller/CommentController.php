@@ -18,17 +18,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+use App\Service\NotificationService;
 class CommentController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private ActivityLogger $activityLogger;
+    private NotificationService $notificationService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        ActivityLogger $activityLogger
+        ActivityLogger $activityLogger,
+        NotificationService $notificationService
     ) {
         $this->entityManager = $entityManager;
         $this->activityLogger = $activityLogger;
+        $this->notificationService = $notificationService;
     }
 #[Route('/task/{id}/comments', name: 'app_task_comments')]
 #[IsGranted('ROLE_EMPLOYE')]
@@ -79,20 +83,14 @@ public function index(
             $this->entityManager->flush();
 
             // Enregistrer l'activité
-            // $this->activityLogger->logActivity(
-            // $this->getUser(),
-            // 'a commenté la tâche',
-            // $task->getTitle(),
-            // 'task_comment',
-            // $task->getId()
-            // );
-            $this->activityLogger->log(
-                ActivityType::COMMENT_CREATE,
-                'a commenté la tâche',
-                $task->getTitle(),
-                "/task/{$task->getId()}",
-                $this->getUser()
+            $this->activityLogger->logActivity(
+            $this->getUser(),
+            'a commenté la tâche',
+            $task->getTitle(),
+            'task_comment',
+            $task->getId()
             );
+           
             $this->addFlash('success', 'Commentaire ajouté avec succès.');
 
             // Si la requête est en AJAX, retourner le commentaire en JSON
