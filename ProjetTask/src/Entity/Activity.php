@@ -36,11 +36,13 @@ class Activity
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
 
+
     /**
      * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="activities")
-     * @ORM\JoinColumn(nullable=false)
      */
+
     private $project;
+
 
     public function __construct()
     {
@@ -182,5 +184,9 @@ class Activity
 
             default => null,
         };
+    }
+    public function getDescription(): ?string
+    {
+        return $this->action;
     }
 }

@@ -31,7 +31,7 @@ class Tag
     #[ORM\ManyToMany(targetEntity: Task::class, mappedBy: 'tags')]
     private Collection $tasks;
 
-    #[ORM\ManyToOne(targetEntity: Project::class)]
+    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'tags')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Project $project = null;
 

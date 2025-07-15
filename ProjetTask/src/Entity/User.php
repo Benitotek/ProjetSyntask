@@ -86,6 +86,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "assignedUser", targetEntity: Task::class)]
     private Collection $tachesAssignees;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Notification::class, mappedBy="user")
+     */
+    private $notifications;
 
     /**
      * @var Collection<int, Activity>
@@ -96,6 +100,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
 
+        $this->resetPasswordRequests = new ArrayCollection();
+        $this->notifications = new \Doctrine\Common\Collections\ArrayCollection();
         $this->projectsGeres = new ArrayCollection();
         $this->projectsAssignes = new ArrayCollection();
         $this->tachesAssignees = new ArrayCollection();
@@ -455,5 +461,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isChefProjetOf(Project $project): bool
     {
         return $this->hasRole('ROLE_CHEF_PROJET') && $project->getMembres()->contains($this);
+    }
+    public function __toString(): string
+    {
+        return $this->nom . ' ' . $this->prenom;
+    }
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+    public function addNotification(Notification $notification): self
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications->add($notification);
+            // $notification->setUser($this) 
+            // ;
+        }
+        return $this;
+    }
+    public function removeNotification(Notification $notification): self
+    {
+        if ($this->notifications->removeElement($notification)) {
+            // set the owning side to null (unless already changed)
+            if ($notification->getUser() === $this) {
+                $notification->setUser(null);
+            }
+        }
+        return $this;
+    }
+    public function setNotification(?Notification $notification): static
+    {
+        $this->notifications = $notification;
+        return $this;
     }
 }
