@@ -28,7 +28,7 @@ class Task
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-   #[Assert\NotBlank(message: "Le titre de la tâche est obligatoire")]
+    #[Assert\NotBlank(message: "Le titre de la tâche est obligatoire")]
     #[Assert\Length(
         min: 3,
         max: 255,
@@ -39,6 +39,7 @@ class Task
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
+
     #[Assert\Choice(callback: [TaskStatut::class, 'cases'])]
     #[ORM\Column(enumType: TaskStatut::class)]
     private ?TaskStatut $statut = TaskStatut::EN_ATTENTE;
@@ -112,9 +113,7 @@ class Task
     //  -à suivre la date de complétion de la tâche
     //  -faire les vérifications pour le dashboardindex de base au niveau des TeamMember
 
-    /**
-     * @ORM\Column(type="DATETIME_MUTABLE", nullable=true)
-     */
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCompletion = null;
 
@@ -144,10 +143,6 @@ class Task
         // Une tâche est en retard si sa date butoir est dépassée et qu'elle n'est pas terminée
         return $this->dateButoir < new \DateTime() && $this->statut !== TaskStatut::TERMINE;
     }
-
-
-    // #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tachesAssignees')]
-    // private ?User $assignedUser = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "tachesAssignees")]
     #[ORM\JoinColumn(name: "assigned_user_id", referencedColumnName: "id", nullable: true)]
@@ -440,16 +435,16 @@ class Task
     {
         return $this->parent !== null;
     }
-/**
+    /**
      * Vérifie si la tâche est en retard
      */
     public function TaskisOverdue(): bool
     {
-        return $this->dateButoir !== null 
-            && $this->dateButoir < new \DateTime() 
+        return $this->dateButoir !== null
+            && $this->dateButoir < new \DateTime()
             && $this->statut !== 'TERMINE';
     }
-    
+
     /**
      * Vérifie si la tâche arrive à échéance bientôt (dans les 2 jours)
      */
@@ -458,13 +453,13 @@ class Task
         if ($this->dateButoir === null || $this->statut === 'TERMINE') {
             return false;
         }
-        
+
         $today = new \DateTime();
         $diff = $today->diff($this->dateButoir);
-        
+
         return $diff->days <= 2 && $diff->invert === 0; // invert = 0 signifie que dateLimite est dans le futur
     }
-    
+
     /**
      * Vérifie si un utilisateur spécifique est membre de ce projet
      */
@@ -474,30 +469,30 @@ class Task
         if ($this->assignedUser === $user || $this->createdBy === $user) {
             return true;
         }
-        
+
         // Vérifier si l'utilisateur est un membre du projet
         return $this->project->isMembre($user);
     }
-    
+
     /**
      * Retourne le label de priorité pour l'affichage
      */
     public function getPriorityLabel(): string
     {
-        return match($this->priorite) {
+        return match ($this->priorite) {
             'URGENT' => 'Urgente',
             'HAUTE' => 'Haute',
             'BASSE' => 'Basse',
             default => 'Moyenne', // MOYENNE ou autre
         };
     }
-    
+
     /**
      * Retourne le label de statut pour l'affichage
      */
     public function getStatusLabel(): string
     {
-        return match($this->statut) {
+        return match ($this->statut) {
             'A_FAIRE' => 'À faire',
             'EN_COURS' => 'En cours',
             'EN_REVUE' => 'En revue',
@@ -506,13 +501,13 @@ class Task
             default => $this->statut->label(), // Pour les autres cas, on utilise le label de l'énumération
         };
     }
-    
+
     /**
      * Retourne la classe de couleur correspondant au statut
      */
     public function getStatusColor(): string
     {
-        return match($this->statut) {
+        return match ($this->statut) {
             'A_FAIRE' => 'secondary',
             'EN_COURS' => 'primary',
             'EN_REVUE' => 'warning',
@@ -521,33 +516,17 @@ class Task
             default => 'light',
         };
     }
-    
+
     /**
      * Retourne la classe de couleur correspondant à la priorité
      */
     public function getPriorityColor(): string
     {
-        return match($this->priorite) {
+        return match ($this->priorite) {
             'URGENT' => 'danger',
             'HAUTE' => 'warning',
             'BASSE' => 'info',
             default => 'secondary', // MOYENNE ou autre
         };
     }
-    /**
-     * Calcule le nombre de commentaires non lus
-     */
-
-    // public function getUnreadCommentsCount(User $user): int
-    // {
-    //     $count = 0;
-    //     foreach ($this->comments as $comment) {
-    //         if ($comment->getAuteur() !== $user && !$comment->isEstLue()) { {
-    //                 $count++;
-    //             }
-
-    //             return $count;
-    //         }
-    //     }
-    // }
 }
