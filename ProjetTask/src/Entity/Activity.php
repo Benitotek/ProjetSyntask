@@ -37,11 +37,8 @@ class Activity
     private ?\DateTimeInterface $dateCreation = null;
 
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="activities")
-     */
-
-    private $project;
+    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: "activities")]
+    private ?Project $project = null;
 
 
     public function __construct()

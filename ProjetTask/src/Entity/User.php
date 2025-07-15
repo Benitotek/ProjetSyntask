@@ -86,10 +86,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "assignedUser", targetEntity: Task::class)]
     private Collection $tachesAssignees;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Notification::class, mappedBy="user")
-     */
-    private $notifications;
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Notification::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    private Collection $notifications;
 
     /**
      * @var Collection<int, Activity>
@@ -487,11 +485,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $notification->setUser(null);
             }
         }
-        return $this;
-    }
-    public function setNotification(?Notification $notification): static
-    {
-        $this->notifications = $notification;
         return $this;
     }
 }

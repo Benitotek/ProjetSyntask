@@ -107,12 +107,12 @@ class Notification
         return $this;
     }
 
-    public function getUser(): ?self
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUser(?self $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
 
@@ -154,7 +154,7 @@ class Notification
             'success' => 'fa-check-circle',
             'warning' => 'fa-exclamation-triangle',
             'error' => 'fa-times-circle',
-            default => 'fa-info-circle'// info ou autre
+            default => 'fa-info-circle' // info ou autre
         };
     }
 }
