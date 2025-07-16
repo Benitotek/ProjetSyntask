@@ -14,6 +14,9 @@ enum ActivityType: string
     case TASK_DELETE = 'task_delete';
     case TASK_STATUS_CHANGE = 'task_status_change';
     case TASK_ASSIGN = 'task_assign';
+    case TASK_COMMENT = 'task_comment'; // ← ajoute cette ligne
+    // ... autres cas
+
 
     case USER_LOGIN = 'user_login';
     case USER_REGISTER = 'user_register';
@@ -34,6 +37,8 @@ enum ActivityType: string
             self::TASK_DELETE => 'Suppression de tâche',
             self::TASK_STATUS_CHANGE => 'Changement de statut de tâche',
             self::TASK_ASSIGN => 'Attribution de tâche',
+            self::TASK_COMMENT => 'Commentaire sur la tâche', // �� ajoute cette ligne
+
 
             self::USER_LOGIN => 'Connexion utilisateur',
             self::USER_REGISTER => 'Inscription utilisateur',
