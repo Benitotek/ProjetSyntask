@@ -34,6 +34,7 @@ class CommentController extends AbstractController
         $this->activityLogger = $activityLogger;
         $this->notificationService = $notificationService;
     }
+    // Route pour afficher les commentaires d'une tâche
 #[Route('/task/{id}/comments', name: 'app_task_comments')]
 #[IsGranted('ROLE_EMPLOYE')]
 public function index(
@@ -65,6 +66,7 @@ public function index(
         'commentForm' => $form->createView(),
     ]);
 }
+// Route pour ajouter un commentaire à une tâche
     #[Route('/task/{id}/comment/add', name: 'app_task_comment_add', methods: ['POST'])]
     #[IsGranted('ROLE_EMPLOYE')]
     public function add(Task $task, Request $request): Response
@@ -120,6 +122,7 @@ public function index(
         return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
     }
 
+    // Route pour modifier un commentaire
     #[Route('/comment/{id}/edit', name: 'app_comment_edit', methods: ['POST'])]
     #[IsGranted('ROLE_EMPLOYE')]
     public function edit(Comment $comment, Request $request): Response
@@ -164,6 +167,7 @@ public function index(
         return $this->redirectToRoute('app_task_show', ['id' => $comment->getTask()->getId()]);
     }
 
+    // Route pour supprimer un commentaire
     #[Route('/comment/{id}/delete', name: 'app_comment_delete', methods: ['POST'])]
     #[IsGranted('ROLE_EMPLOYE')]
     public function delete(Comment $comment, Request $request): Response

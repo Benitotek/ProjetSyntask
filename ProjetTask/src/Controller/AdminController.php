@@ -74,6 +74,7 @@ class AdminController extends AbstractController
         ]);
     }
 
+    // Route pour ajouter un utilisateur
     #[Route('/admin/user/add', name: 'app_admin_user_add', methods: ['GET', 'POST'])]
     public function addUser(Request $request): Response
     {
@@ -86,7 +87,7 @@ class AdminController extends AbstractController
 
         return $this->render('admin/add_user.html.twig');
     }
-
+   // Route pour modifier un utilisateur
     #[Route('/admin/logout', name: 'app_admin_logout')]
     public function logout(): Response
     {

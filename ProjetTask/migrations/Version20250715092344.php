@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250715083438 extends AbstractMigration
+final class Version20250715092344 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,13 +21,10 @@ final class Version20250715083438 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE activity ADD project_id INT DEFAULT NULL
+            ALTER TABLE project ADD CONSTRAINT FK_2FB3D0EEB03A8386 FOREIGN KEY (created_by_id) REFERENCES user (id)
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE activity ADD CONSTRAINT FK_AC74095A166D1F9C FOREIGN KEY (project_id) REFERENCES project (id)
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE INDEX IDX_AC74095A166D1F9C ON activity (project_id)
+            CREATE INDEX IDX_2FB3D0EEB03A8386 ON project (created_by_id)
         SQL);
     }
 
@@ -35,13 +32,10 @@ final class Version20250715083438 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE activity DROP FOREIGN KEY FK_AC74095A166D1F9C
+            ALTER TABLE project DROP FOREIGN KEY FK_2FB3D0EEB03A8386
         SQL);
         $this->addSql(<<<'SQL'
-            DROP INDEX IDX_AC74095A166D1F9C ON activity
-        SQL);
-        $this->addSql(<<<'SQL'
-            ALTER TABLE activity DROP project_id
+            DROP INDEX IDX_2FB3D0EEB03A8386 ON project
         SQL);
     }
 }

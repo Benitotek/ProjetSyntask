@@ -77,9 +77,9 @@
 												{{ comment.auteur.nom }}</div>
 											<div class="comment-date">
 												{{ comment.dateCreation|date('d/m/Y à H:i') }}
-												{% if comment.dateModification %}
+												{% if comment.dateMaj %}
 													<span class="text-muted">(Modifié le
-														{{ comment.dateModification|date('d/m/Y à H:i') }})</span>
+														{{ comment.dateMaj|date('d/m/Y à H:i') }})</span>
 												{% endif %}
 											</div>
 										</div>

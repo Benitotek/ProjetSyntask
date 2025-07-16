@@ -56,7 +56,47 @@ a:hover {
   display: flex;
   flex: 1;
 }
+.notification-wrapper {
+    /* Bootstrap gère déjà le positionnement avec position-fixed, top-0, end-0 */
+    /* Gardez seulement le z-index si nécessaire */
+    z-index: 1050 !important;
+}
 
+/* Style du bouton cloche */
+.notification-wrapper .btn {
+    background-color: #fff;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    padding: 8px 10px;
+    border-radius: 50%;
+    position: relative;
+}
+
+/* Icône de cloche */
+.notification-wrapper .btn i.fas.fa-bell {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+/* Badge de compteur - Bootstrap gère déjà le positionnement */
+#notification-count {
+    font-size: 0.7rem;
+    /* Bootstrap gère déjà le positionnement avec ses classes */
+}
+
+/* Optionnel: personnaliser le dropdown */
+.notification-wrapper .dropdown-menu {
+    min-width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .notification-wrapper {
+        padding: 1rem !important;
+    }
+}
 .main-content {
   flex: 1;
   padding: 20px;
