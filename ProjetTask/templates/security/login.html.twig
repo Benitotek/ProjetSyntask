@@ -55,14 +55,13 @@
 									<input type="email" value="{{ last_username|default('') }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
 								</div>
 
-								<div class="mb-3">
-	<label for="inputPassword" class="form-label">Mot de passe</label>
-	<input type="password" name="mdp" id="inputPassword" class="form-control" autocomplete="current-password" required>
+	<div class="mb-3">
+    <label for="inputPassword" class="form-label">Mot de passe</label>
+    <input type="password" name="mdp" id="inputPassword" class="form-control" autocomplete="current-password" required>
 </div>
 
-{# Lien mot de passe oublié #}
-<div class="forgot-password">
-	<a href="{{ path('app_forgot_password_request') }}">Mot de passe oublié ?</a>
+<div class="mb-3 text-end">
+    <a href="{{ path('app_forgot_password_request') }}" class="btn btn-link p-0">Mot de passe oublié ?</a>
 </div>
 
 								<input type="hidden" name="_token" value="{{ csrf_token('authenticate') }}">

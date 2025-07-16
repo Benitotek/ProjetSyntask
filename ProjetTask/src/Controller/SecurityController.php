@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -9,6 +10,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Mailer\MailerInterface;
 
 class SecurityController extends AbstractController
 {
@@ -79,6 +81,7 @@ class SecurityController extends AbstractController
         // pas mettre d'exeption ici, Symfony gère la déconnexion
         // throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
+    // Page d'enregistrement
     #[Route(path: '/register', name: 'app_register')]
     public function register(): Response
     {
@@ -87,12 +90,25 @@ class SecurityController extends AbstractController
         $this->addFlash('success', 'Inscription réussie ! Veuillez vous connecter.');
         return $this->redirectToRoute('app_login');
     }
+    // Réinitialisation du mot de passe
     #[Route(path: '/forgot-password', name: 'app_forgot_password_request')]
-    public function forgotPassword(): Response
+    public function forgotPassword(Request $request, UserRepository $userRepository, MailerInterface $mailer): Response
     {
-        // Logique de réinitialisation du mot de passe
-        // Pour l'exemple, on redirige vers la page de connexion
-        $this->addFlash('info', 'Un email de réinitialisation a été envoyé si l\'email existe.');
-        return $this->redirectToRoute('app_login');
+        if ($request->isMethod('POST')) {
+            $email = $request->request->get('email');
+            $user = $userRepository->findOneBy(['email' => $email]);
+
+            if ($user) {
+                // Envoie l'e-mail ici avec un lien contenant un token
+                // Exemple fictif — à implémenter correctement avec un générateur de token et un système sécurisé
+                // $resetToken = ...;
+                // $mailer->send(...);
+            }
+
+            $this->addFlash('info', 'Un email de réinitialisation a été envoyé si l\'email existe.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('security/forgot_password.html.twig');
     }
 }
