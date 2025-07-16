@@ -198,7 +198,7 @@ class TaskController extends AbstractController
     /**
      * Afficher les détails d'une tâche
      */
-    #[Route('/{id}', name: 'app_task_show', methods: ['GET'])]
+  #[Route('/task/{id}', name: 'app_task_show', methods: ['GET'])]
     public function show(Task $task): Response
     {
         $project = $task->getProject();
@@ -264,7 +264,7 @@ class TaskController extends AbstractController
     /**
      * Suppression d'une tâche
      */
-    #[Route('/{id}', name: 'app_task_delete', methods: ['POST'])]
+   #[Route('/task/{id}/delete', name: 'app_task_delete', methods: ['POST'])]
     public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
         $project = $task->getProject();

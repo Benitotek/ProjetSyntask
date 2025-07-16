@@ -1,0 +1,24 @@
+{# templates/activity/all.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Activités récentes{% endblock %}
+
+{% block body %}
+    <h1>Activités récentes</h1>
+
+    {% if activities is empty %}
+        <p>Aucune activité à afficher.</p>
+    {% else %}
+        <ul>
+            {% for activity in activities %}
+                <li>
+                    [{{ activity.dateCreation|date('Y-m-d H:i') }}]
+                    {{ activity.user.email ?? 'Utilisateur inconnu' }}
+                    {{ activity.action }} :
+                    {{ activity.target }}
+                   <a href="{{ path('app_task_show', { id: activity.targetUrl|split('/')|last }) }}">Voir</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
