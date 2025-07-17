@@ -83,27 +83,27 @@ class ApiDashboardController extends AbstractController
     }
 
     #[Route('/assigned-tasks', name: 'api_dashboard_assigned_tasks', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function assignedTasks(
-        TaskRepository $taskRepository
-    ): JsonResponse {
-        // Exemple : récupère les tâches assignées à l’utilisateur actuel  
-        $assignedTasks = $taskRepository->findAssignedToUser($this->getUser());
-
-        $data = [];
-        foreach ($assignedTasks as $task) {
-            $data[] = [
+    public function assignedTasks(TaskRepository $taskRepository): JsonResponse
+    {
+        $tasks = $taskRepository->findAssignedToUser($this->getUser());
+        $results = [];
+        foreach ($tasks as $task) {
+            $results[] = [
                 'id' => $task->getId(),
                 'title' => $task->getTitle(),
-                'project' => $task->getProject()?->getName(),
-                'dueDate' => $task->getDueDate()?->format('Y-m-d'),
-                'status' => $task->getStatus(),
+                'description' => $task->getDescription(),
+                'assignedUser' => [
+                    'prenom' => $task->getAssignedUser()?->getPrenom(),
+                    'nom' => $task->getAssignedUser()?->getNom()
+                ],
+                'dueDate' => $task->getDateButoir()?->format('Y-m-d'),
+                'status' => $task->getStatut()?->value,
+                'priority' => [
+                    'value' => $task->getPriorite()?->value,
+                    'label' => $task->getPriorite()?->label
+                ]
             ];
         }
-
-        return $this->json([
-            'success' => true,
-            'assigned_tasks' => $data,
-        ]);
+        return $this->json(['success' => true, 'assigned_tasks' => $results]);
     }
 }
