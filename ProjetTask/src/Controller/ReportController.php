@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ReportController extends AbstractController
 {
     #[Route('/reports/team', name: 'app_report_team')]
-    #[IsGranted('ROLE_CHEF_project')]
+    #[IsGranted('ROLE_CHEF_PROJECT')]
     public function teamReport(
         Request $request,
         UserRepository $userRepository,
