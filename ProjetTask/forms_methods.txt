@@ -8,9 +8,9 @@ src\Form\ProjectTypeForm.php:21:    public function buildForm(FormBuilderInterfa
 src\Form\ProjectTypeForm.php:69:                'query_builder' => function (UserRepository $repo) {
 src\Form\ProjectTypeForm.php:84:                'query_builder' => function (UserRepository $repo) {
 src\Form\ProjectTypeForm.php:97:    public function configureOptions(OptionsResolver $resolver): void
-src\Form\RegistrationForm.php:22:    public function buildForm(FormBuilderInterface $builder, array $options): void
-src\Form\RegistrationForm.php:74:    public function configureOptions(OptionsResolver $resolver): void
-src\Form\RegistrationForm.php:111://     public function configureOptions(OptionsResolver $resolver): void
+src\Form\RegistrationFormType.php:20:    public function buildForm(FormBuilderInterface $builder, array $options): void
+src\Form\RegistrationFormType.php:72:    public function configureOptions(OptionsResolver $resolver): void
+src\Form\RegistrationFormType.php:109://     public function configureOptions(OptionsResolver $resolver): void
 src\Form\ResetPasswordRequestForm.php:13:    public function buildForm(FormBuilderInterface $builder, array $options): void
 src\Form\ResetPasswordRequestForm.php:27:    public function configureOptions(OptionsResolver $resolver): void
 src\Form\TagTypeForm.php:19:    public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -21,14 +21,15 @@ src\Form\TaskListTypeForm.php:59://      public function buildForm(FormBuilderIn
 src\Form\TaskListTypeForm.php:72://     public function configureOptions(OptionsResolver $resolver): void
 src\Form\TaskListTypeForm.php:79:    // public function buildForm(FormBuilderInterface $builder, array $options): void
 src\Form\TaskListTypeForm.php:92:    // public function configureOptions(OptionsResolver $resolver): void
-src\Form\TaskTypeForm.php:26:    public function buildForm(FormBuilderInterface $builder, array $options): void
-src\Form\TaskTypeForm.php:74:                'choice_label' => function (User $user) {
-src\Form\TaskTypeForm.php:82:    public function configureOptions(OptionsResolver $resolver): void
-src\Form\TaskTypeForm.php:92:    private function getProjectMembers(Project $project): array
-src\Form\TaskTypeForm.php:112://     public function buildForm(FormBuilderInterface $builder, array $options): void
-src\Form\TaskTypeForm.php:159://                 'query_builder' => function (TaskListRepository $repo) use ($options) {
-src\Form\TaskTypeForm.php:178://                 'query_builder' => function (UserRepository $repo) use ($options) {
-src\Form\TaskTypeForm.php:199://     public function configureOptions(OptionsResolver $resolver): void
+src\Form\TaskTypeForm.php:27:    public function buildForm(FormBuilderInterface $builder, array $options): void
+src\Form\TaskTypeForm.php:75:                'choice_label' => function (User $user) {
+src\Form\TaskTypeForm.php:131:                'choice_label' => function ($tag) {
+src\Form\TaskTypeForm.php:142:                'query_builder' => function (EntityRepository $er) use ($project) {
+src\Form\TaskTypeForm.php:222://     public function configureOptions(OptionsResolver $resolver): void
+src\Form\TaskTypeForm.php:242://     public function buildForm(FormBuilderInterface $builder, array $options): void
+src\Form\TaskTypeForm.php:289://                 'query_builder' => function (TaskListRepository $repo) use ($options) {
+src\Form\TaskTypeForm.php:308://                 'query_builder' => function (UserRepository $repo) use ($options) {
+src\Form\TaskTypeForm.php:329://     public function configureOptions(OptionsResolver $resolver): void
 src\Form\UserTypeForm.php:22:    public function buildForm(FormBuilderInterface $builder, array $options): void
 src\Form\UserTypeForm.php:124:    private function getStatutChoices(): array
 src\Form\UserTypeForm.php:133:    public function configureOptions(OptionsResolver $resolver): void
