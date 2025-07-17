@@ -204,6 +204,22 @@
 								</div>
 							</div>
 						</div>
+						{# VRAI BLOCK DYNAMIQUE AVEC JS #}
+						{# exemple de block qui faudrais pour passer en version dynamique seulement gerer par les fichier JS #}
+						
+						<div id="assigned-tasks">
+    {# <div class="text-center py-4">
+        <i class="fas fa-spinner fa-spin"></i>
+        Chargement…
+    </div>
+</div> #}
+
+{# FIN DU BLOCK DYNAMIQUE JS (ATTENTION)( -pensser a supprimer toute boucles;
+-coordonner le JS+controlleur API+twig
+(repository doit avoir les meme thermes que controlleurs faites attentions a ceci aussi)
+- Ce petit block equivaut a tout le block du dessous anciennement ligne 207 a 265
+maintenant ligne 220 a 268) #}
+
 						<div	class="row">
 							<div	class="col-lg-4 mb-4">
 								<div	class="card h-100">
@@ -256,11 +272,11 @@
 													{% endfor %}
 												{% else %}
 													<div	class="text-center py-4">
-														<i	class="fas fa-check-square fa-2x text-muted mb-2"></i>
+														<i	class="fas fa-check-square fa-2x text-muted mb-2"></i> #}
 														<p	class="text-muted">
 															Aucune tâche assignée
 														</p>
-													</div>
+													</div> 
 												{% endif %}
 											</div>
 										</div>
