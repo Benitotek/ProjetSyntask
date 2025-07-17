@@ -38,7 +38,7 @@ class ApiDashboardController extends AbstractController
         ActivityRepository $activityRepository
     ): JsonResponse {
         // Récupère les 5 dernières activités  
-        $activities = $activityRepository->findBy([], ['createdAt' => 'DESC'], 5);
+        $activities = $activityRepository->findBy([], ['dateCreation' => 'DESC'], 5);
 
         // Structure l’exemple de données  
         $data = [];

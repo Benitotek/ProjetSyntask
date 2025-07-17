@@ -239,8 +239,29 @@ class TaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-}
 
+    
+      // Récupère les tâches à rendre dans les 7 jours pour un utilisateur
+     
+     public function findUpcomingDueDatesForUser(User $user): array
+    {
+      return $this->createQueryBuilder('t')
+    ->where('t.dateButoir > :now')
+    ->setParameter('now', new \DateTime())
+    ->orderBy('t.dateButoir', 'ASC')
+    ->getQuery()
+    ->getResult();
+    }
+ // Récupère les tâches assignées à un utilisateur
+     public function findAssignedToUser(User $user): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.assignedUser = :user')   // suppose que vous avez une propriété assignée
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
+}
 
 // namespace App\Repository;
 

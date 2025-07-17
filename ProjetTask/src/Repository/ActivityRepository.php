@@ -21,7 +21,14 @@ class ActivityRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Activity::class);
     }
-
+    public function getStats()
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a.type, COUNT(a.id) as count')
+            ->groupBy('a.type')
+            ->getQuery()
+            ->getResult();
+    }
     /**
      * Récupère les activités récentes
      */
