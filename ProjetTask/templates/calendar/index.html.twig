@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier | SYNTASK
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet'>
+	<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/calendar.css') }}">
+{% endblock %}
+{% block javascripts %}
+	{{ parent() }}
+
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+	 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/fr.js'></script>
+	 <script> document.addEventListener('DOMContentLoaded', function() { const calendarEl = document.getElementById('calendar'); const projectFilter = document.getElementById('project-filter'); let currentSource = 'user';
+	// Initialiser le calendrier
+	const calendar = new FullCalendar.Calendar(calendarEl, {
+	initialView: 'dayGridMonth',
+	headerToolbar: {
+	left: 'prev,next today',
+	center: 'title',
+	right: 'dayGridMonth,timeGridWeek,listMonth'
+	},
+	locale: 'fr',
+	themeSystem: 'bootstrap5',
+	events: '{{ path('app_calendar_user_tasks') }}',
+	eventTimeFormat: {
+	hour: '2-digit',
+	minute: '2-digit',
+	hour12: false
+	},
+	eventClick: function(info) {
+	if (info.event.url) {
+	window.location.href = info.event.url;
+	info.jsEvent.preventDefault();
+	}
+	},
+	eventDidMount: function(info) {
+	// Ajouter un tooltip avec les détails de la tâche
+	const event = info.event;
+	const props = event.extendedProps;
+	let tooltipContent = <strong>${event.title}</strong><br> <strong>Statut:</strong> ${props.statusLabel}<br> <strong>Priorité:</strong> ${props.priorityLabel}<br> ;
+	
+	if (props.projectTitle) {
+	tooltipContent += <strong>Projet:</strong> ${props.projectTitle}<br>;
+	}
+	
+	if (props.assignee) {
+	tooltipContent += <strong>Assigné à:</strong> ${props.assignee.fullName}<br>;
+	}
+	
+	if (event.description) {
+	tooltipContent += <strong>Description:</strong> ${event.description};
+	}
+	
+	new bootstrap.Tooltip(info.el, {
+	title: tooltipContent,
+	placement: 'top',
+	trigger: 'hover',
+	html: true,
+	customClass: 'task-tooltip'
+	});
+	}
+	});
+	
+	calendar.render();
+	
+	// Gérer le changement de filtre de projet
+	if (projectFilter) {
+	projectFilter.addEventListener('change', function() {
+	const projectId = this.value;
+	
+	if (projectId === '') {
+	// Afficher toutes les tâches de l'utilisateur
+	calendar.removeAllEventSources();
+	calendar.addEventSource('{{ path('app_calendar_user_tasks') }}');
+	currentSource = 'user';
+	} else {
+	// Afficher les tâches du projet sélectionné
+	calendar.removeAllEventSources();
+	calendar.addEventSource(/calendar/project/${projectId}/tasks);
+	currentSource = project-${projectId};
+	}
+	});
+	}
+	
+	// Bouton pour exporter le calendrier
+	document.getElementById('export-calendar').addEventListener('click', function() {
+	exportCalendar();
+	});
+	
+	// Exporter le calendrier en PDF
+	function exportCalendar() {
+	alert('Fonctionnalité d'export en développement');
+	// Ici vous pourriez implémenter une fonction qui exporte en PDF ou qui déclenche
+	// une impression de la page via une feuille de style dédiée pour l'impression
+	}
+	});
+	</script>
+
+{% endblock %}
+
+{% block body %}
+
+	<div class="container-fluid py-4">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h1 class="mb-0">Calendrier</h1>
+			<div>
+				<button id="export-calendar" class="btn btn-outline-primary me-2">
+					<i class="fas fa-file-export me-2"></i>
+					Exporter
+				</button>
+				<a href="{{ path('app_dashboard') }}" class="btn btn-primary">
+					<i class="fas fa-home me-2"></i>
+					Tableau de bord
+				</a>
+			</div>
+		</div>
+		<div class="card">
+			<div class="card-header">
+				<div class="d-flex justify-content-between align-items-center">
+					<h5 class="mb-0">Échéances des tâches</h5>
+					<div class="calendar-filters">
+						<div class="form-group">
+							<label for="project-filter" class="form-label me-2">Projet:</label>
+							<select id="project-filter" class="form-select form-select-sm d-inline-block" style="width: auto;">
+								<option value="">Toutes mes tâches</option>
+								{% for project in projects %}
+									<option value="{{ project.id }}">{{ project.titre }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card-body">
+				<div id="calendar"></div>
+			</div>
+		</div>
+	</div>
+    
+{% endblock %}

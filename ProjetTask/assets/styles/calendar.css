@@ -1,0 +1,127 @@
+/**
+ * SYNTASK - Styles spécifiques au calendrier
+ */
+
+.calendar-container {
+    margin-top: 1rem;
+}
+
+#calendar {
+    min-height: 600px;
+}
+
+/* Styles des événements du calendrier */
+.fc-event {
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 2px 4px;
+    font-size: 0.85em;
+}
+
+.fc-event-title {
+    font-weight: 500;
+}
+
+/* Styles des tooltips pour les événements */
+.task-tooltip .tooltip-inner {
+    max-width: 300px;
+    text-align: left;
+    padding: 10px;
+}
+
+/* Filtres du calendrier */
+.calendar-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Styles spécifiques pour les différents types de tâches */
+.fc-event.task-high-priority {
+    border-left: 3px solid #dc3545;
+}
+
+.fc-event.task-medium-priority {
+    border-left: 3px solid #ffc107;
+}
+
+.fc-event.task-low-priority {
+    border-left: 3px solid #198754;
+}
+
+.fc-event.task-overdue {
+    border: 2px dashed #dc3545;
+}
+
+/* Personnalisation des boutons de la barre d'outils */
+.fc-button-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.fc-button-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.fc-button-primary:not(:disabled):active,
+.fc-button-primary:not(:disabled).fc-button-active {
+    background-color: #0a58ca;
+    border-color: #0a53be;
+}
+
+/* Personnalisation de l'en-tête du calendrier */
+.fc-toolbar-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .fc-toolbar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.25rem;
+    }
+
+    .calendar-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Dark mode */
+body.dark-mode .fc-theme-standard .fc-scrollgrid,
+body.dark-mode .fc-theme-standard td,
+body.dark-mode .fc-theme-standard th {
+    border-color: #495057;
+}
+
+body.dark-mode .fc-day-today {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+body.dark-mode .fc-col-header-cell-cushion,
+body.dark-mode .fc-daygrid-day-number {
+    color: #f8f9fa;
+}
+
+body.dark-mode .fc-button-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+body.dark-mode .fc-button-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
