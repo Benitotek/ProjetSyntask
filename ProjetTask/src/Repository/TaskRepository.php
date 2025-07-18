@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Entity\TaskList;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @extends ServiceEntityRepository<Task>
@@ -240,23 +241,36 @@ class TaskRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    
-      // Récupère les tâches à rendre dans les 7 jours pour un utilisateur
-     
-     public function findUpcomingDueDatesForUser(User $user): array
-    {
-      return $this->createQueryBuilder('t')
-    ->where('t.dateButoir > :now')
-    ->setParameter('now', new \DateTime())
-    ->orderBy('t.dateButoir', 'ASC')
-    ->getQuery()
-    ->getResult();
-    }
- // Récupère les tâches assignées à un utilisateur
-     public function findAssignedToUser(User $user): array
+
+    // Récupère les tâches à rendre dans les 7 jours pour un utilisateur
+
+    public function findUpcomingDueDatesForUser(User $user): array
     {
         return $this->createQueryBuilder('t')
-            ->where('t.assignedUser = :user')   // suppose que vous avez une propriété assignée
+            ->where('t.dateButoir > :now')
+            ->setParameter('now', new \DateTime())
+            ->orderBy('t.dateButoir', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+    // Récupère les tâches assignées à un utilisateur
+    // Retourne les tâches pour un user
+    public function findAssignedToUser(UserInterface $user): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.assignedUser = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
+
+    // Retourne les tâches par projet ET user
+    public function findByProjectAndUser(int $projectId, UserInterface $user): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.projet = :projectId')
+            ->andWhere('t.assignedUser = :user')
+            ->setParameter('projectId', $projectId)
             ->setParameter('user', $user)
             ->getQuery()
             ->getResult();

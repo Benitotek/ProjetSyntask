@@ -8,42 +8,101 @@ use App\Repository\TaskRepository;
 use Symfony\Bundle\SecurityBundle\Security as SecurityBundleSecurity;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class TaskCalendarService
 {
     private TaskRepository $taskRepository;
-    private SecurityBundle $security;
 
-    public function __construct(TaskRepository $taskRepository, SecurityBundle $security)
+    public function __construct(TaskRepository $taskRepository)
     {
         $this->taskRepository = $taskRepository;
-        $this->security = $security;
     }
 
     /**
-     * Récupère les tâches au format calendrier pour un utilisateur
+     * Retourne les tâches du user courant (ou d'un projet) au format FullCalendar.
+     * @param UserInterface $user
+     * @param int|null $projectId
+     * @return array
      */
-    public function getUserCalendarTasks(User $user = null): array
+    public function getUserCalendarTasks(UserInterface $user, ?int $projectId = null): array
     {
-        if (!$user) {
-            $user = $this->security->getuser();
-            if (!$user instanceof User) {
-                throw new \LogicException('Utilisateur non connecté');
-            }
+        // Si filtré par projet = récupère les tâches de ce projet assignées à ce user
+        if ($projectId) {
+            $tasks = $this->taskRepository->findByProjectAndUser($projectId, $user);
+        } else {
+            $tasks = $this->taskRepository->findAssignedToUser($user);
         }
 
-        $tasks = $this->taskRepository->findByUserForCalendar($user);
-        return $this->formatTasksForCalendar($tasks);
+        $calendarTasks = [];
+        foreach ($tasks as $task) {
+            // Format ISO 8601 pour FullCalendar
+            $start = $task->getDateDebut() ? $task->getDateDebut()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
+            $end = $task->getDateButoir() ? $task->getDateButoir()->format('Y-m-d\TH:i:s') : null;
+
+            // FullCalendar attend un tableau associatif par "event"
+            $calendarTasks[] = [
+                'id' => $task->getId(),
+                'title' => $task->getTitre(),
+                'start' => $start,
+                'end' => $end,
+                'url' => '/tasks/' . $task->getId(),
+                'status' => $task->getStatut()?->value ?? null,
+                'statusLabel' => $task->getStatut()?->getLabel() ?? '',
+                'priority' => $task->getPriorite()?->value ?? null,
+                'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
+                'projectTitle' => $task->getProjet()?->getTitre(),
+                'assignee' => [
+                    'fullName' => $task->getAssignedUser()?->getFullName(),
+                    'id' => $task->getAssignedUser()?->getId()
+                ],
+                'editable' => false, // tu peux rendre selon droits
+                'description' => $task->getDescription() ?? '',
+                // 'color' => ... (option, si tu veux colorier par statut/prio/etc.)
+            ];
+        }
+        return $calendarTasks;
     }
+
+    /**
+     * Idem mais pour toutes les tâches d’un projet (pour le filtre)
+     */
+    public function getProjectCalendarTasks(UserInterface $user, int $projectId): array
+    {
+        // Option : sécurité, vérifier si le user peut voir le projet
+        $tasks = $this->taskRepository->findByProjectAndUser($projectId, $user);
+        $calendarTasks = [];
+        foreach ($tasks as $task) {
+            // même structure que précédemment
+            $start = $task->getDateDebut() ? $task->getDateDebut()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
+            $end = $task->getDateButoir() ? $task->getDateButoir()->format('Y-m-d\TH:i:s') : null;
+            $calendarTasks[] = [
+                'id' => $task->getId(),
+                'title' => $task->getTitre(),
+                'start' => $start,
+                'end' => $end,
+                'url' => '/tasks/' . $task->getId(),
+                'status' => $task->getStatut()?->value ?? null,
+                'statusLabel' => $task->getStatut()?->getLabel() ?? '',
+                'priority' => $task->getPriorite()?->value ?? null,
+                'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
+                'projectTitle' => $task->getProjet()?->getTitre(),
+                'assignee' => [
+                    'fullName' => $task->getAssignedUser()?->getFullName(),
+                    'id' => $task->getAssignedUser()?->getId()
+                ],
+                'editable' => false,
+                'description' => $task->getDescription() ?? '',
+            ];
+        }
+        return $calendarTasks;
+    }
+
 
     /**
      * Récupère les tâches au format calendrier pour un projet
      */
-    public function getProjectCalendarTasks(int $projectId): array
-    {
-        $tasks = $this->taskRepository->findByProjectForCalendar($projectId);
-        return $this->formatTasksForCalendar($tasks);
-    }
+
 
     /**
      * Formate les tâches pour l'affichage dans le calendrier
