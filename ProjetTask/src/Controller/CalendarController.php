@@ -28,7 +28,13 @@ class CalendarController extends AbstractController
     {
         $this->calendarService = $calendarService;
     }
-
+    // #[Route('/calendar/all/tasks', name: 'app_calendar_all_employee_tasks', methods: ['GET'])]
+    // #[IsGranted('ROLE_ADMIN')]
+    // public function allEmployeeTasks(TaskCalendarService $taskCalendarService): JsonResponse
+    // {
+    //     $calendarTasks = $taskCalendarService->getAllEmployeeCalendarTasks();
+    //     return $this->json($calendarTasks);
+    // }
 
     #[Route('/all/tasks', name: 'app_calendar_all_tasks', methods: ['GET'])]
     public function allTasks(TaskCalendarService $calendarService): JsonResponse

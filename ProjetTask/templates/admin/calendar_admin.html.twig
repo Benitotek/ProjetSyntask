@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier global | SYNTASK
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet'>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+ <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+	 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/fr.js'></script>
+	 <script>
+	    document.addEventListener('DOMContentLoaded', function() {
+	        var calendarEl = document.getElementById('calendar');
+	        var calendar = new FullCalendar.Calendar(calendarEl, {
+	            initialView: 'dayGridMonth',
+	            locale: 'fr',
+	            headerToolbar: {
+	                left: 'prev,next today',
+	                center: 'title',
+	                right: 'dayGridMonth,timeGridWeek,listMonth'
+	            },
+	            events: '{{ path('app_calendar_all_employee_tasks') }}',
+	            eventTimeFormat: {
+	                hour: '2-digit',
+	                minute: '2-digit',
+	                hour12: false
+	            },
+	            eventClick: function(info) {
+	                if (info.event.url) {
+	                    window.location.href = info.event.url;
+	                    info.jsEvent.preventDefault();
+	                }
+	            },
+	            eventDidMount: function(info) {
+	                const event = info.event;
+	                const props = event.extendedProps;
+	                let tooltipContent = `<strong>${event.title}</strong><br>
+	                <strong>Statut:</strong> ${props.statusLabel}<br>
+	                <strong>Priorité:</strong> ${props.priorityLabel}<br>
+	                <strong>Projet:</strong> ${props.projectTitle || 'N/A'}<br>
+	                <strong>Assigné à:</strong> ${props.assignee?.fullName || ''}`;
+	                if (event.extendedProps.description) {
+	                    tooltipContent += `<br><strong>Description:</strong> ${event.extendedProps.description}`;
+	                }
+	                new bootstrap.Tooltip(info.el, {
+	                    title: tooltipContent,
+	                    placement: 'top',
+	                    trigger: 'hover',
+	                    html: true,
+	                });
+	            }
+	        });
+	        calendar.render();
+	    });
+	    </script>
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid py-4">
+		<h1>Calendrier Global (Administration)</h1>
+		<div class="card mt-3">
+			<div class="card-body">
+				<div id="calendar"></div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
