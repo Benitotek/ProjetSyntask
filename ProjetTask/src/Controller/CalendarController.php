@@ -29,6 +29,18 @@ class CalendarController extends AbstractController
         $this->calendarService = $calendarService;
     }
 
+
+    #[Route('/all/tasks', name: 'app_calendar_all_tasks', methods: ['GET'])]
+    public function allTasks(TaskCalendarService $calendarService): JsonResponse
+    {
+        // Vérification access : doit être ADMIN/DIRECTEUR/CHEF_PROJECT etc
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $calendarTasks = $calendarService->getAllCalendarTasks();
+        return $this->json($calendarTasks);
+    }
+
+
     #[Route('/user/tasks', name: 'app_calendar_user_tasks', methods: ['GET'])]
     public function userTasks(TaskCalendarService $calendarService): JsonResponse
     {

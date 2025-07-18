@@ -153,4 +153,72 @@ class TaskCalendarService
             default => '#6c757d',
         };
     }
+    public function getAllCalendarTasks(): array
+    {
+        // Va chercher toutes les tasks en DB (pas filtrées par user/projet)
+        $tasks = $this->taskRepository->findAll();
+
+        $calendarTasks = [];
+        foreach ($tasks as $task) {
+            $start = $task->getDateDebut() ? $task->getDateDebut()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
+            $end   = $task->getDateButoir() ? $task->getDateButoir()->format('Y-m-d\TH:i:s') : null;
+
+            $calendarTasks[] = [
+                'id'           => $task->getId(),
+                'title'        => $task->getTitre(),
+                'start'        => $start,
+                'end'          => $end,
+                'url'          => '/tasks/' . $task->getId(),
+                'status'       => $task->getStatut()?->value ?? null,
+                'statusLabel'  => $task->getStatut()?->getLabel() ?? '',
+                'priority'     => $task->getPriorite()?->value ?? null,
+                'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
+                'projectTitle' => $task->getProjet()?->getTitre(),
+                'assignee'     => [
+                    'fullName' => $task->getAssignedUser()?->getFullName(),
+                    'id'       => $task->getAssignedUser()?->getId()
+                ],
+                'editable'     => false,
+                'description'  => $task->getDescription() ?? '',
+            ];
+        }
+        return $calendarTasks;
+    }
+    // ATTENTION: J'ai tester de changer url et j'ai mis les date debut en datecreation a revoir censé afficher 
+    // tout (projet,taches,users) de tout les utilisateurs ayant roles employer
+    //  mais visibles que pour admin 4 erreur a corriger au niveau des titres statut label etc
+
+
+    // public function getAllEmployeeCalendarTasks(): array
+    // { // Récupère toutes les tâches dont l’assigné a le rôle ROLE_EMPLOYEE
+    //     $tasks = $this->taskRepository->findAllEmployeeTasks();
+
+    //     $calendarTasks = [];
+    //     foreach ($tasks as $task) {
+    //         // Format ISO 8601 pour FullCalendar (ex: "2024-07-06T14:00:00")
+    //         $start = $task->getDateCreation() ? $task->getDateCreation()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
+    //         $end   = $task->getDateButoir() ? $task->getDateButoir()->format('Y-m-d\TH:i:s') : null;
+
+    //         $calendarTasks[] = [
+    //             'id'           => $task->getId(),
+    //             'title'        => $task->getTitre(),
+    //             'start'        => $start,
+    //             'end'          => $end,
+    //             'url'          => '/admin/all/tasks' . $task->getId(),
+    //             'status'       => $task->getStatut()?->value ?? null,
+    //             'statusLabel'  => $task->getStatut()?->getLabel() ?? '',
+    //             'priority'     => $task->getPriorite()?->value ?? null,
+    //             'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
+    //             'projectTitle' => $task->getProjet()?->getTitre(),
+    //             'assignee'     => [
+    //                 'fullName' => $task->getAssignedUser()?->getFullName(),
+    //                 'id'       => $task->getAssignedUser()?->getId()
+    //             ],
+    //             'editable'     => false,
+    //             'description'  => $task->getDescription() ?? '',
+    //             // Option : tu peux ajouter 'color' pour colorier par statut/priorité
+    //         ];
+    //     }
+    //     return $calendarTasks;
+    // }
 }

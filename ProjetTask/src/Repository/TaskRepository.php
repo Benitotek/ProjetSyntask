@@ -30,7 +30,21 @@ class TaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
+    /**
+     * Retourne toutes les tâches de chaque utilisateur qui possède le rôle ROLE_EMPLOYEE.
+     * (Utilisable en mode admin pour le calendrier global.)
+     *
+     * @return Task[]
+     */
+    public function findAllEmployeeTasks(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->join('t.assignedUser', 'u')
+            ->andWhere('u.roles LIKE :role')
+            ->setParameter('role', '%ROLE_EMPLOYEE%')
+            ->getQuery()
+            ->getResult();
+    }
     /**
      * Trouve toutes les tâches d'un project, triées par colonne puis position
      */
