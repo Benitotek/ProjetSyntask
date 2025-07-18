@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/calendar')]
-#[IsGranted('ROLE_EMPLOYEE')]
+// #[IsGranted('ROLE_EMPLOYEE')]
 class CalendarController extends AbstractController
 {
     // private SecurityBundle $security;
