@@ -101,24 +101,4 @@ class ProjectTypeForm extends AbstractType
         ]);
     }
 }
-    //     $builder
-    //         ->add('titre')
-    //         ->add('statut')
-    //         ->add('dateCreation')
-    //         ->add('dateMaj')
-    //         ->add('dateButoir')
-    //         ->add('dateReelle')
-    //         ->add('description')
-    //         ->add('reference')
-    //         ->add('budget')
-    //         ->add('chefDeproject', EntityType::class, [
-    //             'class' => User::class,
-    //             'choice_label' => 'id',
-    //         ])
-    //         ->add('membres', EntityType::class, [
-    //             'class' => User::class,
-    //             'choice_label' => 'id',
-    //             'multiple' => true,
-    //         ])
-    //     ;
-    // }
+    

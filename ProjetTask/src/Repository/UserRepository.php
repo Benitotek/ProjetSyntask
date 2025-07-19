@@ -286,4 +286,16 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         // Implémentez la logique métier ici
     }
+
+    public function findUsersByProject(Project $project): array
+    {
+        return $this->createQueryBuilder('u')
+            ->join('u.projets', 'p')
+            ->where('p = :project')
+            ->setParameter('project', $project)
+            ->orderBy('u.nom', 'ASC')
+            ->addOrderBy('u.prenom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

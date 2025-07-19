@@ -66,18 +66,7 @@ class UserTypeForm extends AbstractType
                 'expanded' => true,   // Affiche comme des radio buttons
                 'label' => 'Rôle'
             ]);
-            // ->add('role', ChoiceType::class, [
-            //     'label' => 'Rôles',
-            //     'choices' => [
-            //         'Employé' => 'ROLE_EMPLOYE',
-            //         'Chef de project' => 'ROLE_CHEF_PROJECT',
-            //         'Directeur' => 'ROLE_DIRECTEUR',
-            //         'Administrateur' => 'ROLE_ADMIN',
-            //     ],
-            //     'multiple' => true,
-            //     'expanded' => true,
-            //     'attr' => ['class' => 'form-check-input']
-            // ])
+        
         }
 
         $builder
@@ -138,4 +127,5 @@ class UserTypeForm extends AbstractType
             'is_edit' => false,
         ]);
     }
+    
 }
