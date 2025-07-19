@@ -36,8 +36,8 @@ class CalendarController extends AbstractController
     //     return $this->json($calendarTasks);
     // }
 
-    #[Route('/all/tasks', name: 'app_calendar_all_tasks', methods: ['GET'])]
-    public function allTasks(TaskCalendarService $calendarService): JsonResponse
+    #[Route('/all/tasks/api', name: 'app_calendar_all_tasks_api', methods: ['GET'])]
+    public function allTasksCalendarAdmin(TaskCalendarService $calendarService): JsonResponse
     {
         // Vérification access : doit être ADMIN/DIRECTEUR/CHEF_PROJECT etc
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -45,7 +45,16 @@ class CalendarController extends AbstractController
         $calendarTasks = $calendarService->getAllCalendarTasks();
         return $this->json($calendarTasks);
     }
+    // different route pour callender version API JSON au dessus et HTML.TWIG en suivante
+    #[Route('/all/tasks/', name: 'app_calendar_all_tasks', methods: ['GET'])]
+    public function allTasksCalendar(): Response
+    {
+        // Vérification access : doit être ADMIN/DIRECTEUR/CHEF_PROJECT etc
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+
+        return $this->render('calendar/calendar_admin.html.twig');
+    }
 
     #[Route('/user/tasks', name: 'app_calendar_user_tasks', methods: ['GET'])]
     public function userTasks(TaskCalendarService $calendarService): JsonResponse

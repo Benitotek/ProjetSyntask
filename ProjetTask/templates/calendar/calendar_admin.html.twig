@@ -46,50 +46,50 @@
 	 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
 	 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/fr.js'></script>
 	 <script>
-	    document.addEventListener('DOMContentLoaded', function() {
-	        let calendarEl = document.getElementById('calendar');
-	        let calendar = new FullCalendar.Calendar(calendarEl, {
-	            initialView: 'dayGridMonth',
-	            locale: 'fr',
-	            headerToolbar: {
-	                left: 'prev,next today',
-	                center: 'title',
-	                right: 'dayGridMonth,timeGridWeek,listMonth'
-	            },
-	            // Charge les événements via l’API
-	            events: '{{ path('app_calendar_all_tasks') }}',
-	            eventClassNames: function(arg) {
-	                // Ajoute une classe selon la priorité et le statut
-	                let res = [];
-	                if(arg.event.extendedProps.priority) res.push('fc-event-' + arg.event.extendedProps.priority);
-	                if(arg.event.extendedProps.status) res.push('fc-event-' + arg.event.extendedProps.status);
-	                if(arg.event.extendedProps.projectTitle) res.push('fc-event-projet-' + arg.event.extendedProps.projectTitle.replace(/\s/g, '_'));
-	                return res;
-	            },
-	            eventClick: function(info) {
-	                // Ouvre une modal Bootstrap avec les détails
-	                const ev = info.event; const props = ev.extendedProps;
-	                let html = `<div>
-	                    <strong>${ev.title}</strong>
-	                    <hr>
-	                    <strong>Statut:</strong> ${props.statusLabel}<br>
-	                    <strong>Priorité:</strong> ${props.priorityLabel}<br>
-	                    <strong>Projet:</strong> ${props.projectTitle || 'N/A'}<br>
-	                    <strong>Assigné à:</strong> ${props.assignee?.fullName || ''}<br>
-	                    ${props.description ? `<hr><em>${props.description}</em>` : ''}
-	                    <hr>
-	                    <a href="${ev.url}" class="btn btn-sm btn-primary mt-2">Voir la tâche</a>
-	                </div>`;
-	                let modal = new bootstrap.Modal(document.getElementById('eventModal'));
-	                document.getElementById('eventModalLabel').innerHTML = "Détail de la tâche";
-	                document.getElementById('eventModalBody').innerHTML = html;
-	                modal.show();
-	                info.jsEvent.preventDefault();
-	            }
-	        });
-	        calendar.render();
-	    });
-	    </script>
+		    document.addEventListener('DOMContentLoaded', function() {
+		        let calendarEl = document.getElementById('calendar');
+		        let calendar = new FullCalendar.Calendar(calendarEl, {
+		            initialView: 'dayGridMonth',
+		            locale: 'fr',
+		            headerToolbar: {
+		                left: 'prev,next today',
+		                center: 'title',
+		                right: 'dayGridMonth,timeGridWeek,listMonth'
+		            },
+		            // Charge les événements via l’API
+		            events: '{{ path('app_calendar_all_tasks_api') }}',
+		            eventClassNames: function(arg) {
+		                // Ajoute une classe selon la priorité et le statut
+		                let res = [];
+		                if(arg.event.extendedProps.priority) res.push('fc-event-' + arg.event.extendedProps.priority);
+		                if(arg.event.extendedProps.status) res.push('fc-event-' + arg.event.extendedProps.status);
+		                if(arg.event.extendedProps.projectTitle) res.push('fc-event-projet-' + arg.event.extendedProps.projectTitle.replace(/\s/g, '_'));
+		                return res;
+		            },
+		            eventClick: function(info) {
+		                // Ouvre une modal Bootstrap avec les détails
+		                const ev = info.event; const props = ev.extendedProps;
+		                let html = `<div>
+		                    <strong>${ev.title}</strong>
+		                    <hr>
+		                    <strong>Statut:</strong> ${props.statusLabel}<br>
+		                    <strong>Priorité:</strong> ${props.priorityLabel}<br>
+		                    <strong>Projet:</strong> ${props.projectTitle || 'N/A'}<br>
+		                    <strong>Assigné à:</strong> ${props.assignee?.fullName || ''}<br>
+		                    ${props.description ? `<hr><em>${props.description}</em>` : ''}
+		                    <hr>
+		                    <a href="${ev.url}" class="btn btn-sm btn-primary mt-2">Voir la tâche</a>
+		                </div>`;
+		                let modal = new bootstrap.Modal(document.getElementById('eventModal'));
+		                document.getElementById('eventModalLabel').innerHTML = "Détail de la tâche";
+		                document.getElementById('eventModalBody').innerHTML = html;
+		                modal.show();
+		                info.jsEvent.preventDefault();
+		            }
+		        });
+		        calendar.render();
+		    });
+		    </script>
 {% endblock %}
 
 {% block body %}
