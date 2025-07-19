@@ -154,7 +154,7 @@
 					<option value="all" {{ period == 'all' ? 'selected' : '' }}>Toutes les périodes</option>
 				</select>
 
-				{% if is_granted('ROLE_CHEF_project') or is_granted('ROLE_ADMIN') %}
+				{% if is_granted('ROLE_CHEF_PROJECT') or is_granted('ROLE_ADMIN') %}
 					<select id="project-filter" class="form-select">
 						<option value="">Tous les projects</option>
 						{% for project in projects %}

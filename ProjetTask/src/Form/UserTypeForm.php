@@ -70,7 +70,7 @@ class UserTypeForm extends AbstractType
             //     'label' => 'Rôles',
             //     'choices' => [
             //         'Employé' => 'ROLE_EMPLOYE',
-            //         'Chef de project' => 'ROLE_CHEF_project',
+            //         'Chef de project' => 'ROLE_CHEF_PROJECT',
             //         'Directeur' => 'ROLE_DIRECTEUR',
             //         'Administrateur' => 'ROLE_ADMIN',
             //     ],

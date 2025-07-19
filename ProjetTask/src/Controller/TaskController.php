@@ -497,7 +497,7 @@ class TaskController extends AbstractController
         }
 
         // Les chefs de project peuvent assigner des tâches dans leurs projects
-        return $project->getChef_project() === $user;
+        return $project->getCHEF_PROJECT() === $user;
     }
 }
 
@@ -667,7 +667,7 @@ class TaskController extends AbstractController
 //         $this->denyAccessUnlessGranted('EDIT', $project);
         
 //         // Vérifier que l'utilisateur est bien membre du project
-//         if (!$project->getMembres()->contains($user) && $project->getChef_project() !== $user) {
+//         if (!$project->getMembres()->contains($user) && $project->getCHEF_PROJECT() !== $user) {
 //             throw $this->createAccessDeniedException('Cet utilisateur n\'est pas membre du project');
 //         }
         

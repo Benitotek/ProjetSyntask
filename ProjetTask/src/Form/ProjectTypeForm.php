@@ -70,7 +70,7 @@ class ProjectTypeForm extends AbstractType
                     return $repo->createQueryBuilder('u')
                         ->where('u.role LIKE :role')
                         ->andWhere('u.estActif = true')
-                        ->setParameter('role', '%ROLE_CHEF_project%')
+                        ->setParameter('role', '%ROLE_CHEF_PROJECT%')
                         ->orderBy('u.nom', 'ASC');
                 },
                 'required' => false,

@@ -46,7 +46,7 @@ src\Repository\ProjectRepository.php:435://     public function getProjectsWithB
 src\Repository\ProjectRepository.php:452:// public function countAll(): int
 src\Repository\ProjectRepository.php:463:// public function findRecent(int $limit = 5): array
 src\Repository\ProjectRepository.php:475:// public function findRecentWithStats(User $user, int $limit = 5): array
-src\Repository\ProjectRepository.php:486:// public function findByChef_project(User $user, $limit): array
+src\Repository\ProjectRepository.php:486:// public function findByCHEF_PROJECT(User $user, $limit): array
 src\Repository\ProjectRepository.php:503:// public function findProjectsAsMember(User $user): array
 src\Repository\ProjectRepository.php:515:// public function findProjectsAsMemberBystatut(User $user, string $statut): array
 src\Repository\ProjectRepository.php:530:// public function getProjectsWithBudgetStatsRaw(): array

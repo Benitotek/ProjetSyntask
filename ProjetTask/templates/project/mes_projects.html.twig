@@ -523,7 +523,7 @@
 								<div class="project-team">
 									<div
 										class="team-avatars">
-										{# Si le chef de project s'appelle Chef_project dans l'entité #}
+										{# Si le chef de project s'appelle CHEF_PROJECT dans l'entité #}
 										{% if project.chefproject %}
 											<div class="team-avatar chef" title="Chef de project: {{ project.chefproject.fullName }}">
 												{{ project.chefproject.prenom|slice(0, 1)|upper }}{{ project.chefproject.nom|slice(0, 1)|upper }}

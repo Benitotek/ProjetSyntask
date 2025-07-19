@@ -292,7 +292,7 @@ class ProjectRepository extends ServiceEntityRepository
 //     {
 //         $qb = $this->createQueryBuilder('p')
 //             ->leftJoin('p.membres', 'm')
-//             ->where('p.Chef_project = :user')
+//             ->where('p.CHEF_PROJECT = :user')
 //             ->orWhere('m = :user')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC');
@@ -324,7 +324,7 @@ class ProjectRepository extends ServiceEntityRepository
 
 //         if ($user) {
 //             $qb->leftJoin('p.membres', 'm')
-//                 ->where('p.Chef_project = :user')
+//                 ->where('p.CHEF_PROJECT = :user')
 //                 ->orWhere('m = :user')
 //                 ->setParameter('user', $user);
 //         }
@@ -341,7 +341,7 @@ class ProjectRepository extends ServiceEntityRepository
 //     public function findByChefDeproject(User $user): array
 //     {
 //         return $this->createQueryBuilder('p')
-//             ->where('p.Chef_project = :user')
+//             ->where('p.CHEF_PROJECT = :user')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC')
 //             ->getQuery()
@@ -376,7 +376,7 @@ class ProjectRepository extends ServiceEntityRepository
 //         return $this->createQueryBuilder('p')
 //             ->leftJoin('p.membres', 'm')
 //             ->where('m = :user')
-//             ->andWhere('p.Chef_project != :user')
+//             ->andWhere('p.CHEF_PROJECT != :user')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC')
 //             ->getQuery()
@@ -476,17 +476,17 @@ class ProjectRepository extends ServiceEntityRepository
 // {
 //     // Cette méthode doit être implémentée selon vos besoins
 //     // Par exemple, elle pourrait renvoyer des projects avec le nombre de tâches par statut
-//     return $this->findByChef_project($user, $limit);
+//     return $this->findByCHEF_PROJECT($user, $limit);
 // }
 
 // /**
 //  * Trouver les projects par chef de project
 //  * (Méthode déplacée ou renommée pour éviter les doublons)
 //  */
-// public function findByChef_project(User $user, $limit): array
+// public function findByCHEF_PROJECT(User $user, $limit): array
 // {
 //     $qb = $this->createQueryBuilder('p')
-//         ->where('p.Chef_project = :user')
+//         ->where('p.CHEF_PROJECT = :user')
 //         ->setParameter('user', $user)
 //         ->orderBy('p.dateCreation', 'DESC');
 
@@ -554,7 +554,7 @@ class ProjectRepository extends ServiceEntityRepository
 // {
 //     return $this->createQueryBuilder('p')
 //         ->join('p.membres', 'm')
-//         ->where('m = :user OR p.Chef_project = :user')
+//         ->where('m = :user OR p.CHEF_PROJECT = :user')
 //         ->setParameter('user', $user)
 //         ->orderBy('p.dateCreation', 'DESC')
 //         ->getQuery()
@@ -669,7 +669,7 @@ class ProjectRepository extends ServiceEntityRepository
 //     public function findProjectsByUser(User $user): array
 //     {
 //         return $this->createQueryBuilder('p')
-//             ->where('p.Chef_project = :user')
+//             ->where('p.CHEF_PROJECT = :user')
 //             ->orWhere(':user MEMBER OF p.membres')
 //             ->setParameter('user', $user)
 //             ->orderBy('p.dateCreation', 'DESC')

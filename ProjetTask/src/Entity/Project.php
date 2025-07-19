@@ -65,7 +65,7 @@ class Project
 
     // Chef de project : Un User peut gérer plusieurs projects
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "projectsGeres")]
-    #[ORM\JoinColumn(name: "chef_project_id", referencedColumnName: "id", nullable: true)]
+    #[ORM\JoinColumn(name: "CHEF_PROJECT_id", referencedColumnName: "id", nullable: true)]
     private ?User $chefproject = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]

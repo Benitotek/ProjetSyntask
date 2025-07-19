@@ -115,7 +115,7 @@
 								</p>
 							</div>
 
-							{% if is_granted('ROLE_CHEF_project') and is_granted('PROJECT_EDIT', project) %}
+							{% if is_granted('ROLE_CHEF_PROJECT') and is_granted('PROJECT_EDIT', project) %}
 								<div class="btn-group">
 									<button class="btn btn-outline-primary btn-sm" onclick="editColumn()">
 										<i class="fas fa-edit"></i>
@@ -264,7 +264,7 @@
 								</button>
 							{% endif %}
 
-							{% if is_granted('ROLE_CHEF_project') and is_granted('PROJECT_EDIT', project) %}
+							{% if is_granted('ROLE_CHEF_PROJECT') and is_granted('PROJECT_EDIT', project) %}
 								<button class="btn btn-outline-warning btn-sm" onclick="editColumn()">
 									<i class="fas fa-edit"></i>
 									Modifier colonne
