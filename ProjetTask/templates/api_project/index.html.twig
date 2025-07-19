@@ -1,20 +1,593 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ApiProjectController!{% endblock %}
+{% block title %}Tous les projets
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('styles/project-management.css') }}">
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+	<div class="app-container">
+		<!-- Sidebar identique -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<div class="app-logo">
+					<div class="logo-placeholder">
+						<i class="icon-image"></i>
+					</div>
+					<span class="logo-text">logo de l'application</span>
+				</div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+				<div class="user-profile">
+					<div class="profile-avatar">
+						<i class="icon-user"></i>
+					</div>
+					<div class="user-info">
+						<div class="user-name">{{ app.user.username|default('salarié') }}</div>
+						<div class="user-role">{{ app.user.roles|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
+					</div>
+					<div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
+				</div>
+			</div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/ProjetSyntask/ProjetTask/src/Controller/ApiProjectController.php</code></li>
-        <li>Your template at <code>C:/ProjetSyntask/ProjetTask/templates/api_project/index.html.twig</code></li>
-    </ul>
-</div>
+			<nav class="sidebar-nav">
+				<ul class="nav-menu">
+					<li class="nav-item">
+						<a href="{{ path('app_dashboard') }}" class="nav-link">
+							<i class="icon-dashboard"></i>
+							Tableau de bord
+						</a>
+					</li>
+					<li class="nav-item active">
+						<a href="{{ path('app_mes_projects') }}" class="nav-link">
+							<i class="icon-projects"></i>
+							Projets
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="{{ path('app_mes_projects') }}" class="nav-link">
+							<i class="icon-stats"></i>
+							Statistiques
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="#" class="nav-link">
+							<i class="icon-profile"></i>Mon profil
+						</a>
+					</li>
+				</ul>
+			</nav>
+
+			<div class="sidebar-footer">
+				<a href="{{ path('app_logout') }}" class="logout-btn">
+					<i class="icon-logout"></i>
+					Déconnexion
+				</a>
+			</div>
+		</aside>
+
+		<!-- Contenu principal -->
+		<main class="main-content">
+			<div class="content-header">
+				<h1 class="page-title">Gestion des projets</h1>
+				<div class="header-actions">
+					{% if is_granted('ROLE_DIRECTEUR') %}
+						<button id="btn-nouveau-projet" class="btn btn-primary">
+							<i class="icon-plus"></i>
+							Nouveau projet
+						</button>
+					{% endif %}
+				</div>
+			</div>
+
+			<!-- Statistiques rapides -->
+			<div class="stats-cards" id="stats-cards">
+				<div class="stat-card">
+					<div class="stat-icon">📊</div>
+					<div class="stat-content">
+						<div class="stat-number" id="total-projects">{{ projects|length }}</div>
+						<div class="stat-label">Total projets</div>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">🚀</div>
+					<div class="stat-content">
+						<div class="stat-number" id="en-cours-projects">{{ projects|filter(p => p.statut == 'EN-COURS')|length }}</div>
+						<div class="stat-label">En Cours</div>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">✅</div>
+					<div class="stat-content">
+						<div class="stat-number" id="termines-projects">{{ projects|filter(p => p.statut == 'TERMINE')|length }}</div>
+						<div class="stat-label">Terminés</div>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">⏳</div>
+					<div class="stat-content">
+						<div class="stat-number" id="attente-projects">{{ projects|filter(p => p.statut == 'EN-ATTENTE')|length }}</div>
+						<div class="stat-label">En Attente</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Filtres et recherche -->
+			<div class="filters-section">
+				<div class="search-filters">
+					<div class="search-box">
+						<input type="text" id="search-input" placeholder="Rechercher un projet..." class="search-input">
+						<i class="icon-search"></i>
+					</div>
+					<div class="filter-tabs">
+						<button class="filter-tab active" data-statut="">Tous</button>
+						<button class="filter-tab" data-statut="EN-ATTENTE">En attente</button>
+						<button class="filter-tab" data-statut="EN-COURS">En cours</button>
+						<button class="filter-tab" data-statut="TERMINE">Terminés</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Indicateur de chargement -->
+			<div id="loading-indicator" class="loading-indicator" style="display: none;">
+				<div class="spinner"></div>
+				<span>Chargement...</span>
+			</div>
+
+			<!-- Tableau des projets -->
+			<div class="projects-table-container">
+				<table class="projects-table">
+					<thead>
+						<tr>
+							<th>Projet</th>
+							<th>Statut</th>
+							<th>Chef de projet</th>
+							<th>Équipe</th>
+							<th>Progression</th>
+							<th>Échéance</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody id="projects-table-body">
+						<!-- Les projets seront chargés dynamiquement -->
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Pagination -->
+			<div class="pagination-container" id="pagination-container">
+				<!-- La pagination sera générée dynamiquement -->
+			</div>
+		</main>
+	</div>
+
+	<!-- Modal pour nouveau projet -->
+	<div id="modal-nouveau-projet" class="modal" style="display: none;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Nouveau Projet</h3>
+				<button class="modal-close" id="modal-close">&times;</button>
+			</div>
+			<div class="modal-body">
+				<form id="form-nouveau-projet">
+					<div class="form-group">
+						<label for="projet-nom">Nom du projet</label>
+						<input type="text" id="projet-nom" name="nom" required>
+					</div>
+					<div class="form-group">
+						<label for="projet-description">Description</label>
+						<textarea id="projet-description" name="description" rows="3"></textarea>
+					</div>
+					<div class="form-row">
+						<div class="form-group">
+							<label for="projet-date-debut">Date de début</label>
+							<input type="date" id="projet-date-debut" name="dateDebut">
+						</div>
+						<div class="form-group">
+							<label for="projet-date-fin">Date de fin</label>
+							<input type="date" id="projet-date-fin" name="dateFin">
+						</div>
+					</div>
+					<div class="modal-actions">
+						<button type="button" class="btn btn-secondary" id="btn-annuler">Annuler</button>
+						<button type="submit" class="btn btn-primary">Créer le projet</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Messages toast -->
+	<div id="toast-container" class="toast-container"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		class ProjectManager {
+			constructor() {
+				this.currentPage = 1;
+				this.currentLimit = 10;
+				this.currentSearch = '';
+				this.currentStatut = '';
+				this.init();
+			}
+
+			init() {
+				this.bindEvents();
+				this.loadProjects();
+			}
+
+			bindEvents() {
+				// Recherche
+				const searchInput = document.getElementById('search-input');
+				let searchTimeout;
+				searchInput.addEventListener('input', (e) => {
+					clearTimeout(searchTimeout);
+					searchTimeout = setTimeout(() => {
+						this.currentSearch = e.target.value;
+						this.currentPage = 1;
+						this.loadProjects();
+					}, 300);
+				});
+
+				// Filtres par statut
+				document.querySelectorAll('.filter-tab').forEach(tab => {
+					tab.addEventListener('click', (e) => {
+						e.preventDefault();
+						// Mise à jour visuelle des onglets
+						document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+						e.target.classList.add('active');
+						
+						this.currentStatut = e.target.dataset.statut;
+						this.currentPage = 1;
+						this.loadProjects();
+					});
+				});
+
+				// Modal nouveau projet
+				{% if is_granted('ROLE_DIRECTEUR') %}
+					document.getElementById('btn-nouveau-projet').addEventListener('click', () => {
+						this.showModal();
+					});
+
+					document.getElementById('modal-close').addEventListener('click', () => {
+						this.hideModal();
+					});
+
+					document.getElementById('btn-annuler').addEventListener('click', () => {
+						this.hideModal();
+					});
+
+					document.getElementById('form-nouveau-projet').addEventListener('submit', (e) => {
+						e.preventDefault();
+						this.createProject();
+					});
+				{% endif %}
+			}
+
+			async loadProjects() {
+				try {
+					this.showLoading();
+					
+					const params = new URLSearchParams({
+						page: this.currentPage,
+						limit: this.currentLimit,
+						search: this.currentSearch
+					});
+
+					if (this.currentStatut) {
+						params.append('statut', this.currentStatut);
+					}
+
+					const response = await fetch(`/api/project?${params}`);
+					const data = await response.json();
+
+					if (data.success) {
+						this.renderProjects(data.data);
+						this.renderPagination(data.pagination);
+						this.updateStats(data.data);
+					} else {
+						this.showToast('Erreur lors du chargement des projets', 'error');
+					}
+				} catch (error) {
+					this.showToast('Erreur de connexion', 'error');
+				} finally {
+					this.hideLoading();
+				}
+			}
+
+			renderProjects(projects) {
+				const tbody = document.getElementById('projects-table-body');
+				
+				if (projects.length === 0) {
+					tbody.innerHTML = `
+						<tr>
+							<td colspan="7" class="empty-table">
+								<div class="empty-state">
+									<div class="empty-icon">📁</div>
+									<h3>Aucun projet trouvé</h3>
+									<p>Aucun projet ne correspond aux critères sélectionnés.</p>
+								</div>
+							</td>
+						</tr>
+					`;
+					return;
+				}
+
+				tbody.innerHTML = projects.map(project => `
+					<tr class="project-row">
+						<td class="project-cell">
+							<div class="project-info">
+								<h4 class="project-name">${this.escapeHtml(project.nom)}</h4>
+								${project.reference ? `<span class="project-ref">${this.escapeHtml(project.reference)}</span>` : ''}
+							</div>
+						</td>
+						<td>
+							<span class="statut-badge statut-${project.statut?.toLowerCase().replace('-', '_') || 'unknown'}">
+								${this.formatStatut(project.statut)}
+							</span>
+						</td>
+						<td>
+							${project.chefProjet ? `
+								<div class="user-info-cell">
+									<div class="user-avatar">${this.getInitials(project.chefProjet.nom, project.chefProjet.prenom)}</div>
+									${this.escapeHtml(project.chefProjet.nom + ' ' + project.chefProjet.prenom)}
+								</div>
+							` : '<span class="text-muted">Non assigné</span>'}
+						</td>
+						<td>
+							${this.renderTeamAvatars(project.members || [])}
+						</td>
+						<td>
+							${this.renderProgress(project.tasks || [])}
+						</td>
+						<td>
+							${project.dateFin ? `
+								<div class="date-cell">
+									${this.formatDate(project.dateFin)}
+									${this.isOverdue(project.dateFin, project.statut) ? '<span class="overdue-badge">En retard</span>' : ''}
+								</div>
+							` : '<span class="text-muted">Non définie</span>'}
+						</td>
+						<td>
+							<div class="action-buttons">
+								<button class="btn-icon" onclick="projectManager.viewProject(${project.id})" title="Voir détails">
+									<i class="icon-eye"></i>
+								</button>
+								{% if is_granted('ROLE_DIRECTEUR') %}
+									<button class="btn-icon" onclick="projectManager.editProject(${project.id})" title="Modifier">
+										<i class="icon-edit"></i>
+									</button>
+									<button class="btn-icon" onclick="projectManager.deleteProject(${project.id})" title="Supprimer">
+										<i class="icon-trash"></i>
+									</button>
+								{% endif %}
+							</div>
+						</td>
+					</tr>
+				`).join('');
+			}
+
+			renderPagination(pagination) {
+				const container = document.getElementById('pagination-container');
+				if (pagination.pages <= 1) {
+					container.innerHTML = '';
+					return;
+				}
+
+				let paginationHTML = '<div class="pagination">';
+				
+				// Bouton précédent
+				if (pagination.page > 1) {
+					paginationHTML += `<button class="pagination-btn" onclick="projectManager.goToPage(${pagination.page - 1})">Précédent</button>`;
+				}
+
+				// Numéros de page
+				for (let i = 1; i <= pagination.pages; i++) {
+					if (i === pagination.page) {
+						paginationHTML += `<button class="pagination-btn active">${i}</button>`;
+					} else {
+						paginationHTML += `<button class="pagination-btn" onclick="projectManager.goToPage(${i})">${i}</button>`;
+					}
+				}
+
+				// Bouton suivant
+				if (pagination.page < pagination.pages) {
+					paginationHTML += `<button class="pagination-btn" onclick="projectManager.goToPage(${pagination.page + 1})">Suivant</button>`;
+				}
+
+				paginationHTML += '</div>';
+				container.innerHTML = paginationHTML;
+			}
+
+			updateStats(projects) {
+				const stats = {
+					total: projects.length,
+					enCours: projects.filter(p => p.statut === 'EN-COURS').length,
+					termine: projects.filter(p => p.statut === 'TERMINE').length,
+					attente: projects.filter(p => p.statut === 'EN-ATTENTE').length
+				};
+
+				document.getElementById('total-projects').textContent = stats.total;
+				document.getElementById('en-cours-projects').textContent = stats.enCours;
+				document.getElementById('termines-projects').textContent = stats.termine;
+				document.getElementById('attente-projects').textContent = stats.attente;
+			}
+
+			async createProject() {
+				const form = document.getElementById('form-nouveau-projet');
+				const formData = new FormData(form);
+				
+				const projectData = {
+					nom: formData.get('nom'),
+					description: formData.get('description'),
+					dateDebut: formData.get('dateDebut'),
+					dateFin: formData.get('dateFin')
+				};
+
+				try {
+					const response = await fetch('/api/project', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify(projectData)
+					});
+
+					const data = await response.json();
+
+					if (data.success) {
+						this.showToast('Projet créé avec succès', 'success');
+						this.hideModal();
+						form.reset();
+						this.loadProjects();
+					} else {
+						this.showToast(data.message || 'Erreur lors de la création', 'error');
+					}
+				} catch (error) {
+					this.showToast('Erreur de connexion', 'error');
+				}
+			}
+
+			async deleteProject(id) {
+				if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
+					return;
+				}
+
+				try {
+					const response = await fetch(`/api/project/${id}`, {
+						method: 'DELETE'
+					});
+
+					const data = await response.json();
+
+					if (data.success) {
+						this.showToast('Projet supprimé avec succès', 'success');
+						this.loadProjects();
+					} else {
+						this.showToast(data.message || 'Erreur lors de la suppression', 'error');
+					}
+				} catch (error) {
+					this.showToast('Erreur de connexion', 'error');
+				}
+			}
+
+			goToPage(page) {
+				this.currentPage = page;
+				this.loadProjects();
+			}
+
+			viewProject(id) {
+				window.location.href = `/project/${id}`;
+			}
+
+			editProject(id) {
+				window.location.href = `/project/${id}/edit`;
+			}
+
+			showModal() {
+				document.getElementById('modal-nouveau-projet').style.display = 'block';
+			}
+
+			hideModal() {
+				document.getElementById('modal-nouveau-projet').style.display = 'none';
+			}
+
+			showLoading() {
+				document.getElementById('loading-indicator').style.display = 'block';
+			}
+
+			hideLoading() {
+				document.getElementById('loading-indicator').style.display = 'none';
+			}
+
+			showToast(message, type = 'info') {
+				const toast = document.createElement('div');
+				toast.className = `toast toast-${type}`;
+				toast.textContent = message;
+				
+				document.getElementById('toast-container').appendChild(toast);
+				
+				setTimeout(() => {
+					toast.remove();
+				}, 3000);
+			}
+
+			// Méthodes utilitaires
+			escapeHtml(text) {
+				const div = document.createElement('div');
+				div.textContent = text;
+				return div.innerHTML;
+			}
+
+			formatStatut(statut) {
+				if (!statut) return 'Inconnu';
+				return statut.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+			}
+
+			getInitials(nom, prenom) {
+				return (nom?.charAt(0) || '') + (prenom?.charAt(0) || '');
+			}
+
+			formatDate(dateString) {
+				if (!dateString) return '';
+				const date = new Date(dateString);
+				return date.toLocaleDateString('fr-FR');
+			}
+
+			isOverdue(dateFin, statut) {
+				if (!dateFin || statut === 'TERMINE') return false;
+				return new Date(dateFin) < new Date();
+			}
+
+			renderTeamAvatars(members) {
+				if (!members || members.length === 0) {
+					return '<span class="text-muted">Aucun membre</span>';
+				}
+
+				const visibleMembers = members.slice(0, 3);
+				const remaining = members.length - 3;
+
+				let html = '<div class="team-avatars-small">';
+				visibleMembers.forEach(member => {
+					html += `<div class="team-avatar-small" title="${member.nom} ${member.prenom}">
+						${this.getInitials(member.nom, member.prenom)}
+					</div>`;
+				});
+				
+				if (remaining > 0) {
+					html += `<span class="team-count">+${remaining}</span>`;
+				}
+				
+				html += '</div>';
+				return html;
+			}
+
+			renderProgress(tasks) {
+				if (!tasks || tasks.length === 0) {
+					return '<span class="text-muted">Aucune tâche</span>';
+				}
+
+				const totalTasks = tasks.length;
+				const completedTasks = tasks.filter(t => t.status === 'TERMINE').length;
+				const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+				return `
+					<div class="progress-cell">
+						<div class="progress-bar-small">
+							<div class="progress-fill-small" style="width: ${progressPercent}%"></div>
+						</div>
+						<span class="progress-text-small">${progressPercent}%</span>
+					</div>
+				`;
+			}
+		}
+
+		// Initialisation
+		const projectManager = new ProjectManager();
+	</script>
 {% endblock %}

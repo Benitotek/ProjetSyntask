@@ -122,7 +122,7 @@ class DashboardController extends AbstractController
         // Performance de l'équipe (pour admin ou directeur ou chefs de project)
         $teamPerformance = [];
         
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')||$this->isGranted('ROLE_CHEF_project')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')||$this->isGranted('ROLE_CHEF_PROJECT')) {
             foreach ($users as $teamMember) {
                 $userTasks = $taskRepository->findBy(['assignedUser' => $teamMember]);
                 $userCompletedTasks = count(array_filter($userTasks, function($task) {

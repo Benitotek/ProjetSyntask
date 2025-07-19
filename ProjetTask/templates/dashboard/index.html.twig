@@ -62,7 +62,7 @@
 										</h6>
 									</li>
 									<li>
-										{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_CHEF_project') %}
+										{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_CHEF_PROJECT') %}
 											<a href="{{ path('app_calendar_all_tasks') }}" class="btn btn-primary me-2">
 												<i class="fas fa-calendar-alt me-1"></i>
 												CALENDRIER

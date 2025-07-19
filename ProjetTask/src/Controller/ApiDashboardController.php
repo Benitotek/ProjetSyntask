@@ -13,6 +13,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/dashboard')]
 class ApiDashboardController extends AbstractController
 {
+    // Cette méthode récupère les données de l'utilisateur connecté
     #[Route('/activity-data', name: 'api_dashboard_activity_data', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function activityData(
@@ -31,7 +32,7 @@ class ApiDashboardController extends AbstractController
             ]
         ]);
     }
-
+// cette méthode récupère les 5 dernières activités
     #[Route('/recent-activities', name: 'api_dashboard_recent_activities', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function recentActivities(

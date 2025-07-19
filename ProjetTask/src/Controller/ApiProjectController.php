@@ -13,20 +13,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+#[Route('/api/project')]
 final class ApiProjectController extends AbstractController
 {
-      public function __construct(
+    public function __construct(
         private EntityManagerInterface $entityManager,
         private ProjectRepository $projectRepository,
         private UserRepository $userRepository,
         private ValidatorInterface $validator
-    ) {
-    }
+    ) {}
 
     /**
      * Liste tous les projets accessibles à l'utilisateur
      */
-    #[Route('', name: 'api_projects_list', methods: ['GET'])]
+    #[Route('/projects', name: 'api_projects_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
         $user = $this->getUser();
@@ -36,6 +36,7 @@ final class ApiProjectController extends AbstractController
 
         try {
             // Récupération des projets avec pagination
+            $statut = $request->query->get('statut', '');
             $projects = $this->projectRepository->findByUserWithPagination($user, $page, $limit, $search);
             $totalProjects = $this->projectRepository->countByUser($user, $search);
 
@@ -54,7 +55,6 @@ final class ApiProjectController extends AbstractController
                     'pages' => ceil($totalProjects / $limit)
                 ]
             ]);
-
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -62,11 +62,20 @@ final class ApiProjectController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    #[Route('/projects/view', name: 'api_projects_view', methods: ['GET'])]
+    public function indexView(ProjectRepository $projectRepository): Response
+    {
+        $user = $this->getUser();
+        $projects = $projectRepository->findBy(['user' => $user]);
 
+        return $this->render('api_project/index.html.twig', [
+            'projects' => $projects,
+        ]);
+    }
     /**
      * Récupère un projet spécifique
      */
-   #[Route('/{id}', name: 'api_projects_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'api_projects_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(int $id): JsonResponse
     {
         try {
@@ -91,7 +100,6 @@ final class ApiProjectController extends AbstractController
                 'success' => true,
                 'data' => $this->serializeProject($project, true) // Détail complet
             ]);
-
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -150,7 +158,6 @@ final class ApiProjectController extends AbstractController
                 'message' => 'Projet créé avec succès',
                 'data' => $this->serializeProject($project)
             ], Response::HTTP_CREATED);
-
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -227,7 +234,6 @@ final class ApiProjectController extends AbstractController
                 'message' => 'Projet mis à jour avec succès',
                 'data' => $this->serializeProject($project)
             ]);
-
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -267,7 +273,6 @@ final class ApiProjectController extends AbstractController
                 'success' => true,
                 'message' => 'Projet supprimé avec succès'
             ]);
-
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -313,7 +318,6 @@ final class ApiProjectController extends AbstractController
                 'success' => true,
                 'data' => $members
             ]);
-
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -370,7 +374,6 @@ final class ApiProjectController extends AbstractController
                 'success' => true,
                 'message' => 'Membre ajouté avec succès'
             ]);
-
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -428,7 +431,7 @@ final class ApiProjectController extends AbstractController
     private function canAccessProject(Project $project): bool
     {
         $user = $this->getUser();
-        
+
         // Le créateur peut toujours accéder
         if ($project->getCreatedBy() === $user) {
             return true;
@@ -453,7 +456,7 @@ final class ApiProjectController extends AbstractController
     private function canEditProject(Project $project): bool
     {
         $user = $this->getUser();
-        
+
         // Le créateur peut toujours éditer
         if ($project->getCreatedBy() === $user) {
             return true;
@@ -473,7 +476,7 @@ final class ApiProjectController extends AbstractController
     private function canDeleteProject(Project $project): bool
     {
         $user = $this->getUser();
-        
+
         // Le créateur peut toujours supprimer
         if ($project->getCreatedBy() === $user) {
             return true;
@@ -494,5 +497,4 @@ final class ApiProjectController extends AbstractController
             'controller_name' => 'ApiProjectController',
         ]);
     }
-
 }

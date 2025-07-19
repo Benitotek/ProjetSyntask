@@ -9,7 +9,363 @@
 {% endblock %}
 
 {% block body %}
-	{% set current_statut = current_statut|default('tous') %}
+{% set current_statut = current_statut|default('tous') %}
+	<div class="app-container">
+		<!-- Sidebar -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<div class="app-logo">
+					<div class="logo-placeholder">
+						<i class="icon-image"></i>
+					</div>
+					<span class="logo-text">logo de l'application</span>
+				</div>
+
+				<div class="user-profile">
+					<div class="profile-avatar">
+						<i class="icon-user"></i>
+					</div>
+					<div class="user-info">
+						<div class="user-name">{{ app.user.fullName|default('Employé') }}</div>
+						<div class="user-role">{{ app.user.role|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
+					</div>
+					<div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
+				</div>
+			</div>
+
+			<nav class="sidebar-nav">
+				<ul class="nav-menu">
+					<li class="nav-item">
+						<a href="{{ path('app_dashboard') }}" class="nav-link">
+							<i class="icon-dashboard"></i>
+							Tableau de bord
+						</a>
+					</li>
+					<li class="nav-item active">
+						<a href="{{ path('app_mes_projects') }}" class="nav-link">
+							<i class="icon-projects"></i>
+							Mes projects
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="{{ path('app_dashboard') }}" class="nav-link">
+							<i class="icon-stats"></i>
+							Statistiques
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="{{ path('app_my_profile') }}" class="nav-link">
+							<i class="icon-profile"></i>
+							Mon profil
+						</a>
+					</li>
+				</ul>
+			</nav>
+
+			<div class="sidebar-footer">
+				<a href="{{ path('app_logout') }}" class="logout-btn">
+					<i class="icon-logout"></i>
+					bouton de déconnexion
+				</a>
+			</div>
+		</aside>
+
+		<!-- Contenu principal -->
+		<main class="main-content">
+			<div class="content-header">
+				<h1 class="page-title">Mes projects</h1>
+				<div class="header-actions">
+					{% if is_granted('ROLE_DIRECTEUR') %}
+						<a href="{{ path('app_project_new') }}" class="btn btn-primary">
+							<i class="icon-plus"></i>
+							Nouveau project
+						</a>
+					{% endif %}
+				</div>
+			</div>
+
+			<!-- Barre de recherche -->
+			<div class="search-container">
+				<input type="text" id="searchInput" class="search-input" placeholder="Rechercher un projet...">
+				<button id="clearSearch" class="btn btn-secondary" style="display: none;">
+					<i class="icon-close"></i>
+					Effacer
+				</button>
+			</div>
+
+			<!-- Filtres -->
+			<div class="filters-section">
+				<div class="filter-tabs">
+					<a href="#" class="filter-tab active" data-statut="tous">
+						Tous
+					</a>
+					<a href="#" class="filter-tab" data-statut="EN-ATTENTE">
+						En attente
+					</a>
+					<a href="#" class="filter-tab" data-statut="EN-COURS">
+						En cours
+					</a>
+					<a href="#" class="filter-tab" data-statut="TERMINE">
+						Terminés
+					</a>
+				</div>
+			</div>
+
+			<!-- Liste des projects -->
+			<div id="projectsContainer" class="projects-grid">
+				<!-- Le contenu sera chargé ici via JavaScript -->
+			</div>
+
+			<!-- Pagination -->
+			<div id="pagination" class="pagination"></div>
+		</main>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Variables globales
+			let currentPage = 1;
+			let currentStatut = 'tous';
+			let currentSearch = '';
+			const limit = 12; // Nombre de projets par page
+			
+			// Éléments DOM
+			const projectsContainer = document.getElementById('projectsContainer');
+			const paginationContainer = document.getElementById('pagination');
+			const searchInput = document.getElementById('searchInput');
+			const clearSearchBtn = document.getElementById('clearSearch');
+			const filterTabs = document.querySelectorAll('.filter-tab');
+			
+			// Fonction pour charger les projets
+			function loadProjects(page = 1, search = '', statut = 'tous') {
+				// Afficher le loader
+				projectsContainer.innerHTML = '<div class="loading">Chargement des projets...</div>';
+				
+				// Construire les paramètres de requête
+				const params = new URLSearchParams({
+					page: page,
+					limit: limit
+				});
+				
+				if (search) {
+					params.append('search', search);
+				}
+				
+				if (statut && statut !== 'tous') {
+					params.append('statut', statut);
+				}
+				
+				// Faire la requête AJAX
+				fetch(`{{ path('api_projects_list') }}?${params}`, {
+					method: 'GET',
+					headers: {
+						'Accept': 'application/json',
+						'X-Requested-With': 'XMLHttpRequest'
+					}
+				})
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Erreur réseau');
+					}
+					return response.json();
+				})
+				.then(data => {
+					if (data.success) {
+						displayProjects(data.data);
+						displayPagination(data.pagination);
+					} else {
+						projectsContainer.innerHTML = '<div class="no-results">Erreur lors du chargement des projets</div>';
+					}
+				})
+				.catch(error => {
+					console.error('Erreur:', error);
+					projectsContainer.innerHTML = '<div class="no-results">Erreur lors du chargement des projets</div>';
+				});
+			}
+			
+			// Fonction pour afficher les projets
+			function displayProjects(projects) {
+				if (projects.length === 0) {
+					projectsContainer.innerHTML = `
+						<div class="empty-state">
+							<div class="empty-icon">📁</div>
+							<h3>Aucun project trouvé</h3>
+							<p>Aucun projet ne correspond aux critères de recherche.</p>
+						</div>
+					`;
+					return;
+				}
+				
+				const projectsHTML = projects.map(project => {
+					const statusClass = project.statut ? project.statut.toLowerCase().replace('-', '_') : 'unknown';
+					const statusText = project.statut ? project.statut.replace('-', ' ') : 'Non défini';
+					
+					return `
+						<div class="project-card">
+							<div class="project-header">
+								<h3 class="project-title">${project.titre || 'Titre non défini'}</h3>
+								<span class="project-statut project-statut-${statusClass}">
+									${statusText}
+								</span>
+							</div>
+							
+							<div class="project-meta">
+								${project.description ? `
+									<p class="project-description">
+										${project.description.length > 100 ? project.description.substring(0, 100) + '...' : project.description}
+									</p>
+								` : ''}
+								
+								<div class="project-dates">
+									<div class="project-date">
+										<i class="icon-calendar"></i>
+										<span>Créé le ${formatDate(project.date_creation)}</span>
+									</div>
+									${project.date_butoir ? `
+										<div class="project-date">
+											<i class="icon-clock"></i>
+											<span>Échéance: ${formatDate(project.date_butoir)}</span>
+										</div>
+									` : ''}
+								</div>
+								
+								${project.progress !== undefined ? `
+									<div class="project-progress">
+										<div class="progress-bar">
+											<div class="progress-fill" style="width: ${project.progress}%"></div>
+										</div>
+										<span class="progress-text">${project.completed_tasks || 0}/${project.total_tasks || 0} tâches</span>
+									</div>
+								` : ''}
+							</div>
+							
+							<div class="project-actions">
+								<a href="/project/${project.id}/kanban" class="btn btn-primary btn-sm">
+									<i class="icon-kanban"></i>
+									Kanban
+								</a>
+								<a href="/project/${project.id}" class="btn btn-secondary btn-sm">
+									<i class="icon-eye"></i>
+									Détails
+								</a>
+							</div>
+						</div>
+					`;
+				}).join('');
+				
+				projectsContainer.innerHTML = projectsHTML;
+			}
+			
+			// Fonction pour afficher la pagination
+			function displayPagination(pagination) {
+				if (pagination.pages <= 1) {
+					paginationContainer.innerHTML = '';
+					return;
+				}
+				
+				let paginationHTML = '';
+				
+				// Bouton précédent
+				if (pagination.page > 1) {
+					paginationHTML += `
+						<button class="page-btn" data-page="${pagination.page - 1}">
+							« Précédent
+						</button>
+					`;
+				}
+				
+				// Numéros de page
+				for (let i = 1; i <= pagination.pages; i++) {
+					if (i === pagination.page) {
+						paginationHTML += `<button class="page-btn active" data-page="${i}">${i}</button>`;
+					} else if (i === 1 || i === pagination.pages || Math.abs(i - pagination.page) <= 2) {
+						paginationHTML += `<button class="page-btn" data-page="${i}">${i}</button>`;
+					} else if (i === pagination.page - 3 || i === pagination.page + 3) {
+						paginationHTML += `<span class="page-ellipsis">...</span>`;
+					}
+				}
+				
+				// Bouton suivant
+				if (pagination.page < pagination.pages) {
+					paginationHTML += `
+						<button class="page-btn" data-page="${pagination.page + 1}">
+							Suivant »
+						</button>
+					`;
+				}
+				
+				paginationContainer.innerHTML = paginationHTML;
+				
+				// Ajouter les événements de clic
+				document.querySelectorAll('.page-btn').forEach(btn => {
+					btn.addEventListener('click', function() {
+						const page = parseInt(this.getAttribute('data-page'));
+						currentPage = page;
+						loadProjects(page, currentSearch, currentStatut);
+					});
+				});
+			}
+			
+			// Fonction pour formater les dates
+			function formatDate(dateString) {
+				if (!dateString) return '';
+				const date = new Date(dateString);
+				return date.toLocaleDateString('fr-FR');
+			}
+			
+			// Gestion de la recherche
+			let searchTimeout;
+			searchInput.addEventListener('input', function() {
+				clearTimeout(searchTimeout);
+				const searchValue = this.value.trim();
+				
+				// Debounce pour éviter trop de requêtes
+				searchTimeout = setTimeout(() => {
+					currentSearch = searchValue;
+					currentPage = 1;
+					loadProjects(1, searchValue, currentStatut);
+					
+					// Afficher/cacher le bouton d'effacement
+					clearSearchBtn.style.display = searchValue ? 'block' : 'none';
+				}, 300);
+			});
+			
+			// Bouton effacer recherche
+			clearSearchBtn.addEventListener('click', function() {
+				searchInput.value = '';
+				currentSearch = '';
+				currentPage = 1;
+				this.style.display = 'none';
+				loadProjects(1, '', currentStatut);
+			});
+			
+			// Gestion des filtres par statut
+			filterTabs.forEach(tab => {
+				tab.addEventListener('click', function(e) {
+					e.preventDefault();
+					
+					// Mettre à jour l'état actif
+					filterTabs.forEach(t => t.classList.remove('active'));
+					this.classList.add('active');
+					
+					// Mettre à jour le statut courant
+					currentStatut = this.getAttribute('data-statut');
+					currentPage = 1;
+					
+					// Recharger les projets
+					loadProjects(1, currentSearch, currentStatut);
+				});
+			});
+			
+			// Chargement initial
+			loadProjects();
+		});
+	</script>
+
+	{# {% set current_statut = current_statut|default('tous') %}
 	<div
 		class="app-container">
 		<!-- Sidebar -->
@@ -249,5 +605,5 @@
 					{% endfor %}
 				</div>
 			</main>
-		</div>
+		</div> #}
 	{% endblock %}
