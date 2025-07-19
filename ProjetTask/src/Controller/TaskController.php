@@ -127,7 +127,7 @@ class TaskController extends AbstractController
         $em->flush();
 
         // Optionnel : log de l'activité
-        $logger->logTaskCompletion($task->getId(), $task->getTitle());
+        $logger->logActivity($this->getUser(), $task->getTitle(), $task->getId(), $task->getProject());
 
         return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
     }
@@ -151,8 +151,10 @@ class TaskController extends AbstractController
 
             // Enregistrer l'activité de création de tâche
             $activityLogger->logTaskCreation(
-                (string) $task->getId(),
-                $task->getTitle()
+                $this->getUser(),
+                $task->getTitle(),
+                $task->getId(),
+                $task->getProject()
             );
 
             return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
@@ -185,10 +187,12 @@ class TaskController extends AbstractController
 
         // Enregistrer l'activité de changement de statut
         $activityLogger->logTaskStatusChange(
-            (string) $task->getId(),
+            $this->getUser(),
             $task->getTitle(),
+            $task->getId(),
             $oldStatus,
-            $task->getStatut()->label()
+            $newStatus,
+            $task->getProject()
         );
 
         return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
@@ -198,7 +202,7 @@ class TaskController extends AbstractController
     /**
      * Afficher les détails d'une tâche
      */
-  #[Route('/task/{id}', name: 'app_task_show', methods: ['GET'])]
+    #[Route('/task/{id}', name: 'app_task_show', methods: ['GET'])]
     public function show(Task $task): Response
     {
         $project = $task->getProject();
@@ -264,7 +268,7 @@ class TaskController extends AbstractController
     /**
      * Suppression d'une tâche
      */
-   #[Route('/task/{id}/delete', name: 'app_task_delete', methods: ['POST'])]
+    #[Route('/task/{id}/delete', name: 'app_task_delete', methods: ['POST'])]
     public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
     {
         $project = $task->getProject();

@@ -37,21 +37,21 @@ class TaskCalendarService
         $calendarTasks = [];
         foreach ($tasks as $task) {
             // Format ISO 8601 pour FullCalendar
-            $start = $task->getDateDebut() ? $task->getDateDebut()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
-            $end = $task->getDateButoir() ? $task->getDateButoir()->format('Y-m-d\TH:i:s') : null;
+            $start = $task->getdateCreation() ? $task->getDateReelle()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
+            $end = $task->getDateButoir() ? $task->getDateReelle()->format('Y-m-d\TH:i:s') : null;
 
             // FullCalendar attend un tableau associatif par "event"
             $calendarTasks[] = [
                 'id' => $task->getId(),
-                'title' => $task->getTitre(),
+                'title' => $task->getTitle(),
                 'start' => $start,
                 'end' => $end,
                 'url' => '/tasks/' . $task->getId(),
                 'status' => $task->getStatut()?->value ?? null,
-                'statusLabel' => $task->getStatut()?->getLabel() ?? '',
+                'statusLabel' => $task->getStatut()?->label() ?? '',
                 'priority' => $task->getPriorite()?->value ?? null,
-                'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
-                'projectTitle' => $task->getProjet()?->getTitre(),
+                'priorityLabel' => $task->getPriorite()?->label() ?? '',
+                'projectTitle' => $task->getProject()?->getTitre(),
                 'assignee' => [
                     'fullName' => $task->getAssignedUser()?->getFullName(),
                     'id' => $task->getAssignedUser()?->getId()
@@ -74,19 +74,19 @@ class TaskCalendarService
         $calendarTasks = [];
         foreach ($tasks as $task) {
             // même structure que précédemment
-            $start = $task->getDateDebut() ? $task->getDateDebut()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
-            $end = $task->getDateButoir() ? $task->getDateButoir()->format('Y-m-d\TH:i:s') : null;
+            $start = $task->getDateCreation() ? $task->getDateReelle()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
+            $end = $task->getDateButoir() ? $task->getDateReelle()->format('Y-m-d\TH:i:s') : null;
             $calendarTasks[] = [
                 'id' => $task->getId(),
-                'title' => $task->getTitre(),
+                'title' => $task->getTitle(),
                 'start' => $start,
                 'end' => $end,
                 'url' => '/tasks/' . $task->getId(),
                 'status' => $task->getStatut()?->value ?? null,
-                'statusLabel' => $task->getStatut()?->getLabel() ?? '',
+                'statusLabel' => $task->getStatut()?->label() ?? '',
                 'priority' => $task->getPriorite()?->value ?? null,
-                'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
-                'projectTitle' => $task->getProjet()?->getTitre(),
+                'priorityLabel' => $task->getPriorite()?->label() ?? '',
+                'projectTitle' => $task->getProject()?->getTitre(),
                 'assignee' => [
                     'fullName' => $task->getAssignedUser()?->getFullName(),
                     'id' => $task->getAssignedUser()?->getId()
@@ -115,7 +115,7 @@ class TaskCalendarService
             $calendarTasks[] = [
                 'id' => $task->getId(),
                 'title' => $task->getTitle(),
-                'start' => $task->getDateLimite() ? $task->getDateLimite()->format('Y-m-d') : null,
+                'start' => $task->getDateCreation() ? $task->getDateReelle()->format('Y-m-d') : null,
                 'url' => '/task/' . $task->getId(),
                 'backgroundColor' => $this->getColorForStatus($task->getStatus()),
                 'borderColor' => $this->getColorForStatus($task->getStatus()),
@@ -160,20 +160,20 @@ class TaskCalendarService
 
         $calendarTasks = [];
         foreach ($tasks as $task) {
-            $start = $task->getDateDebut() ? $task->getDateDebut()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
-            $end   = $task->getDateButoir() ? $task->getDateButoir()->format('Y-m-d\TH:i:s') : null;
+            $start = $task->getDateCreation() ? $task->getDateReelle()->format('Y-m-d\TH:i:s') : $task->getDateButoir()?->format('Y-m-d\TH:i:s');
+            $end   = $task->getDateButoir() ? $task->getDateReelle()->format('Y-m-d\TH:i:s') : null;
 
             $calendarTasks[] = [
                 'id'           => $task->getId(),
-                'title'        => $task->getTitre(),
+                'title'        => $task->getTitle(),
                 'start'        => $start,
                 'end'          => $end,
                 'url'          => '/tasks/' . $task->getId(),
                 'status'       => $task->getStatut()?->value ?? null,
-                'statusLabel'  => $task->getStatut()?->getLabel() ?? '',
+                'statusLabel'  => $task->getStatut()?->label() ?? '',
                 'priority'     => $task->getPriorite()?->value ?? null,
-                'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
-                'projectTitle' => $task->getProjet()?->getTitre(),
+                'priorityLabel' => $task->getPriorite()?->label() ?? '',
+                'projectTitle' => $task->getProject()?->getTitre(),
                 'assignee'     => [
                     'fullName' => $task->getAssignedUser()?->getFullName(),
                     'id'       => $task->getAssignedUser()?->getId()
@@ -209,7 +209,7 @@ class TaskCalendarService
     //             'statusLabel'  => $task->getStatut()?->getLabel() ?? '',
     //             'priority'     => $task->getPriorite()?->value ?? null,
     //             'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
-    //             'projectTitle' => $task->getProjet()?->getTitre(),
+    //             'projectTitle' => $task->getProject()?->getTitre(),
     //             'assignee'     => [
     //                 'fullName' => $task->getAssignedUser()?->getFullName(),
     //                 'id'       => $task->getAssignedUser()?->getId()
