@@ -24,6 +24,7 @@ use Symfony\Component\Security\Core\Role\Role;
 // Si vous avez un service spécifique pour les activités, utilisez-le
 use App\Service\ActivityService; // Si vous avez un service pour les activités
 use Container1mDkSxn\getActivityRepositoryService;
+
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
@@ -44,13 +45,13 @@ class DashboardController extends AbstractController
         // Récupérer les projects
         $projects = $projectRepository->findAll();
 
-        // Récupérer les tâches
+        // Récupérer les tâches par date de creation décroissante
         $tasks = $taskRepository->findBy([], ['dateCreation' => 'DESC'], 5);
 
-        // Récupérer les tâches
+        // Récupérer toutes les tâches
         $tasks = $taskRepository->findAll();
 
-        // Récupérer les utilisateurs
+        // Récupérer tous les utilisateurs
         $users = $userRepository->findAll();
 
         // Récupérer les activités récentes
@@ -64,7 +65,7 @@ class DashboardController extends AbstractController
 
         // Calculs pour les statistiques
         $allTasks = $taskRepository->findAll();
-        
+
         $completedTasks = count(array_filter($allTasks, function ($task) {
             return $task->getStatut() === TaskStatut::TERMINE;
         }));
@@ -76,13 +77,13 @@ class DashboardController extends AbstractController
         $inProgressTasks = count(array_filter($allTasks, function ($task) {
             return $task->getStatut() === TaskStatut::EN_COUR;
         }));
-        
+
         // Calcul du taux de complétion
         $completionRate = count($allTasks) > 0 ? ($completedTasks / count($allTasks)) * 100 : 0;
 
         // Générer les échéances à venir
         $dueDates = [];
-        
+
         // Ajouter les échéances des tâches
         foreach ($tasks as $task) {
             if ($task->getDateButoir()) {
@@ -96,7 +97,7 @@ class DashboardController extends AbstractController
                 ];
             }
         }
-        
+
         // Ajouter les échéances des projects
         foreach ($projects as $project) {
             if ($project->getDateButoir()) {
@@ -110,35 +111,35 @@ class DashboardController extends AbstractController
                 ];
             }
         }
-        
+
         // Trier les échéances par date
-        usort($dueDates, function($a, $b) {
+        usort($dueDates, function ($a, $b) {
             return $a['date'] <=> $b['date'];
         });
-        
+
         // Limiter à 5 échéances
         $dueDates = array_slice($dueDates, 0, 5);
-        
+
         // Performance de l'équipe (pour admin ou directeur ou chefs de project)
         $teamPerformance = [];
-        
-        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')||$this->isGranted('ROLE_CHEF_PROJECT')) {
+
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR') || $this->isGranted('ROLE_CHEF_PROJECT')) {
             foreach ($users as $teamMember) {
                 $userTasks = $taskRepository->findBy(['assignedUser' => $teamMember]);
-                $userCompletedTasks = count(array_filter($userTasks, function($task) {
+                $userCompletedTasks = count(array_filter($userTasks, function ($task) {
                     return $task->getStatut() === TaskStatut::TERMINE;
                 }));
-                
-                $userOverdueTasks = count(array_filter($userTasks, function($task) {
+
+                $userOverdueTasks = count(array_filter($userTasks, function ($task) {
                     return $task->isOverdue();
                 }));
-                
+
                 // Dernière activité de l'utilisateur
                 $lastActivity = $activityRepository->findOneBy(
                     ['user' => $teamMember],
                     ['dateCreation' => 'DESC']
                 );
-                
+
                 $teamPerformance[] = [
                     'user' => $teamMember,
                     'assignedTasks' => count($userTasks),
@@ -172,6 +173,3 @@ class DashboardController extends AbstractController
         ]);
     }
 }
-
-
-

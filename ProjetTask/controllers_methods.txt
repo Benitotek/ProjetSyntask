@@ -12,10 +12,61 @@ src\Controller\AdminController.php:92:    public function logout(): Response
 src\Controller\AdminController.php:101:    public function Admindashboard(): Response
 src\Controller\AdminController.php:118:    public function UserList(UserRepository $userRepository): Response
 src\Controller\AdminController.php:130:    public function projects(ProjectRepository $projectRepository): Response
-src\Controller\ApiDashboardController.php:18:    public function activityData(
-src\Controller\ApiDashboardController.php:37:    public function recentActivities(
-src\Controller\ApiDashboardController.php:63:    public function upcomingDueDates(
-src\Controller\ApiDashboardController.php:86:    public function assignedTasks(TaskRepository $taskRepository): JsonResponse
+src\Controller\ApiDashboardController.php:19:    public function activityData(
+src\Controller\ApiDashboardController.php:38:    public function recentActivities(
+src\Controller\ApiDashboardController.php:64:    public function upcomingDueDates(
+src\Controller\ApiDashboardController.php:87:    public function assignedTasks(TaskRepository $taskRepository): JsonResponse
+src\Controller\ApiKanbanController.php:26:    public function __construct(
+src\Controller\ApiKanbanController.php:35:    public function getProjectBoard(int $projectId): JsonResponse
+src\Controller\ApiKanbanController.php:90:    public function createColumn(Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:153:    public function updateColumn(int $id, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:220:    public function deleteColumn(int $id): JsonResponse
+src\Controller\ApiKanbanController.php:266:    public function moveTask(int $id, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:354:    public function reorderColumns(int $projectId, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:399:    public function reorderTasks(int $taskListId, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:445:    private function formatTaskListData(TaskList $taskList): array
+src\Controller\ApiKanbanController.php:472:    private function formatTaskData(Task $task): array
+src\Controller\ApiKanbanController.php:524:    private function getNextColumnPosition(Project $project): int
+src\Controller\ApiKanbanController.php:536:    private function getNextTaskPosition(TaskList $taskList): int
+src\Controller\ApiKanbanController.php:548:    private function updateTaskStatusByColumn(Task $task, TaskList $taskList): void
+src\Controller\ApiKanbanController.php:579:    private function formatValidationErrors($errors): array
+src\Controller\ApiProjectController.php:19:    public function __construct(
+src\Controller\ApiProjectController.php:30:    public function list(Request $request): JsonResponse
+src\Controller\ApiProjectController.php:68:    public function indexView(ProjectRepository $projectRepository): Response
+src\Controller\ApiProjectController.php:81:    public function show(int $id): JsonResponse
+src\Controller\ApiProjectController.php:117:    public function create(Request $request): JsonResponse
+src\Controller\ApiProjectController.php:175:    public function update(int $id, Request $request): JsonResponse
+src\Controller\ApiProjectController.php:251:    public function delete(int $id): JsonResponse
+src\Controller\ApiProjectController.php:290:    public function members(int $id): JsonResponse
+src\Controller\ApiProjectController.php:335:    public function addMember(int $id, Request $request): JsonResponse
+src\Controller\ApiProjectController.php:390:    private function serializeProject(Project $project, bool $detailed = false): array
+src\Controller\ApiProjectController.php:433:    private function canAccessProject(Project $project): bool
+src\Controller\ApiProjectController.php:458:    private function canEditProject(Project $project): bool
+src\Controller\ApiProjectController.php:478:    private function canDeleteProject(Project $project): bool
+src\Controller\ApiProjectController.php:496:    public function index(): Response
+src\Controller\ApiTaskController.php:32:    public function __construct(
+src\Controller\ApiTaskController.php:45:    public function list(Request $request): JsonResponse
+src\Controller\ApiTaskController.php:63:            $tasksData = array_map(function (Task $task) {
+src\Controller\ApiTaskController.php:83:    public function show(int $id): JsonResponse
+src\Controller\ApiTaskController.php:108:    public function create(Request $request): JsonResponse
+src\Controller\ApiTaskController.php:198:    public function update(int $id, Request $request): JsonResponse
+src\Controller\ApiTaskController.php:295:    public function delete(int $id): JsonResponse
+src\Controller\ApiTaskController.php:332:    public function getComments(int $id): JsonResponse
+src\Controller\ApiTaskController.php:366:    public function addComment(int $id, Request $request): JsonResponse
+src\Controller\ApiTaskController.php:420:    public function addTag(int $id, Request $request): JsonResponse
+src\Controller\ApiTaskController.php:468:    public function removeTag(int $id, int $tagId): JsonResponse
+src\Controller\ApiTaskController.php:507:    private function formatTaskData(Task $task, bool $detailed = false): array
+src\Controller\ApiTaskController.php:559:    private function getNextPosition(TaskList $taskList): int
+src\Controller\ApiTaskController.php:571:    private function formatValidationErrors($errors): array
+src\Controller\CalendarController.php:27:    public function __construct(TaskCalendarService $calendarService)
+src\Controller\CalendarController.php:33:    // public function allEmployeeTasks(TaskCalendarService $taskCalendarService): JsonResponse
+src\Controller\CalendarController.php:40:    public function allTasksCalendarAdmin(TaskCalendarService $calendarService): JsonResponse
+src\Controller\CalendarController.php:50:    public function allTasksCalendar(): Response
+src\Controller\CalendarController.php:60:    public function userTasks(TaskCalendarService $calendarService): JsonResponse
+src\Controller\CalendarController.php:68:    public function projectTasks(int $id, TaskCalendarService $calendarService): JsonResponse
+src\Controller\CalendarController.php:76:    public function index(ProjectRepository $projectRepository): Response
+src\Controller\CalendarController.php:88:    public function getUserTasks(): Response
+src\Controller\CalendarController.php:96:    public function getProjectTasks(Project $project): Response
 src\Controller\CommentController.php:28:    public function __construct(
 src\Controller\CommentController.php:40:public function index(
 src\Controller\CommentController.php:72:    public function add(Task $task, Request $request): Response
@@ -23,10 +74,13 @@ src\Controller\CommentController.php:128:    public function edit(Comment $comme
 src\Controller\CommentController.php:173:    public function delete(Comment $comment, Request $request): Response
 src\Controller\CommentController.php:209:    private function getFormErrors($form): array
 src\Controller\CommentController.php:220:    // public function index(): Response
-src\Controller\DashboardController.php:31:    public function index(
-src\Controller\DashboardController.php:68:        $completedTasks = count(array_filter($allTasks, function ($task) {
-src\Controller\DashboardController.php:72:        $pendingTasks = count(array_filter($allTasks, function ($task) {
-src\Controller\DashboardController.php:76:        $inProgressTasks = count(array_filter($allTasks, function ($task) {
+src\Controller\DashboardController.php:32:    public function index(
+src\Controller\DashboardController.php:69:        $completedTasks = count(array_filter($allTasks, function ($task) {
+src\Controller\DashboardController.php:73:        $pendingTasks = count(array_filter($allTasks, function ($task) {
+src\Controller\DashboardController.php:77:        $inProgressTasks = count(array_filter($allTasks, function ($task) {
+src\Controller\DashboardController.php:116:        usort($dueDates, function ($a, $b) {
+src\Controller\DashboardController.php:129:                $userCompletedTasks = count(array_filter($userTasks, function ($task) {
+src\Controller\DashboardController.php:133:                $userOverdueTasks = count(array_filter($userTasks, function ($task) {
 src\Controller\HomeController.php:12:    public function index(): Response
 src\Controller\MemberController.php:23:    public function __construct(
 src\Controller\MemberController.php:35:    public function members(Project $project): Response
@@ -104,22 +158,22 @@ src\Controller\TaskController.php:98:    public function myTasks(TaskRepository 
 $paginator, Request $request): Response
 src\Controller\TaskController.php:123:    public function markCompleted(Task $task, EntityManagerInterface $em, ActivityLogger $logger): Response
 src\Controller\TaskController.php:138:    public function new(
-src\Controller\TaskController.php:166:    public function changeStatus(
-src\Controller\TaskController.php:202:    public function show(Task $task): Response
-src\Controller\TaskController.php:220:    public function edit(Request $request, Task $task, EntityManagerInterface $entityManager): Response
-src\Controller\TaskController.php:268:    public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
-src\Controller\TaskController.php:308:    public function moveTask(
-src\Controller\TaskController.php:352:    // public function assignUser(
-src\Controller\TaskController.php:406:    public function unassignTask(
-src\Controller\TaskController.php:435:    private function canViewProject(Project $project): bool
-src\Controller\TaskController.php:466:    private function canModifyProject($project): bool
-src\Controller\TaskController.php:486:    private function canAssignTasks($project): bool
-src\Controller\TaskController.php:512://     public function new(
-src\Controller\TaskController.php:563://     public function edit(
-src\Controller\TaskController.php:608://     public function delete(
-src\Controller\TaskController.php:652://     public function assign(
-src\Controller\TaskController.php:688://     public function changestatut(
-src\Controller\TaskController.php:729://     public function setPriority(
+src\Controller\TaskController.php:168:    public function changeStatus(
+src\Controller\TaskController.php:206:    public function show(Task $task): Response
+src\Controller\TaskController.php:224:    public function edit(Request $request, Task $task, EntityManagerInterface $entityManager): Response
+src\Controller\TaskController.php:272:    public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
+src\Controller\TaskController.php:312:    public function moveTask(
+src\Controller\TaskController.php:356:    // public function assignUser(
+src\Controller\TaskController.php:410:    public function unassignTask(
+src\Controller\TaskController.php:439:    private function canViewProject(Project $project): bool
+src\Controller\TaskController.php:470:    private function canModifyProject($project): bool
+src\Controller\TaskController.php:490:    private function canAssignTasks($project): bool
+src\Controller\TaskController.php:516://     public function new(
+src\Controller\TaskController.php:567://     public function edit(
+src\Controller\TaskController.php:612://     public function delete(
+src\Controller\TaskController.php:656://     public function assign(
+src\Controller\TaskController.php:692://     public function changestatut(
+src\Controller\TaskController.php:733://     public function setPriority(
 src\Controller\TaskListController.php:27:    public function kanban(
 src\Controller\TaskListController.php:64:    private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
 src\Controller\TaskListController.php:89:    private function canViewProject(Project $project): bool
