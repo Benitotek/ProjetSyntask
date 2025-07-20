@@ -55,6 +55,15 @@ class ProjectVoter extends Voter
             return false;
         }
 
+    // Nouvel accès prioritaire pour les “grand rôles”
+    if (
+        in_array('ROLE_ADMIN', $user->getRoles(), true) ||
+        in_array('ROLE_DIRECTEUR', $user->getRoles(), true) ||
+        in_array('ROLE_CHEF_PROJET', $user->getRoles(), true)
+    ) {
+        return true;
+    }
+
         /** @var Project $project */
         $project = $subject;
 

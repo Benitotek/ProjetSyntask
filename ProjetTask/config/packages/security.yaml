@@ -100,8 +100,6 @@ security:
         # Pages publiques
         - { path: ^/login, role: PUBLIC_ACCESS }
         - { path: ^/register, role: PUBLIC_ACCESS }
-        # - { path: ^/reset-password, role: PUBLIC_ACCESS }
-        # - { path: ^/forgot-password, role: PUBLIC_ACCESS }
         - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/public, role: PUBLIC_ACCESS }
