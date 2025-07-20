@@ -9,6 +9,8 @@ enum TaskPriority: string
     case EN_ATTENTE = 'EN_ATTENTE';
     public function label(): string
     {
+   
+    
         return match ($this) {
             self::NORMAL => 'Normal',
             self::URGENT => 'Urgent',

@@ -28,9 +28,9 @@
 					</div>
 					{{ form_start(form, {'attr': {'class': 'task-form', 'data-action': form.vars.action}}) }}
 					<div class="mb-3">
-						{{ form_label(form.titre) }}
-						{{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
-						{{ form_errors(form.titre) }}
+						{{ form_label(form.title) }}
+						{{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+						{{ form_errors(form.title) }}
 					</div>
 
 					<div class="mb-3">
@@ -46,9 +46,9 @@
 							{{ form_errors(form.priorite) }}
 						</div>
 						<div class="col">
-							{{ form_label(form.dateEcheance) }}
-							{{ form_widget(form.dateEcheance, {'attr': {'class': 'form-control datepicker'}}) }}
-							{{ form_errors(form.dateEcheance) }}
+							{{ form_label(form.dateButoir) }}
+							{{ form_widget(form.dateButoir, {'attr': {'class': 'form-control datepicker'}}) }}
+							{{ form_errors(form.dateButoir) }}
 						</div>
 					</div>
 

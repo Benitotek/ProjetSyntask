@@ -5,53 +5,53 @@
 {% block stylesheets %}
 	{{ parent() }}
 	<style>
-		.task-header {
-			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-			color: white;
-			padding: 30px;
-			border-radius: 15px;
-			margin-bottom: 30px;
-		}
+        .task-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
 
-		.task-priority-high {
-			background: #dc3545;
-		}
-		.task-priority-medium {
-			background: #ffc107;
-		}
-		.task-priority-low {
-			background: #28a745;
-		}
+        .task-priority-high {
+            background: #dc3545;
+        }
+        .task-priority-medium {
+            background: #ffc107;
+        }
+        .task-priority-low {
+            background: #28a745;
+        }
 
-		.info-card {
-			border: none;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-			border-radius: 10px;
-		}
+        .info-card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
 
-		.info-label {
-			font-weight: 600;
-			color: #6c757d;
-			font-size: 0.9em;
-		}
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
 
-		.info-value {
-			font-size: 1.1em;
-			color: #495057;
-		}
+        .info-value {
+            font-size: 1.1em;
+            color: #495057;
+        }
 
-		.task-description {
-			background: #f8f9fa;
-			padding: 20px;
-			border-radius: 10px;
-			border-left: 4px solid #007bff;
-		}
+        .task-description {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
 
-		.action-buttons .btn {
-			margin-right: 10px;
-			margin-bottom: 10px;
-		}
-	</style>
+        .action-buttons .btn {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
 {% endblock %}
 {% block body %}
 	<div	class="container">
@@ -96,16 +96,16 @@
 						{% endif %}
 						{% if task.statut %}
 							<span	class="badge bg-light text-dark">
-								{% if task.statut == 'todo' %}
+								{% if task.statut.value == 'todo' %}
 									À faire
-								{% elseif task.statut == 'in_progress' %}
+								{% elseif task.statut.value == 'in_progress' %}
 									En cours
-								{% elseif task.statut == 'review' %}
+								{% elseif task.statut.value == 'review' %}
 									En révision
-								{% elseif task.statut == 'done' %}
+								{% elseif task.statut.value == 'done' %}
 									Terminé
 								{% else %}
-									{{ task.statut }}
+									{{ task.statut.value }}
 								{% endif %}
 							</span>
 						{% endif %}
@@ -187,57 +187,344 @@
 								</h5>
 							</div>
 							<div	class="card-body">
-								<form	action="{{ path('app_task_assign_user', {'id': task.id}) }}"	method="post">
-									<div	class="mb-3">
-										<label	for="user_id"	class="form-label">
+								<form	id="assign-task-form">
+									<select	name="user_id"	id="user-select"	required>
+										<option	value="">
 											Sélectionner un utilisateur
-										</label>
-										<select	name="user_id"	id="user_id"	class="form-select"	required>
-											<option	value="">
-												-- Sélectionner un utilisateur --
+										</option>
+										{% for member in task.project.membres %}
+											<option	value="{{ member.id }}">
+												{{ member.fullName }}
 											</option>
-											{% for user in available_users %}
-												<option	value="{{ user.id }}"	{% if task.assignedUser and task.assignedUser.id == user.id %}	selected	{% endif %}>
-													{{ user.fullName }}
-													(
-													{{ user.email }}
-													)
-												</option>
-											{% endfor %}
-										</select>
-									</div>
-									<button	type="submit"	class="btn btn-primary">
+										{% endfor %}
+										{% if task.project.chefproject %}
+											<option	value="{{ task.project.chefproject.id }}">
+												{{ task.project.chefproject.fullName }}
+												(Chef)
+											</option>
+										{% endif %}
+									</select>
+									<button	type="button"	onclick="assignTask()">
 										Assigner
 									</button>
 								</form>
-							</div>
+								<script>
+function assignTask() {
+    const userId = document.getElementById('user-select').value;
+    if (!userId) {
+        alert('Veuillez sélectionner un utilisateur');
+        return;
+    }
+    
+    const url = "{{ path('app_task_assign_user', {'id': task.id, 'userId': '__USER_ID__'}) }}".replace('__USER_ID__', userId);
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Ou mettre à jour l'interface
+        } else {
+            alert(data.error || 'Erreur lors de l\'assignation');
+        }
+    });
+}
+</script>
+								<div	class="mb-3">
+									<label	for="user_id"	class="form-label">
+										Sélectionner un utilisateur
+									</label>
+									<select	name="user_id"	id="user_id"	class="form-select"	required>
+										<option	value="">
+											-- Sélectionner un utilisateur --
+										</option>
+										{% for user in task.project.membres %}
+											<option	value="{{ user.id }}"	{% if task.assignedUser and task.assignedUser.id == user.id %}	selected	{% endif %}>
+												{{ user.fullName }}
+												(
+												{{ user.email }}
+												)
+											</option>
+										{% endfor %}
+									</select>
+								</div>
+								<button	type="submit"	class="btn btn-primary">
+									Assigner
+								</button>
+							</form>
 						</div>
-					{% endif %}
-					<div	class="row mb-3 mt-3 px-3">
-						<div	class="col-12">
-							<div	class="info-label">
-								Date d'échéance
-							</div>
-							<div	class="info-value">
-								{% if task.dueDate %}
-									<i	class="fas fa-calendar"></i>
-									<span>
-										{{ task.dueDate|date('d/m/Y') }}
-									</span>
-								{% else %}
-									<span	class="text-muted">
-										Non définie
-									</span>
-								{% endif %}
-							</div>
+					</div>
+				{% endif %}
+				<div	class="row mb-3 mt-3 px-3">
+					<div	class="col-12">
+						<div	class="info-label">
+							Date d'échéance
+						</div>
+						<div	class="info-value">
+							{% if task.dateButoir %}
+								<i	class="fas fa-calendar"></i>
+								<span>
+									{{ task.dateButoir|date('d/m/Y') }}
+								</span>
+							{% else %}
+								<span	class="text-muted">
+									Non définie
+								</span>
+							{% endif %}
 						</div>
 					</div>
 				</div>
-			<!-- fin card info -->
 			</div>
-		<!-- fin col-md-4 -->
+		<!-- fin card info -->
 		</div>
+	<!-- fin col-md-4 -->
+	</div>
+<!-- fin row -->
+</div><!-- fin container -->{% endblock %}{# {% extends 'base.html.twig' %}
+	{% block title %}
+	{{ task.title }}
+	{% endblock %}
+	{% block stylesheets %}
+	{{ parent() }}
+	<style>
+	.task-header {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	padding: 30px;
+	border-radius: 15px;
+	margin-bottom: 30px;
+	}
+	
+	.task-priority-high {
+	background: #dc3545;
+	}
+	.task-priority-medium {
+	background: #ffc107;
+	}
+	.task-priority-low {
+	background: #28a745;
+	}
+	
+	.info-card {
+	border: none;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	border-radius: 10px;
+	}
+	
+	.info-label {
+	font-weight: 600;
+	color: #6c757d;
+	font-size: 0.9em;
+	}
+	
+	.info-value {
+	font-size: 1.1em;
+	color: #495057;
+	}
+	
+	.task-description {
+	background: #f8f9fa;
+	padding: 20px;
+	border-radius: 10px;
+	border-left: 4px solid #007bff;
+	}
+	
+	.action-buttons .btn {
+	margin-right: 10px;
+	margin-bottom: 10px;
+	}
+	</style>
+	{% endblock %}
+	{% block body %}
+	<div	class="container">
+	<!-- Breadcrumb -->
+	<nav	aria-label="breadcrumb"	class="mb-4">
+	<ol	class="breadcrumb">
+	<li	class="breadcrumb-item">
+	<a	href="{{ path('app_task_index') }}">
+	Tâches
+	</a>
+	</li>
+	{% if task.taskList %}
+	<li	class="breadcrumb-item">
+	<a	href="{{ path('app_project_kanban', {id: task.taskList.project.id}) }}">
+	{{ task.taskList.project.titre }}
+	</a>
+	</li>
+	<li	class="breadcrumb-item">
+	<a	href="{{ path('app_tasklist_show', {id: task.taskList.id}) }}">
+	{{ task.taskList.nom }}
+	</a>
+	</li>
+	{% endif %}
+	<li	class="breadcrumb-item active">
+	{{ task.title }}
+	</li>
+	</ol>
+	</nav>
+	<!-- En-tête de la tâche -->
+	<div	class="task-header">
+	<div	class="d-flex justify-content-between align-items-start">
+	<div>
+	<h1	class="mb-2">
+	{{ task.title }}
+	</h1>
+	<div	class="d-flex align-items-center">
+	{% if task.priorite.value %}
+	<span	class="badge task-priority-{{ task.priorite.value }} me-3">
+	Priorité
+	{{ task.priorite.value == 'high' ? 'Élevée' : (task.priorite.value == 'medium' ? 'Moyenne' : 'Faible') }}
+	</span>
+	{% endif %}
+	{% if task.statut %}
+	<span	class="badge bg-light text-dark">
+	{% if task.statut == 'todo' %}
+	À faire
+	{% elseif task.statut == 'in_progress' %}
+	En cours
+	{% elseif task.statut == 'review' %}
+	En révision
+	{% elseif task.statut == 'done' %}
+	Terminé
+	{% else %}
+	{{ task.statut }}
+	{% endif %}
+	</span>
+	{% endif %}
+	</div>
+	</div>
+	<!-- Actions -->
+	<div	class="action-buttons">
+	{% if is_granted('TASK_EDIT', task) %}
+	<a	href="{{ path('app_task_edit', {id: task.id}) }}"	class="btn btn-light">
+	<i	class="fas fa-edit"></i>
+	Modifier
+	</a>
+	{% endif %}
+	{% if is_granted('TASK_DELETE', task) %}
+	<button	class="btn btn-outline-light"	onclick="deleteTask()">
+	<i	class="fas fa-trash"></i>
+	Supprimer
+	</button>
+	{% endif %}
+	</div>
+	</div>
+	</div>
+	<div	class="row">
+	<!-- Contenu principal -->
+	<div	class="col-md-8">
+	<!-- Description -->
+	{% if task.description %}
+	<div	class="card info-card mb-4">
+	<div	class="card-header">
+	<h5	class="mb-0">
+	<i	class="fas fa-align-left"></i>
+	Description
+	</h5>
+	</div>
+	<div	class="card-body">
+	<div	class="task-description">
+	{{ task.description|nl2br }}
+	</div>
+	</div>
+	</div>
+	{% endif %}
+	<!-- Commentaires (placeholder) -->
+	<div	class="card info-card">
+	<div	class="card-header">
+	<h5	class="mb-0">
+	<i	class="fas fa-comments"></i>
+	Commentaires
+	</h5>
+	</div>
+	<div	class="card-body">
+	<div	class="text-center text-muted py-4">
+	<i	class="fas fa-comment-slash fa-2x mb-2"></i>
+	<p>
+	Aucun commentaire pour le moment.
+	</p>
+	<button	class="btn btn-outline-primary btn-sm">
+	<i	class="fas fa-plus"></i>
+	Ajouter un commentaire
+	</button>
+	</div>
+	</div>
+	</div>
+	</div>
+	<!-- Sidebar -->
+	<div	class="col-md-4">
+	<!-- Informations générales -->
+	<div	class="card info-card mb-4">
+	<div	class="card-header">
+	<h5	class="mb-0">
+	<i	class="fas fa-info-circle"></i>
+	Informations
+	</h5>
+	</div>
+	{% if is_granted('TASK_ASSIGN', task) %}
+	<div	class="card mt-3">
+	<div	class="card-header">
+	<h5	class="mb-0">
+	Assigner à un utilisateur
+	</h5>
+	</div>
+	<div	class="card-body">
+	<form	action="{{ path('app_task_assign_user', {'id': task.id}) }}"	method="post">
+	<div	class="mb-3">
+	<label	for="user_id"	class="form-label">
+	Sélectionner un utilisateur
+	</label>
+	<select	name="user_id"	id="user_id"	class="form-select"	required>
+	<option	value="">
+	-- Sélectionner un utilisateur --
+	</option>
+	{% for user in available_users %}
+	<option	value="{{ user.id }}"	{% if task.assignedUser and task.assignedUser.id == user.id %}	selected	{% endif %}>
+	{{ user.fullName }}
+	(
+	{{ user.email }}
+	)
+	</option>
+	{% endfor %}
+	</select>
+	</div>
+	<button	type="submit"	class="btn btn-primary">
+	Assigner
+	</button>
+	</form>
+	</div>
+	</div>
+	{% endif %}
+	<div	class="row mb-3 mt-3 px-3">
+	<div	class="col-12">
+	<div	class="info-label">
+	Date d'échéance
+	</div>
+	<div	class="info-value">
+	{% if task.dueDate %}
+	<i	class="fas fa-calendar"></i>
+	<span>
+	{{ task.dueDate|date('d/m/Y') }}
+	</span>
+	{% else %}
+	<span	class="text-muted">
+	Non définie
+	</span>
+	{% endif %}
+	</div>
+	</div>
+	</div>
+	</div>
+	<!-- fin card info -->
+	</div>
+	<!-- fin col-md-4 -->
+	</div>
 	<!-- fin row -->
 	</div>
-<!-- fin container -->
-{% endblock %}
+	<!-- fin container -->
+{% endblock %} #}

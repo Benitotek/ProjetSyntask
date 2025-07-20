@@ -27,6 +27,9 @@ use Knp\Component\Pager\PaginatorInterface;
 
 class TaskController extends AbstractController
 {
+    /**
+     * Liste des tâches
+     */
     #[Route('/task', name: 'app_task_index', methods: ['GET'])]
     public function index(TaskRepository $taskRepository, TaskListRepository $taskListRepository): Response
     {
@@ -347,61 +350,62 @@ class TaskController extends AbstractController
             'position' => $position
         ]);
     }
+ 
 
     /**
      * Assigner une tâche à un utilisateur
      */
 
-    // #[Route('/{id}/assign/{userId}', name: 'app_task_assign_user', methods: ['POST'])]
-    // public function assignUser(
-    //     Task $task,
-    //     int $userId,
-    //     UserRepository $userRepository,
-    //     EntityManagerInterface $entityManager,
-    //     Request $request
-    // ): Response {
-    //     $project = $task->getProject();
+     #[Route('/{id}/assign/{userId}', name: 'app_task_assign_user', methods: ['POST'])]
+     public function assignUser(
+         Task $task,
+         int $userId,
+         UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+        Request $request
+    ): Response {
+         $project = $task->getProject();
 
-    //     // Vérifier les droits pour assigner des tâches
-    //     if (!$this->canAssignTasks($project)) {
-    //         throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour assigner cette tâche');
-    //     }
+         // Vérifier les droits pour assigner des tâches
+         if (!$this->canAssignTasks($project)) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour assigner cette tâche');
+         }
 
-    //     $user = $userRepository->find($userId);
+        $user = $userRepository->find($userId);
 
-    //     if (!$user) {
-    //         if ($request->isXmlHttpRequest()) {
-    //             return new JsonResponse(['error' => 'Utilisateur non trouvé'], 404);
-    //         }
+         if (!$user) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['error' => 'Utilisateur non trouvé'], 404);
+             }
 
-    //         $this->addFlash('error', 'Utilisateur non trouvé');
-    //         return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
-    //     }
+             $this->addFlash('error', 'Utilisateur non trouvé');
+             return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
+         }
 
-    //         // Vérifier que l'utilisateur est membre du project
-    //         if (!$project->getMembres()->contains($user) && $project->getChefproject() !== $user) {
-    //             if ($request->isXmlHttpRequest()) {
-    //                 return new JsonResponse(['error' => 'L\'utilisateur n\'est pas membre du project'], 400);
-    //             }
-    //
-    //             $this->addFlash('error', 'L\'utilisateur n\'est pas membre du project');
-    //             return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
-    //         }
-    //
-    //         $task->setAssignedUser($user);
-    //         $entityManager->flush();
-    //
-    //         if ($request->isXmlHttpRequest()) {
-    //             return new JsonResponse([
-    //                 'success' => true,
-    //                 'userName' => $user->getFullName(),
-    //                 'userId' => $user->getId()
-    //             ]);
-    //         }
-    //
-    //         $this->addFlash('success', 'Tâche assignée à ' . $user->getFullName());
-    //         return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
-    //     }
+             // Vérifier que l'utilisateur est membre du project
+             if (!$project->getMembres()->contains($user) && $project->getChefproject() !== $user) {
+                 if ($request->isXmlHttpRequest()) {
+                     return new JsonResponse(['error' => 'L\'utilisateur n\'est pas membre du project'], 400);
+                 }
+    
+                 $this->addFlash('error', 'L\'utilisateur n\'est pas membre du project');
+                 return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
+             }
+    
+             $task->setAssignedUser($user);
+             $entityManager->flush();
+    
+             if ($request->isXmlHttpRequest()) {
+                 return new JsonResponse([
+                     'success' => true,
+                     'userName' => $user->getFullName(),
+                     'userId' => $user->getId()
+                 ]);
+            }
+    
+            $this->addFlash('success', 'Tâche assignée à ' . $user->getFullName());
+             return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
+        }
 
     /**
      * Retirer l'assignation d'une tâche
