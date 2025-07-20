@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Éditer le projet{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Ajoute tes CSS spécifiques si besoin -->
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Édition du projet</h1>
+
+    {# Affichage des erreurs, si existantes #}
+    {{ form_errors(form) }}
+
+    {{ form_start(form, {attr: {id: 'projectEditForm'}}}) }}
+        <div class="mb-3">
+            {{ form_label(form.titre, 'Titre du projet') }}
+            {{ form_widget(form.titre, {attr: {class: 'form-control'}}) }}
+            {{ form_errors(form.titre) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.reference, 'Référence') }}
+            {{ form_widget(form.reference, {attr: {class: 'form-control'}}) }}
+            {{ form_errors(form.reference) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.statut, 'Statut') }}
+            {{ form_widget(form.statut, {attr: {class: 'form-control'}}) }}
+            {{ form_errors(form.statut) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.dateButoir, 'Date limite') }}
+            {{ form_widget(form.dateButoir, {attr: {class: 'form-control', type: 'date'}}) }}
+            {{ form_errors(form.dateButoir) }}
+        </div>
+        {# Ajoute d'autres champs selon ton formulaire #}
+
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ path('app_mes_projects') }}" class="btn btn-secondary">Annuler</a>
+    {{ form_end(form) }}
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('projectEditForm');
+
+            form.addEventListener('submit', function (e) {
+                // Exemple de validation JS
+                const titre = form.querySelector('input[name="project[titre]"]').value.trim();
+                if (!titre) {
+                    e.preventDefault();
+                    alert('Le titre ne peut pas être vide.');
+                }
+                // Ajoute d’autres validations si besoin
+            });
+        });
+    </script>
+{% endblock %}

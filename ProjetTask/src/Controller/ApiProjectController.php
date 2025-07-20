@@ -62,6 +62,8 @@ final class ApiProjectController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    // Affiche la liste des projets pour la vue
+
     #[Route('/projects/view', name: 'api_projects_view', methods: ['GET'])]
     public function indexView(ProjectRepository $projectRepository): Response
     {
@@ -169,7 +171,7 @@ final class ApiProjectController extends AbstractController
     /**
      * Met à jour un projet existant
      */
-    #[Route('/{id}', name: 'api_projects_update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}/edit', name: 'api_projects_update', methods: ['PUT', 'PATCH'])]
     public function update(int $id, Request $request): JsonResponse
     {
         try {
