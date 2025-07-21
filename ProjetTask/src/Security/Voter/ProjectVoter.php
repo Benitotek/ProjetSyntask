@@ -9,7 +9,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-// Version3 debut 10/07/2025 Big Bug//  Version3.2 14/07/2025 
+// Version3.4 21/07/2025
 
 /**
  * ProjectVoter
@@ -19,10 +19,10 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 class ProjectVoter extends Voter
 {
-    const VIEW = 'PROJECT_VIEW';
-    const EDIT = 'PROJECT_EDIT';
-    const DELETE = 'PROJECT_DELETE';
-    const MANAGE_MEMBERS = 'PROJECT_MANAGE_MEMBERS';
+    public const VIEW = 'PROJECT_VIEW';
+    public const EDIT = 'PROJECT_EDIT';
+    public const DELETE = 'PROJECT_DELETE';
+    public const CREATE = 'PROJECT_CREATE';
 
     private $security;
 
@@ -30,79 +30,141 @@ class ProjectVoter extends Voter
     {
         $this->security = $security;
     }
-    protected function supports(string $attribute, mixed $subject): bool
+
+    protected function supports($attribute, $subject): bool
     {
-        // Si l'attribut n'est pas un de ceux qu'on gère, on ne vote pas
-        if (!in_array($attribute, [self::VIEW, self::EDIT, self::DELETE])) {
-            return false;
-        }
-
-        // On ne vote que pour les objets Project
-        if (!$subject instanceof Project) {
-            return false;
-        }
-
-        return true;
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::CREATE])
+            && $subject instanceof Project;
     }
 
-    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
+    /**
+     * @param string $attribute
+     * @param Project $project
+     * @param TokenInterface $token
+     * @return bool
+     */
+    protected function voteOnAttribute($attribute, $project, TokenInterface $token): bool
     {
         $user = $token->getUser();
-
-        // L'utilisateur doit être connecté
 
         if (!$user instanceof User) {
             return false;
         }
 
-    // Nouvel accès prioritaire pour les “grand rôles”
-    if (
-        in_array('ROLE_ADMIN', $user->getRoles(), true) ||
-        in_array('ROLE_DIRECTEUR', $user->getRoles(), true) ||
-        in_array('ROLE_CHEF_PROJET', $user->getRoles(), true)
-    ) {
-        return true;
-    }
-
-        /** @var Project $project */
-        $project = $subject;
-
-        // Les administrateurs et directeurs ont tous les droits
-        if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_DIRECTEUR')) {
+        // PRIORITÉ : Les admins ou directeurs voient/éditent TOUS les projets
+        if (
+            $this->security->isGranted('ROLE_ADMIN') ||
+            $this->security->isGranted('ROLE_DIRECTEUR')
+        ) {
             return true;
         }
 
-        // Vérification des droits selon l'attribut
+        // Les chefs de projet et employés doivent être liés au projet
         switch ($attribute) {
             case self::VIEW:
-                return $this->canView($project, $user);
             case self::EDIT:
-                return $this->canEdit($project, $user);
             case self::DELETE:
-                return $this->canDelete($project, $user);
-            case self::MANAGE_MEMBERS:
-                return $this->canManageMembers($project, $user);
+                // Chef de projet ou membre assigné
+                if ($project->getChefproject() === $user) {
+                    return true;
+                }
+                if ($project->getMembres()->contains($user)) {
+                    return true;
+                }
+                return false;
+            case self::CREATE:
+                // Règle si besoin : tous les chef projet peuvent créer, ou autre...
+                return $this->security->isGranted('ROLE_CHEF_PROJET');
+            default:
+                return false;
         }
-
-        return false;
     }
 
-    private function canView(Project $project, User $user): bool
-    {
-        // Le chef de projet peut voir le projet
-        if ($project->getChefProject() && $project->getChefProject()->getId() === $user->getId()) {
-            return true;
-        }
+    // Version 3.1+
+    // const VIEW = 'PROJECT_VIEW';
+    // const EDIT = 'PROJECT_EDIT';
+    // const DELETE = 'PROJECT_DELETE';
+    // const MANAGE_MEMBERS = 'PROJECT_MANAGE_MEMBERS';
 
-        // Les membres peuvent voir le projet
-        foreach ($project->getMembres() as $membre) {
-            if ($membre->getId() === $user->getId()) {
-                return true;
-            }
-        }
+    // private $security;
 
-        return false;
-    }
+    // public function __construct(Security $security)
+    // {
+    //     $this->security = $security;
+    // }
+    // protected function supports(string $attribute, mixed $subject): bool
+    // {
+    //     // Si l'attribut n'est pas un de ceux qu'on gère, on ne vote pas
+    //     if (!in_array($attribute, [self::VIEW, self::EDIT, self::DELETE])) {
+    //         return false;
+    //     }
+
+    //     // On ne vote que pour les objets Project
+    //     if (!$subject instanceof Project) {
+    //         return false;
+    //     }
+
+    //     return true;
+    // }
+
+    // protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
+    // {
+    //     $user = $token->getUser();
+
+    //     // L'utilisateur doit être connecté
+
+    //     if (!$user instanceof User) {
+    //         return false;
+    //     }
+
+    // // Nouvel accès prioritaire pour les “grand rôles”
+    // if (
+    //     in_array('ROLE_ADMIN', $user->getRoles(), true) ||
+    //     in_array('ROLE_DIRECTEUR', $user->getRoles(), true) ||
+    //     in_array('ROLE_CHEF_PROJET', $user->getRoles(), true)
+    // ) {
+    //     return true;
+    // }
+
+    //     /** @var Project $project */
+    //     $project = $subject;
+
+    //     // Les administrateurs et directeurs ont tous les droits
+    //     if ($this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_DIRECTEUR')) {
+    //         return true;
+    //     }
+
+    //     // Vérification des droits selon l'attribut
+    //     switch ($attribute) {
+    //         case self::VIEW:
+    //             return $this->canView($project, $user);
+    //         case self::EDIT:
+    //             return $this->canEdit($project, $user);
+    //         case self::DELETE:
+    //             return $this->canDelete($project, $user);
+    //         case self::MANAGE_MEMBERS:
+    //             return $this->canManageMembers($project, $user);
+    //     }
+
+    //     return false;
+    // }
+
+    // private function canView(Project $project, User $user): bool
+    // {
+    //     // Le chef de projet peut voir le projet
+    //     if ($project->getChefProject() && $project->getChefProject()->getId() === $user->getId()) {
+    //         return true;
+    //     }
+
+    //     // Les membres peuvent voir le projet
+    //     foreach ($project->getMembres() as $membre) {
+    //         if ($membre->getId() === $user->getId()) {
+    //             return true;
+    //         }
+    //     }
+
+    //     return false;
+    // }
     //  // Vérifier si l'utilisateur est le créateur du projet
     //     $isCreator = $project->getCreatedBy()->getId() === $user->getId();
 
