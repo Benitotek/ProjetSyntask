@@ -13,11 +13,11 @@ use App\Entity\User;
  */
 class TaskVoter extends Voter
 {
-    const VIEW = 'VIEW';
-    const EDIT = 'EDIT';
+    const VIEW = 'TASK_VIEW';
+    const EDIT = 'TASK_EDIT';
     const DELETE = 'TASK_DELETE';
     const ASSIGN = 'TASK_ASSIGN';
-    const CHANGE_STATUS = 'CHANGE_STATUS';
+    const CHANGE_STATUS = 'TASK_CHANGE_STATUS';
 
     /**
      * Détermine si ce voter supporte l'attribut et le sujet donnés

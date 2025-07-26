@@ -47,6 +47,10 @@ class ProjectVoter extends Voter
     {
         $user = $token->getUser();
 
+        // test pour voir soucis rajout temporraire d'un dump.
+        dump($attribute, get_class($project), $user->getUserIdentifier(), $user->getRoles());
+        dump($this->security->isGranted('ROLE_ADMIN'));
+
         if (!$user instanceof User) {
             return false;
         }

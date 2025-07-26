@@ -32,9 +32,12 @@ class TaskListController extends AbstractController
         // Vérifier que l'utilisateur a le droit de voir ce project
 
         // Utilisation du voter
-        if (!$this->isGranted('PROJECT_VIEW', $project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
-        }
+        // if (!$this->isGranted('PROJECT_VIEW', $project)) {
+        //     throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
+        // }
+        // Test du Acl(voter) a la place de ce qui a été fait les lignes au dessues
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+
 
         // Récupérer les colonnes avec leurs tâches
         $taskLists = $taskListRepository->findByProjectWithTasks($project);
