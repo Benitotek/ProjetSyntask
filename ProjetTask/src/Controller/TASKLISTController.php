@@ -23,43 +23,46 @@ class TaskListController extends AbstractController
     /**
      * Affiche la vue Kanban d'un project
      */
-    #[Route('/project/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
-    public function kanban(
-        Project $project,
-        TaskListRepository $taskListRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        // Vérifier que l'utilisateur a le droit de voir ce project
+    // ATTENTION: la route ne fonctionne pas, Methode entiérement commanter
+    // le 27/07/2025(cause accest Denied sur route project/id/kanban) DOUBLON ICI et PORJECT CONTROLLER!!
+    
+    // #[Route('/project/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
+    // public function kanban(
+    //     Project $project,
+    //     TaskListRepository $taskListRepository,
+    //     EntityManagerInterface $entityManager
+    // ): Response {
+    //     // Vérifier que l'utilisateur a le droit de voir ce project
 
-        // Utilisation du voter
-        // if (!$this->isGranted('PROJECT_VIEW', $project)) {
-        //     throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
-        // }
-        // Test du Acl(voter) a la place de ce qui a été fait les lignes au dessues
-        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+    //     // Utilisation du voter
+    //     // if (!$this->isGranted('PROJECT_VIEW', $project)) {
+    //     //     throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
+    //     // }
+    //     // Test du Acl(voter) a la place de ce qui a été fait les lignes au dessues
+    //     $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
 
 
-        // Récupérer les colonnes avec leurs tâches
-        $taskLists = $taskListRepository->findByProjectWithTasks($project);
+    //     // Récupérer les colonnes avec leurs tâches
+    //     $taskLists = $taskListRepository->findByProjectWithTasks($project);
 
-        // Si aucune colonne n'existe, en créer par défaut
-        if (empty($taskLists)) {
-            $this->createDefaultTaskLists($project, $entityManager);
-            $taskLists = $taskListRepository->findByProjectWithTasks($project);
-        }
+    //     // Si aucune colonne n'existe, en créer par défaut
+    //     if (empty($taskLists)) {
+    //         $this->createDefaultTaskLists($project, $entityManager);
+    //         $taskLists = $taskListRepository->findByProjectWithTasks($project);
+    //     }
 
-        // Récupérer les membres du project pour l'assignation des tâches
-        $members = $project->getMembres()->toArray();
-        if (!in_array($project->getChefproject(), $members)) {
-            $members[] = $project->getChefproject();
-        }
+    //     // Récupérer les membres du project pour l'assignation des tâches
+    //     $members = $project->getMembres()->toArray();
+    //     if (!in_array($project->getChefproject(), $members)) {
+    //         $members[] = $project->getChefproject();
+    //     }
 
-        return $this->render('tasklist/kanban.html.twig', [
-            'project' => $project,
-            'taskLists' => $taskLists,
-            'members' => $members,
-        ]);
-    }
+    //     return $this->render('tasklist/kanban.html.twig', [
+    //         'project' => $project,
+    //         'taskLists' => $taskLists,
+    //         'members' => $members,
+    //     ]);
+    // }
 
     /**
      * Crée les colonnes par défaut pour un project
@@ -513,7 +516,8 @@ class TaskListController extends AbstractController
             return true;
         }
 
-        // Les chefs de project peuvent modifier les projects qu'ils dirigent
-        return $project->getCHEF_PROJECT() === $user;
+        // Les chefs de projet peuvent modifier les projets qu'ils dirigent
+        // Corriger cette ligne qui utilise getCHEF_PROJECT au lieu de getChefproject
+        return $project->getChefproject() === $user;
     }
 }

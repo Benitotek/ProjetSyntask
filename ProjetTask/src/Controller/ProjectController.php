@@ -198,28 +198,41 @@ class ProjectController extends AbstractController
     #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
     public function kanban(Project $project, TaskListRepository $taskListRepository, UserRepository $userRepository): Response
     {
+        // Utiliser le voter correctement 27/07/2025
+        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+
         // Vérifier que l'utilisateur a le droit de voir ce project
         // Utilisation du voter 10/07/2025
-        if (!$this->isGranted('PROJECT_VIEW', $project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
-        }
+        // if (!$this->isGranted('PROJECT_VIEW', $project)) {
+        //     throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
+        // }
 
         // Récupérer les colonnes avec leurs tâches
         $taskLists = $taskListRepository->findByProjectWithTasks($project);
-
-        // Récupérer les utilisateurs pouvant être assignés aux tâches (membres du project)
-        $availableUsers = $project->getMembres()->toArray();
-
-        // Ajouter le chef de project s'il n'est pas déjà membre
-        if (!in_array($project->getChefproject(), $availableUsers)) {
-            $availableUsers[] = $project->getChefproject();
+        // Récupérer les membres du projet pour l'assignation des tâches
+        $members = $project->getMembres()->toArray();
+        if (!in_array($project->getChefproject(), $members)) {
+            $members[] = $project->getChefproject();
         }
 
-        return $this->render('project/kanban.html.twig', [
+        return $this->render('tasklist/kanban.html.twig', [
             'project' => $project,
             'taskLists' => $taskLists,
-            'availableUsers' => $availableUsers
+            'members' => $members,
         ]);
+        // // Récupérer les utilisateurs pouvant être assignés aux tâches (membres du project)
+        // $availableUsers = $project->getMembres()->toArray();
+
+        // // Ajouter le chef de project s'il n'est pas déjà membre
+        // if (!in_array($project->getChefproject(), $availableUsers)) {
+        //     $availableUsers[] = $project->getChefproject();
+        // }
+
+        // return $this->render('project/kanban.html.twig', [
+        //     'project' => $project,
+        //     'taskLists' => $taskLists,
+        //     'availableUsers' => $availableUsers
+        // ]);
     }
 
     /**
@@ -251,7 +264,7 @@ class ProjectController extends AbstractController
                         if ($project->getChefproject() === $user) {
                             $this->addFlash('error', 'Vous ne pouvez pas retirer le chef de project');
                         } else {
-                           
+
                             $this->addFlash('success', $user->getFullName() . ' retiré du project avec succès');
                         }
                     }
@@ -347,25 +360,25 @@ class ProjectController extends AbstractController
     /**
      * Méthode pour vérifier si l'utilisateur a le droit de voir ou modifier un project
      */
- private function canViewProject(Project $project): bool
-{
-    /** @var User $user */
-    $user = $this->getUser();
-    if (!$user) {
-        return false;
-    }
+    private function canViewProject(Project $project): bool
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return false;
+        }
 
-    // Vérification explicite du rôle admin/directeur
-    if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
-        return true;
-    }
+        // Vérification explicite du rôle admin/directeur
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')) {
+            return true;
+        }
 
-    // Vérification du chef de projet 
-    if ($project->getChefproject() && $project->getChefproject()->getId() === $user->getId()) {
-        return true;
-    }
+        // Vérification du chef de projet 
+        if ($project->getChefproject() && $project->getChefproject()->getId() === $user->getId()) {
+            return true;
+        }
 
-    // Vérification de l'appartenance comme membre 
-    return $project->getMembres()->contains($user);
-}
+        // Vérification de l'appartenance comme membre 
+        return $project->getMembres()->contains($user);
+    }
 }
