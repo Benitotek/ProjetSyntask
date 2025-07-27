@@ -193,7 +193,6 @@ class ProjectVoter extends Voter
     //     }
 
     //     return false;
-
     private function canEdit(Project $project, User $user): bool
     {
         // Seuls les chefs de projet peuvent éditer
