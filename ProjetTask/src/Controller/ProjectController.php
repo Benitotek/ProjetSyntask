@@ -20,6 +20,8 @@ use App\Form\ProjectTypeForm;
 use App\Repository\TaskListRepository;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
+use App\Security\ProjectVoter;
+use Psr\Log\LoggerInterface;
 
 #[Route('/project')]
 class ProjectController extends AbstractController
@@ -196,22 +198,31 @@ class ProjectController extends AbstractController
      * Affichage du kanban d'un project
      */
     #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
-    public function kanban(Project $project, TaskListRepository $taskListRepository, UserRepository $userRepository): Response
-    {
-        // Utiliser le voter correctement 27/07/2025
-        $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
+    public function kanban(
+        Project $project,
+        TaskListRepository $taskListRepository,
+        UserRepository $userRepository,
+        LoggerInterface $logger,
+        // Ajout de la variable $logger pour le logging interne de Symfony.
+    ): Response {
+        $user = $this->getUser();
 
-        // Vérifier que l'utilisateur a le droit de voir ce project
-        // Utilisation du voter 10/07/2025
-        // if (!$this->isGranted('PROJECT_VIEW', $project)) {
-        //     throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
-        // }
+        // Log pour débogage
+        $logger->info('Tentative d\'accès au kanban', [
+            'project_id' => $project->getId(),
+            'user_email' => $user ? $user->getUserIdentifier() : 'anonymous',
+            'user_roles' => $user ? $user->getRoles() : []
+        ]);
 
-        // Récupérer les colonnes avec leurs tâches
+        // Vérifier les autorisations
+        $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project, 'Vous n\'avez pas accès à ce projet.');
+        // TODO: REMPLACER PAR ProjectVoter::VIEWER, si besoin (voir la documentation de ProjectVoter) $this->denyAccessUnlessGranted(ProjectVoter::VIEWER, $project, 'Vous n\'avez pas accès à ce projet.'); $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project, 'Vous n\'avez pas accès à ce projet.');
+
         $taskLists = $taskListRepository->findByProjectWithTasks($project);
+
         // Récupérer les membres du projet pour l'assignation des tâches
         $members = $project->getMembres()->toArray();
-        if (!in_array($project->getChefproject(), $members)) {
+        if ($project->getChefproject() && !in_array($project->getChefproject(), $members)) {
             $members[] = $project->getChefproject();
         }
 
@@ -220,19 +231,6 @@ class ProjectController extends AbstractController
             'taskLists' => $taskLists,
             'members' => $members,
         ]);
-        // // Récupérer les utilisateurs pouvant être assignés aux tâches (membres du project)
-        // $availableUsers = $project->getMembres()->toArray();
-
-        // // Ajouter le chef de project s'il n'est pas déjà membre
-        // if (!in_array($project->getChefproject(), $availableUsers)) {
-        //     $availableUsers[] = $project->getChefproject();
-        // }
-
-        // return $this->render('project/kanban.html.twig', [
-        //     'project' => $project,
-        //     'taskLists' => $taskLists,
-        //     'availableUsers' => $availableUsers
-        // ]);
     }
 
     /**
