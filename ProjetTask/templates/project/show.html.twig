@@ -76,9 +76,9 @@
                 <div class="breadcrumb">
                     <a href="{{ path('app_mes_projects') }}">Mes projects</a>
                     <span class="separator">></span>
-                    <span>{{ project.nom }}</span>
+                    <span>{{ project.title }}</span>
                 </div>
-                <h1 class="page-title">{{ project.nom }}</h1>
+                <h1 class="page-title">{{ project.title }}</h1>
                 <span class="project-statut project-statut-{{ project.statut|lower|replace({'-': '_'}) }}">
                     {{ project.statut|replace({'-': ' '})|title }}
                 </span>
