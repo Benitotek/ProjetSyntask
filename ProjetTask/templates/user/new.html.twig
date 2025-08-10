@@ -9,8 +9,12 @@
         <div class="item">{{ form_row(form.nom) }}</div>
         <div class="item">{{ form_row(form.prenom) }}</div>
         <div class="item">{{ form_row(form.email) }}</div>
-        <div class="item">{{ form_row(form.role, {'label': 'Rôle', 'attr': {'size': 1, 'placeholder': 'Choisir le rôle'}}) }}</div>
-        <div class="item">{{ form_row(form.mdp) }}</div>
+        {% if form.role is defined %}
+            <div class="item">{{ form_row(form.role, {'label': 'Rôle'}) }}</div>
+        {% endif %}
+        <div class="item">{{ form_row(form.plainPassword.first) }}</div> {# Premier champ mot de passe #}
+        <div class="item">{{ form_row(form.plainPassword.second) }}</div> {# Confirmation #}
+        <div class="item">{{ form_row(form.statut) }}</div>
         <div class="item">{{ form_row(form.estActif) }}</div>
         
         {# Bouton de soumission #}
@@ -23,7 +27,6 @@
     
     <a href="{{ path('app_user_index') }}">Tous les utilisateurs</a>
 {% endblock %}
-
 {# {% extends 'base.html.twig' %}
 
 {% block title %}Create User

@@ -53,8 +53,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     private ?string $email = null;
 
-    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
-    #[Assert\Length(min: 6)]
+    // #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    // #[Assert\Length(min: 6)]
     #[ORM\Column(type: Types::STRING, length: 255)]
     private ?string $Mdp = null;
 

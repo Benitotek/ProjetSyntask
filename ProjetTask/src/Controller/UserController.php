@@ -78,11 +78,13 @@ public function new(
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        $plainPassword = $form->get('password')->getData();
-        if ($plainPassword) {
-            $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
-            $user->setMdp($hashedPassword);
-        }
+        // Récupérer le mot de passe depuis le champ RepeatedType
+        $plainPassword = $form->get('plainPassword')->getData();
+        
+        // Hasher le mot de passe
+        $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
+        $user->setMdp($hashedPassword);
+        
         $user->setDateCreation(new \DateTime());
         $user->setDateMaj(new \DateTime());
         $user->setEstActif(true);
@@ -99,7 +101,7 @@ public function new(
         'form' => $form,
     ]);
 }
-
+// Route pour afficher les détails d'un utilisateur spécifique
    #[Route('/admin/users/{id}/show', name: 'app_user_show', methods: ['GET'])]
 public function show(User $user): Response
 {
@@ -107,6 +109,7 @@ public function show(User $user): Response
         'user' => $user,
     ]);
 }
+// Route pour modifier un utilisateur existant
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {

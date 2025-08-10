@@ -10,10 +10,10 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -62,11 +62,10 @@ class UserTypeForm extends AbstractType
                     'Directeur' => UserRole::DIRECTEUR,
                 ],
                 'attr' => ['class' => 'form-check-input'],
-                'multiple' => false,  // Un seul rôle principal
-                'expanded' => true,   // Affiche comme des radio buttons
+                'multiple' => false,
+                'expanded' => true,
                 'label' => 'Rôle'
             ]);
-        
         }
 
         $builder
@@ -80,16 +79,27 @@ class UserTypeForm extends AbstractType
                 ],
                 'attr' => ['class' => 'form-select']
             ])
-            // autres champs...
-            ->add('mdp', PasswordType::class, [
-                'label' => 'Mot de passe',
-                'mapped' => false, // si vous ne souhaitez pas lier directement à l'entité
-                'required' => true,
-            ])
-            ->add('confirmer_mdp', PasswordType::class, [
-                'label' => 'Confirmer le mot de passe',
+            // NOUVEAU: Utilisation de RepeatedType pour gérer automatiquement la validation
+            ->add('plainPassword', RepeatedType::class, [
+                'type' => PasswordType::class,
                 'mapped' => false,
-                'required' => true,
+                'first_options' => [
+                    'label' => 'Mot de passe',
+                    'attr' => ['class' => 'form-control']
+                ],
+                'second_options' => [
+                    'label' => 'Confirmer le mot de passe',
+                    'attr' => ['class' => 'form-control']
+                ],
+                'invalid_message' => 'Les mots de passe ne correspondent pas.',
+                'constraints' => [
+                    new NotBlank(['message' => 'Le mot de passe est obligatoire']),
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+                        'max' => 4096,
+                    ]),
+                ],
             ])
             ->add('estActif', CheckboxType::class, [
                 'required' => false,
@@ -107,18 +117,6 @@ class UserTypeForm extends AbstractType
         }
     }
 
-    /**
-     * Génère les choix pour les statuts à partir de l'enum
-     */
-    private function getStatutChoices(): array
-    {
-        $choices = [];
-        foreach (Userstatut::cases() as $statut) {
-            $choices[$statut->label()] = $statut;
-        }
-        return $choices;
-    }
-
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -127,5 +125,4 @@ class UserTypeForm extends AbstractType
             'is_edit' => false,
         ]);
     }
-    
 }
