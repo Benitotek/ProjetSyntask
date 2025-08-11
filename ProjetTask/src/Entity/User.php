@@ -177,7 +177,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                     $roles[] = 'ROLE_CHEF_PROJET';
                     $roles[] = 'ROLE_EMPLOYE';
                     break;
-                case UserRole::CHEF_PROJET:  // Correction ici
+                case UserRole::CHEF_PROJET:  
                     $roles[] = 'ROLE_CHEF_PROJET';
                     $roles[] = 'ROLE_EMPLOYE';
                     break;

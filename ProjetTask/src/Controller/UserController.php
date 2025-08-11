@@ -17,11 +17,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 #[Route('/admin/users')]
-#[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
-    // Route pour afficher la liste des utilisateurs
     #[Route('/', name: 'app_user_index', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function index(UserRepository $userRepository): Response
     {
         $users = $userRepository->findAll();
@@ -34,8 +33,9 @@ class UserController extends AbstractController
             'userstatutLabels' => $userstatutLabels,
         ]);
     }
-     // Route pour le profil de l'utilisateur connecté
+
     #[Route('/mon-profil', name: 'app_my_profile', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')] // n'importe quel utilisateur connecté
     public function myProfile(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
@@ -43,11 +43,8 @@ class UserController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            // Ici, tu peux gérer l'upload d'avatar si nécessaire, ex :
-            // $avatar = $form->get('avatar')->getData();
             $em->flush();
-            $this->addFlash('success', 'Profil mis à jour !');
-            // On reste sur la même page :
+            $this->addFlash('success', 'Profil mis à jour !');
             return $this->redirectToRoute('app_my_profile');
         }
 
@@ -56,61 +53,45 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-    
 
-    // cette route permet de créer un nouvel utilisateur 
-    // elle est accessible uniquement aux utilisateurs ayant le rôle ROLE_ADMIN
-#[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-public function new(
-    Request $request,
-    AuthorizationCheckerInterface $authChecker,
-    UserPasswordHasherInterface $passwordHasher,
-    EntityManagerInterface $entityManager
-): Response {
-    $user = new User();
+    #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function new(
+        Request $request,
+        AuthorizationCheckerInterface $authChecker,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = new User();
+        $form = $this->createForm(UserTypeForm::class, $user, [
+            'can_choose_role' => true,
+        ]);
 
-    $canChooseRole = $authChecker->isGranted('ROLE_ADMIN') || $authChecker->isGranted('ROLE_DIRECTEUR');
+        $form->handleRequest($request);
 
-    $form = $this->createForm(UserTypeForm::class, $user, [
-        'can_choose_role' => $canChooseRole,
-    ]);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $plainPassword = $form->get('plainPassword')->getData();
+            $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
+            $user->setMdp($hashedPassword);
+            $user->setDateCreation(new \DateTime());
+            $user->setDateMaj(new \DateTime());
+            $user->setEstActif(true);
 
-    $form->handleRequest($request);
+            $entityManager->persist($user);
+            $entityManager->flush();
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        // Récupérer le mot de passe depuis le champ RepeatedType
-        $plainPassword = $form->get('plainPassword')->getData();
-        
-        // Hasher le mot de passe
-        $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
-        $user->setMdp($hashedPassword);
-        
-        $user->setDateCreation(new \DateTime());
-        $user->setDateMaj(new \DateTime());
-        $user->setEstActif(true);
+            $this->addFlash('success', 'Utilisateur créé avec succès.');
+            return $this->redirectToRoute('app_user_index');
+        }
 
-        $entityManager->persist($user);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Utilisateur créé avec succès.');
-        return $this->redirectToRoute('app_user_index');
+        return $this->render('user/new.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
     }
 
-    return $this->render('user/new.html.twig', [
-        'user' => $user,
-        'form' => $form,
-    ]);
-}
-// Route pour afficher les détails d'un utilisateur spécifique
-   #[Route('/admin/users/{id}/show', name: 'app_user_show', methods: ['GET'])]
-public function show(User $user): Response
-{
-    return $this->render('user/show.html.twig', [
-        'user' => $user,
-    ]);
-}
-// Route pour modifier un utilisateur existant
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $form = $this->createForm(UserTypeForm::class, $user);
@@ -134,32 +115,14 @@ public function show(User $user): Response
             'form' => $form,
         ]);
     }
-// Attention a cette route car elle supprime l'utilisateur des que l'on mets l'ID dans l'URL
+
     #[Route('/{id}', name: 'app_user_delete', methods: ['POST', 'GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
-       
-     // Temporairement désactiver la validation CSRF pour tester
-    // if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
         $entityManager->remove($user);
         $entityManager->flush();
         $this->addFlash('success', 'Utilisateur supprimé avec succès.');
-    // } else {
-    //     $this->addFlash('danger', 'Jeton CSRF invalide. Suppression annulée.');
-    // }
         return $this->redirectToRoute('app_user_index');
     }
-
-    // #[Route('/{id}/toggle-statut', name: 'app_user_toggle_statut', methods: ['POST'])]
-    // public function togglestatut(User $user, EntityManagerInterface $entityManager): Response
-    // {
-    //     $user->setEstActif(!$user->isEstActif());
-    //     $user->setDateMaj(new \DateTime());
-    //     $entityManager->flush();
-
-    //     $statut = $user->isEstActif() ? 'activé' : 'désactivé';
-    //     $this->addFlash('success', "Utilisateur {$statut} avec succès.");
-
-    //     return $this->redirectToRoute('app_user_index');
-    // }
 }
