@@ -1,7 +1,6 @@
 /**
  * Styles pour le dashboard et l'application SYNTASK
  */
-
 :root {
   --primary-color: #4f46e5;
   --primary-hover: #4338ca;
@@ -56,47 +55,174 @@ a:hover {
   display: flex;
   flex: 1;
 }
-.notification-wrapper {
-    /* Bootstrap gère déjà le positionnement avec position-fixed, top-0, end-0 */
-    /* Gardez seulement le z-index si nécessaire */
-    z-index: 1050 !important;
+
+/* NOTIFICATION - Bouton flottant à droite de l'écran */
+.notification-wrapper-right {
+  position: fixed;
+  top: 80px; /* Position sous la topbar */
+  right: 20px;
+  z-index: 1055;
 }
 
-/* Style du bouton cloche */
-.notification-wrapper .btn {
-    background-color: #fff;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    padding: 8px 10px;
-    border-radius: 50%;
-    position: relative;
+/* Style du bouton cloche amélioré */
+.notification-wrapper-right .btn {
+  background-color: #fff;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  padding: 12px 14px;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-wrapper-right .btn:hover {
+  background-color: var(--primary-color);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+}
+
+.notification-wrapper-right .btn:active {
+  transform: scale(0.95);
 }
 
 /* Icône de cloche */
-.notification-wrapper .btn i.fas.fa-bell {
-    font-size: 1.2rem;
-    color: #333;
+.notification-wrapper-right .btn i.fas.fa-bell {
+  font-size: 1.4rem;
+  color: var(--primary-color);
+  transition: color 0.3s ease;
 }
 
-/* Badge de compteur - Bootstrap gère déjà le positionnement */
+.notification-wrapper-right .btn:hover i.fas.fa-bell {
+  color: #fff;
+}
+
+/* Badge de compteur amélioré */
 #notification-count {
-    font-size: 0.7rem;
-    /* Bootstrap gère déjà le positionnement avec ses classes */
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--danger-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid white;
+  animation: pulse 2s infinite;
 }
 
-/* Optionnel: personnaliser le dropdown */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Dropdown des notifications personnalisé */
+.notification-wrapper-right .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 350px;
+  max-width: 400px;
+  max-height: 450px;
+  overflow-y: auto;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 0;
+  margin-top: 10px;
+  background-color: white;
+}
+
+/* Header du dropdown */
+.notification-dropdown-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: #f8fafc;
+  border-radius: 12px 12px 0 0;
+  font-weight: 600;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Items de notification */
+.notification-item {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background-color: rgba(79, 70, 229, 0.05);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.notification-item.unread {
+  background-color: rgba(79, 70, 229, 0.02);
+  border-left: 3px solid var(--primary-color);
+}
+
+/* Footer du dropdown */
+.notification-dropdown-footer {
+  padding: 12px 20px;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  background-color: #f8fafc;
+  border-radius: 0 0 12px 12px;
+}
+
+.notification-dropdown-footer a {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.notification-dropdown-footer a:hover {
+  color: var(--primary-hover);
+}
+
+/* ANCIENS STYLES DE NOTIFICATION (à supprimer si pas utilisés) */
+.notification-wrapper {
+  z-index: 1050 !important;
+}
+
+.notification-wrapper .btn {
+  background-color: #fff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 8px 10px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.notification-wrapper .btn i.fas.fa-bell {
+  font-size: 1.2rem;
+  color: #333;
+}
+
 .notification-wrapper .dropdown-menu {
-    min-width: 300px;
-    max-height: 400px;
-    overflow-y: auto;
+  min-width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .notification-wrapper {
-        padding: 1rem !important;
-    }
-}
 .main-content {
   flex: 1;
   padding: 20px;
@@ -1143,7 +1269,7 @@ a:hover {
   text-align: center;
 }
 
-/* Responsive */
+/* Responsive pour le bouton notification */
 @media (max-width: 992px) {
   .sidebar {
     width: var(--sidebar-collapsed-width);
@@ -1168,6 +1294,27 @@ a:hover {
   .main-content {
     margin-left: var(--sidebar-collapsed-width);
   }
+
+  /* Ajustement du bouton notification pour tablettes */
+  .notification-wrapper-right {
+    right: 15px;
+    top: 75px;
+  }
+
+  .notification-wrapper-right .btn {
+    width: 50px;
+    height: 50px;
+    padding: 10px 12px;
+  }
+
+  .notification-wrapper-right .btn i.fas.fa-bell {
+    font-size: 1.2rem;
+  }
+
+  .notification-wrapper-right .dropdown-menu {
+    min-width: 320px;
+    max-width: calc(100vw - 40px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -1187,6 +1334,36 @@ a:hover {
   .topbar-search {
     width: 200px;
   }
+
+  /* Ajustement du bouton notification pour mobile */
+  .notification-wrapper-right {
+    right: 10px;
+    top: 70px;
+  }
+
+  .notification-wrapper-right .btn {
+    width: 48px;
+    height: 48px;
+    padding: 10px;
+  }
+
+  .notification-wrapper-right .btn i.fas.fa-bell {
+    font-size: 1.1rem;
+  }
+
+  #notification-count {
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    top: -6px;
+    right: -6px;
+  }
+
+  .notification-wrapper-right .dropdown-menu {
+    min-width: 300px;
+    max-width: calc(100vw - 30px);
+    right: -10px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -1199,6 +1376,98 @@ a:hover {
   }
 
   .stats-card-icon {
+    display: none;
+  }
+
+  /* Ajustement du bouton notification pour très petit écran */
+  .notification-wrapper-right {
+    right: 8px;
+    top: 68px;
+  }
+
+  .notification-wrapper-right .btn {
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+  }
+
+  .notification-wrapper-right .btn i.fas.fa-bell {
+    font-size: 1rem;
+  }
+
+  #notification-count {
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.65rem;
+    top: -5px;
+    right: -5px;
+  }
+
+  .notification-wrapper-right .dropdown-menu {
+    min-width: 280px;
+    max-width: calc(100vw - 20px);
+    right: -8px;
+  }
+
+  .notification-item {
+    padding: 10px 15px;
+  }
+
+  .notification-dropdown-header,
+  .notification-dropdown-footer {
+    padding: 12px 15px;
+  }
+}
+
+/* Animation d'entrée pour le bouton notification */
+.notification-wrapper-right {
+  animation: slideInFromRight 0.5s ease-out;
+}
+
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* État actif du bouton notification */
+.notification-wrapper-right .btn.active,
+.notification-wrapper-right .btn[aria-expanded="true"] {
+  background-color: var(--primary-color);
+  border-color: var(--primary-hover);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+}
+
+.notification-wrapper-right .btn.active i.fas.fa-bell,
+.notification-wrapper-right .btn[aria-expanded="true"] i.fas.fa-bell {
+  color: #fff;
+}
+
+/* Animation du badge de notification quand il y a de nouvelles notifications */
+.notification-count-new {
+  animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 60%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-3px) scale(1.1);
+  }
+  80% {
+    transform: translateY(-1px) scale(1.05);
+  }
+}
+
+/* Style pour masquer le bouton notification sur certaines pages si nécessaire */
+.hide-notification {
+  .notification-wrapper-right {
     display: none;
   }
 }
