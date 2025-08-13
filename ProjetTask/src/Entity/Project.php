@@ -59,9 +59,10 @@ class Project
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
     private ?string $budget = null;
 
-    //  Propriété estArchive correctement mappée
+    //  Propriété isArchived correctement mappée
     #[ORM\Column(type: Types::BOOLEAN)]
-    private bool $estArchive = false;
+    private bool $isArchived = false;
+
 
     // Chef de project : Un User peut gérer plusieurs projects
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "projectsGeres")]
@@ -429,14 +430,14 @@ class Project
         return $this->titre ?: 'Nouveau project';
     }
 
-    public function isEstArchive(): bool
+    public function isArchived(): bool
     {
-        return $this->estArchive;
+        return $this->isArchived;
     }
 
-    public function setEstArchive(bool $estArchive): self
+    public function setisArchived(bool $isArchived): self
     {
-        $this->estArchive = $estArchive;
+        $this->isArchived = $isArchived;
         return $this;
     }
     public function getTargetUrl(): ?string

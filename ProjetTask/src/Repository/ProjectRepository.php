@@ -228,7 +228,7 @@ class ProjectRepository extends ServiceEntityRepository
     public function findActiveProjects(): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.estArchive = :archived')
+            ->where('p.isArchived = :archived')
             ->setParameter('archived', false)
             ->orderBy('p.dateCreation', 'DESC')
             ->getQuery()
@@ -244,7 +244,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->leftJoin('p.membres', 'm')
             ->where('p.chefproject = :user')
             ->orWhere('m.id = :userId')
-            ->andWhere('p.estArchive = :archived')
+            ->andWhere('p.isArchived = :archived')
             ->setParameter('user', $user)
             ->setParameter('userId', $user->getId())
             ->setParameter('archived', false)
