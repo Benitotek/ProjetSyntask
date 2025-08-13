@@ -790,7 +790,7 @@ function initAssignTask() {
  * Crée le HTML pour une tâche
  */
 function createTaskHtml(task) {
-    // Déterminer la classe de priorité
+    // DéTERMINERr la classe de priorité
     let priorityClass = 'low';
     if (task.priority === 'HAUTE') priorityClass = 'high';
     else if (task.priority === 'MOYENNE') priorityClass = 'medium';
@@ -800,7 +800,7 @@ function createTaskHtml(task) {
     if (task.dateButoir) {
         const dueDate = new Date(task.dateButoir);
         const formattedDate = dueDate.toLocaleDateString('fr-FR');
-        const isOverdue = dueDate < new Date() && task.statut !== 'TERMINE';
+        const isOverdue = dueDate < new Date() && task.statut !== 'TERMINER';
         
         dueDateHtml = `
             <div class="kanban-task-due ${isOverdue ? 'overdue' : ''}">
@@ -1126,11 +1126,11 @@ function initKanbanModals() {
 //                     const card = this.closest('.kanban-card');
 //                     card.className = card.className.replace(/statut-\w+/g, '');
 
-//                     if (newstatut === 'EN-ATTENTE')
+//                     if (newstatut === 'EN_ATTENTE')
 //                         card.classList.add('statut-pending');
-//                     else if (newstatut === 'EN-COURS')
+//                     else if (newstatut === 'EN_COURS')
 //                         card.classList.add('statut-progress');
-//                     else if (newstatut === 'TERMINE')
+//                     else if (newstatut === 'TERMINER')
 //                         card.classList.add('statut-completed');
 
 

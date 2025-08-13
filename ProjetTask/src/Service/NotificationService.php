@@ -354,7 +354,7 @@ class NotificationService
     {
         $dateButoir = $task->getDateButoir();
 
-        if (!$dateButoir || $task->getStatut() === 'TERMINE') {
+        if (!$dateButoir || $task->getStatut() === 'TERMINER') {
             return;
         }
 

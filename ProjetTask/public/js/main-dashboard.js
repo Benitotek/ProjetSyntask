@@ -438,7 +438,7 @@ function initDashboardWidgets() {
                                     if (data.success) {
                                         showToast(completed ? 'Tâche marquée comme terminée' : 'Tâche marquée comme non terminée', 'success');
                                     } else {
-                                        // Annuler le changement visuel en cas d'erreur
+                                        // ANNULERRr le changement visuel en cas d'erreur
                                         this.checked = !completed;
                                         if (!completed) {
                                             label.classList.add('text-muted', 'text-decoration-line-through');
@@ -452,7 +452,7 @@ function initDashboardWidgets() {
                                 .catch(error => {
                                     console.error('Erreur lors de la mise à jour du statut:', error);
 
-                                    // Annuler le changement visuel
+                                    // ANNULERRr le changement visuel
                                     this.checked = !completed;
                                     if (!completed) {
                                         label.classList.add('text-muted', 'text-decoration-line-through');

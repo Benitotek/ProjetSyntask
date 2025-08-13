@@ -203,7 +203,7 @@ class TaskList
         $now = new \DateTime();
 
         foreach ($tasks as $task) {
-            if ($task->getdateButoir() && $task->getStatut() !== 'TERMINE') {
+            if ($task->getdateButoir() && $task->getStatut() !== 'TERMINER') {
                 $delay = $now->diff($task->getdateButoir());
                 $delayDays = $delay->invert ? $delay->days : 0;
                 $maxDelay = max($maxDelay, $delayDays);
@@ -246,10 +246,10 @@ class TaskList
 
         foreach ($tasks as $task) {
             switch ($task->getStatut()) {
-                case 'TERMINE':
+                case 'TERMINER':
                     $completed++;
                     break;
-                case 'EN-COURS':
+                case 'EN_COURS':
                     $inProgress++;
                     break;
                 default:
@@ -278,7 +278,7 @@ class TaskList
         foreach ($this->getTasks() as $task) {
             if (
                 $task->getdateButoir() &&
-                $task->getStatut() !== 'TERMINE' &&
+                $task->getStatut() !== 'TERMINER' &&
                 $task->getdateButoir() < $now
             ) {
                 $overdueTasks[] = $task;
@@ -339,7 +339,7 @@ class TaskList
         ];
 
         foreach ($this->getTasks() as $task) {
-            if (!$task->getdateButoir() || $task->getStatut() === 'TERMINE') {
+            if (!$task->getdateButoir() || $task->getStatut() === 'TERMINER') {
                 $delays['on_time']++;
                 continue;
             }

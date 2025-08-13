@@ -67,7 +67,7 @@ class DashboardController extends AbstractController
         $allTasks = $taskRepository->findAll();
 
         $completedTasks = count(array_filter($allTasks, function ($task) {
-            return $task->getStatut() === TaskStatut::TERMINE;
+            return $task->getStatut() === TaskStatut::TERMINER;
         }));
 
         $pendingTasks = count(array_filter($allTasks, function ($task) {
@@ -91,7 +91,7 @@ class DashboardController extends AbstractController
                     'title' => $task->getTitle(),
                     'date' => $task->getDateButoir(),
                     'type' => 'task',
-                    'completed' => $task->getStatut() === TaskStatut::TERMINE,
+                    'completed' => $task->getStatut() === TaskStatut::TERMINER,
                     'statut' => $task->getStatutLabel(),
                     'url' => $this->generateUrl('app_task_show', ['id' => $task->getId()])
                 ];
@@ -105,7 +105,7 @@ class DashboardController extends AbstractController
                     'title' => $project->getTitre(),
                     'date' => $project->getDateButoir(),
                     'type' => 'project',
-                    'completed' => $project->getStatut() === Project::STATUT_TERMINE,
+                    'completed' => $project->getStatut() === Project::STATUT_TERMINER,
                     'statut' => $project->getStatut(),
                     'url' => $this->generateUrl('app_project_show', ['id' => $project->getId()])
                 ];
@@ -127,7 +127,7 @@ class DashboardController extends AbstractController
             foreach ($users as $teamMember) {
                 $userTasks = $taskRepository->findBy(['assignedUser' => $teamMember]);
                 $userCompletedTasks = count(array_filter($userTasks, function ($task) {
-                    return $task->getStatut() === TaskStatut::TERMINE;
+                    return $task->getStatut() === TaskStatut::TERMINER;
                 }));
 
                 $userOverdueTasks = count(array_filter($userTasks, function ($task) {

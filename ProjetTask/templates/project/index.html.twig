@@ -95,24 +95,24 @@
                     <div class="stat-label">Total projets</div>
                 </div>
             </div>
-            <div class="stat-card" data-stat="en-cours">
+            <div class="stat-card" data-stat="EN_COURs">
                 <div class="stat-icon">🚀</div>
                 <div class="stat-content">
-                    <div class="stat-number" id="statEnCours">{{ projects|filter(p => p.statut == 'EN-COURS')|length }}</div>
+                    <div class="stat-number" id="statEnCours">{{ projects|filter(p => p.statut == 'EN_COURS')|length }}</div>
                     <div class="stat-label">En Cours</div>
                 </div>
             </div>
-            <div class="stat-card" data-stat="termine">
+            <div class="stat-card" data-stat="TERMINER">
                 <div class="stat-icon">✅</div>
                 <div class="stat-content">
-                    <div class="stat-number" id="statTermine">{{ projects|filter(p => p.statut == 'TERMINE')|length }}</div>
+                    <div class="stat-number" id="statTERMINER">{{ projects|filter(p => p.statut == 'TERMINER')|length }}</div>
                     <div class="stat-label">Terminés</div>
                 </div>
             </div>
-            <div class="stat-card" data-stat="en-attente">
+            <div class="stat-card" data-stat="EN_ATTENTE">
                 <div class="stat-icon">⏳</div>
                 <div class="stat-content">
-                    <div class="stat-number" id="statEnAttente">{{ projects|filter(p => p.statut == 'EN-ATTENTE')|length }}</div>
+                    <div class="stat-number" id="statEnAttente">{{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}</div>
                     <div class="stat-label">En Attente</div>
                 </div>
             </div>
@@ -132,14 +132,14 @@
                     <a href="#" class="filter-tab active" data-status="all">
                         Tous (<span id="countAll">{{ projects|length }}</span>)
                     </a>
-                    <a href="#" class="filter-tab" data-status="EN-ATTENTE">
-                        En attente (<span id="countEnAttente">{{ projects|filter(p => p.statut == 'EN-ATTENTE')|length }}</span>)
+                    <a href="#" class="filter-tab" data-status="EN_ATTENTE">
+                        En attente (<span id="countEnAttente">{{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}</span>)
                     </a>
-                    <a href="#" class="filter-tab" data-status="EN-COURS">
-                        En cours (<span id="countEnCours">{{ projects|filter(p => p.statut == 'EN-COURS')|length }}</span>)
+                    <a href="#" class="filter-tab" data-status="EN_COURS">
+                        En cours (<span id="countEnCours">{{ projects|filter(p => p.statut == 'EN_COURS')|length }}</span>)
                     </a>
-                    <a href="#" class="filter-tab" data-status="TERMINE">
-                        Terminés (<span id="countTermine">{{ projects|filter(p => p.statut == 'TERMINE')|length }}</span>)
+                    <a href="#" class="filter-tab" data-status="TERMINER">
+                        Terminés (<span id="countTERMINER">{{ projects|filter(p => p.statut == 'TERMINER')|length }}</span>)
                     </a>
                 </div>
             </div>
@@ -219,7 +219,7 @@
     <td>
         {% if project.tasks is defined and project.tasks|length > 0 %}
             {% set totalTasks = project.tasks|length %}
-            {% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINE')|length %}
+            {% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINER')|length %}
             {% set progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100)|round : 0 %}
             <div class="progress-cell">
                 <div class="progress-bar-small">
@@ -237,7 +237,7 @@
         {% if project.dateButoir %}
             <div class="date-cell" data-deadline="{{ project.dateButoir|date('Y-m-d') }}">
                 {{ project.dateButoir|date('d/m/Y') }}
-                {% if project.dateButoir < date() and project.statut != 'TERMINE' %}
+                {% if project.dateButoir < date() and project.statut != 'TERMINER' %}
                     <span class="overdue-badge">En retard</span>
                 {% endif %}
             </div>
@@ -306,7 +306,7 @@
                 <p class="text-warning">Cette action est irréversible et supprimera toutes les tâches associées.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULERRr</button>
                 <button type="button" class="btn btn-danger" id="confirmDeleteProject">Supprimer</button>
             </div>
         </div>
@@ -326,16 +326,16 @@
                     <div class="mb-3">
                         <label for="newStatus" class="form-label">Nouveau statut :</label>
                         <select class="form-select" id="newStatus" name="newStatus">
-                            <option value="EN-ATTENTE">En attente</option>
-                            <option value="EN-COURS">En cours</option>
-                            <option value="TERMINE">Terminé</option>
-                            <option value="ARRETER">Arrêté</option>
+                            <option value="EN_ATTENTE">En attente</option>
+                            <option value="EN_COURS">En cours</option>
+                            <option value="TERMINER">Terminé</option>
+                            <option value="ARRETERR">Arrêté</option>
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULERRr</button>
                 <button type="button" class="btn btn-primary" id="confirmChangeStatus">Confirmer</button>
             </div>
         </div>

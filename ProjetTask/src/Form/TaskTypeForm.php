@@ -49,10 +49,10 @@ class TaskType extends AbstractType
                 'choice_label' => fn(TaskStatut $choice) => match ($choice) {
                     TaskStatut::EN_ATTENTE => 'En attente',
                     TaskStatut::EN_COUR => 'En cours',
-                    TaskStatut::TERMINE => 'Terminé',
+                    TaskStatut::TERMINER => 'Terminé',
                     TaskStatut::EN_PAUSE => 'En pause',
                     TaskStatut::EN_REPRISE => 'En reprise',
-                    TaskStatut::ANNULE => 'Annulé',
+                    TaskStatut::ANNULERR => 'Annulé',
                 },
                 'choice_value' => fn(?TaskStatut $choice) => $choice?->value,
                 'placeholder' => 'Choisir un statut',
@@ -157,7 +157,7 @@ class TaskType extends AbstractType
     //             'choices' => [
     //                 'En attente' => TaskStatut::EN_ATTENTE->value,
     //                 'En cours' => TaskStatut::EN_COUR->value,
-    //                 'Terminé' => TaskStatut::TERMINE->value,
+    //                 'Terminé' => TaskStatut::TERMINER->value,
     //             ],
     //             'placeholder' => 'Choisir un statut',
     //         ])

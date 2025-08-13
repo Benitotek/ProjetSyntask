@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ project.nom }} - Détails{% endblock %}
+{% block title %}{{ Project.titre }} - Détails{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -107,7 +107,7 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <label>Nom du project</label>
-                            <div class="info-value">{{ project.nom }}</div>
+                            <div class="info-value">{{ Project.titre }}</div>
                         </div>
                         
                         {% if project.reference %}
@@ -136,7 +136,7 @@
                                 <label>Date d'échéance</label>
                                 <div class="info-value">
                                     {{ project.dateButoir|date('d/m/Y') }}
-                                    {% if project.dateButoir < date() and project.statut != 'TERMINE' %}
+                                    {% if project.dateButoir < date() and project.statut != 'TERMINER' %}
                                         <span class="overdue-badge">En retard</span>
                                     {% endif %}
                                 </div>
@@ -202,9 +202,9 @@
                     <h3 class="card-title">Progression</h3>
                     {% if project.tasks is defined and project.tasks|length > 0 %}
                         {% set totalTasks = project.tasks|length %}
-                        {% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINE')|length %}
-                        {% set inProgressTasks = project.tasks|filter(t => t.statut == 'EN-COURS')|length %}
-                        {% set pendingTasks = project.tasks|filter(t => t.statut == 'EN-ATTENTE')|length %}
+                        {% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINER')|length %}
+                        {% set inProgressTasks = project.tasks|filter(t => t.statut == 'EN_COURS')|length %}
+                        {% set pendingTasks = project.tasks|filter(t => t.statut == 'EN_ATTENTE')|length %}
                         {% set progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100)|round : 0 %}
                         
                         <div class="progress-stats">
@@ -251,9 +251,9 @@
                             {% for task in project.tasks|slice(0, 5) %}
                                 <div class="activity-item">
                                     <div class="activity-icon">
-                                        {% if task.statut == 'TERMINE' %}
+                                        {% if task.statut == 'TERMINER' %}
                                             ✅
-                                        {% elseif task.statut == 'EN-COURS' %}
+                                        {% elseif task.statut == 'EN_COURS' %}
                                             🔄
                                         {% else %}
                                             📝

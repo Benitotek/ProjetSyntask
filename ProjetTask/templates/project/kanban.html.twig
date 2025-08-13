@@ -118,7 +118,7 @@
 
 									<div class="kanban-task-meta">
 										{% if task.dateButoir %}
-											{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
+											{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINER' %}
 											<div class="kanban-task-due {{ isOverdue ? 'overdue' : '' }}">
 												<i class="fas fa-calendar-alt"></i>
 												{{ task.dateButoir|date('d/m/Y') }}
@@ -209,7 +209,7 @@
 					</form>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULERRr</button>
 					<button type="button" class="btn btn-primary" id="save-column">Enregistrer</button>
 				</div>
 			</div>
@@ -256,7 +256,7 @@
 					</form>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULERRr</button>
 					<button type="submit" form="task-form" class="btn btn-primary">Enregistrer</button>
 				</div>
 			</div>
@@ -331,7 +331,7 @@
 						?</p>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULERRr</button>
 					<form id="deleteColumnForm" method="post">
 						<input type="hidden" name="_token" value="">
 						<button type="submit" class="btn btn-danger">Supprimer</button>
@@ -385,7 +385,7 @@
 						?</p>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULERRr</button>
 					<form id="deleteTaskForm" method="post">
 						<input type="hidden" name="_token" value="">
 						<button type="submit" class="btn btn-danger">Supprimer</button>
@@ -420,7 +420,7 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULERRr</button>
 				</div>
 			</div>
 		</div>

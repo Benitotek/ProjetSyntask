@@ -33,11 +33,11 @@
                             <td>{{ project.titre }}</td>
                             <td>
                                 {% set badgeClass = {
-                                    'EN-ATTENTE': 'secondary',
-                                    'EN-COURS': 'primary',
+                                    'EN_ATTENTE': 'secondary',
+                                    'EN_COURS': 'primary',
                                     'EN_PAUSE': 'warning',
-                                    'TERMINE': 'success',
-                                    'ARRETER': 'danger'
+                                    'TERMINER': 'success',
+                                    'ARRETERR': 'danger'
                                 }[project.statut] ?? 'dark' %}
                                 <span class="badge bg-{{ badgeClass }}">{{ project.statut }}</span>
                             </td>

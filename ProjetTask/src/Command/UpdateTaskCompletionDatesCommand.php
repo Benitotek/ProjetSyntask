@@ -36,7 +36,7 @@ class UpdateTaskCompletionDatesCommand extends Command
             ->createQueryBuilder('t')
             ->where('t.statut = :statut')
             ->andWhere('t.dateCompletion IS NULL')
-            ->setParameter('statut', TaskStatut::TERMINE)
+            ->setParameter('statut', TaskStatut::TERMINER)
             ->getQuery()
             ->getResult();
 

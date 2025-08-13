@@ -565,7 +565,7 @@ final class ApiKanbanController extends AbstractController
             case 'terminé':
             case 'done':
             case 'completed':
-                $task->setStatut(TaskStatut::TERMINE);
+                $task->setStatut(TaskStatut::TERMINER);
                 $task->setDateCompletion(new \DateTime());
                 break;
             case 'test':

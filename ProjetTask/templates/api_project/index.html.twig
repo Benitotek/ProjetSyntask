@@ -94,21 +94,21 @@
 				<div class="stat-card">
 					<div class="stat-icon">🚀</div>
 					<div class="stat-content">
-						<div class="stat-number" id="en-cours-projects">{{ projects|filter(p => p.statut == 'EN-COURS')|length }}</div>
+						<div class="stat-number" id="EN_COURs-projects">{{ projects|filter(p => p.statut == 'EN_COURS')|length }}</div>
 						<div class="stat-label">En Cours</div>
 					</div>
 				</div>
 				<div class="stat-card">
 					<div class="stat-icon">✅</div>
 					<div class="stat-content">
-						<div class="stat-number" id="termines-projects">{{ projects|filter(p => p.statut == 'TERMINE')|length }}</div>
+						<div class="stat-number" id="TERMINERs-projects">{{ projects|filter(p => p.statut == 'TERMINER')|length }}</div>
 						<div class="stat-label">Terminés</div>
 					</div>
 				</div>
 				<div class="stat-card">
 					<div class="stat-icon">⏳</div>
 					<div class="stat-content">
-						<div class="stat-number" id="attente-projects">{{ projects|filter(p => p.statut == 'EN-ATTENTE')|length }}</div>
+						<div class="stat-number" id="attente-projects">{{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}</div>
 						<div class="stat-label">En Attente</div>
 					</div>
 				</div>
@@ -123,9 +123,9 @@
 					</div>
 					<div class="filter-tabs">
 						<button class="filter-tab active" data-statut="">Tous</button>
-						<button class="filter-tab" data-statut="EN-ATTENTE">En attente</button>
-						<button class="filter-tab" data-statut="EN-COURS">En cours</button>
-						<button class="filter-tab" data-statut="TERMINE">Terminés</button>
+						<button class="filter-tab" data-statut="EN_ATTENTE">En attente</button>
+						<button class="filter-tab" data-statut="EN_COURS">En cours</button>
+						<button class="filter-tab" data-statut="TERMINER">Terminés</button>
 					</div>
 				</div>
 			</div>
@@ -191,7 +191,7 @@
 						</div>
 					</div>
 					<div class="modal-actions">
-						<button type="button" class="btn btn-secondary" id="btn-annuler">Annuler</button>
+						<button type="button" class="btn btn-secondary" id="btn-ANNULERRr">ANNULERRr</button>
 						<button type="submit" class="btn btn-primary">Créer le projet</button>
 					</div>
 				</form>
@@ -258,7 +258,7 @@
 						this.hideModal();
 					});
 
-					document.getElementById('btn-annuler').addEventListener('click', () => {
+					document.getElementById('btn-ANNULERRr').addEventListener('click', () => {
 						this.hideModal();
 					});
 
@@ -322,7 +322,7 @@
 					<tr class="project-row">
 						<td class="project-cell">
 							<div class="project-info">
-								<h4 class="project-name">${this.escapeHtml(project.nom)}</h4>
+								<h4 class="project-name">${this.escapeHtml(Project.titre)}</h4>
 								${project.reference ? `<span class="project-ref">${this.escapeHtml(project.reference)}</span>` : ''}
 							</div>
 						</td>
@@ -407,14 +407,14 @@
 			updateStats(projects) {
 				const stats = {
 					total: projects.length,
-					enCours: projects.filter(p => p.statut === 'EN-COURS').length,
-					termine: projects.filter(p => p.statut === 'TERMINE').length,
-					attente: projects.filter(p => p.statut === 'EN-ATTENTE').length
+					enCours: projects.filter(p => p.statut === 'EN_COURS').length,
+					TERMINER: projects.filter(p => p.statut === 'TERMINER').length,
+					attente: projects.filter(p => p.statut === 'EN_ATTENTE').length
 				};
 
 				document.getElementById('total-projects').textContent = stats.total;
-				document.getElementById('en-cours-projects').textContent = stats.enCours;
-				document.getElementById('termines-projects').textContent = stats.termine;
+				document.getElementById('EN_COURs-projects').textContent = stats.enCours;
+				document.getElementById('TERMINERs-projects').textContent = stats.TERMINER;
 				document.getElementById('attente-projects').textContent = stats.attente;
 			}
 
@@ -540,7 +540,7 @@
 			}
 
 			isOverdue(dateFin, statut) {
-				if (!dateFin || statut === 'TERMINE') return false;
+				if (!dateFin || statut === 'TERMINER') return false;
 				return new Date(dateFin) < new Date();
 			}
 
@@ -573,7 +573,7 @@
 				}
 
 				const totalTasks = tasks.length;
-				const completedTasks = tasks.filter(t => t.status === 'TERMINE').length;
+				const completedTasks = tasks.filter(t => t.status === 'TERMINER').length;
 				const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
 				return `

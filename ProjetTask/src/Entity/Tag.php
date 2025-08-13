@@ -111,7 +111,7 @@ class Tag
      */
     public function getStyle(): string
     {
-        // Déterminer si la couleur est claire ou foncée pour le contraste du texte
+        // DéTERMINERr si la couleur est claire ou foncée pour le contraste du texte
         $hex = ltrim($this->couleur, '#');
         $r = hexdec(substr($hex, 0, 2));
         $g = hexdec(substr($hex, 2, 2));

@@ -101,7 +101,7 @@ class TaskRepository extends ServiceEntityRepository
             ->where('t.dateButoir < :today')
             ->andWhere('t.statut != :statut')
             ->setParameter('today', new \DateTime())
-            ->setParameter('statut', 'TERMINE')
+            ->setParameter('statut', 'TERMINER')
             ->orderBy('t.dateButoir', 'ASC')
             ->getQuery()
             ->getResult();
@@ -120,7 +120,7 @@ class TaskRepository extends ServiceEntityRepository
             ->andWhere('t.statut != :statut')
             ->setParameter('today', $today)
             ->setParameter('threeDaysLater', $threeDaysLater)
-            ->setParameter('statut', 'TERMINE')
+            ->setParameter('statut', 'TERMINER')
             ->orderBy('t.dateButoir', 'ASC')
             ->getQuery()
             ->getResult();
@@ -380,7 +380,7 @@ class TaskRepository extends ServiceEntityRepository
 //             ->where('t.dateEcheance < :today')
 //             ->andWhere('t.statut != :statut')
 //             ->setParameter('today', $today)
-//             ->setParameter('statut', 'TERMINE')
+//             ->setParameter('statut', 'TERMINER')
 //             ->orderBy('t.dateEcheance', 'ASC')
 //             ->getQuery()
 //             ->getResult();
@@ -401,7 +401,7 @@ class TaskRepository extends ServiceEntityRepository
 //             ->andWhere('t.statut != :statut')
 //             ->setParameter('today', $today)
 //             ->setParameter('threeDaysLater', $threeDaysLater)
-//             ->setParameter('statut', 'TERMINE')
+//             ->setParameter('statut', 'TERMINER')
 //             ->orderBy('t.dateEcheance', 'ASC')
 //             ->getQuery()
 //             ->getResult();

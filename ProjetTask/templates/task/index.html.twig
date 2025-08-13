@@ -50,13 +50,13 @@
 														<button	type="button"	class="btn btn-outline-primary statut-filter active"	data-target="#tasks-table"	data-statut="all">
 															Toutes
 														</button>
-														<button	type="button"	class="btn btn-outline-primary statut-filter"	data-target="#tasks-table"	data-statut="EN-ATTENTE">
+														<button	type="button"	class="btn btn-outline-primary statut-filter"	data-target="#tasks-table"	data-statut="EN_ATTENTE">
 															En attente
 														</button>
-														<button	type="button"	class="btn btn-outline-primary statut-filter"	data-target="#tasks-table"	data-statut="EN-COURS">
+														<button	type="button"	class="btn btn-outline-primary statut-filter"	data-target="#tasks-table"	data-statut="EN_COURS">
 															En cours
 														</button>
-														<button	type="button"	class="btn btn-outline-primary statut-filter"	data-target="#tasks-table"	data-statut="TERMINE">
+														<button	type="button"	class="btn btn-outline-primary statut-filter"	data-target="#tasks-table"	data-statut="TERMINER">
 															Terminées
 														</button>
 													</div>
@@ -111,7 +111,7 @@
 																<td	class="statut-cell"	data-statut="{{ task.statut.value }}">
 																	<span	class="badge
 																			{% if task.statut == constant('App\\Enum\\TaskStatut::EN_COUR') %} badge-primary
-																			{% elseif task.statut == constant('App\\Enum\\TaskStatut::TERMINE') %} badge-success
+																			{% elseif task.statut == constant('App\\Enum\\TaskStatut::TERMINER') %} badge-success
 																			{% elseif task.statut == constant('App\\Enum\\TaskStatut::EN_ATTENTE') %} badge-warning
 																			{% else %} badge-secondary
 																			{% endif %}
@@ -130,7 +130,7 @@
 																</td>
 																<td>
 																	{% if task.dateButoir %}
-																		{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINE' %}
+																		{% set isOverdue = task.dateButoir < date() and task.statut != 'TERMINER' %}
 																		<span	class="{{ isOverdue ? 'text-danger fw-bold' : '' }}">
 																			{{ task.dateButoir|date('d/m/Y') }}
 																			{% if isOverdue %}
@@ -190,7 +190,7 @@
 																				</button>
 																			</form>
 																		{% endif %}
-																		{% if task.statut != 'TERMINE' and (task.assignedUser == app.user or is_granted('ROLE_CHEF_PROJECT')) %}
+																		{% if task.statut != 'TERMINER' and (task.assignedUser == app.user or is_granted('ROLE_CHEF_PROJECT')) %}
 																			<button	class="btn btn-sm btn-success me-1 btn-complete-task"	title="Marquer comme terminée"	data-task-id="{{ task.id }}">
 																				<i	class="fas fa-check"></i>
 																			</button>

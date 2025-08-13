@@ -73,11 +73,11 @@ class ReportController extends AbstractController
 
             // Calcul des statistiques
             $userCompletedTasks = count(array_filter($userTasks, function ($task) {
-                return $task->getStatut() === TaskStatut::TERMINE;
+                return $task->getStatut() === TaskStatut::TERMINER;
             }));
 
             $userOverdueTasks = count(array_filter($userTasks, function ($task) {
-                return $task->getDateButoir() && $task->getDateButoir() < new \DateTime() && $task->getStatut() !== TaskStatut::TERMINE;
+                return $task->getDateButoir() && $task->getDateButoir() < new \DateTime() && $task->getStatut() !== TaskStatut::TERMINER;
             }));
 
             // Recherche de la dernière activité
@@ -89,7 +89,7 @@ class ReportController extends AbstractController
             // Calcul de la vitesse moyenne de résolution (en jours)
             $resolutionSpeed = null;
             $completedTasksWithDates = array_filter($userTasks, function ($task) {
-                return $task->getStatut() === TaskStatut::TERMINE && $task->getDateCreation() && $task->getDateCompletion();
+                return $task->getStatut() === TaskStatut::TERMINER && $task->getDateCreation() && $task->getDateCompletion();
             });
 
             if (count($completedTasksWithDates) > 0) {

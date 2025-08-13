@@ -152,7 +152,7 @@ class TaskListController extends AbstractController
         $taskList = new TaskList();
         $taskList->setProject($project);
 
-        // Déterminer la position de la nouvelle colonne
+        // DéTERMINERr la position de la nouvelle colonne
         $lastPosition = $entityManager->getRepository(TaskList::class)
             ->findLastPositionForProject($project);
         $taskList->setPositionColumn($lastPosition + 1);

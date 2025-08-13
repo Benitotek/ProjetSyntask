@@ -13,11 +13,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 class Project
 {
-    public const STATUT_EN_ATTENTE = 'EN-ATTENTE';
-    public const STATUT_EN_COURS = 'EN-COURS';
-    public const STATUT_TERMINE = 'TERMINE';
+    public const STATUT_EN_ATTENTE = 'EN_ATTENTE';
+    public const STATUT_EN_COURS = 'EN_COURS';
+    public const STATUT_TERMINER = 'TERMINER';
     public const STATUT_EN_PAUSE = 'EN_PAUSE';
-    public const STATUT_ARRETE = 'ARRETER';
+    public const STATUT_ARRETER = 'ARRETERR';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -35,7 +35,7 @@ class Project
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::STRING, length: 20)]
-    #[Assert\Choice(choices: [self::STATUT_EN_ATTENTE, self::STATUT_EN_COURS, self::STATUT_TERMINE, self::STATUT_EN_PAUSE, self::STATUT_ARRETE])]
+    #[Assert\Choice(choices: [self::STATUT_EN_ATTENTE, self::STATUT_EN_COURS, self::STATUT_TERMINER, self::STATUT_EN_PAUSE, self::STATUT_ARRETER])]
     private ?string $statut = self::STATUT_EN_ATTENTE;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -357,9 +357,9 @@ class Project
     {
         $tasks = $this->tasks->toArray();
         return [
-            'EN-ATTENTE' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN-ATTENTE'),
-            'EN-COURS' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN-COURS'),
-            'TERMINE' => array_filter($tasks, fn($t) => $t->getStatut() === 'TERMINE'),
+            'EN_ATTENTE' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN_ATTENTE'),
+            'EN_COURS' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN_COURS'),
+            'TERMINER' => array_filter($tasks, fn($t) => $t->getStatut() === 'TERMINER'),
         ];
     }
 
@@ -370,7 +370,7 @@ class Project
             return 0;
         }
 
-        $completedTasks = $this->tasks->filter(fn($task) => $task->getStatut() === 'TERMINE')->count();
+        $completedTasks = $this->tasks->filter(fn($task) => $task->getStatut() === 'TERMINER')->count();
         return ($completedTasks / $totalTasks) * 100;
     }
 

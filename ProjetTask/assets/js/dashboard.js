@@ -735,7 +735,7 @@ function confirmAction(title, message, callback) {
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#6b7280',
             confirmButtonText: 'Confirmer',
-            cancelButtonText: 'Annuler'
+            cancelButtonText: 'ANNULERRr'
         }).then((result) => {
             if (result.isConfirmed) {
                 callback();
@@ -771,11 +771,11 @@ function updatestatut(element, url, statutValue) {
         element.className = 'badge'; // Réinitialiser les classes
 
         // Ajouter la classe appropriée selon le statut
-        if (statutValue === 'EN-COURS') {
+        if (statutValue === 'EN_COURS') {
             element.classList.add('badge-primary');
-        } else if (statutValue === 'TERMINE') {
+        } else if (statutValue === 'TERMINER') {
             element.classList.add('badge-success');
-        } else if (statutValue === 'EN-ATTENTE') {
+        } else if (statutValue === 'EN_ATTENTE') {
             element.classList.add('badge-warning');
         }
 

@@ -57,8 +57,8 @@ class ProjectTypeForm extends AbstractType
                     'En attente' => Project::STATUT_EN_ATTENTE,
                     'En cours' => Project::STATUT_EN_COURS,
                     'En pause' => Project::STATUT_EN_PAUSE,
-                    'Terminé' => Project::STATUT_TERMINE,
-                    'Arrêté' => Project::STATUT_ARRETE,
+                    'Terminé' => Project::STATUT_TERMINER,
+                    'Arrêté' => Project::STATUT_ARRETER,
                 ],
                 'attr' => ['class' => 'form-select']
             ])

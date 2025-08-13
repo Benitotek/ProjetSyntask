@@ -40,7 +40,7 @@ class AppExtension extends AbstractExtension
 
     // public function getActivityIcon(string $type): string
     // {
-    //     // Logique pour déterminer quelle icône retourner selon le type d'activité
+    //     // Logique pour déTERMINERr quelle icône retourner selon le type d'activité
     //     return match (strtolower($type)) {
     //         'task-create', 'task_create' => 'plus-circle',
     //         'task-update', 'task_update' => 'edit',

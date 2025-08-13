@@ -43,7 +43,7 @@ class ProjectRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.tasks', 't')
             ->addSelect('COUNT(t.id) AS taskCount')
-            ->addSelect('SUM(CASE WHEN t.statut = \'TERMINE\' THEN 1 ELSE 0 END) AS completedTasks')
+            ->addSelect('SUM(CASE WHEN t.statut = \'TERMINER\' THEN 1 ELSE 0 END) AS completedTasks')
             ->groupBy('p.id')
             ->orderBy('p.dateCreation', 'DESC')
             ->setMaxResults($limit);

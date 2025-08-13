@@ -11,7 +11,7 @@
 			<div>
 				<h1 class="mb-0">{{ project.titre }}</h1>
 				<p class="text-muted">
-					<span class="badge {% if project.statut == 'EN-COURS' %}bg-primary{% elseif project.statut == 'TERMINE' %}bg-success{% else %}bg-warning{% endif %}">
+					<span class="badge {% if project.statut == 'EN_COURS' %}bg-primary{% elseif project.statut == 'TERMINER' %}bg-success{% else %}bg-warning{% endif %}">
 						{{ project.statut }}
 					</span>
 					{% if project.dateButoir %}
@@ -48,7 +48,7 @@
 							<option value="">Tous les statuts</option>
 							<option value="en_attente" {% if filters.statut == 'en_attente' %} selected {% endif %}>En attente</option>
 							<option value="en_cours" {% if filters.statut == 'en_cours' %} selected {% endif %}>En cours</option>
-							<option value="termine" {% if filters.statut == 'termine' %} selected {% endif %}>Terminé</option>
+							<option value="TERMINER" {% if filters.statut == 'TERMINER' %} selected {% endif %}>Terminé</option>
 						</select>
 					</div>
 
@@ -127,7 +127,7 @@
 											{% endif %}
 										</td>
 										<td>
-											<span class="badge {% if task.statut.value == 'en_cours' %}bg-primary{% elseif task.statut.value == 'termine' %}bg-success{% else %}bg-warning{% endif %}">
+											<span class="badge {% if task.statut.value == 'en_cours' %}bg-primary{% elseif task.statut.value == 'TERMINER' %}bg-success{% else %}bg-warning{% endif %}">
 												{{ task.statut.value }}
 											</span>
 										</td>
@@ -203,7 +203,7 @@
 							<div class="col-md-6">
 								<h6>Statut</h6>
 								<p>
-									<span class="badge {% if task.statut.value == 'en_cours' %}bg-primary{% elseif task.statut.value == 'termine' %}bg-success{% else %}bg-warning{% endif %}">
+									<span class="badge {% if task.statut.value == 'en_cours' %}bg-primary{% elseif task.statut.value == 'TERMINER' %}bg-success{% else %}bg-warning{% endif %}">
 										{{ task.statut.value }}
 									</span>
 								</p>

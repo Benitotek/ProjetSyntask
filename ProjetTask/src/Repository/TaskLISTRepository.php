@@ -309,7 +309,7 @@ class TaskListRepository extends ServiceEntityRepository
 //             ->andWhere('t.statut != :completed')
 //             ->setParameter('project', $project)
 //             ->setParameter('now', new \DateTime())
-//             ->setParameter('completed', 'TERMINE')
+//             ->setParameter('completed', 'TERMINER')
 //             ->groupBy('tl.id')
 //             ->orderBy('tl.positionColumn', 'ASC')
 //             ->getQuery()

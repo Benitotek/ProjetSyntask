@@ -231,7 +231,7 @@ final class ApiTaskController extends AbstractController
                 $task->setStatut($newStatus);
 
                 // Si la tâche est terminée, on met à jour la date de completion
-                if ($newStatus === TaskStatut::TERMINE && $oldStatus !== TaskStatut::TERMINE) {
+                if ($newStatus === TaskStatut::TERMINER && $oldStatus !== TaskStatut::TERMINER) {
                     $task->setDateCompletion(new \DateTime());
                 }
             }

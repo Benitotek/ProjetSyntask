@@ -141,7 +141,7 @@ class Task
         }
 
         // Une tâche est en retard si sa date butoir est dépassée et qu'elle n'est pas terminée
-        return $this->dateButoir < new \DateTime() && $this->statut !== TaskStatut::TERMINE;
+        return $this->dateButoir < new \DateTime() && $this->statut !== TaskStatut::TERMINER;
     }
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "tachesAssignees")]
@@ -442,7 +442,7 @@ class Task
     {
         return $this->dateButoir !== null
             && $this->dateButoir < new \DateTime()
-            && $this->statut !== 'TERMINE';
+            && $this->statut !== 'TERMINER';
     }
 
     /**
@@ -450,7 +450,7 @@ class Task
      */
     public function isComingSoon(): bool
     {
-        if ($this->dateButoir === null || $this->statut === 'TERMINE') {
+        if ($this->dateButoir === null || $this->statut === 'TERMINER') {
             return false;
         }
 

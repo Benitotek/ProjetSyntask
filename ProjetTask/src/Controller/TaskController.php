@@ -126,7 +126,7 @@ class TaskController extends AbstractController
     public function markCompleted(Task $task, EntityManagerInterface $em, ActivityLogger $logger): Response
     {
         // Logique pour marquer la tâche comme terminée
-        $task->setStatut(TaskStatut::TERMINE);
+        $task->setStatut(TaskStatut::TERMINER);
         $em->flush();
 
         // Optionnel : log de l'activité
@@ -715,7 +715,7 @@ class TaskController extends AbstractController
 //             $task->setStatut($statutEnum);
             
 //             // Si la tâche est terminée, définir la date réelle
-//             if ($statutEnum === TaskStatut::TERMINE) {
+//             if ($statutEnum === TaskStatut::TERMINER) {
 //                 $task->setDateReelle(new \DateTime());
 //             }
             
