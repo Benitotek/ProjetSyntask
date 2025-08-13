@@ -15,7 +15,7 @@ class ProjectVoter extends Voter
     public const EDIT = 'PROJECT_EDIT';
     public const DELETE = 'PROJECT_DELETE';
     public const CREATE = 'PROJECT_CREATE';
-
+    public const ARCHIVE = 'PROJECT_ARCHIVE';
     public function __construct(
         private Security $security,
         private LoggerInterface $logger
@@ -23,8 +23,9 @@ class ProjectVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $subject instanceof Project &&
-            in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::CREATE]);
+        return
+            in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::CREATE, self::ARCHIVE], true)
+            && $subject instanceof Project;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
@@ -51,14 +52,53 @@ class ProjectVoter extends Voter
             $this->logger->info('ProjectVoter: Accès accordé (ADMIN/DIRECTEUR)');
             return true;
         }
-
+        $isArchived = $subject->isArchived() === true;
+        if ($isArchived && $attribute !== self::ARCHIVE) {
+            $this->logger->info('ProjectVoter: Accès refusé (projet archivé)');
+            return false;
+        }
         return match ($attribute) {
             self::VIEW => $this->canView($subject, $user),
             self::EDIT => $this->canEdit($subject, $user),
             self::DELETE => $this->canDelete($subject, $user),
             self::CREATE => $this->canCreate($user),
+            self::ARCHIVE => $this->canArchived($subject, $user),
             default => false
         };
+        switch ($attribute) {
+            case self::VIEW:
+                // Director, Manager of project, assigned member or owner can view
+                if ($project->hasMember($user) || $project->isManager($user) || $user->hasRole('ROLE_DIRECTOR')) {
+                    return true;
+                }
+                return false;
+
+            case self::EDIT:
+                if ($isArchived) {
+                    return false;
+                }
+                // Manager of project or Director can edit
+                return $project->isManager($user) || $user->hasRole('ROLE_DIRECTOR');
+
+            case self::ARCHIVE:
+                // Only Director or Admin can archive/unarchive
+                return $user->hasRole('ROLE_DIRECTOR');
+        }
+
+        return false;
+    }
+
+    private function canArchived(Project $project, User $user): bool
+    {
+        // Only Director or Admin can archive/unarchive
+        if (in_array('ROLE_DIRECTEUR', $user->getRoles()) || in_array('ROLE_ADMIN', $user->getRoles())) {
+            return true;
+        }
+        // Chef de projet peut archiver son propre projet
+        if ($project->getChefproject()?->getId() === $user->getId()) {
+            return true;
+        }
+        return false;
     }
 
     private function canView(Project $project, User $user): bool

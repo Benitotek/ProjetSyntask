@@ -14,13 +14,15 @@ class TaskVoter extends Voter
     public const EDIT = 'TASK_EDIT';
     public const DELETE = 'TASK_DELETE';
     public const CREATE = 'TASK_CREATE';
+    public const MOVE = 'TASK_MOVE';
+    public const STATUS = 'TASK_STATUS';
 
     public function __construct(private Security $security) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $subject instanceof Task &&
-            in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::CREATE]);
+        return    in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::CREATE, self::MOVE, self::STATUS], true)
+            && $subject instanceof Task;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
@@ -38,7 +40,7 @@ class TaskVoter extends Voter
         ) {
             return true;
         }
-
+// Vérification si la tâche est assignée à l'utilisateur et AUTRES ATTRIBUTE SWITCH A REVOIRS?
         /** @var Task $task */
         $task = $subject;
         $project = $task->getTaskList()->getProject();
@@ -53,5 +55,24 @@ class TaskVoter extends Voter
             self::EDIT, self::DELETE => $task->getAssignedUser()?->getId() === $user->getId(),
             default => false
         };
+        $project = $task->getProject();
+        $isArchived = $project?->isArchived() ?? false;
+
+        switch ($attribute) {
+            case self::VIEW:
+                return $project && ($project->hasMember($user) || $project->isManager($user) || $user->hasRole('ROLE_DIRECTEUR'));
+
+            case self::EDIT:
+            case self::MOVE:
+            case self::STATUS:
+                if ($isArchived) {
+                    return false;
+                }
+                // Project manager, Director, or assignee of the task can edit/move/status
+                return $project && ($project->isManager($user) || $user->hasRole('ROLE_DIRECTEUR') || $task->getAssignedUser()?->getId() === $user->getId());
+        }
+
+        return false;
     }
-}
+    }
+
