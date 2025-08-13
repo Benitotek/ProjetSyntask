@@ -264,7 +264,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
     // Trouve les projects par date de fin Réelle
 
-    public function findProjectsByDateFin(\DateTimeInterface $daterelle): array
+    public function findProjectsBydate_Buttoir(\DateTimeInterface $daterelle): array
     {
         return $this->createQueryBuilder('p')
             ->where('p.datereelle = :datereelle')
@@ -274,7 +274,7 @@ class ProjectRepository extends ServiceEntityRepository
     }
     // Trouve les projects par date de fin prévue
 
-    public function findProjectsByDateFinPrevue(\DateTimeInterface $dateButoir): array
+    public function findProjectsBydate_ButtoirPrevue(\DateTimeInterface $dateButoir): array
     {
         return $this->createQueryBuilder('p')
             ->where('p.datedateButoir = :datedateButoir')

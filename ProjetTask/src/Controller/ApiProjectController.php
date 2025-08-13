@@ -133,7 +133,7 @@ final class ApiProjectController extends AbstractController
                 isset($data['dateDebut']) ? new \DateTime($data['dateDebut']) : new \DateTime()
             );
             $project->setDateButoir(
-                isset($data['dateFin']) ? new \DateTime($data['dateFin']) : null
+                isset($data['date_Buttoir']) ? new \DateTime($data['date_Buttoir']) : null
             );
             $project->setCreatedBy($this->getUser());
             $project->setDateCreation(new \DateTime());
@@ -211,8 +211,8 @@ final class ApiProjectController extends AbstractController
             if (isset($data['dateDebut'])) {
                 $project->setDateCreation(new \DateTime($data['dateDebut']));
             }
-            if (isset($data['dateFin'])) {
-                $project->setDateButoir(new \DateTime($data['dateFin']));
+            if (isset($data['date_Buttoir'])) {
+                $project->setDateButoir(new \DateTime($data['date_Buttoir']));
             }
 
             // Validation
@@ -394,7 +394,7 @@ final class ApiProjectController extends AbstractController
             'nom' => $project->getTitre(),
             'description' => $project->getDescription(),
             'dateDebut' => $project->getDateCreation()?->format('Y-m-d'),
-            'dateFin' => $project->getDateButoir()?->format('Y-m-d'),
+            'date_Buttoir' => $project->getDateButoir()?->format('Y-m-d'),
             'dateCreation' => $project->getDateCreation()?->format('Y-m-d H:i:s'),
             'createdBy' => [
                 'id' => $project->getCreatedBy()?->getId(),
