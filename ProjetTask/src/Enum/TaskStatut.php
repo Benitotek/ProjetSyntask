@@ -9,7 +9,7 @@ enum TaskStatut: string
     case EN_PAUSE = 'EN_PAUSE';
     case EN_REPRISE = 'EN_REPRISE';
     case TERMINER = 'TERMINER';
-    case ANNULERR = 'ANNULERR';
+    case ANNULER = 'ANNULER';
     /**
      * Returns the label for the task statut.
      *
@@ -23,7 +23,7 @@ enum TaskStatut: string
             self::EN_PAUSE => 'En pause',
             self::EN_REPRISE => 'En reprise',
             self::TERMINER => 'Terminé',
-            self::ANNULERR => 'Annulé',
+            self::ANNULER => 'Annulé',
         };
     }
 }

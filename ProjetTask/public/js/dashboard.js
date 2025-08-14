@@ -735,7 +735,7 @@ function confirmAction(title, message, callback) {
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#6b7280',
             confirmButtonText: 'Confirmer',
-            cancelButtonText: 'ANNULERRr'
+            cancelButtonText: 'ANNULER'
         }).then((result) => {
             if (result.isConfirmed) {
                 callback();

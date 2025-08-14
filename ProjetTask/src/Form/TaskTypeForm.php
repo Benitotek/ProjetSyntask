@@ -52,7 +52,7 @@ class TaskType extends AbstractType
                     TaskStatut::TERMINER => 'Terminé',
                     TaskStatut::EN_PAUSE => 'En pause',
                     TaskStatut::EN_REPRISE => 'En reprise',
-                    TaskStatut::ANNULERR => 'Annulé',
+                    TaskStatut::ANNULER => 'Annulé',
                 },
                 'choice_value' => fn(?TaskStatut $choice) => $choice?->value,
                 'placeholder' => 'Choisir un statut',
