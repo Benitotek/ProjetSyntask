@@ -73,15 +73,17 @@ class ProjectController extends AbstractController
 
     #[Route('/new', name: 'app_project_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CHEF_PROJET')]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
         $project = new Project();
         $project->setChefproject($this->getUser())
                ->setDateCreation(new \DateTime())
                ->setCreatedBy($this->getUser());
 
-        $form = $this->createForm(ProjectTypeForm::class, $project);
-        $form->handleRequest($request);
+    $form = $this->createForm(ProjectTypeForm::class, $project, [
+        'userRepository' => $userRepository
+    ]);
+    $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->createDefaultTaskLists($project, $entityManager);
@@ -166,7 +168,7 @@ class ProjectController extends AbstractController
             'is_member' => $project->getMembres()->contains($user)
         ]);
 
-        // ✅ SOLUTION: Vérification d'accès avec le voter corrigé
+        // Vérification d'accès avec le voter corrigé
         $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project);
 
         $taskLists = $taskListRepository->findByProjectWithTasks($project);
@@ -246,24 +248,24 @@ class ProjectController extends AbstractController
     }
 
     // ✅ Méthodes privées refactorisées et modernes
-    private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
-    {
-        $defaultColumns = [
-            ['nom' => 'À faire', 'color' => '#007bff'],
-            ['nom' => 'En cours', 'color' => '#fd7e14'],
-            ['nom' => 'Terminé', 'color' => '#28a745']
-        ];
+private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
+{
+    $defaultColumns = [
+        ['nom' => 'À faire', 'color' => '#007bff'],
+        ['nom' => 'En cours', 'color' => '#fd7e14'],
+        ['nom' => 'Terminé', 'color' => '#28a745']
+    ];
 
-        foreach ($defaultColumns as $position => $column) {
-            $taskList = new TaskList();
-            $taskList->setNom($column['nom'])
-                    ->setCouleur(\App\Enum\TaskListColor::from($column['color']))
-                    ->setProject($project)
-                    ->setPositionColumn($position + 1);
+    foreach ($defaultColumns as $position => $column) {
+        $taskList = new TaskList();
+        $taskList->setNom($column['nom'])
+                ->setCouleur(\App\Enum\TaskListColor::fromHexColor($column['color'])) // ✅ Changé ici
+                ->setProject($project)
+                ->setPositionColumn($position + 1);
 
-            $entityManager->persist($taskList);
-        }
+        $entityManager->persist($taskList);
     }
+}
 
     private function handleAddMember(Project $project, User $user, EntityManagerInterface $entityManager): void
     {

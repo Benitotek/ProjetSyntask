@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (statutField) {
         statutField.addEventListener('change', () => {
-            if (statutField.value === 'ARRETERR') {
+            if (statutField.value === 'ARRETER') {
                 alert('Attention, ce project sera marqué comme arrêté.');
             }
         });

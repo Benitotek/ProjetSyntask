@@ -8,6 +8,7 @@ enum TaskListColor: string
     case JAUNE = 'JAUNE';    // Retard léger (1-7 jours)
     case ORANGE = 'ORANGE';  // Retard moyen (8-30 jours)
     case ROUGE = 'ROUGE';    // Retard important (>30 jours)
+    case BLEU = 'BLEU';      // Pas de date butoir définie
 
     /**
      * Retourne la couleur CSS correspondante
@@ -19,6 +20,7 @@ enum TaskListColor: string
             self::JAUNE => '#fef3c7',     // Jaune clair
             self::ORANGE => '#fed7aa',    // Orange clair
             self::ROUGE => '#fecaca',     // Rouge clair
+            self::BLEU => '#dbeafe',      // Bleu clair
         };
     }
 
@@ -32,6 +34,7 @@ enum TaskListColor: string
             self::JAUNE => '#92400e',     // Jaune foncé
             self::ORANGE => '#ea580c',    // Orange foncé
             self::ROUGE => '#dc2626',     // Rouge foncé
+            self::BLEU => '#1e40af',      // Bleu foncé
         };
     }
 
@@ -54,7 +57,7 @@ enum TaskListColor: string
     public static function calculateByDates(?\DateTimeInterface $dateButoir, ?\DateTimeInterface $dateReelle = null): self
     {
         if (!$dateButoir) {
-            return self::VERT; // Pas de date butoir = pas de retard
+            return self::BLEU; // Pas de date butoir = BLEU
         }
 
         $dateComparison = $dateReelle ?? new \DateTime();
@@ -74,6 +77,7 @@ enum TaskListColor: string
             self::JAUNE => 'Retard léger',
             self::ORANGE => 'Retard moyen',
             self::ROUGE => 'Retard important',
+            self::BLEU => 'Pas de date limite',
         };
     }
 
@@ -87,10 +91,25 @@ enum TaskListColor: string
             self::JAUNE => '⚠️',
             self::ORANGE => '🔶',
             self::ROUGE => '🚨',
+            self::BLEU => 'ℹ️',
         };
     }
 
-
+    /**
+     * Convertit une couleur hexadécimale en enum TaskListColor
+     */
+    public static function fromHexColor(string $hexColor): self
+    {
+        return match($hexColor) {
+            '#007bff' => self::BLEU,
+            '#d1fae5' => self::VERT,
+            '#fef3c7' => self::JAUNE,
+            '#fed7aa' => self::ORANGE,
+            '#fecaca' => self::ROUGE,
+            '#dbeafe' => self::BLEU,
+            default => self::BLEU, // Fallback par défaut
+        };
+    }
 }
 
 
