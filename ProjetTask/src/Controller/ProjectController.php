@@ -185,38 +185,6 @@ class ProjectController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/members', name: 'app_project_members', methods: ['GET', 'POST'])]
-    public function manageMembers(
-        Request $request,
-        Project $project,
-        UserRepository $userRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $this->denyAccessUnlessGranted(ProjectVoter::EDIT, $project);
-
-        if ($request->isMethod('POST')) {
-            $memberId = $request->getPayload()->getInt('member_id');
-            $action = $request->getPayload()->get('action');
-
-            if ($memberId && $action && ($user = $userRepository->find($memberId))) {
-                match ($action) {
-                    'add' => $this->handleAddMember($project, $user, $entityManager),
-                    'remove' => $this->handleRemoveMember($project, $user, $entityManager),
-                    default => null
-                };
-
-                if ($request->isXmlHttpRequest()) {
-                    return new JsonResponse(['success' => true]);
-                }
-            }
-        }
-
-        return $this->render('project/members.html.twig', [
-            'project' => $project,
-            'available_users' => $userRepository->searchNonProjectMembers('', $project),
-        ]);
-    }
-
     #[Route('/{id}/assign-manager/{userId}', name: 'app_project_assign_manager', methods: ['POST'])]
     #[IsGranted('ROLE_DIRECTEUR')]
     public function assignManager(
@@ -288,5 +256,42 @@ private function createDefaultTaskLists(Project $project, EntityManagerInterface
             $entityManager->flush();
             $this->addFlash('success', $user->getFullName() . ' retiré du projet');
         }
+    }
+    #[Route('/{id}/archived', name: 'app_project_archived', methods: ['POST'])]
+    public function archived(Request $request, Project $project, EntityManagerInterface $entityManager): Response
+    {
+        $project->setisArchived(true);
+        $entityManager->flush();
+        $this->addFlash('success', 'Projet archivé avec succès');
+        return $this->redirectToRoute('app_project_index');
+    }
+    #[Route('/archived', name: 'app_project_archived', methods: ['GET'])]
+    public function archivedIndex(ProjectRepository $projectRepository): Response
+    {
+        $projects = $projectRepository->findBy(['isArchived' => true]);
+        return $this->render('project/index.html.twig', [
+            'projects' => $projects,
+        ]);
+    }
+     #[Route('/project/{id}/archive', name: 'app_project_archive', methods: ['POST'])]
+    public function archive(Project $project, ProjectRepository $repo)
+    {
+        $this->denyAccessUnlessGranted(ProjectVoter::ARCHIVE, $project);
+        $project->setisArchived(true);
+        $project->setDateArchived(new \DateTimeImmutable());
+        $repo->save($project, true);
+        $this->addFlash('success', 'Projet archivé');
+        return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
+    }
+
+    #[Route('/project/{id}/unarchive', name: 'app_project_unarchive', methods: ['POST'])]
+    public function unarchive(Project $project, ProjectRepository $repo)
+    {
+        $this->denyAccessUnlessGranted(ProjectVoter::ARCHIVE, $project);
+        $project->setisArchived(false);
+        $project->setDateArchived(null);
+        $repo->save($project, true);
+        $this->addFlash('success', 'Projet restauré');
+        return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
     }
 }

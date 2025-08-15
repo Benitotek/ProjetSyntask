@@ -12,6 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Security\ProjectVoter;
+use App\Security\Voter\ProjectVoter as VoterProjectVoter;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/project')]
 final class ApiProjectController extends AbstractController
@@ -113,7 +116,7 @@ final class ApiProjectController extends AbstractController
     /**
      * Crée un nouveau projet
      */
-    #[Route('', name: 'api_projects_create', methods: ['POST'])]
+    #[Route('/New', name: 'api_projects_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -381,6 +384,58 @@ final class ApiProjectController extends AbstractController
                 'success' => false,
                 'message' => 'Erreur lors de l\'ajout du membre'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+     #[Route('/{id}/members', name: 'app_project_members', methods: ['patch'])]
+    public function manageMembers(
+        Request $request,
+        Project $project,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        
+
+        if ($request->isMethod('POST')) {
+            $memberId = $request->getPayload()->getInt('member_id');
+            $action = $request->getPayload()->get('action');
+
+            if ($memberId && $action && ($user = $userRepository->find($memberId))) {
+                match ($action) {
+                    'add' => $this->handleAddMember($project, $user, $entityManager),
+                    'remove' => $this->handleRemoveMember($project, $user, $entityManager),
+                    default => null
+                };
+
+                if ($request->isXmlHttpRequest()) {
+                    return new JsonResponse(['success' => true]);
+                }
+            }
+        }
+          return $this->render('project/members.html.twig', [
+            'project' => $project,
+            'available_users' => $userRepository->searchNonProjectMembers('', $project),
+        ]);
+    }
+
+    /**
+     * Handles adding a member to a project.
+     */
+    private function handleAddMember(Project $project, $user, EntityManagerInterface $entityManager): void
+    {
+        if (!$project->getMembres()->contains($user)) {
+            $project->addMembre($user);
+            $entityManager->flush();
+        }
+    }
+
+    /**
+     * Handles removing a member from a project.
+     */
+    private function handleRemoveMember(Project $project, $user, EntityManagerInterface $entityManager): void
+    {
+        if ($project->getMembres()->contains($user)) {
+            $project->removeMembre($user);
+            $entityManager->flush();
         }
     }
 

@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/kanban', name: 'api_kanban_')]
-#[IsGranted('ROLE_USER')]
+// #[IsGranted('ROLE_USER')]
 final class ApiKanbanController extends AbstractController
 {
     public function __construct(
@@ -216,7 +216,7 @@ final class ApiKanbanController extends AbstractController
         }
     }
 
-    #[Route('/task-lists/{id}', name: 'delete_column', methods: ['DELETE'])]
+    #[Route('api/task-lists/{id}', name: 'delete_column', methods: ['DELETE'])]
     public function deleteColumn(int $id): JsonResponse
     {
         $taskList = $this->taskListRepository->find($id);

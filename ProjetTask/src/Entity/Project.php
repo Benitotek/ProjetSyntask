@@ -63,6 +63,9 @@ class Project
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isArchived = false;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Assert\DateTime]
+    private ?\DateTimeImmutable $dateArchived = null;
 
     // Chef de project : Un User peut gérer plusieurs projects
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "projectsGeres")]
@@ -438,6 +441,16 @@ class Project
     public function setisArchived(bool $isArchived): self
     {
         $this->isArchived = $isArchived;
+        return $this;
+    }
+      public function getDateArchived(): ?\DateTimeImmutable
+    {
+        return $this->dateArchived;
+    }
+
+    public function setDateArchived(?\DateTimeImmutable $dateArchived): self
+    {
+        $this->dateArchived = $dateArchived;
         return $this;
     }
     public function getTargetUrl(): ?string

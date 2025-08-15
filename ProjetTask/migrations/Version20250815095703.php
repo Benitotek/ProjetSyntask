@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250814094640 extends AbstractMigration
+final class Version20250815095703 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,7 +21,7 @@ final class Version20250814094640 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE project CHANGE est_archive is_archived TINYINT(1) NOT NULL
+            ALTER TABLE project ADD date_archived DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)'
         SQL);
     }
 
@@ -29,7 +29,7 @@ final class Version20250814094640 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE project CHANGE is_archived est_archive TINYINT(1) NOT NULL
+            ALTER TABLE project DROP date_archived
         SQL);
     }
 }
