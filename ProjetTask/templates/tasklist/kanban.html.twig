@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}TaskListKanban -
-	{{ project.name }}
+	{{ project.titre }}
 {% endblock %}
 {% block stylesheets %}
 	<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
@@ -10,20 +10,20 @@
 	<div class="container-fluid mt-4">
 		<div class="d-flex justify-content-between align-items-center mb-4">
 			<div>
-				<h1>{{ Project.titre }}</h1>
+				<h1>{{ project.titre }}</h1>
 				<p class="text-muted">
 					<i class="fas fa-user"></i>
 					Chef de project:
 					{% if project.chefproject %}
 						{{ project.chefproject.prenom }}
-						{{ project.chefProject.titre }}
+						{{ project.chefProject.nom }}
 					{% else %}
 						Non assigné
 					{% endif %}
 					|
 					<i class="fas fa-calendar"></i>
 					Date de début:
-					{{ project.dateDebut ? project.dateDebut|date('d/m/Y') : 'Non définie' }}
+					{{ project.dateCreation ? project.dateCreation|date('d/m/Y') : 'Non définie' }}
 				</p>
 			</div>
 			<div class="btn-group">

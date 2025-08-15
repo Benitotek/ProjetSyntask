@@ -144,15 +144,27 @@ class TaskController extends AbstractController
         EntityManagerInterface $entityManager,
         ActivityLogger $activityLogger
     ): Response {
+        // Récupérer la TaskList et le projet associé
+        $taskList = $entityManager->getRepository(TaskList::class)->find($taskListId);
+        if (!$taskList) {
+            throw $this->createNotFoundException('Colonne introuvable.');
+        }
+        $project = $taskList->getProject();
+
         $task = new Task();
-        $form = $this->createForm(TaskType::class, $task);
+        $task->setTaskList($taskList); // optionnel, mais pratique
+
+        $form = $this->createForm(TaskType::class, $task, [
+            'project' => $project,
+            'edit_mode' => false,
+            'user' => $this->getUser(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($task);
             $entityManager->flush();
 
-            // Enregistrer l'activité de création de tâche
             $activityLogger->logTaskCreation(
                 $this->getUser(),
                 $task->getTitle(),
@@ -162,9 +174,10 @@ class TaskController extends AbstractController
 
             return $this->redirectToRoute('app_task_show', ['id' => $task->getId()]);
         }
+
         return $this->render('task/new.html.twig', [
             'task' => $task,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
     #[Route('/task/{id}/status', name: 'app_task_status_change', methods: ['POST'])]
@@ -269,46 +282,6 @@ class TaskController extends AbstractController
     }
 
     /**
-     * Suppression d'une tâche
-     */
-    #[Route('/task/{id}/delete', name: 'app_task_delete', methods: ['POST'])]
-    public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
-    {
-        $project = $task->getProject();
-
-        // Vérifier que l'utilisateur a le droit de modifier ce project
-        if (!$this->canModifyProject($project)) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour supprimer cette tâche');
-        }
-
-        if ($this->isCsrfTokenValid('delete' . $task->getId(), $request->request->get('_token'))) {
-            // Récupérer la colonne et la position pour réorganiser plus tard
-            $taskList = $task->getTaskList();
-            $position = $task->getPosition();
-
-            // Supprimer la tâche
-            $entityManager->remove($task);
-            $entityManager->flush();
-
-            // Réorganiser les positions
-            $taskRepository = $entityManager->getRepository(Task::class);
-            $taskRepository->reorganizePositionsInColumn($taskList, $position);
-
-            if ($request->isXmlHttpRequest()) {
-                return new JsonResponse(['success' => true]);
-            }
-
-            $this->addFlash('success', 'Tâche supprimée avec succès');
-        }
-
-        if ($request->isXmlHttpRequest()) {
-            return new JsonResponse(['success' => false], 400);
-        }
-
-        return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
-    }
-
-    /**
      * Déplacer une tâche dans le kanban (drag & drop)
      */
     #[Route('/{id}/move', name: 'app_task_move', methods: ['POST'])]
@@ -350,62 +323,62 @@ class TaskController extends AbstractController
             'position' => $position
         ]);
     }
- 
+
 
     /**
      * Assigner une tâche à un utilisateur
      */
 
-     #[Route('/{id}/assign/{userId}', name: 'app_task_assign_user', methods: ['POST'])]
-     public function assignUser(
-         Task $task,
-         int $userId,
-         UserRepository $userRepository,
+    #[Route('/{id}/assign/{userId}', name: 'app_task_assign_user', methods: ['POST'])]
+    public function assignUser(
+        Task $task,
+        int $userId,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         Request $request
     ): Response {
-         $project = $task->getProject();
+        $project = $task->getProject();
 
-         // Vérifier les droits pour assigner des tâches
-         if (!$this->canAssignTasks($project)) {
+        // Vérifier les droits pour assigner des tâches
+        if (!$this->canAssignTasks($project)) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour assigner cette tâche');
-         }
+        }
 
         $user = $userRepository->find($userId);
 
-         if (!$user) {
+        if (!$user) {
             if ($request->isXmlHttpRequest()) {
                 return new JsonResponse(['error' => 'Utilisateur non trouvé'], 404);
-             }
-
-             $this->addFlash('error', 'Utilisateur non trouvé');
-             return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
-         }
-
-             // Vérifier que l'utilisateur est membre du project
-             if (!$project->getMembres()->contains($user) && $project->getChefproject() !== $user) {
-                 if ($request->isXmlHttpRequest()) {
-                     return new JsonResponse(['error' => 'L\'utilisateur n\'est pas membre du project'], 400);
-                 }
-    
-                 $this->addFlash('error', 'L\'utilisateur n\'est pas membre du project');
-                 return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
-             }
-    
-             $task->setAssignedUser($user);
-             $entityManager->flush();
-    
-             if ($request->isXmlHttpRequest()) {
-                 return new JsonResponse([
-                     'success' => true,
-                     'userName' => $user->getFullName(),
-                     'userId' => $user->getId()
-                 ]);
             }
-    
-            $this->addFlash('success', 'Tâche assignée à ' . $user->getFullName());
-             return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
+
+            $this->addFlash('error', 'Utilisateur non trouvé');
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
         }
+
+        // Vérifier que l'utilisateur est membre du project
+        if (!$project->getMembres()->contains($user) && $project->getChefproject() !== $user) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['error' => 'L\'utilisateur n\'est pas membre du project'], 400);
+            }
+
+            $this->addFlash('error', 'L\'utilisateur n\'est pas membre du project');
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
+        }
+
+        $task->setAssignedUser($user);
+        $entityManager->flush();
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse([
+                'success' => true,
+                'userName' => $user->getFullName(),
+                'userId' => $user->getId()
+            ]);
+        }
+
+        $this->addFlash('success', 'Tâche assignée à ' . $user->getFullName());
+        return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
+    }
 
     /**
      * Retirer l'assignation d'une tâche
@@ -506,6 +479,45 @@ class TaskController extends AbstractController
 
         // Les chefs de project peuvent assigner des tâches dans leurs projects
         return $project->getCHEF_PROJECT() === $user;
+    }
+    /**
+     * Suppression d'une tâche
+     */
+    #[Route('/task/{id}/delete', name: 'app_task_delete', methods: ['POST'])]
+    public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
+    {
+        $project = $task->getProject();
+
+        // Vérifier que l'utilisateur a le droit de modifier ce project
+        if (!$this->canModifyProject($project)) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour supprimer cette tâche');
+        }
+
+        if ($this->isCsrfTokenValid('delete' . $task->getId(), $request->request->get('_token'))) {
+            // Récupérer la colonne et la position pour réorganiser plus tard
+            $taskList = $task->getTaskList();
+            $position = $task->getPosition();
+
+            // Supprimer la tâche
+            $entityManager->remove($task);
+            $entityManager->flush();
+
+            // Réorganiser les positions
+            $taskRepository = $entityManager->getRepository(Task::class);
+            $taskRepository->reorganizePositionsInColumn($taskList, $position);
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
+
+            $this->addFlash('success', 'Tâche supprimée avec succès');
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse(['success' => false], 400);
+        }
+
+        return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
     }
 }
 

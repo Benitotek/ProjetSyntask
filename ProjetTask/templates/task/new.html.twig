@@ -6,7 +6,7 @@
 <div class="container">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('task_index') }}">Tâches</a></li>
+            <a href="{{ path('app_task_index') }}">Retour à la liste</a>
             <li class="breadcrumb-item active">Nouvelle tâche</li>
         </ol>
     </nav>
@@ -37,6 +37,7 @@
                     </div>
                     
                     <div class="row">
+                        {% if form.taskList is defined %}
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.taskList) }}
@@ -44,6 +45,7 @@
                                 {{ form_errors(form.taskList) }}
                             </div>
                         </div>
+                        {% endif %}
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.assignedUser) }}
@@ -56,9 +58,9 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                {{ form_label(form.priority) }}
-                                {{ form_widget(form.priority) }}
-                                {{ form_errors(form.priority) }}
+                                {{ form_label(form.priorite) }}
+                                {{ form_widget(form.priorite) }}
+                                {{ form_errors(form.priorite) }}
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -70,9 +72,9 @@
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                {{ form_label(form.dueDate) }}
-                                {{ form_widget(form.dueDate) }}
-                                {{ form_errors(form.dueDate) }}
+                                {{ form_label(form.dateButoir) }}
+                                {{ form_widget(form.dateButoir) }}
+                                {{ form_errors(form.dateButoir) }}
                             </div>
                         </div>
                     </div>
@@ -94,3 +96,4 @@
     </div>
 </div>
 {% endblock %}
+

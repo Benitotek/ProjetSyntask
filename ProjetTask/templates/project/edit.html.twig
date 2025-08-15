@@ -14,7 +14,7 @@
     {# Affichage des erreurs, si existantes #}
     {{ form_errors(form) }}
 
-    {{ form_start(form, {attr: {id: 'projectEditForm'}}}) }}
+    {{ form_start(form, { attr: { id: 'projectEditForm' } }) }}
         <div class="mb-3">
             {{ form_label(form.titre, 'Titre du projet') }}
             {{ form_widget(form.titre, {attr: {class: 'form-control'}}) }}

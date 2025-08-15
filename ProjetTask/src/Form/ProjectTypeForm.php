@@ -11,6 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
@@ -62,18 +63,24 @@ class ProjectTypeForm extends AbstractType
                 ],
                 'attr' => ['class' => 'form-select']
             ])
-                 ->add('Chefproject', EntityType::class, [
-            'label' => 'Chef de projet',
-            'class' => User::class,
-            'choice_label' => 'fullName',
-            'choices' => array_filter(
-                $options['userRepository'] ? $options['userRepository']->findBy(['estActif' => true]) : [],
-                fn(User $u) => in_array('ROLE_CHEF_PROJET', $u->getRoles())
-            ),
-            'required' => false,
-            'placeholder' => 'Sélectionner un chef de projet',
-            'attr' => ['class' => 'form-select']
-        ])
+            ->add('dateButoir', DateType::class, [
+                'label' => 'Date butoir',
+                'widget' => 'single_text',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('Chefproject', EntityType::class, [
+                'label' => 'Chef de projet',
+                'class' => User::class,
+                'choice_label' => 'fullName',
+                'choices' => array_filter(
+                    $options['userRepository'] ? $options['userRepository']->findBy(['estActif' => true]) : [],
+                    fn(User $u) => in_array('ROLE_CHEF_PROJET', $u->getRoles())
+                ),
+                'required' => false,
+                'placeholder' => 'Sélectionner un chef de projet',
+                'attr' => ['class' => 'form-select']
+            ])
             ->add('membres', EntityType::class, [
                 'label' => 'Membres de l\'équipe',
                 'class' => User::class,

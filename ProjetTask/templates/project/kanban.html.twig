@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Kanban —
-	{{ project.name }}
+	{{ project.titre }}
 {% endblock %}
 
 {% block body %}
@@ -20,7 +20,7 @@
 						<li class="breadcrumb-item">
 							<a href="{{ path('app_project_index') }}">Projets</a>
 						</li>
-						<li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+						<li class="breadcrumb-item active" aria-current="page">{{ project.titre }}</li>
 					</ol>
 				</nav>
 				<h1 class="h4 mt-2">Kanban</h1>
