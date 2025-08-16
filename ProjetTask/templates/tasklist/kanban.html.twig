@@ -5,6 +5,8 @@
 {% endblock %}
 {% block stylesheets %}
 	<link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/kanban.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/mes-taches.css') }}">
 {% endblock %}
 {% block body %}
 	<div class="container-fluid mt-4">
@@ -110,7 +112,7 @@
 										</select>
 									</div>
 									<div class="mb-2">
-										<input type="date" name="dateEcheance" class="form-control form-control-sm" placeholder="Date d'échéance">
+										<input type="date" name="dateButoir" class="form-control form-control-sm" placeholder="Date d'échéance">
 									</div>
 									<div class="mb-2">
 										<select name="assignedUser" class="form-select form-select-sm">
@@ -130,8 +132,8 @@
 						{% endif %}
 						{% for task in taskList.tasks %}
 
-							<div class="task-card{% if task.dateEcheance and task.dateEcheance < 'now'|date('Y-m-d') and task.statut.value != 'TERMINER' %} overdue{% endif %}" data-task-id="{{ task.id }}" draggable="true">
-								<div class="task-card-title">{{ task.titre }}</div>
+							<div class="task-card{% if task.dateButoir and task.dateReelle and task.dateButoir < 'now'|date('Y-m-d') and task.statut.value != 'TERMINER' %} overdue{% endif %}" data-task-id="{{ task.id }}" draggable="true">
+								<div class="task-card-title">{{ task.title }}</div>
 								{% if task.description %}
 
 									<div class="task-card-description small text-muted">
@@ -147,10 +149,10 @@
 										{% endif %}
 									</div>
 									<div class="d-flex align-items-center">
-										{% if task.dateEcheance %}
-											<span class="me-2 small{% if task.dateEcheance < 'now'|date('Y-m-d') and task.statut.value != 'TERMINER' %} text-danger{% endif %}" title="Date d'échéance">
+										{% if task.dateButoir %}
+											<span class="me-2 small{% if task.dateButoir < 'now'|date('Y-m-d') and task.statut.value != 'TERMINER' %} text-danger{% endif %}" title="Date d'échéance">
 												<i class="fas fa-calendar-alt"></i>
-												{{ task.dateEcheance|date('d/m/Y') }}
+												{{ task.dateButoir|date('d/m/Y') }}
 											</span>
 										{% endif %}
 										{% if task.assignedUser %}
@@ -264,137 +266,136 @@
 	{{ parent() }}
 
 	 <script> 
+				
+					 // ==================== DRAG & DROP FUNCTIONALITY ====================
+					  const taskCards = document.querySelectorAll('.task-card'); 
+					 const columnBodies = document.querySelectorAll('.kanban-column-body');
+					  let draggedTask = null;
+					  // Initialiser le drag & drop pour les tâches
+					  taskCards.forEach(card => { card.addEventListener('dragstart', function(e) {
+					  draggedTask = card; setTimeout(() => { card.classList.add('dragging'); }, 0); });
+					  card.addEventListener('dragend', function() { card.classList.remove('dragging');
+					  draggedTask = null;
+					  columnBodies.forEach(column => { column.classList.remove('drag-over');
+					  });
+					  });
+					  }); 
+					 // Gérer le drop dans les colonnes
+					  columnBodies.forEach(column => { column.addEventListener('dragover', function(e) { e.preventDefault();
+					  column.classList.add('drag-over');
+					  }); 
+					 column.addEventListener('dragleave', function() { column.classList.remove('drag-over');
+					  });
+					  column.addEventListener('drop', function(e) { e.preventDefault();
+					  column.classList.remove('drag-over');
+					  if (draggedTask) { const taskId = draggedTask.dataset.taskId; const columnId = column.dataset.columnId;
+					  // DéTERMINERr la position dans la nouvelle colonne 
+					 const tasksInColumn = Array.from(column.querySelectorAll('.task-card'));
+					  let position = tasksInColumn.length;
+					  // Déplacer visuellement la tâche draggedTask.remove();
+					  column.appendChild(draggedTask);
+					  // Envoyer une requête AJAX pour mettre à jour la position en base de données
+					  fetch(`/task/${taskId}/move`, { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ taskListId: columnId, position: position }) })
+					  .then(response => response.json()) .then(data => { if (!data.success) {
+					  // En cas d'erreur, rafraîchir la page location.reload(); } }) 
+					 .catch(error => { console.error('Erreur lors du déplacement de la tâche:', error);
+					  location.reload();
+					  });
+					  } });
+					  });
 			
-				 // ==================== DRAG & DROP FUNCTIONALITY ====================
-				  const taskCards = document.querySelectorAll('.task-card'); 
-				 const columnBodies = document.querySelectorAll('.kanban-column-body');
-				  let draggedTask = null;
-				  // Initialiser le drag & drop pour les tâches
-				  taskCards.forEach(card => { card.addEventListener('dragstart', function(e) {
-				  draggedTask = card; setTimeout(() => { card.classList.add('dragging'); }, 0); });
-				  card.addEventListener('dragend', function() { card.classList.remove('dragging');
-				  draggedTask = null;
-				  columnBodies.forEach(column => { column.classList.remove('drag-over');
-				  });
-				  });
-				  }); 
-				 // Gérer le drop dans les colonnes
-				  columnBodies.forEach(column => { column.addEventListener('dragover', function(e) { e.preventDefault();
-				  column.classList.add('drag-over');
-				  }); 
-				 column.addEventListener('dragleave', function() { column.classList.remove('drag-over');
-				  });
-				  column.addEventListener('drop', function(e) { e.preventDefault();
-				  column.classList.remove('drag-over');
-				  if (draggedTask) { const taskId = draggedTask.dataset.taskId; const columnId = column.dataset.columnId;
-				  // DéTERMINERr la position dans la nouvelle colonne 
-				 const tasksInColumn = Array.from(column.querySelectorAll('.task-card'));
-				  let position = tasksInColumn.length;
-				  // Déplacer visuellement la tâche draggedTask.remove();
-				  column.appendChild(draggedTask);
-				  // Envoyer une requête AJAX pour mettre à jour la position en base de données
-				  fetch(`/task/${taskId}/move`, { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ taskListId: columnId, position: position }) })
-				  .then(response => response.json()) .then(data => { if (!data.success) {
-				  // En cas d'erreur, rafraîchir la page location.reload(); } }) 
-				 .catch(error => { console.error('Erreur lors du déplacement de la tâche:', error);
-				  location.reload();
-				  });
-				  } });
-				  });
-		
-				  // ==================== MODAL FUNCTIONALITY ==================== 
-				 const columnModal = new bootstrap.Modal(document.getElementById('columnModal')); 
-				 const deleteColumnModal = new bootstrap.Modal(document.getElementById('deleteColumnModal'));
-				  const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
-				  // Ouvrir le modal d'ajout de colonne document.getElementById('addColumnBtn').addEventListener('click', function() { document.getElementById('columnModalTitle').textContent = 'Ajouter une colonne';
-				  fetch(`{{ path('app_tasklist_new', {'projectId': project.id}) }}`) 
-				 .then(response => response.text())
-				 .then(html => { document.getElementById('columnModalBody').innerHTML = html;
-				  columnModal.show(); }); }); document.getElementById('addColumnPlaceholder').addEventListener('click', function() { document.getElementById('addColumnBtn').click(); });
-				 
-				  // Ouvrir le modal de modification de colonne
-				  document.querySelectorAll('.edit-column-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
-				  const columnId = this.dataset.columnId;
-				  document.getElementById('columnModalTitle').textContent = 'Modifier la colonne';
-				  fetch(`{{ path('app_tasklist_edit', {'id': 'COLUMN_ID'}) }}`.replace('COLUMN_ID', columnId)) 
-				 .then(response => response.text()) 
-				 .then(html => { document.getElementById('columnModalBody').innerHTML = html; columnModal.show();
-				  });
-				  });
-				  });
-		
-				  // Ouvrir le modal de suppression de colonne
-				  document.querySelectorAll('.delete-column-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
-				  const columnId = this.dataset.columnId;
-				  document.getElementById('deleteColumnForm').action = `{{ path('app_tasklist_delete', {'id': 'COLUMN_ID'}) }}`.replace('COLUMN_ID', columnId);
-				  document.getElementById('deleteColumnToken').value = `{{ csrf_token('delete') }}` + columnId;
-				  deleteColumnModal.show();
-				  });
-				  });
-		
-				  // Ouvrir le modal de suppression de tâche 
-				 document.querySelectorAll('.delete-task-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
-				  const taskId = this.dataset.taskId;
-				  document.getElementById('deleteTaskForm').action = `{{ path('app_task_delete', {'id': 'TASK_ID'}) }}`.replace('TASK_ID', taskId);
-				  document.getElementById('deleteTaskToken').value = `{{ csrf_token('delete') }}` + taskId;
-				  deleteTaskModal.show();
-				  });
-				  });
-		
-				  // ==================== AJOUT DE TÂCHE RAPIDE ====================
-				  document.querySelectorAll('.add-task-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault(); 
-				 const columnId = this.dataset.columnId;
-				  const formContainer = document.getElementById(`addTaskForm_${columnId}`);
-				  formContainer.style.display = 'block';
-				  });
-				  });
-				  document.querySelectorAll('.cancel-add-task').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
-				  const columnId = this.dataset.columnId;
-				  const formContainer = document.getElementById(`addTaskForm_${columnId}`);
-				  formContainer.style.display = 'none';
-				  });
-				  });
-				 
-				  // ==================== RÉORDONNEMENT DES COLONNES ==================== // 
-				 Implémentation simple du drag & drop pour les colonnes 
-				 const columns = document.querySelectorAll('.kanban-column');
-				 const container = document.getElementById('kanbanContainer'); 
-				 let draggedColumn = null; columns.forEach(column => { column.addEventListener('dragstart', function(e) { // S'assurer que l'événement ne se propage pas aux éléments enfants if (e.target.classList.contains('task-card')) { return;
-				  }
-				  draggedColumn = column; setTimeout(() => { column.classList.add('dragging');
-				  },
-				  0);
-				  });
-				  column.addEventListener('dragend', function() { if (draggedColumn) { column.classList.remove('dragging');
-				 
-				  // Récupérer l'ordre actuel des colonnes 
-				 const newOrder = Array.from(container.querySelectorAll('.kanban-column')).map((col, index) => { return { id: col.dataset.columnId, position: index };
-				  });
-				 
-				  // Envoyer une requête AJAX pour mettre à jour l'ordre 
-				 fetch(`{{ path('app_tasklist_reorder', {'projectId': project.id}) }}`, { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ columns: newOrder }) }) 
-				 .then(response => response.json()) 
-				 .then(data => { if (!data.success) { 
-				 // En cas d'erreur, rafraîchir la page 
-				 location.reload(); } }) 
-				 .catch(error => { console.error('Erreur lors de la réorganisation des colonnes:', error); 
-				 location.reload();
-				  }); 
-				 draggedColumn = null; } });
-				  }); 
-				 container.addEventListener('dragover', function(e) { e.preventDefault(); 
-				 if (!draggedColumn) return;
-				 
-				  // Trouver la colonne la plus proche du curseur 
-				 const afterElement = getDragAfterElement(container, e.clientX); if (afterElement == null) { container.appendChild(draggedColumn); } 
-				 else { container.insertBefore(draggedColumn, afterElement); }
-				  });
-				  function getDragAfterElement(container, x) { const draggableElements = [...container.querySelectorAll('.kanban-column:not(.dragging)')]; 
-				 return draggableElements.reduce((closest, child) => { const box = child.getBoundingClientRect(); 
-				 const offset = x - box.left - box.width / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; }
-				 else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; }
-				  });
-		
-				  </script>
+					  // ==================== MODAL FUNCTIONALITY ==================== 
+					 const columnModal = new bootstrap.Modal(document.getElementById('columnModal')); 
+					 const deleteColumnModal = new bootstrap.Modal(document.getElementById('deleteColumnModal'));
+					  const deleteTaskModal = new bootstrap.Modal(document.getElementById('deleteTaskModal'));
+					  // Ouvrir le modal d'ajout de colonne document.getElementById('addColumnBtn').addEventListener('click', function() { document.getElementById('columnModalTitle').textContent = 'Ajouter une colonne';
+					  fetch(`{{ path('app_tasklist_new', {'projectId': project.id}) }}`) 
+					 .then(response => response.text())
+					 .then(html => { document.getElementById('columnModalBody').innerHTML = html;
+					  columnModal.show(); }); }); document.getElementById('addColumnPlaceholder').addEventListener('click', function() { document.getElementById('addColumnBtn').click(); });
+					 
+					  // Ouvrir le modal de modification de colonne
+					  document.querySelectorAll('.edit-column-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+					  const columnId = this.dataset.columnId;
+					  document.getElementById('columnModalTitle').textContent = 'Modifier la colonne';
+					  fetch(`{{ path('app_tasklist_edit', {'id': 'COLUMN_ID'}) }}`.replace('COLUMN_ID', columnId)) 
+					 .then(response => response.text()) 
+					 .then(html => { document.getElementById('columnModalBody').innerHTML = html; columnModal.show();
+					  });
+					  });
+					  });
+			
+					  // Ouvrir le modal de suppression de colonne
+					  document.querySelectorAll('.delete-column-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+					  const columnId = this.dataset.columnId;
+					  document.getElementById('deleteColumnForm').action = `{{ path('app_tasklist_delete', {'id': 'COLUMN_ID'}) }}`.replace('COLUMN_ID', columnId);
+					  document.getElementById('deleteColumnToken').value = `{{ csrf_token('delete') }}` + columnId;
+					  deleteColumnModal.show();
+					  });
+					  });
+			
+					  // Ouvrir le modal de suppression de tâche 
+					 document.querySelectorAll('.delete-task-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+					  const taskId = this.dataset.taskId;
+					  document.getElementById('deleteTaskForm').action = `{{ path('app_task_delete', {'id': 'TASK_ID'}) }}`.replace('TASK_ID', taskId);
+					  document.getElementById('deleteTaskToken').value = `{{ csrf_token('delete') }}` + taskId;
+					  deleteTaskModal.show();
+					  });
+					  });
+			
+					  // ==================== AJOUT DE TÂCHE RAPIDE ====================
+					  document.querySelectorAll('.add-task-btn').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault(); 
+					 const columnId = this.dataset.columnId;
+					  const formContainer = document.getElementById(`addTaskForm_${columnId}`);
+					  formContainer.style.display = 'block';
+					  });
+					  });
+					  document.querySelectorAll('.cancel-add-task').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault();
+					  const columnId = this.dataset.columnId;
+					  const formContainer = document.getElementById(`addTaskForm_${columnId}`);
+					  formContainer.style.display = 'none';
+					  });
+					  });
+					 
+					  // ==================== RÉORDONNEMENT DES COLONNES ==================== // 
+					 Implémentation simple du drag & drop pour les colonnes 
+					 const columns = document.querySelectorAll('.kanban-column');
+					 const container = document.getElementById('kanbanContainer'); 
+					 let draggedColumn = null; columns.forEach(column => { column.addEventListener('dragstart', function(e) { // S'assurer que l'événement ne se propage pas aux éléments enfants if (e.target.classList.contains('task-card')) { return;
+					  }
+					  draggedColumn = column; setTimeout(() => { column.classList.add('dragging');
+					  },
+					  0);
+					  });
+					  column.addEventListener('dragend', function() { if (draggedColumn) { column.classList.remove('dragging');
+					 
+					  // Récupérer l'ordre actuel des colonnes 
+					 const newOrder = Array.from(container.querySelectorAll('.kanban-column')).map((col, index) => { return { id: col.dataset.columnId, position: index };
+					  });
+					 
+					  // Envoyer une requête AJAX pour mettre à jour l'ordre 
+					 fetch(`{{ path('app_tasklist_reorder', {'projectId': project.id}) }}`, { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ columns: newOrder }) }) 
+					 .then(response => response.json()) 
+					 .then(data => { if (!data.success) { 
+					 // En cas d'erreur, rafraîchir la page 
+					 location.reload(); } }) 
+					 .catch(error => { console.error('Erreur lors de la réorganisation des colonnes:', error); 
+					 location.reload();
+					  }); 
+					 draggedColumn = null; } });
+					 
+					 container.addEventListener('dragover', function(e) { e.preventDefault(); 
+					 if (!draggedColumn) return;
+					 
+					  // Trouver la colonne la plus proche du curseur 
+					 const afterElement = getDragAfterElement(container, e.clientX); if (afterElement == null) { container.appendChild(draggedColumn); } 
+					 else { container.insertBefore(draggedColumn, afterElement); }
+					  });
+					  function getDragAfterElement(container, x) { const draggableElements = [...container.querySelectorAll('.kanban-column:not(.dragging)')]; 
+					 return draggableElements.reduce((closest, child) => { const box = child.getBoundingClientRect(); 
+					 const offset = x - box.left - box.width / 2; if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; }
+					 else { return closest; } }, { offset: Number.NEGATIVE_INFINITY }).element; }
+					 
+			
+					  </script>
 {% endblock %}
-

@@ -215,7 +215,7 @@ class ProjectController extends AbstractController
             : $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
     }
 
-    // ✅ Méthodes privées refactorisées et modernes
+    //  Méthodes privées refactorisées et modernes
 private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
 {
     $defaultColumns = [
@@ -227,7 +227,7 @@ private function createDefaultTaskLists(Project $project, EntityManagerInterface
     foreach ($defaultColumns as $position => $column) {
         $taskList = new TaskList();
         $taskList->setNom($column['nom'])
-                ->setCouleur(\App\Enum\TaskListColor::fromHexColor($column['color'])) // ✅ Changé ici
+                ->setCouleur(\App\Enum\TaskListColor::fromHexColor($column['color'])) 
                 ->setProject($project)
                 ->setPositionColumn($position + 1);
 
@@ -273,7 +273,7 @@ private function createDefaultTaskLists(Project $project, EntityManagerInterface
             'projects' => $projects,
         ]);
     }
-     #[Route('/project/{id}/archive', name: 'app_project_archive', methods: ['POST'])]
+     #[Route('/archived/{id}/', name: 'app_project_archive', methods: ['POST'])]
     public function archive(Project $project, ProjectRepository $repo)
     {
         $this->denyAccessUnlessGranted(ProjectVoter::ARCHIVE, $project);
@@ -284,7 +284,7 @@ private function createDefaultTaskLists(Project $project, EntityManagerInterface
         return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
     }
 
-    #[Route('/project/{id}/unarchive', name: 'app_project_unarchive', methods: ['POST'])]
+    #[Route('/unarchived/{id}/', name: 'app_project_unarchive', methods: ['POST'])]
     public function unarchive(Project $project, ProjectRepository $repo)
     {
         $this->denyAccessUnlessGranted(ProjectVoter::ARCHIVE, $project);
