@@ -1,355 +1,438 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Tous les projets{% endblock %}
-
+{% block title %}
+    Tous les projets
+{% endblock %}
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('styles/project-management.css') }}">
-{% endblock %}
-
-{% block body %}
-<div class="app-container">
-    <!-- Overlay de chargement -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-        </div>
-    </div>
-
-    <!-- Sidebar identique -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="app-logo">
-                <div class="logo-placeholder">
-                    <i class="icon-image"></i>
-                </div>
-                <span class="logo-text">logo de l'application</span>
-            </div>
-
-            <div class="user-profile">
-                <div class="profile-avatar">
-                    <i class="icon-user"></i>
-                </div>
-                <div class="user-info">
-                    <div class="user-name">{{ app.user.username|default('salarié') }}</div>
-                    <div class="user-role">{{ app.user.role|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
-                </div>
-                <div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}</div>
-            </div>
-        </div> <!-- Fermeture de sidebar-header -->
-
-        <nav class="sidebar-nav">
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="{{ path('app_dashboard') }}" class="nav-link">
-                        <i class="icon-dashboard"></i>Tableau de bord
-                    </a>
-                </li>
-                <li class="nav-item active">
-                    <a href="{{ path('app_mes_projects') }}" class="nav-link">
-                        <i class="icon-projects"></i>Projets
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ path('app_mes_projects') }}" class="nav-link">
-                        <i class="icon-stats"></i>Statistiques
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="icon-profile"></i>Mon profil
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <div class="sidebar-footer">
-            <a href="{{ path('app_logout') }}" class="logout-btn">
-                <i class="icon-logout"></i>bouton de déconnexion
-            </a>
-        </div>
-    </aside>
-
-    <!-- Contenu principal -->
-    <main class="main-content">
-        <div class="content-header">
-            <h1 class="page-title">Gestion des projets</h1>
-            <div class="header-actions">
-                {% if is_granted('ROLE_DIRECTEUR') %}
-                    <a href="{{ path('app_project_new') }}" class="btn btn-primary">
-                        <i class="icon-plus"></i>Nouveau projet
-                    </a>
-                {% endif %}
-                <button id="refreshButton" class="btn btn-secondary" title="Actualiser">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Statistiques rapides avec animation -->
-        <div class="stats-cards">
-            <div class="stat-card" data-stat="total">
-                <div class="stat-icon">📊</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="statTotal">{{ projects|length }}</div>
-                    <div class="stat-label">Total projets</div>
+    {% endblock %}
+    {% block body %}
+        <div class="app-container">
+            <!-- Overlay de chargement -->
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
                 </div>
             </div>
-            <div class="stat-card" data-stat="EN_COURs">
-                <div class="stat-icon">🚀</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="statEnCours">{{ projects|filter(p => p.statut == 'EN_COURS')|length }}</div>
-                    <div class="stat-label">En Cours</div>
+            <!-- Sidebar identique -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="app-logo">
+                        <img src="{{ asset('img/image.png') }}" alt="Logo" class="app-logo-img"></div>
+                        <div class="user-profile">
+                            <div class="profile-avatar">
+                                <i class="icon-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">
+                                    {{ app.user.username|default('salarié') }}
+                                </div>
+                                <div class="user-role">
+                                    {{ app.user.role|join(', ')|replace({'ROLE_': ''})|default('rôle de l\'utilisateur') }}</div>
                 </div>
-            </div>
-            <div class="stat-card" data-stat="TERMINER">
-                <div class="stat-icon">✅</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="statTERMINER">{{ projects|filter(p => p.statut == 'TERMINER')|length }}</div>
-                    <div class="stat-label">Terminés</div>
+                <div class="username-display">{{ app.user.email|default('nom d\'utilisateur') }}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Fermeture de sidebar-header -->
+                        <nav class="sidebar-nav">
+                            <ul class="nav-menu">
+                                <li class="nav-item">
+                                    <a href="{{ path('app_dashboard') }}" class="nav-link">
+                                        <i class="icon-dashboard"></i>
+                                        Tableau de bord
+                                    </a>
+                                </li>
+                                <li class="nav-item active">
+                                    <a href="{{ path('app_mes_projects') }}" class="nav-link">
+                                        <i class="icon-projects"></i>
+                                        Projets
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ path('app_mes_projects') }}" class="nav-link">
+                                        <i class="icon-stats"></i>
+                                        Statistiques
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="icon-profile"></i>
+                                        Mon profil
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <div class="sidebar-footer">
+                            <a href="{{ path('app_logout') }}" class="logout-btn">
+                                <i class="icon-logout"></i>
+                                bouton de déconnexion
+                            </a>
+                        </div>
+                    </aside>
+                    <!-- Contenu principal -->
+                    <main class="main-content">
+                        <div class="content-header">
+                            <h1 class="page-title">
+                                Gestion des projets
+                            </h1>
+                            <div class="header-actions">
+                                {% if is_granted('ROLE_DIRECTEUR') %}
+                                    <a href="{{ path('app_project_new') }}" class="btn btn-primary">
+                                        <i class="icon-plus"></i>
+                                        Nouveau projet
+                                    </a>
+                                {% endif %}
+                                <button id="refreshButton" class="btn btn-secondary" title="Actualiser">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Statistiques rapides avec animation -->
+                        <div class="stats-cards">
+                            <div class="stat-card" data-stat="total">
+                                <div class="stat-icon">
+                                    📊
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="statTotal">
+                                        {{ projects|length }}
+                                    </div>
+                                    <div class="stat-label">
+                                        Total projets
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-card" data-stat="EN_COURs">
+                                <div class="stat-icon">
+                                    🚀
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="statEnCours">
+                                        {{ projects|filter(p => p.statut == 'EN_COURS')|length }}
+                                    </div>
+                                    <div class="stat-label">
+                                        En Cours
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-card" data-stat="TERMINER">
+                                <div class="stat-icon">
+                                    ✅
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="statTERMINER">
+                                        {{ projects|filter(p => p.statut == 'TERMINER')|length }}
+                                    </div>
+                                    <div class="stat-label">
+                                        Terminés
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-card" data-stat="EN_ATTENTE">
+                                <div class="stat-icon">
+                                    ⏳
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="statEnAttente">
+                                        {{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}
+                                    </div>
+                                    <div class="stat-label">
+                                        En Attente
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Filtres et recherche améliorés -->
+                        <div class="filters-section">
+                            <div class="search-filters">
+                                <div class="search-box">
+                                    <input type="text" id="projectSearch" placeholder="Rechercher un projet..." class="search-input" />
+                                    <i class="icon-search"></i>
+                                    <button id="clearSearch" class="btn-clear-search" style="display: none;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="filter-tabs">
+                                    <a href="#" class="filter-tab active" data-status="all">
+                                        Tous (
+                                        <span id="countAll">
+                                            {{ projects|length }}
+                                        </span>
+                                        )
+                                    </a>
+                                    <a href="#" class="filter-tab" data-status="EN_ATTENTE">
+                                        En attente (
+                                        <span id="countEnAttente">
+                                            {{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}
+                                        </span>
+                                        )
+                                    </a>
+                                    <a href="#" class="filter-tab" data-status="EN_COURS">
+                                        En cours (
+                                        <span id="countEnCours">
+                                            {{ projects|filter(p => p.statut == 'EN_COURS')|length }}
+                                        </span>
+                                        )
+                                    </a>
+                                    <a href="#" class="filter-tab" data-status="TERMINER">
+                                        Terminés (
+                                        <span id="countTERMINER">
+                                            {{ projects|filter(p => p.statut == 'TERMINER')|length }}
+                                        </span>
+                                        )
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tableau des projets -->
+                        <div class="projects-table-container">
+                            <table class="projects-table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <button class="sort-header" data-sort="name">
+                                                Projet
+                                                <i class="fas fa-sort"></i>
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button class="sort-header" data-sort="status">
+                                                Statut
+                                                <i class="fas fa-sort"></i>
+                                            </button>
+                                        </th>
+                                        <th>
+                                            Chef de projet
+                                        </th>
+                                        <th>
+                                            Équipe
+                                        </th>
+                                        <th>
+                                            <button class="sort-header" data-sort="progress">
+                                                Progression
+                                                <i class="fas fa-sort"></i>
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button class="sort-header" data-sort="deadline">
+                                                Échéance
+                                                <i class="fas fa-sort"></i>
+                                            </button>
+                                        </th>
+                                        <th>
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projectsTableBody">
+                                    {% for project in projects %}
+                                        <tr class="project-row" data-project-id="{{ project.id }}" data-status="{{ project.statut }}" data-name="{{ project.titre|lower }}">
+                                            <td class="project-cell">
+                                                <div class="project-info">
+                                                    <h4 class="project-name">
+                                                        {{ project.titre }}
+                                                    </h4>
+                                                    {% if project.reference %}
+                                                        <span class="project-ref">
+                                                            {{ project.reference }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="statut-badge statut-{{ project.statut|lower|replace({'-': '_'}) }}" data-project-id="{{ project.id }}" data-current-status="{{ project.statut }}" title="Cliquer pour changer le statut">
+                                                    {{ project.statut|replace({'-': ' '})|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if project.Chefproject %}
+                                                    <div class="user-info-cell">
+                                                        <div class="user-avatar">
+                                                            {{ project.Chefproject.username|slice(0, 2)|upper }}
+                                                        </div>
+                                                        {{ project.Chefproject.username }}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">
+                                                        Non assigné
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="team-avatars-small">
+                                                    {% for membre in project.membres|slice(0, 3) %}
+                                                        <div class="team-avatar-small" title="{{ membre.username }}">
+                                                            {{ membre.username|slice(0, 2)|upper }}
+                                                        </div>
+                                                    {% endfor %}
+                                                    {% if project.membres|length > 3 %}
+                                                        <span class="team-count">
+                                                            +
+                                                            {{ project.membres|length - 3 }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if project.tasks is defined and project.tasks|length > 0 %}
+                                                    {% set totalTasks = project.tasks|length %}
+                                                    {% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINER')|length %}
+                                                    {% set progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100)|round : 0 %}
+                                                    <div class="progress-cell">
+                                                        <div class="progress-bar-small">
+                                                            <div class="progress-fill-small" style="width: {{ progressPercent }}%" data-progress="{{ progressPercent }}"></div>
+                                                        </div>
+                                                        <span class="progress-text-small">
+                                                            {{ progressPercent }}
+                                                            %
+                                                        </span>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">
+                                                        Aucune tâche
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if project.dateButoir %}
+                                                    <div class="date-cell" data-deadline="{{ project.dateButoir|date('Y-m-d') }}">
+                                                        {{ project.dateButoir|date('d/m/Y') }}
+                                                        {% if project.dateButoir < date() and project.statut != 'TERMINER' %}
+                                                            <span class="overdue-badge">
+                                                                En retard
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">
+                                                        Non définie
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <a href="{{ path('app_project_kanban', {'id': project.id}) }}" class="btn-icon" title="Vue Kanban" data-action="kanban">
+                                                        <i class="icon-kanban"></i>
+                                                    </a>
+                                                    <a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn-icon" title="Voir détails" data-action="view">
+                                                        <i class="icon-eye"></i>
+                                                    </a>
+                                                    {% if is_granted('ROLE_DIRECTEUR') or project.Chefproject == app.user %}
+                                                        <a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn-icon" title="Modifier" data-action="edit">
+                                                            <i class="fas fa-pencil-alt"></i>
+                                                        <!-- icône de crayon -->
+                                                        </a>
+                                                        <button class="btn-icon btn-delete-project" title="Supprimer" data-project-id="{{ project.id }}" data-project-name="{{ project.titre }}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr id="emptyRow">
+                                            <td colspan="7" class="empty-table">
+                                                <div class="empty-state">
+                                                    <div class="empty-icon">
+                                                        📁
+                                                    </div>
+                                                    <h3>
+                                                        Aucun projet trouvé
+                                                    </h3>
+                                                    <p id="emptyMessage">
+                                                        Aucun projet ne correspond aux critères sélectionnés.
+                                                    </p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </main>
                 </div>
-            </div>
-            <div class="stat-card" data-stat="EN_ATTENTE">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="statEnAttente">{{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}</div>
-                    <div class="stat-label">En Attente</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filtres et recherche améliorés -->
-        <div class="filters-section">
-            <div class="search-filters">
-                <div class="search-box">
-                    <input type="text" id="projectSearch" placeholder="Rechercher un projet..." class="search-input" />
-                    <i class="icon-search"></i>
-                    <button id="clearSearch" class="btn-clear-search" style="display: none;">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="filter-tabs">
-                    <a href="#" class="filter-tab active" data-status="all">
-                        Tous (<span id="countAll">{{ projects|length }}</span>)
-                    </a>
-                    <a href="#" class="filter-tab" data-status="EN_ATTENTE">
-                        En attente (<span id="countEnAttente">{{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}</span>)
-                    </a>
-                    <a href="#" class="filter-tab" data-status="EN_COURS">
-                        En cours (<span id="countEnCours">{{ projects|filter(p => p.statut == 'EN_COURS')|length }}</span>)
-                    </a>
-                    <a href="#" class="filter-tab" data-status="TERMINER">
-                        Terminés (<span id="countTERMINER">{{ projects|filter(p => p.statut == 'TERMINER')|length }}</span>)
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tableau des projets -->
-        <div class="projects-table-container">
-            <table class="projects-table">
-                <thead>
-                    <tr>
-                        <th>
-                            <button class="sort-header" data-sort="name">
-                                Projet <i class="fas fa-sort"></i>
-                            </button>
-                        </th>
-                        <th>
-                            <button class="sort-header" data-sort="status">
-                                Statut <i class="fas fa-sort"></i>
-                            </button>
-                        </th>
-                        <th>Chef de projet</th>
-                        <th>Équipe</th>
-                        <th>
-                            <button class="sort-header" data-sort="progress">
-                                Progression <i class="fas fa-sort"></i>
-                            </button>
-                        </th>
-                        <th>
-                            <button class="sort-header" data-sort="deadline">
-                                Échéance <i class="fas fa-sort"></i>
-                            </button>
-                        </th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="projectsTableBody">
-               {% for project in projects %}
-<tr class="project-row" data-project-id="{{ project.id }}" data-status="{{ project.statut }}" data-name="{{ project.titre|lower }}">
-    <td class="project-cell">
-        <div class="project-info">
-            <h4 class="project-name">{{ project.titre }}</h4>
-            {% if project.reference %}
-                <span class="project-ref">{{ project.reference }}</span>
-            {% endif %}
-        </div>
-    </td>
-    <td>
-        <span class="statut-badge statut-{{ project.statut|lower|replace({'-': '_'}) }}" 
-              data-project-id="{{ project.id }}" 
-              data-current-status="{{ project.statut }}"
-              title="Cliquer pour changer le statut">
-            {{ project.statut|replace({'-': ' '})|title }}
-        </span>
-    </td>
-    <td>
-        {% if project.Chefproject %}
-            <div class="user-info-cell">
-                <div class="user-avatar">{{ project.Chefproject.username|slice(0, 2)|upper }}</div>
-                {{ project.Chefproject.username }}
-            </div>
-        {% else %}
-            <span class="text-muted">Non assigné</span>
-        {% endif %}
-    </td>
-    <td>
-        <div class="team-avatars-small">
-            {% for membre in project.membres|slice(0, 3) %}
-                <div class="team-avatar-small" title="{{ membre.username }}">
-                    {{ membre.username|slice(0, 2)|upper }}
-                </div>
-            {% endfor %}
-            {% if project.membres|length > 3 %}
-                <span class="team-count">+{{ project.membres|length - 3 }}</span>
-            {% endif %}
-        </div>
-    </td>
-    <td>
-        {% if project.tasks is defined and project.tasks|length > 0 %}
-            {% set totalTasks = project.tasks|length %}
-            {% set completedTasks = project.tasks|filter(t => t.statut == 'TERMINER')|length %}
-            {% set progressPercent = totalTasks > 0 ? (completedTasks / totalTasks * 100)|round : 0 %}
-            <div class="progress-cell">
-                <div class="progress-bar-small">
-                    <div class="progress-fill-small" 
-                         style="width: {{ progressPercent }}%" 
-                         data-progress="{{ progressPercent }}"></div>
-                </div>
-                <span class="progress-text-small">{{ progressPercent }}%</span>
-            </div>
-        {% else %}
-            <span class="text-muted">Aucune tâche</span>
-        {% endif %}
-    </td>
-    <td>
-        {% if project.dateButoir %}
-            <div class="date-cell" data-deadline="{{ project.dateButoir|date('Y-m-d') }}">
-                {{ project.dateButoir|date('d/m/Y') }}
-                {% if project.dateButoir < date() and project.statut != 'TERMINER' %}
-                    <span class="overdue-badge">En retard</span>
-                {% endif %}
-            </div>
-        {% else %}
-            <span class="text-muted">Non définie</span>
-        {% endif %}
-    </td>
-    <td>
-      <div class="action-buttons">
-    <a href="{{ path('app_project_kanban', {'id': project.id}) }}" 
-       class="btn-icon" 
-       title="Vue Kanban"
-       data-action="kanban">
-        <i class="icon-kanban"></i>
-    </a>
-    <a href="{{ path('app_project_show', {'id': project.id}) }}" 
-       class="btn-icon" 
-       title="Voir détails"
-       data-action="view">
-        <i class="icon-eye"></i>
-    </a>
-    {% if is_granted('ROLE_DIRECTEUR') or project.Chefproject == app.user %}
-        <a href="{{ path('app_project_edit', {'id': project.id}) }}" 
-           class="btn-icon" 
-           title="Modifier"
-           data-action="edit">
-            <i class="fas fa-pencil-alt"></i> <!-- icône de crayon -->
-        </a>
-        <button class="btn-icon btn-delete-project" 
-                title="Supprimer"
-                data-project-id="{{ project.id }}"
-                data-project-name="{{ project.titre }}">
-            <i class="fas fa-trash"></i>
-        </button>
-    {% endif %}
-</div>
-    </td>
-</tr>
-{% else %}
-<tr id="emptyRow">
-    <td colspan="7" class="empty-table">
-        <div class="empty-state">
-            <div class="empty-icon">📁</div>
-            <h3>Aucun projet trouvé</h3>
-            <p id="emptyMessage">Aucun projet ne correspond aux critères sélectionnés.</p>
-        </div>
-    </td>
-</tr>
-{% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </main>
-</div>
-
-<!-- Modal de confirmation de suppression -->
-<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
-    <div class="modal-dialog confirmation-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteProjectModalLabel">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer le projet <strong id="deleteProjectName"></strong> ?</p>
-                <p class="text-warning">Cette action est irréversible et supprimera toutes les tâches associées.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteProject">Supprimer</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de changement de statut -->
-<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="changeStatusModalLabel">Changer le statut</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="changeStatusForm">
-                    <div class="mb-3">
-                        <label for="newStatus" class="form-label">Nouveau statut :</label>
-                        <select class="form-select" id="newStatus" name="newStatus">
-                            <option value="EN_ATTENTE">En attente</option>
-                            <option value="EN_COURS">En cours</option>
-                            <option value="TERMINER">Terminé</option>
-                            <option value="ARRETERR">Arrêté</option>
-                        </select>
+                <!-- Modal de confirmation de suppression -->
+                <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+                    <div class="modal-dialog confirmation-modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteProjectModalLabel">
+                                    Confirmer la suppression
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>
+                                    Êtes-vous sûr de vouloir supprimer le projet
+                                    <strong id="deleteProjectName"></strong>
+                                    ?
+                                </p>
+                                <p class="text-warning">
+                                    Cette action est irréversible et supprimera toutes les tâches associées.
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    ANNULER
+                                </button>
+                                <button type="button" class="btn btn-danger" id="confirmDeleteProject">
+                                    Supprimer
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-                <button type="button" class="btn btn-primary" id="confirmChangeStatus">Confirmer</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Container pour les toasts -->
-<div class="toast-container" id="toastContainer"></div>
-
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
+                </div>
+                <!-- Modal de changement de statut -->
+                <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="changeStatusModalLabel">
+                                    Changer le statut
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="changeStatusForm">
+                                    <div class="mb-3">
+                                        <label for="newStatus" class="form-label">
+                                            Nouveau statut :
+                                        </label>
+                                        <select class="form-select" id="newStatus" name="newStatus">
+                                            <option value="EN_ATTENTE">
+                                                En attente
+                                            </option>
+                                            <option value="EN_COURS">
+                                                En cours
+                                            </option>
+                                            <option value="TERMINER">
+                                                Terminé
+                                            </option>
+                                            <option value="ARRETERR">
+                                                Arrêté
+                                            </option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    ANNULER
+                                </button>
+                                <button type="button" class="btn btn-primary" id="confirmChangeStatus">
+                                    Confirmer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Container pour les toasts -->
+                <div class="toast-container" id="toastContainer"></div>
+            {% endblock %}
+            {% block javascripts %}
+                {{ parent() }}
+                <script>
         // Variables globales
         let currentFilter = 'all';
         let currentSort = { field: null, direction: 'asc' };
@@ -484,4 +567,5 @@
             });
         }
     </script>
-{% endblock %}
+            {% endblock %}
+            

@@ -1,65 +1,65 @@
 {# templates/project/new.html.twig #}
 {% extends 'base.html.twig' %}
-
-{% block title %}Créer un projet{% endblock %}
+{% block title %}
+    Créer un projet
+{% endblock %}
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('styles/project-form.css') }}">
-{% endblock %}
-{% block body %}
-<div class="container mt-4">
-    <h1>Créer un nouveau projet</h1>
-
-    {{ form_start(form) }}
-        <div class="mb-3">
-            {{ form_label(form.titre) }}
-            {{ form_widget(form.titre) }}
-            {{ form_errors(form.titre) }}
-        </div>
-
-        <div class="mb-3">
-            {{ form_label(form.description) }}
-            {{ form_widget(form.description) }}
-            {{ form_errors(form.description) }}
-        </div>
-
-        <div class="mb-3">
-            {{ form_label(form.reference) }}
-            {{ form_widget(form.reference) }}
-            {{ form_errors(form.reference) }}
-        </div>
-
-        <div class="mb-3">
-            {{ form_label(form.budget) }}
-            {{ form_widget(form.budget) }}
-            {{ form_errors(form.budget) }}
-        </div>
-
-        <div class="mb-3">
-            {{ form_label(form.statut) }}
-            {{ form_widget(form.statut) }}
-            {{ form_errors(form.statut) }}
-        </div>
-
-        <div class="mb-3">
-            {{ form_label(form.Chefproject) }}
-            {{ form_widget(form.Chefproject) }}
-            {{ form_errors(form.Chefproject) }}
-        </div>
-
-        <div class="mb-3">
-            {{ form_label(form.membres) }}
-            {{ form_widget(form.membres) }}
-            {{ form_errors(form.membres) }}
-        </div>
-
-        <button type="submit" class="btn btn-primary">Créer</button>
-    {{ form_end(form) }}
-</div>
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('js/project-form.js') }}"></script>
-{% endblock %}
-{% endblock %}
-
+        <header class="site-header">
+            <div class="logo-wrap">
+                <img src="{{ asset('img/image.png') }}" alt="Logo" class="site-logo"></div>
+            </header>
+        {% endblock %}
+        {% block body %}
+            <div class="container mt-4">
+                <h1>
+                    Créer un nouveau projet
+                </h1>
+                {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_label(form.titre) }}
+                    {{ form_widget(form.titre) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description) }}
+                    {{ form_errors(form.description) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.reference) }}
+                    {{ form_widget(form.reference) }}
+                    {{ form_errors(form.reference) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.budget) }}
+                    {{ form_widget(form.budget) }}
+                    {{ form_errors(form.budget) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.statut) }}
+                    {{ form_widget(form.statut) }}
+                    {{ form_errors(form.statut) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.Chefproject) }}
+                    {{ form_widget(form.Chefproject) }}
+                    {{ form_errors(form.Chefproject) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.membres) }}
+                    {{ form_widget(form.membres) }}
+                    {{ form_errors(form.membres) }}
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Créer
+                </button>
+                {{ form_end(form) }}
+            </div>
+            {% block javascripts %}
+                {{ parent() }}
+                <script src="{{ asset('js/project-form.js') }}"></script>
+            {% endblock %}
+        {% endblock %}
+        

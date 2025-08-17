@@ -24,7 +24,17 @@
   --hover-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition-speed: 0.3s;
 }
+.app-logo {
+    display: flex;   
+    align-items: center;
+    margin-bottom: 15px;
+}
 
+.app-logo-img {
+    height: 60px;
+    width: auto;
+    display: block;
+}
 /* Base */
 body {
   font-family: 'Inter', sans-serif;
