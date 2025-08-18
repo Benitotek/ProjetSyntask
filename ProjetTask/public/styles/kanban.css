@@ -65,7 +65,7 @@
 .kanban-column {
     min-width: 300px;
     max-width: 300px;
-    background-color: #F3F4F6;
+    background-color: #fc8231;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -84,12 +84,12 @@
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: white;
+    color: rgb(151, 33, 230);
 }
 
 .task-count {
     background-color: rgba(255, 255, 255, 0.3);
-    color: white;
+    color: rgb(5, 247, 235);
     padding: 3px 8px;
     border-radius: 10px;
     font-size: 12px;
@@ -116,7 +116,7 @@
 }
 
 .kanban-task {
-    background-color: white;
+    background-color: rgb(238, 8, 246);
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
@@ -222,8 +222,8 @@
 .btn-add-task {
     margin-top: 10px;
     background-color: transparent;
-    border: 2px dashed #D1D5DB;
-    color: #6B7280;
+    border: 2px dashed #3b5c8f;
+    color: #1142a5;
     padding: 10px;
     border-radius: 8px;
     text-align: center;
@@ -233,7 +233,7 @@
 }
 
 .btn-add-task:hover {
-    background-color: #F9FAFB;
+    background-color: #55b172;
     border-color: #9CA3AF;
     color: #4B5563;
 }
@@ -253,7 +253,7 @@
 
 .kanban-task-ghost {
     opacity: 0.5;
-    background-color: #F3F4F6;
+    background-color: #a9c0f0;
 }
 
 .kanban-task-chosen {
@@ -281,7 +281,7 @@
 }
 
 .user-item:hover {
-    background-color: #F3F4F6;
+    background-color: #e4e69e;
 }
 
 .user-info {
@@ -314,13 +314,13 @@ align-items: center;
 flex: 1;
 padding: 0.5rem;
 overflow-y: auto;
-background-color: #f8f9fa;
+background-color: #ef82ec;
 border-bottom-left-radius: 0.5rem;
 border-bottom-right-radius: 0.5rem;
 }
 
 .task-card {
-background-color: white;
+background-color: rgb(131, 213, 206);
 border-radius: 0.25rem;
 padding: 0.75rem;
 margin-bottom: 0.75rem;
@@ -360,7 +360,7 @@ display: block;
 .column-progress {
 height: 4px;
 margin-top: 0.5rem;
-background-color: #e9ecef;
+background-color: #08fad9;
 border-radius: 0.25rem;
 overflow: hidden;
 }
@@ -414,7 +414,7 @@ font-weight: bold;
 
 .add-task-form {
 padding: 0.5rem;
-background-color: #f8f9fa;
+background-color: #9c1333;
 border-radius: 0.25rem;
 margin-bottom: 0.75rem;
 display: none;
@@ -429,7 +429,7 @@ display: flex;
 align-items: center;
 justify-content: center;
 color: #6c757d;
-background-color: #f8f9fa;
+background-color: #bcf10e;
 margin-right: 1rem;
 cursor: pointer;
 transition: all 0.2s;

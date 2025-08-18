@@ -1,3 +1,90 @@
+
+import Sortable from 'sortablejs';
+(function() {
+const board = document.querySelector('.kanban-board');
+if (!board) return;
+
+const readOnly = board.closest('[data-project-archived]')?.dataset.projectArchived === 'true';
+
+function showToast(message, type='success') {
+const area = document.getElementById('toast-area');
+if (!area) return;
+const toast = document.createElement('div');
+toast.className = `toast align-items-center text-bg-${type} border-0`;
+toast.role = 'status';
+toast.ariaLive = 'polite';
+toast.innerHTML = <div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>;
+area.appendChild(toast);
+// eslint-disable-next-line no-undef
+const t = new bootstrap.Toast(toast, { delay: 2200 });
+t.show();
+toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+
+if (!readOnly) {
+// Handler: Ajouter une colonne
+document.querySelector('[data-action="kanban:new-column"]')?.addEventListener('click', async (e) => {
+e.preventDefault();
+const name = prompt('Nom de la colonne:', 'À faire');
+if (!name) return;
+const url = board.dataset.newColumnUrl;
+try {
+const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name }) });
+const data = await res.json();
+if (!res.ok || !data.success) throw new Error(data.error || 'Erreur création colonne');
+// rafraîchissement léger: recharger la page ou insérer le DOM de la colonne (ici simple reload)
+location.reload();
+} catch (err) {
+showToast(err.message, 'danger');
+}
+});
+
+// Handler: ouvrir le modal “Nouvelle tâche” depuis une colonne
+document.addEventListener('click', (e) => {
+const btn = e.target.closest('[data-action="task:new"]');
+if (!btn) return;
+const columnId = btn.getAttribute('data-column-id');
+const input = document.getElementById('newTaskListId');
+if (input) input.value = columnId;
+const modalEl = document.getElementById('modalNewTask');
+if (modalEl) {
+const modal = new bootstrap.Modal(modalEl);
+modal.show();
+}
+});
+
+// Handler: créer la tâche (depuis modal)
+document.querySelector('[data-action="task:create"]')?.addEventListener('click', async () => {
+const form = document.getElementById('form-new-task');
+if (!form) return;
+const url = document.querySelector('[data-action="task:create"]').dataset.newTaskUrl;
+const payload = {
+title: form.title.value,
+priorite: form.priorite.value,
+dateDeFin: form.dateDeFin.value || null,
+taskListId: parseInt(form.taskListId.value, 10)
+};
+if (!payload.title || !payload.taskListId) {
+showToast('Titre et colonne requis', 'danger');
+return;
+}
+try {
+const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+const data = await res.json();
+if (!res.ok || !data.success) throw new Error(data.error || 'Erreur création tâche');
+showToast('Tâche créée', 'success');
+// Option A: insérer la carte sans reload (à implémenter)
+// Option B (simple): reload
+location.reload();
+} catch (err) {
+showToast(err.message, 'danger');
+}
+});
+
+}
+
+// ... gardez vos initialisations Sortable existantes (drag tasks, drag columns) ...
+})();
 // Test Version 2 - 3 a voir  du 02/.07/2025
 /**
  * Initialise l'action pour ajouter une tâche
