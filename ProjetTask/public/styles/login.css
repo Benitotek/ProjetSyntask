@@ -19,19 +19,14 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+    position: relative;
 }
 
-.logo {
+.logo img {
     width: 50px;
     height: 50px;
-    background: #333;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 18px;
+    object-fit: contain;
 }
 
 .brand-text {
@@ -44,8 +39,12 @@ body {
     color: #f5a623;
     font-size: 20px;
     font-weight: normal;
-    margin-left: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
+
 
 /* Container principal */
 .container {
@@ -54,6 +53,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    margin-top: 80px; /* compense la hauteur du header */
 }
 
 /* Styles pour supprimer les styles Bootstrap par défaut */
@@ -118,7 +118,6 @@ body {
     margin-bottom: 15px;
     transition: all 0.3s ease;
 }
- 
 
 .form-control:focus {
     outline: none;
@@ -128,15 +127,6 @@ body {
 
 .form-control::placeholder {
     color: #666;
-}
-
-/* Ajout des placeholders via CSS */
-input[name="email"]::placeholder {
-    content: "EMAIL";
-}
-
-input[name="mdp"]::placeholder {
-    content: "Mot de Passe";
 }
 
 /* Lien mot de passe oublié */
@@ -253,6 +243,8 @@ input[name="mdp"]::placeholder {
     }
     
     .system-title {
+        position: static;
+        transform: none;
         margin-left: 0;
         font-size: 16px;
     }
@@ -265,49 +257,5 @@ input[name="mdp"]::placeholder {
     
     .card-header h4 {
         font-size: 28px;
-    }
-}
-
-/* Ajout d'un header si pas présent dans le template */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    background: rgba(0, 0, 0, 0.1);
-    z-index: -1;
-}
-
-.container::before {
-    content: "SYNTASK SYSTÈME GÉRANT LA GESTION DE PROJECT";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.1);
-    padding: 15px 30px;
-    color: #f5780b;
-    font-weight: bold;
-    font-size: 18px;
-    z-index: 1000;
-    display: flex;
-    justify-content: center; /* centré horizontalement */
-    align-items: center;
-    text-align: center;
-}
-/* Ajustement du container pour compenser le header fixe */
-.container {
-    margin-top: 80px;
-}
-
-@media (max-width: 768px) {
-    .container::before {
-        font-size: 12px;
-        padding: 10px 15px;
-        height: auto;
-        white-space: nowrap;
-        overflow: hidden;
     }
 }
