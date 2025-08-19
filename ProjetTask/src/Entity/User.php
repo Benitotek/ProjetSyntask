@@ -89,6 +89,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "user", targetEntity: Notification::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $notifications;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastLoginAt = null;
+
+    public function getLastLoginAt(): ?\DateTimeInterface
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): self
+    {
+        $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+
     /**
      * @var Collection<int, Activity>
      */
@@ -177,7 +191,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                     $roles[] = 'ROLE_CHEF_PROJET';
                     $roles[] = 'ROLE_EMPLOYE';
                     break;
-                case UserRole::CHEF_PROJET:  
+                case UserRole::CHEF_PROJET:
                     $roles[] = 'ROLE_CHEF_PROJET';
                     $roles[] = 'ROLE_EMPLOYE';
                     break;

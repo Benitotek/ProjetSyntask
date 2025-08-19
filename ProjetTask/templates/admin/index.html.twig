@@ -1,172 +1,426 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Syntask - Administration
-{% endblock %}
+{% block title %}Syntask - Administration{% endblock %}
 
 {% block stylesheets %}
-	{{ parent() }}
-	<link rel="stylesheet" href="{{ asset('styles/admin.css') }}">
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/admin.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}
 
 {% block javascripts %}
-	{{ parent() }}
-	<script src="{{ asset('js/admin.js') }}"></script>
+    {{ parent() }}
+    <script src="{{ asset('js/admin.js') }}"></script>
 {% endblock %}
 
 {% block body %}
-	<div
-		class="container">
-		<!-- Sidebar -->
-		<aside class="sidebar">
-			<div class="logo-section">
-				<div class="logo">
-					<img src="{{ asset('android-chrome-192x192.png') }}" alt="Logo Syntask" style="height:48px; width:48px;"/>
-				</div>
-				<p>
-					<strong>SYNTASK</strong>
-				</p>
-			</div>
-			{# <div class="user-info">
-				<div class="user-avatar">
-					{% if current_user.avatar %}
-						<img src="{{ asset('uploads/avatars/'~current_user.avatar) }}" alt="Avatar" style="height:40px;width:40px;border-radius:50%;">
-					{% else %}
-						<i class="fas fa-user"></i>
-					{% endif %} #}
-				</div>
-				<div class="user-details">
-					<h3>{{ current_user.prenom ~ ' ' ~ current_user.nom }}</h3>
-					<div class="user-role">
-						{{ current_user.role.label() }}
-					</div>
-				</div>
-			</div>
-			<nav class="nav-menu">
-				{# <a class="nav-item {% if activePage == 'dashboard' %}active{% endif %}" href="{{ path('app_admin_dashboard') }}"> #}
-					<i class="fas fa-chart-bar"></i>
-					Tableaux de bord
-				</a>
-				{# <a class="nav-item {% if activePage == 'projects' %}active{% endif %}" href="{{ path('app_admin_projects') }}"> #}
-					<i class="fas fa-folder"></i>
-					Mes projects
-				</a>
-				{# <a class="nav-item {% if activePage == 'stats' %}active{% endif %}" href="{{ path('app_admin_stats') }}"> #}
-					<i class="fas fa-chart-line"></i>
-					Statistiques
-				</a>
-				{# <a class="nav-item {% if activePage == 'profile' %}active{% endif %}" href="{{ path('app_admin_profile') }}"> #}
-					<i class="fas fa-user-circle"></i>
-					Mon profil
-				</a>
-			</nav>
-			<div class="logout-section">
-				<a href="{{ path('app_logout') }}" class="logout-btn">
-					<i class="fas fa-sign-out-alt"></i>
-					Déconnexion
-				</a>
-			</div>
-		</aside>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="{{ asset('img/image.png') }}" alt="Logo Syntask" style="height:48px; width:48px; border-radius: 12px;"/>
+                </div>
+                <div class="logo-text">
+                    <strong>SYNTASK</strong>
+                </div>
+            </div>
+            
+            {% if app.user %}
+            <div class="user-info">
+                <div class="user-avatar">
+                    {% if app.user.avatar %}
+                        <img src="{{ asset('uploads/avatars/'~app.user.avatar) }}" alt="Avatar" class="avatar-img">
+                    {% else %}
+                        {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                    {% endif %}
+                </div>
+                <div class="user-details">
+                    <h3>{{ app.user.prenom ~ ' ' ~ app.user.nom }}</h3>
+                    <div class="user-role">
+                        {{ app.user.role.label() }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <nav class="nav-menu">
+                <a class="nav-item {% if activePage is defined and activePage == 'dashboard' %}active{% endif %}" href="{{ path('app_admin_dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Tableau de bord
+                </a>
+                <a class="nav-item {% if activePage is defined and activePage == 'users' %}active{% endif %}" href="{{ path('app_user_index') }}">
+                    <i class="fas fa-users"></i>
+                    Utilisateurs
+                </a>
+                <a class="nav-item {% if activePage is defined and activePage == 'projects' %}active{% endif %}" href="{{ path('app_admin_projects') }}">
+                    <i class="fas fa-project-diagram"></i>
+                    Mes projets
+                </a>
+                <a class="nav-item {% if activePage is defined and activePage == 'tasks' %}active{% endif %}" href="{{ path('app_task_index') }}">
+                    <i class="fas fa-tasks"></i>
+                    Tâches
+                </a>
+                {# <a class="nav-item {% if activePage is defined and activePage == 'stats' %}active{% endif %}" href="{{ path('app_admin_stats') }}">
+                    <i class="fas fa-chart-bar"></i>
+                    Statistiques
+                </a> #}
+                <a class="nav-item {% if activePage is defined and activePage == 'profile' %}active{% endif %}" href="{{ path('app_my_profile') }}">
+                    <i class="fas fa-user-circle"></i>
+                    Mon profil
+                </a>
+                {# <a class="nav-item" href="{{ path('app_admin_settings') }}">
+                    <i class="fas fa-cog"></i>
+                    Paramètres
+                </a> #}
+            </nav>
+            
+            <div class="logout-section">
+                <a href="{{ path('app_logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </aside>
 
-		<!-- Main Content -->
-		<main class="main-content">
-			<div class="header">
-				<h1>Gestion des utilisateurs</h1>
-				<a href="#" class="add-user-btn" onclick="openModal();return false;">
-					<i class="fas fa-plus"></i>
-					Ajouter un utilisateur
-				</a>
-			</div>
-			<div class="users-section">
-				<h2>Liste des utilisateurs</h2>
-				<table class="users-table">
-					<thead>
-						<tr>
-							<th>Utilisateur</th>
-							<th>Email</th>
-							<th>Rôle</th>
-							<th>Statut</th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for user in users %}
-							<tr>
-								<td>
-									<div class="user-cell">
-										{# <div class="user-avatar-small">
-											{% if user.avatar %}
-												<img src="{{ asset('uploads/avatars/'~user.avatar) }}" alt="" style="height:32px;width:32px;border-radius:50%;"> #}
-											{# {% else %}
-												<i class="fas fa-user"></i> #}
-											{# {% endif %} #}
-										</div>
-										{{ user.prenom ~ ' ' ~ user.nom }}
-									</div>
-								</td>
-								<td>{{ user.email }}</td>
-								<td>{{ user.role.label() }}</td>
-								<td>
-									<span class="statut-badge {{ user.statut.value == 'Actif' ? 'statut-active' : 'statut-inactive' }}">
-										{{ user.statut.value }}
-									</span>
-								</td>
-								<td>
-									{# <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" class="btn btn-secondary btn-sm">Modifier</a>
-									{% if is_granted('ROLE_ADMIN') %}
-										<a href="{{ path('app_admin_user_delete', {'id': user.id}) }}" class="btn btn-secondary btn-sm" onclick="return confirm('Supprimer cet utilisateur ?')">Supprimer</a>
-									{% endif %} #}
-								</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</main>
-	</div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Flash Messages -->
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type }}">
+                        <i class="fas fa-{{ type == 'success' ? 'check-circle' : type == 'error' ? 'exclamation-triangle' : 'info-circle' }}"></i>
+                        {{ message }}
+                        <button class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            
+            <div class="header">
+                <h1>Gestion des utilisateurs</h1>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" id="searchUsers" placeholder="Rechercher un utilisateur...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <button class="add-user-btn" onclick="openModal();return false;">
+                        <i class="fas fa-plus"></i>
+                        Ajouter un utilisateur
+                    </button>
+                </div>
+            </div>
+            
+            <div class="users-section">
+                <div class="section-header">
+                    <h2 class="section-title">Liste des utilisateurs</h2>
+                    <div class="users-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">{{ users|length }}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">{{ users|filter(u => u.statut.value == 'Actif')|length }}</span>
+                            <span class="stat-label">Actifs</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">{{ users|filter(u => u.statut.value != 'Actif')|length }}</span>
+                            <span class="stat-label">Inactifs</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll" onchange="toggleAllUsers(this)">
+                                </th>
+                                <th>
+                                    Utilisateur
+                                    <i class="fas fa-sort sort-icon" onclick="sortTable(1)"></i>
+                                </th>
+                                <th>
+                                    Email
+                                    <i class="fas fa-sort sort-icon" onclick="sortTable(2)"></i>
+                                </th>
+                                <th>
+                                    Rôle
+                                    <i class="fas fa-sort sort-icon" onclick="sortTable(3)"></i>
+                                </th>
+                                <th>
+                                    Statut
+                                    <i class="fas fa-sort sort-icon" onclick="sortTable(4)"></i>
+                                </th>
+                                <th>Dernière connexion</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr data-user-id="{{ user.id }}" class="user-row">
+                                    <td>
+                                        <input type="checkbox" class="user-checkbox" value="{{ user.id }}">
+                                    </td>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar-small">
+                                                {% if user.avatar %}
+                                                    <img src="{{ asset('uploads/avatars/'~user.avatar) }}" alt="" class="avatar-img">
+                                                {% else %}
+                                                    {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="user-info-cell">
+                                                <span class="user-name">{{ user.prenom ~ ' ' ~ user.nom }}</span>
+                                                <span class="user-id">#{{ user.id }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ user.email }}" class="email-link">{{ user.email }}</a>
+                                    </td>
+                                    <td>
+                                        <span class="role-badge role-{{ user.role.value|lower }}">
+                                            {{ user.role.label() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-{{ user.statut.value|lower|replace({' ': '-'}) }}">
+                                            <i class="fas fa-circle"></i>
+                                            {{ user.statut.value }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="last-login">
+                                            {% if user.lastLoginAt %}
+                                                {{ user.lastLoginAt|date('d/m/Y à H:i') }}
+                                            {% else %}
+                                                <span class="never-logged">Jamais connecté</span>
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn view-btn" onclick="viewUser({{ user.id }})" title="Voir le profil">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="action-btn edit-btn" onclick="editUser({{ user.id }})" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            {% if is_granted('ROLE_ADMIN') and user.id != app.user.id %}
+                                                <button class="action-btn delete-btn" onclick="deleteUser({{ user.id }}, '{{ user.prenom ~ ' ' ~ user.nom }}')" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            {% endif %}
+                                            <div class="dropdown">
+                                                <button class="action-btn more-btn" onclick="toggleDropdown({{ user.id }})">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <div class="dropdown-content" id="dropdown-{{ user.id }}">
+                                                    <a href="#" onclick="resetPassword({{ user.id }})">
+                                                        <i class="fas fa-key"></i> Réinitialiser le mot de passe
+                                                    </a>
+                                                    <a href="#" onclick="sendActivationEmail({{ user.id }})">
+                                                        <i class="fas fa-envelope"></i> Renvoyer email d'activation
+                                                    </a>
+                                                    <a href="#" onclick="toggleUserStatus({{ user.id }})">
+                                                        <i class="fas fa-{{ user.statut.value == 'Actif' ? 'pause' : 'play' }}"></i>
+                                                        {{ user.statut.value == 'Actif' ? 'Désactiver' : 'Activer' }}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="no-users">
+                                        <div class="empty-state">
+                                            <i class="fas fa-users"></i>
+                                            <h3>Aucun utilisateur trouvé</h3>
+                                            <p>Commencez par ajouter votre premier utilisateur</p>
+                                            <button class="btn-primary" onclick="openModal()">
+                                                <i class="fas fa-plus"></i>
+                                                Ajouter un utilisateur
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Actions groupées -->
+                <div class="bulk-actions" id="bulkActions" style="display: none;">
+                    <div class="bulk-info">
+                        <span id="selectedCount">0</span> utilisateur(s) sélectionné(s)
+                    </div>
+                    <div class="bulk-buttons">
+                        <button class="btn btn-secondary" onclick="exportSelected()">
+                            <i class="fas fa-download"></i> Exporter
+                        </button>
+                        <button class="btn btn-warning" onclick="deactivateSelected()">
+                            <i class="fas fa-pause"></i> Désactiver
+                        </button>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <button class="btn btn-danger" onclick="deleteSelected()">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-	<!-- Modal Ajouter Utilisateur -->
-	<div class="modal-overlay" id="addUserModal">
-		<div class="modal">
-			<h2>Ajouter un utilisateur</h2>
-			<form action="{{ path('app_admin_user_add') }}" method="POST" enctype="multipart/form-data">
-				<div class="form-group">
-					<label for="prenom">Prénom</label>
-					<input type="text" id="prenom" name="prenom" required>
-				</div>
-				<div class="form-group">
-					<label for="nom">Nom</label>
-					<input type="text" id="nom" name="nom" required>
-				</div>
-				<div class="form-group">
-					<label for="email">Email</label>
-					<input type="email" id="email" name="email" required>
-				</div>
-				<div class="form-group">
-					<label for="role">Rôle</label>
-					<select id="role" name="role" required>
-						<option value="">Sélectionner un rôle</option>
-						<option value="EMPLOYE">EMPLOYE</option>
-						<option value="CHEF_PROJECT">CHEF_PROJECT</option>
-						<option value="DIRECTEUR">DIRECTEUR</option>
-						<option value="Administrateur">Administrateur</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label for="description">Description / Statut</label>
-					<input type="text" id="description" name="description">
-					<input type="text" id="statut" name="statut" placeholder="Actif/Inactif">
-				</div>
-				{# <div class="form-group">
-					<label for="avatar">Avatar</label>
-					<input type="file" id="avatar" name="avatar">
-				</div> #}
-				<div class="form-actions">
-					<button type="button" class="btn btn-secondary" onclick="closeModal()">ANNULER</button>
-					<button type="submit" class="btn btn-primary">
-						<i class="fas fa-save"></i>
-						Enregistrer</button>
-				</div>
-			</form>
-		</div>
-	</div>
+    <!-- Modal Ajouter/Modifier Utilisateur -->
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Ajouter un utilisateur</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form action="{{ path('app_admin_user_add') }}" method="POST" enctype="multipart/form-data" id="userForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="prenom">
+                                <i class="fas fa-user"></i>
+                                Prénom <span class="required">*</span>
+                            </label>
+                            <input type="text" id="prenom" name="prenom" required placeholder="Entrez le prénom">
+                        </div>
+                        <div class="form-group">
+                            <label for="nom">
+                                <i class="fas fa-user"></i>
+                                Nom <span class="required">*</span>
+                            </label>
+                            <input type="text" id="nom" name="nom" required placeholder="Entrez le nom">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            Email <span class="required">*</span>
+                        </label>
+                        <input type="email" id="email" name="email" required placeholder="exemple@email.com">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="role">
+                                <i class="fas fa-user-tag"></i>
+                                Rôle <span class="required">*</span>
+                            </label>
+                            <select id="role" name="role" required>
+                                <option value="">Sélectionner un rôle</option>
+                                <option value="EMPLOYE">Employé</option>
+                                <option value="CHEF_PROJECT">Chef de projet</option>
+                                <option value="DIRECTEUR">Directeur</option>
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <option value="ADMIN">Administrateur</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="statut">
+                                <i class="fas fa-circle"></i>
+                                Statut <span class="required">*</span>
+                            </label>
+                            <select id="statut" name="statut" required>
+                                <option value="">Sélectionner un statut</option>
+                                <option value="Actif" selected>Actif</option>
+                                <option value="Inactif">Inactif</option>
+                                <option value="En congé">En congé</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">
+                            <i class="fas fa-align-left"></i>
+                            Description / Fonction
+                        </label>
+                        <textarea id="description" name="description" rows="3" placeholder="Description du poste ou informations complémentaires"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="avatar">
+                            <i class="fas fa-image"></i>
+                            Avatar
+                        </label>
+                        <div class="file-input-container">
+                            <input type="file" id="avatar" name="avatar" accept="image/*" onchange="previewAvatar(this)">
+                            <label for="avatar" class="file-input-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                Choisir un fichier
+                            </label>
+                            <div id="avatarPreview" class="avatar-preview" style="display: none;">
+                                <img id="previewImage" src="" alt="Aperçu">
+                                <button type="button" onclick="removeAvatar()" class="remove-preview">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="sendEmail" name="sendEmail" checked>
+                            <span class="checkmark"></span>
+                            Envoyer un email de bienvenue avec les identifiants
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span id="submitText">Enregistrer</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2>Confirmer la suppression</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong id="deleteUserName"></strong> ?</p>
+                    <p class="warning-text">Cette action est irréversible.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                    Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
 {% endblock %}
