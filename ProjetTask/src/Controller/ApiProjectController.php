@@ -29,42 +29,90 @@ final class ApiProjectController extends AbstractController
     /**
      * Liste tous les projets accessibles à l'utilisateur
      */
-    #[Route('/projects', name: 'api_projects_list', methods: ['GET'])]
-    public function list(Request $request): JsonResponse
-    {
-        $user = $this->getUser();
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
-        $search = $request->query->get('search', '');
+ #[Route('/projects', name: 'api_projects_list', methods: ['GET'])]
+public function list(Request $request): JsonResponse
+{
+    $user = $this->getUser();
+    $page = $request->query->getInt('page', 1);
+    $limit = $request->query->getInt('limit', 10);
+    $search = $request->query->get('search', '');
 
-        try {
-            // Récupération des projets avec pagination
-            $statut = $request->query->get('statut', '');
-            $projects = $this->projectRepository->findByUserWithPagination($user, $page, $limit, $search);
-            $totalProjects = $this->projectRepository->countByUser($user, $search);
+    try {
+        // Récupération des projets avec pagination
+        $statut = $request->query->get('statut', '');
+        $projects = $this->projectRepository->findByUserWithPagination($user, $page, $limit, $search);
+        $totalProjects = $this->projectRepository->countByUser($user, $search);
 
-            $data = [];
-            foreach ($projects as $project) {
-                $data[] = $this->serializeProject($project);
-            }
+        $data = [];
+        foreach ($projects as $project) {
+            $totalTasks = count($project->getTasks());
+            $completedTasks = count(array_filter($project->getTasks()->toArray(), function($task) {
+                return method_exists($task, 'isCompleted') ? $task->isCompleted() : false;
+            }));
+            $progress = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
 
-            return $this->json([
-                'success' => true,
-                'data' => $data,
-                'pagination' => [
-                    'page' => $page,
-                    'limit' => $limit,
-                    'total' => $totalProjects,
-                    'pages' => ceil($totalProjects / $limit)
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération des projets'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $data[] = [
+                'id' => $project->getId(),
+                'titre' => $project->getTitre(),
+                'description' => $project->getDescription(),
+                'reference' => $project->getReference(),
+                'budget' => $project->getBudget(),
+                'statut' => $project->getStatut(),
+                'date_creation' => $project->getDateCreation()?->format('Y-m-d H:i:s'),
+                'date_butoir'   => $project->getDateButoir()?->format('Y-m-d H:i:s'),
+                'date_maj'      => $project->getDateMaj()?->format('Y-m-d H:i:s'),
+                'date_reelle'   => $project->getDateReelle()?->format('Y-m-d H:i:s'),
+                'progress' => $progress,
+                'completed_tasks' => $completedTasks,
+                'total_tasks' => $totalTasks,
+
+                // Chef de projet
+                'chef' => $project->getChefproject() ? [
+                    'id' => $project->getChefproject()->getId(),
+                    'nom' => $project->getChefproject()->getNom(),
+                    'prenom' => $project->getChefproject()->getPrenom(),
+                    'email' => $project->getChefproject()->getEmail()
+                ] : null,
+
+                // Créateur
+                'created_by' => $project->getCreatedBy() ? [
+                    'id' => $project->getCreatedBy()->getId(),
+                    'email' => $project->getCreatedBy()->getEmail()
+                ] : null,
+
+                // Membres
+                'membres' => array_map(function($user) {
+                    return [
+                        'id' => $user->getId(),
+                        'nom' => $user->getNom(),
+                        'prenom' => $user->getPrenom(),
+                        'email' => $user->getEmail()
+                    ];
+                }, $project->getMembres()->toArray()),
+
+                // Archivage
+                'is_archived' => $project->isArchived(),
+                'date_archived' => $project->getDateArchived()?->format('Y-m-d H:i:s')
+            ];
         }
+
+        return $this->json([
+            'success' => true,
+            'data' => $data,
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $totalProjects,
+                'pages' => ceil($totalProjects / $limit)
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération des projets'
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+}
     // Affiche la liste des projets pour la vue
 
     #[Route('/projects/view', name: 'api_projects_view', methods: ['GET'])]
