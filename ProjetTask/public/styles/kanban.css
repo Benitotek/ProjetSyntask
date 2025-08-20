@@ -1,4 +1,25 @@
-/* Styles principaux du Kanban */
+/* Badges de statut */
+.badge.statut-EN_ATTENTE { background:#fef3c7; color:#92400e; }
+.badge.statut-EN_COURS { background:#dbeafe; color:#1e40af; }
+.badge.statut-EN_PAUSE { background:#e5e7eb; color:#374151; }
+.badge.statut-EN_REPRISE { background:#ede9fe; color:#6d28d9; }
+.badge.statut-TERMINE { background:#d1fae5; color:#065f46; }
+.badge.statut-ANNULE { background:#fee2e2; color:#991b1b; }
+
+/* Badges de priorité — adaptez aux enums de votre code (URGENT/NORMAL/EN_ATTENTE ou BASSE/MOYENNE/HAUTE) */
+.badge.priority-URGENT, .badge.priority-HAUTE { background:#fecaca; color:#b91c1c; }
+.badge.priority-NORMAL, .badge.priority-MOYENNE { background:#e5e7eb; color:#374151; }
+.badge.priority-EN_ATTENTE, .badge.priority-BASSE { background:#fef3c7; color:#92400e; }
+
+/* Petits helpers Kanban */
+.kanban-board { display:flex; align-items:flex-start; gap:1rem; overflow:auto; padding-bottom:.75rem; }
+.kanban-column { min-width:320px; }
+.kanban-item.card { transition: transform .12s ease, box-shadow .12s ease; }
+.kanban-item.card:hover { transform: translateY(-2px); box-shadow: var(--bs-box-shadow-lg, 0 10px 30px rgba(0,0,0,.08)); }
+
+
+/* Styles principaux du Kanban */ 
+/* avant les modifications du 20/08/2025 */
 .kanban-container {
     padding: 20px;
     height: calc(100vh - 80px);
@@ -65,7 +86,7 @@
 .kanban-column {
     min-width: 300px;
     max-width: 300px;
-    background-color: #fc8231;
+    background-color: #F3F4F6;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -84,12 +105,12 @@
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: rgb(151, 33, 230);
+    color: white;
 }
 
 .task-count {
     background-color: rgba(255, 255, 255, 0.3);
-    color: rgb(5, 247, 235);
+    color: white;
     padding: 3px 8px;
     border-radius: 10px;
     font-size: 12px;
@@ -116,7 +137,7 @@
 }
 
 .kanban-task {
-    background-color: rgb(238, 8, 246);
+    background-color: white;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
@@ -222,8 +243,8 @@
 .btn-add-task {
     margin-top: 10px;
     background-color: transparent;
-    border: 2px dashed #3b5c8f;
-    color: #1142a5;
+    border: 2px dashed #D1D5DB;
+    color: #6B7280;
     padding: 10px;
     border-radius: 8px;
     text-align: center;
@@ -233,7 +254,7 @@
 }
 
 .btn-add-task:hover {
-    background-color: #55b172;
+    background-color: #F9FAFB;
     border-color: #9CA3AF;
     color: #4B5563;
 }
@@ -253,7 +274,7 @@
 
 .kanban-task-ghost {
     opacity: 0.5;
-    background-color: #a9c0f0;
+    background-color: #F3F4F6;
 }
 
 .kanban-task-chosen {
@@ -281,7 +302,7 @@
 }
 
 .user-item:hover {
-    background-color: #e4e69e;
+    background-color: #F3F4F6;
 }
 
 .user-info {
@@ -314,13 +335,13 @@ align-items: center;
 flex: 1;
 padding: 0.5rem;
 overflow-y: auto;
-background-color: #ef82ec;
+background-color: #f8f9fa;
 border-bottom-left-radius: 0.5rem;
 border-bottom-right-radius: 0.5rem;
 }
 
 .task-card {
-background-color: rgb(131, 213, 206);
+background-color: white;
 border-radius: 0.25rem;
 padding: 0.75rem;
 margin-bottom: 0.75rem;
@@ -360,7 +381,7 @@ display: block;
 .column-progress {
 height: 4px;
 margin-top: 0.5rem;
-background-color: #08fad9;
+background-color: #e9ecef;
 border-radius: 0.25rem;
 overflow: hidden;
 }
@@ -414,7 +435,7 @@ font-weight: bold;
 
 .add-task-form {
 padding: 0.5rem;
-background-color: #9c1333;
+background-color: #f8f9fa;
 border-radius: 0.25rem;
 margin-bottom: 0.75rem;
 display: none;
@@ -429,7 +450,7 @@ display: flex;
 align-items: center;
 justify-content: center;
 color: #6c757d;
-background-color: #bcf10e;
+background-color: #f8f9fa;
 margin-right: 1rem;
 cursor: pointer;
 transition: all 0.2s;

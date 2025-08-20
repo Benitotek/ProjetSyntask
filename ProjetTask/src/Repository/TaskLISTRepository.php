@@ -7,7 +7,9 @@ use App\Entity\Project;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Enum\TaskListColor;
-
+use InvalidArgumentException;
+use App\Entity\Task;
+use App\Enum\TaskStatut;
 
 class TaskListRepository extends ServiceEntityRepository
 {
@@ -15,27 +17,26 @@ class TaskListRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, TaskList::class);
     }
-    // V2 date changement 02/07/2025 
 
     /**
-     * Trouve les colonnes d'un project avec leurs tâches
-     * 
-     * @param Project $project Le project concerné
-     * @return TaskList[] Retourne un tableau d'objets TaskList avec leurs tâches
+     * Retourne les colonnes d'un projet avec leurs tâches (fetch-join),
+     * ordonnées par position de colonne puis position de tâche.
+     *
+     * @return TaskList[]
      */
-    public function findByProjectWithTasks(Project $project): array
+    public function findByProjectWithTasksOrdered(Project $project): array
     {
         return $this->createQueryBuilder('tl')
-            ->leftJoin('tl.tasks', 't')
-            ->where('tl.project = :project')
-            ->setParameter('project', $project)
+            ->leftJoin('tl.tasks', 't')->addSelect('t')
+            ->andWhere('tl.project = :p')->setParameter('p', $project)
             ->orderBy('tl.positionColumn', 'ASC')
             ->addOrderBy('t.position', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
-    /**
+  
+       /**
      * Trouve la position maximale des colonnes d'un project
      * 
      * @param Project $project Le project concerné
@@ -51,6 +52,75 @@ class TaskListRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
 
         return $result ?: 0;
+    }
+
+    /**
+     * Déplace une tâche dans une autre colonne et position cible, en appliquant les règles métier
+     * et en garantissant la densité des positions (0..N-1).
+     *
+     * @param Task $task La tâche à modifier
+     * @param TaskList $targetColumn La colonne cible
+     * @param int $targetPosition La position cible
+     * @return Task La tâche modifiée
+     * @throws InvalidArgumentException Si la position cible est invalide ou si la tâche est assignéee
+     */
+    public function moveTask(Task $task, TaskList $targetColumn, int $targetPosition): Task
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $conn->beginTransaction();
+
+        $fromColumn = $task->getTaskList();
+        $isFromDone = $this->isDoneColumn($fromColumn);
+        $isToDone = $this->isDoneColumn($targetColumn);
+        $isToInProgress = $this->isInProgressColumn($targetColumn);
+
+        // Règles: Interdire quitter la colonne "Terminé"
+        if ($isFromDone && $targetColumn->getId() !== $fromColumn->getId()) {
+            throw new InvalidArgumentException('Impossible de sortir une tâche de la colonne Terminé.');
+        }
+
+        // Règles: Forcer EN_COURS en colonne "En cours"
+        if ($isToInProgress) {
+            $task->setStatut(TaskStatut::EN_COUR);
+        }
+
+        // Règles: Passage vers "Terminé" => assignedUser requis + dateFinReelle = now
+        if ($isToDone) {
+            if ($task->getAssignedUser() === null) {
+                throw new InvalidArgumentException('Assigner la tâche avant de la passer en Terminé.');
+            }
+            if ($task->getDateReelle() === null) {
+                $task->setDateReelle(new \DateTime('now'));
+        }
+        }
+
+        // Règles: Interdire passer en "Terminé" si dateFinReelle pas encore renseigné
+        if ($isToDone && $task->getDateReelle() === null) {
+            throw new InvalidArgumentException('Assigner la date de fin de la tâche avant de la passer en Terminé.');
+        }
+    
+        // Vérifier la position cible
+        if ($targetColumn->getId() === $fromColumn->getId() && $targetPosition === $task->getPosition()) {
+            // Pas de changement nécessaire
+            return $task;
+        }
+
+        if ($targetPosition < 0) {
+            throw new InvalidArgumentException('La position cible doit être >= 0.');
+        }
+
+        // Ajuster les positions des tâches dans la colonne cible
+        $this->adjustTargetColumnPositions($targetColumn, $targetPosition);
+
+        // Déplacer la tâche
+        $task->setTaskList($targetColumn);
+        $task->setPosition($targetPosition);
+
+        $this->em->persist($task);
+        $this->em->flush();
+
+        $conn->commit();
+        return $task;
     }
 
     /**
@@ -128,101 +198,30 @@ class TaskListRepository extends ServiceEntityRepository
 
         $entityManager->flush();
     }
-    // V2 date changement 02/07/2025 VS mais manque a revoir
-
-    // /**
 }
 
+// Commenté pour éviter les conflits avec la nouvelle version
+// Cette classe est une ancienne version du repository TaskListRepository.
+//version avant le 20/08/2025
 
-
-// Version 1.0 date changement 02/07/2025 VS mais manque a revoir
-    // /**
-    //  * Crée une nouvelle instance de TaskListRepository
-    //  */
-    // public static function create(ManagerRegistry $registry): self
-    // {
-    //     return new self($registry);
-    // }
-
-    // /**
-    //  * Trouve une colonne par son ID et son project
-    //  */
-    // public function findOneByIdAndProject(int $id, Project $project): ?TaskList
-    // {
-    //     return $this->createQueryBuilder('tl')
-    //         ->where('tl.id = :id')
-    //         ->andWhere('tl.project = :project')
-    //         ->setParameter('id', $id)
-    //         ->setParameter('project', $project)
-    //         ->getQuery()
-    //         ->getOneOrNullResult();
-    // }
-//     /**
-//      * Crée les colonnes par défaut pour un nouveau project
-//      */
-//     public function createDefaultColumns(Project $project): void
+// class TaskListRepository extends ServiceEntityRepository
+// {
+//     public function __construct(ManagerRegistry $registry)
 //     {
-//         $defaultColumns = [
-//             ['nom' => 'À faire', 'couleur' => 'VERT', 'description' => 'Tâches à réaliser'],
-//             ['nom' => 'En cours', 'couleur' => 'JAUNE', 'description' => 'Tâches en cours de réalisation'],
-//             ['nom' => 'En révision', 'couleur' => 'ORANGE', 'description' => 'Tâches à vérifier'],
-//             ['nom' => 'Terminé', 'couleur' => 'VERT', 'description' => 'Tâches complétées']
-//         ];
-
-//         $em = $this->getEntityManager();
-
-//         foreach ($defaultColumns as $index => $columnData) {
-//             $taskList = new TaskList();
-//             $taskList->setNom($columnData['nom']);
-//             $taskList->setPositionColumn($index + 1);
-//             $taskList->setProject($project);
-
-//             $couleurEnum = TaskListColor::tryfrom($columnData['couleur']);
-//             $taskList->setCouleur($couleurEnum);
-
-//             $em->persist($taskList);
-//         }
-
-//         $em->flush();
+//         parent::__construct($registry, TaskList::class);
 //     }
+    
 
 //     /**
-//      * Trouve les colonnes par project
-//      */
-//     public function findByProject(Project $project): array
-//     {
-//         return $this->createQueryBuilder('tl')
-//             ->where('tl.project = :project')
-//             ->setParameter('project', $project)
-//             ->orderBy('tl.positionColumn', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     /**
-//      * Trouve la position maximale dans un project
-//      */
-//     public function findMaxPositionByProject(Project $project): int
-//     {
-//         $result = $this->createQueryBuilder('tl')
-//             ->select('MAX(tl.positionColumn)')
-//             ->where('tl.project = :project')
-//             ->setParameter('project', $project)
-//             ->getQuery()
-//             ->getSingleScalarResult();
-
-//         return $result ?? 0;
-//     }
-
-//     /**
-//      * Trouve les colonnes avec leurs tâches
+//      * Trouve les colonnes d'un project avec leurs tâches
+//      * 
+//      * @param Project $project Le project concerné
+//      * @return TaskList[] Retourne un tableau d'objets TaskList avec leurs tâches
 //      */
 //     public function findByProjectWithTasks(Project $project): array
 //     {
 //         return $this->createQueryBuilder('tl')
 //             ->leftJoin('tl.tasks', 't')
-//             ->leftJoin('t.assignedUsers', 'au')
-//             ->addSelect('t', 'au')
 //             ->where('tl.project = :project')
 //             ->setParameter('project', $project)
 //             ->orderBy('tl.positionColumn', 'ASC')
@@ -231,131 +230,18 @@ class TaskListRepository extends ServiceEntityRepository
 //             ->getResult();
 //     }
 
-//     /**
-//      * Réorganise les colonnes selon un nouvel ordre
-//      */
-//     public function reorderColumns(Project $project, array $newOrder): void
-//     {
-//         $em = $this->getEntityManager();
+   // /**
+    //  * Récupère la position max des colonnes pour un projet
+    //  */
+    // public function findMaxPositionByProject(Project $project): int
+    // {
+    //     $max = $this->createQueryBuilder('tl')
+    //         ->select('MAX(tl.positionColumn)')
+    //         ->andWhere('tl.project = :p')->setParameter('p', $project)
+    //         ->getQuery()
+    //         ->getSingleScalarResult();
 
-//         foreach ($newOrder as $position => $columnId) {
-//             $column = $this->find($columnId);
-//             if ($column && $column->getProject() === $project) {
-//                 $column->setPositionColumn($position + 1);
-//                 $em->persist($column);
-//             }
-//         }
+    //     return (int)($max ?? 0);
+    // }
 
-//         $em->flush();
-//     }
 
-//     /**
-//      * Réorganise les positions après suppression d'une colonne
-//      */
-//     public function reorganizePositions(Project $project): void
-//     {
-//         $columns = $this->findByProject($project);
-//         $em = $this->getEntityManager();
-
-//         foreach ($columns as $index => $column) {
-//             $column->setPositionColumn($index + 1);
-//             $em->persist($column);
-//         }
-
-//         $em->flush();
-//     }
-
-//     /**
-//      * Trouve les colonnes avec le nombre de tâches pour les statistiques
-//      */
-//     public function findWithTaskCounts(Project $project): array
-//     {
-//         return $this->createQueryBuilder('tl')
-//             ->leftJoin('tl.tasks', 't')
-//             ->addSelect('COUNT(t.id) as taskCount')
-//             ->where('tl.project = :project')
-//             ->setParameter('project', $project)
-//             ->groupBy('tl.id')
-//             ->orderBy('tl.positionColumn', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     /**
-//      * Met à jour automatiquement les couleurs de toutes les colonnes d'un project
-//      */
-//     public function updateAutoColorsForProject(Project $project): void
-//     {
-//         $columns = $this->findByProject($project);
-//         $em = $this->getEntityManager();
-
-//         foreach ($columns as $column) {
-//             $column->updateAutoColor();
-//             $em->persist($column);
-//         }
-
-//         $em->flush();
-//     }
-
-//     /**
-//      * Trouve les colonnes avec des tâches en retard
-//      */
-//     public function findColumnsWithOverdueTasks(Project $project): array
-//     {
-//         return $this->createQueryBuilder('tl')
-//             ->leftJoin('tl.tasks', 't')
-//             ->where('tl.project = :project')
-//             ->andWhere('t.dateButoir < :now')
-//             ->andWhere('t.statut != :completed')
-//             ->setParameter('project', $project)
-//             ->setParameter('now', new \DateTime())
-//             ->setParameter('completed', 'TERMINER')
-//             ->groupBy('tl.id')
-//             ->orderBy('tl.positionColumn', 'ASC')
-//             ->getQuery()
-//             ->getResult();
-//     }
-
-//     /**
-//      * Calcule les statistiques de couleur pour un project
-//      */
-//     public function getColorStatsForProject(Project $project): array
-//     {
-//         $columns = $this->findByProject($project);
-//         $stats = [
-//             TaskListColor::VERT->value => 0,
-//             TaskListColor::JAUNE->value => 0,
-//             TaskListColor::ORANGE->value => 0,
-//             TaskListColor::ROUGE->value => 0,
-//         ];
-
-//         foreach ($columns as $column) {
-//             $column->updateAutoColor(); // Mise à jour automatique
-//             if ($column->getCouleur()) {
-//                 $stats[$column->getCouleur()->value]++;
-//             }
-//         }
-
-//         return $stats;
-//     }
-
-//     /**
-//      * Trouve la colonne avec le plus de retard dans un project
-//      */
-//     public function findMostDelayedColumn(Project $project): ?TaskList
-//     {
-//         $columns = $this->findByProject($project);
-//         $mostDelayed = null;
-//         $maxDelay = 0;
-
-//         foreach ($columns as $column) {
-//             $overdueCount = $column->getOverdueCount();
-//             if ($overdueCount > $maxDelay) {
-//                 $maxDelay = $overdueCount;
-//                 $mostDelayed = $column;
-//             }
-//         }
-
-//         return $mostDelayed;
-//     }
-// }

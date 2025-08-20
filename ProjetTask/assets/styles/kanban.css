@@ -1,4 +1,25 @@
-/* Styles principaux du Kanban */
+/* Badges de statut */
+.badge.statut-EN_ATTENTE { background:#fef3c7; color:#92400e; }
+.badge.statut-EN_COURS { background:#dbeafe; color:#1e40af; }
+.badge.statut-EN_PAUSE { background:#e5e7eb; color:#374151; }
+.badge.statut-EN_REPRISE { background:#ede9fe; color:#6d28d9; }
+.badge.statut-TERMINE { background:#d1fae5; color:#065f46; }
+.badge.statut-ANNULE { background:#fee2e2; color:#991b1b; }
+
+/* Badges de priorité — adaptez aux enums de votre code (URGENT/NORMAL/EN_ATTENTE ou BASSE/MOYENNE/HAUTE) */
+.badge.priority-URGENT, .badge.priority-HAUTE { background:#fecaca; color:#b91c1c; }
+.badge.priority-NORMAL, .badge.priority-MOYENNE { background:#e5e7eb; color:#374151; }
+.badge.priority-EN_ATTENTE, .badge.priority-BASSE { background:#fef3c7; color:#92400e; }
+
+/* Petits helpers Kanban */
+.kanban-board { display:flex; align-items:flex-start; gap:1rem; overflow:auto; padding-bottom:.75rem; }
+.kanban-column { min-width:320px; }
+.kanban-item.card { transition: transform .12s ease, box-shadow .12s ease; }
+.kanban-item.card:hover { transform: translateY(-2px); box-shadow: var(--bs-box-shadow-lg, 0 10px 30px rgba(0,0,0,.08)); }
+
+
+/* Styles principaux du Kanban */ 
+/* avant les modifications du 20/08/2025 */
 .kanban-container {
     padding: 20px;
     height: calc(100vh - 80px);
