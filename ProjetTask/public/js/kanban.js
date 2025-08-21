@@ -9,7 +9,9 @@
   const board = $('.kanban-board');
   const readOnly = container.dataset.readOnly === 'true';
 
+  // ----------------------
   // Toast helper
+  // ----------------------
   function showToast(message, type = 'success') {
     let area = $('#toast-area');
     if (!area) {
@@ -33,7 +35,9 @@
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
   }
 
+  // ----------------------
   // Column count updater
+  // ----------------------
   function updateColumnCounts() {
     $$('.kanban-column').forEach(col => {
       const count = col.querySelectorAll('.kanban-item').length;
@@ -42,7 +46,9 @@
     });
   }
 
+  // ----------------------
   // API helpers
+  // ----------------------
   async function apiJson(url, options = {}) {
     const opts = {
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -58,7 +64,58 @@
     return data;
   }
 
+  // ----------------------
+  // Column event helpers
+  // ----------------------
+  function attachAddTaskEvent(button) {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const columnId = this.dataset.columnId;
+      console.log('Ajouter tâche pour colonne', columnId);
+      // Ici tu peux ouvrir le modal de création de tâche
+    });
+  }
+
+  function attachEditColumnEvent(button) {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const columnId = this.dataset.columnId;
+      console.log('Modifier colonne', columnId);
+      // Ici tu peux ouvrir le modal d'édition
+    });
+  }
+
+  function attachDeleteColumnEvent(button) {
+    button.addEventListener('click', async function(e) {
+      e.preventDefault();
+      const columnId = this.dataset.columnId;
+      if (confirm('Supprimer cette colonne ?')) {
+        try {
+          await apiJson(`/api/project/${projectId}/tasklists/${columnId}/delete`, { method: 'POST' });
+          document.querySelector(`.kanban-column[data-column-id="${columnId}"]`)?.remove();
+          showToast('Colonne supprimée', 'success');
+        } catch (err) {
+          showToast(err.message, 'danger');
+        }
+      }
+    });
+  }
+
+  function attachColumnEvents(columnElement) {
+    const addBtn = columnElement.querySelector('.add-task-btn');
+    const editBtn = columnElement.querySelector('.edit-column-btn');
+    const deleteBtn = columnElement.querySelector('.delete-column-btn');
+
+    if (addBtn) attachAddTaskEvent(addBtn);
+    if (editBtn) attachEditColumnEvent(editBtn);
+    if (deleteBtn) attachDeleteColumnEvent(deleteBtn);
+
+    initDnDColumn(columnElement);
+  }
+
+  // ----------------------
   // Add Column (modal-driven)
+  // ----------------------
   function initAddColumn() {
     const btnAddCol = $('#btn-add-column');
     if (!btnAddCol || readOnly) return;
@@ -69,10 +126,9 @@
 
     btnAddCol.addEventListener('click', () => {
       if (!modalEl) {
-        // Fallback: prompt
         const name = prompt('Nom de la colonne:', 'Nouvelle colonne');
         if (!name) return;
-        createColumn({ name }).catch(e => showToast(e.message, 'danger')).then(() => location.reload());
+        createColumn({ name }).catch(e => showToast(e.message, 'danger'));
         return;
       }
       form.reset();
@@ -94,10 +150,27 @@
           return;
         }
         try {
-          await createColumn(payload);
+          const data = await createColumn(payload);
           bootstrap.Modal.getInstance(modalEl)?.hide();
           showToast('Colonne créée', 'success');
-          location.reload();
+
+          // Ajouter dynamiquement la colonne dans le DOM
+          const newCol = document.createElement('div');
+          newCol.classList.add('kanban-column');
+          newCol.dataset.columnId = data.id;
+          newCol.innerHTML = `
+            <div class="kanban-column-header" data-handle="column-drag">
+              <span class="column-title">${data.nom}</span>
+              <div class="column-actions">
+                <button class="btn btn-sm btn-success add-task-btn" data-column-id="${data.id}">+</button>
+                <button class="btn btn-sm btn-primary edit-column-btn" data-column-id="${data.id}">✎</button>
+                <button class="btn btn-sm btn-danger delete-column-btn" data-column-id="${data.id}">🗑</button>
+              </div>
+            </div>
+            <div class="kanban-list" data-column-id="${data.id}"></div>
+          `;
+          board.appendChild(newCol);
+          attachColumnEvents(newCol);
         } catch (e) {
           showToast(e.message, 'danger');
         }
@@ -108,11 +181,13 @@
   async function createColumn({ name, color = '#dbeafe' }) {
     return apiJson(`/api/project/${projectId}/tasklists/new`, {
       method: 'POST',
-      body: JSON.stringify({ name, color }),
+      body: JSON.stringify({ nom: name, couleur: color }),
     });
   }
 
+  // ----------------------
   // Task Details (modal)
+  // ----------------------
   function initTaskDetails() {
     const modalEl = $('#task-details-modal');
     if (!modalEl) return;
@@ -142,11 +217,12 @@
     });
   }
 
-  // Drag & Drop (SortableJS)
+  // ----------------------
+  // Drag & Drop
+  // ----------------------
   function initDnD() {
     if (readOnly) return;
 
-    // Tasks within columns
     $$('.kanban-list').forEach(listEl => {
       new Sortable(listEl, {
         group: 'kanban',
@@ -157,7 +233,6 @@
           const taskId = item.dataset.taskId;
           const targetColumnId = evt.to.dataset.columnId;
           const targetPosition = evt.newIndex;
-
           try {
             await apiJson(`/api/task/${taskId}/move`, {
               method: 'POST',
@@ -167,14 +242,12 @@
             showToast('Tâche déplacée', 'success');
           } catch (e) {
             showToast(e.message, 'danger');
-            // rollback UI
             evt.from.insertBefore(item, evt.from.children[evt.oldIndex] || null);
           }
         }
       });
     });
 
-    // Columns reordering
     new Sortable(board, {
       animation: 150,
       handle: '[data-handle="column-drag"]',
@@ -194,12 +267,45 @@
     });
   }
 
-  // Initialize
-  initAddColumn();
-  initTaskDetails();
-  initDnD();
-})();
+  function initDnDColumn(columnElement) {
+    const listEl = columnElement.querySelector('.kanban-list');
+    if (!listEl || readOnly) return;
+    new Sortable(listEl, {
+      group: 'kanban',
+      handle: '[data-handle="task-drag"]',
+      animation: 150,
+      onEnd: async (evt) => {
+        const item = evt.item;
+        const taskId = item.dataset.taskId;
+        const targetColumnId = evt.to.dataset.columnId;
+        const targetPosition = evt.newIndex;
+        try {
+          await apiJson(`/api/task/${taskId}/move`, {
+            method: 'POST',
+            body: JSON.stringify({ columnId: parseInt(targetColumnId, 10), position: targetPosition }),
+          });
+          updateColumnCounts();
+        } catch (e) {
+          showToast(e.message, 'danger');
+          evt.from.insertBefore(item, evt.from.children[evt.oldIndex] || null);
+        }
+      }
+    });
+  }
 
+  // ----------------------
+  // Initialization
+  // ----------------------
+  function initKanban() {
+    initAddColumn();
+    initTaskDetails();
+    initDnD();
+    updateColumnCounts();
+    $$('.kanban-column').forEach(attachColumnEvents);
+  }
+
+  document.addEventListener('DOMContentLoaded', initKanban);
+})();
 
 // public/js/kanban.js avant les modifications du 20/08/2025
 // import Sortable from 'sortablejs';

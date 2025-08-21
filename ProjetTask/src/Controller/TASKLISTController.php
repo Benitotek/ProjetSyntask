@@ -25,7 +25,7 @@ class TaskListController extends AbstractController
      */
     // ATTENTION: la route ne fonctionne pas, Methode entiérement commanter
     // le 27/07/2025(cause accest Denied sur route project/id/kanban) DOUBLON ICI et PORJECT CONTROLLER!!
-    
+
     // #[Route('/project/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
     // public function kanban(
     //     Project $project,
@@ -347,7 +347,7 @@ class TaskListController extends AbstractController
         if ($request->isXmlHttpRequest()) {
             return $this->render('tasklist/_form_modal.html.twig', [
                 'tasklist' => $taskList,
-                'form' => $form,
+                'form' => $form->createView(),
             ]);
         }
 

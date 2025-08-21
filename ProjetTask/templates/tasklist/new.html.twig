@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle colonne{% endblock %}
+
+{% block body %}
+<h1>Ajouter une colonne</h1>
+
+{{ form_start(form) }}
+    {{ form_row(form.nom) }}
+    {{ form_row(form.couleur) }}
+    <button type="submit">Créer</button>
+{{ form_end(form) }}
+
+<a href="{{ path('app_project_kanban', {'id': project.id}) }}">Retour au Kanban</a>
+{% endblock %}

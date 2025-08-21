@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Project;
 use App\Entity\TaskList;
 use App\Entity\User;
 use App\Form\ProjectTypeForm;
+use App\Form\TaskListType;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskListRepository;
 use App\Repository\UserRepository;
@@ -33,12 +35,12 @@ class ProjectController extends AbstractController
         $user = $this->getUser();
 
         $projects = match (true) {
-            $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR') 
-                => $projectRepository->findAll(),
-            $this->isGranted('ROLE_CHEF_PROJET') 
-                => $projectRepository->findByChefDeproject($user),
-            default 
-                => $projectRepository->findByMembre($user)
+            $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_DIRECTEUR')
+            => $projectRepository->findAll(),
+            $this->isGranted('ROLE_CHEF_PROJET')
+            => $projectRepository->findByChefDeproject($user),
+            default
+            => $projectRepository->findByMembre($user)
         };
 
         return $this->render('project/index.html.twig', [
@@ -54,7 +56,7 @@ class ProjectController extends AbstractController
         $user = $this->getUser();
         $currentStatut = $request->query->get('statut', 'tous');
 
-        $projectsAsManager = $currentStatut !== 'tous' 
+        $projectsAsManager = $currentStatut !== 'tous'
             ? $projectRepository->findBy(['chefproject' => $user, 'statut' => $currentStatut])
             : $projectRepository->findBy(['chefproject' => $user]);
 
@@ -77,13 +79,13 @@ class ProjectController extends AbstractController
     {
         $project = new Project();
         $project->setChefproject($this->getUser())
-               ->setDateCreation(new \DateTime())
-               ->setCreatedBy($this->getUser());
+            ->setDateCreation(new \DateTime())
+            ->setCreatedBy($this->getUser());
 
-    $form = $this->createForm(ProjectTypeForm::class, $project, [
-        'userRepository' => $userRepository
-    ]);
-    $form->handleRequest($request);
+        $form = $this->createForm(ProjectTypeForm::class, $project, [
+            'userRepository' => $userRepository
+        ]);
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->createDefaultTaskLists($project, $entityManager);
@@ -147,44 +149,56 @@ class ProjectController extends AbstractController
     /**
      * 🔧 SOLUTION POUR LE KANBAN - Méthode corrigée
      */
-    #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
+    #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET', 'POST'])]
     public function kanban(
         Project $project,
         TaskListRepository $taskListRepository,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        Request $request,
+        EntityManagerInterface $entityManager
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
 
-        // Debug temporaire (à retirer en production)
-        $this->logger->info('Kanban access attempt', [
-            'project_id' => $project->getId(),
-            'user_id' => $user->getId(),
-            'user_email' => $user->getEmail(),
-            'user_roles' => $user->getRoles(),
-            'is_admin' => in_array('ROLE_ADMIN', $user->getRoles()),
-            'is_directeur' => in_array('ROLE_DIRECTEUR', $user->getRoles()),
-            'is_chef' => $project->getChefproject()?->getId() === $user->getId(),
-            'is_member' => $project->getMembres()->contains($user)
-        ]);
-
-        // Vérification d'accès avec le voter corrigé
+        // Vérification d'accès avec le voter
         $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project);
 
-        $taskLists = $taskListRepository->findByProjectWithTasks($project);
-        
+        // Récupération des colonnes avec les tâches
+        $taskLists = $taskListRepository->findByProjectWithTasksOrdered($project);
+
+        // Préparer les membres
         $members = [...$project->getMembres()->toArray()];
         if ($project->getChefproject() && !in_array($project->getChefproject(), $members)) {
             $members[] = $project->getChefproject();
+        }
+
+        // --- Formulaire de création de colonne ---
+        $taskList = new TaskList();
+        $taskList->setProject($project);
+
+        // Déterminer la position de la nouvelle colonne
+        $lastPosition = $taskListRepository->findBy(['project' => $project], ['positionColumn' => 'DESC'], 1);
+        $position = $lastPosition ? $lastPosition[0]->getPositionColumn() + 1 : 1;
+        $taskList->setPositionColumn($position);
+
+        $form = $this->createForm(TaskListType::class, $taskList);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($taskList);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Colonne créée avec succès');
+            return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
         }
 
         return $this->render('tasklist/kanban.html.twig', [
             'project' => $project,
             'taskLists' => $taskLists,
             'members' => $members,
+            'form' => $form->createView(), // ✅ Formulaire disponible dans Twig
         ]);
     }
-
     #[Route('/{id}/assign-manager/{userId}', name: 'app_project_assign_manager', methods: ['POST'])]
     #[IsGranted('ROLE_DIRECTEUR')]
     public function assignManager(
@@ -202,7 +216,7 @@ class ProjectController extends AbstractController
         }
 
         $project->setChefproject($user);
-        
+
         if (!$project->getMembres()->contains($user)) {
             $project->addMembre($user);
         }
@@ -210,30 +224,30 @@ class ProjectController extends AbstractController
         $entityManager->flush();
         $this->addFlash('success', $user->getFullName() . ' assigné comme chef de projet');
 
-        return $request->isXmlHttpRequest() 
+        return $request->isXmlHttpRequest()
             ? new JsonResponse(['success' => true])
             : $this->redirectToRoute('app_project_members', ['id' => $project->getId()]);
     }
 
     //  Méthodes privées refactorisées et modernes
-private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
-{
-    $defaultColumns = [
-        ['nom' => 'À faire', 'color' => '#007bff'],
-        ['nom' => 'En cours', 'color' => '#fd7e14'],
-        ['nom' => 'Terminé', 'color' => '#28a745']
-    ];
+    private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
+    {
+        $defaultColumns = [
+            ['nom' => 'À faire', 'color' => '#007bff'],
+            ['nom' => 'En cours', 'color' => '#fd7e14'],
+            ['nom' => 'Terminé', 'color' => '#28a745']
+        ];
 
-    foreach ($defaultColumns as $position => $column) {
-        $taskList = new TaskList();
-        $taskList->setNom($column['nom'])
-                ->setCouleur(\App\Enum\TaskListColor::fromHexColor($column['color'])) 
+        foreach ($defaultColumns as $position => $column) {
+            $taskList = new TaskList();
+            $taskList->setNom($column['nom'])
+                ->setCouleur(\App\Enum\TaskListColor::fromHexColor($column['color']))
                 ->setProject($project)
                 ->setPositionColumn($position + 1);
 
-        $entityManager->persist($taskList);
+            $entityManager->persist($taskList);
+        }
     }
-}
 
     private function handleAddMember(Project $project, User $user, EntityManagerInterface $entityManager): void
     {
@@ -273,7 +287,7 @@ private function createDefaultTaskLists(Project $project, EntityManagerInterface
             'projects' => $projects,
         ]);
     }
-     #[Route('/archived/{id}/', name: 'app_project_archive', methods: ['POST'])]
+    #[Route('/archived/{id}/', name: 'app_project_archive', methods: ['POST'])]
     public function archive(Project $project, ProjectRepository $repo)
     {
         $this->denyAccessUnlessGranted(ProjectVoter::ARCHIVE, $project);

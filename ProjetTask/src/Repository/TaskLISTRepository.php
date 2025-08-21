@@ -35,8 +35,8 @@ class TaskListRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-  
-       /**
+
+    /**
      * Trouve la position maximale des colonnes d'un project
      * 
      * @param Project $project Le project concerné
@@ -53,7 +53,15 @@ class TaskListRepository extends ServiceEntityRepository
 
         return $result ?: 0;
     }
-
+    public function findLastPositionForProject(Project $project): int
+    {
+        return $this->createQueryBuilder('t')
+            ->select('MAX(t.positionColumn)')
+            ->where('t.project = :project')
+            ->setParameter('project', $project)
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0; // retourne 0 si aucune colonne
+    }
     /**
      * Déplace une tâche dans une autre colonne et position cible, en appliquant les règles métier
      * et en garantissant la densité des positions (0..N-1).
@@ -91,14 +99,14 @@ class TaskListRepository extends ServiceEntityRepository
             }
             if ($task->getDateReelle() === null) {
                 $task->setDateReelle(new \DateTime('now'));
-        }
+            }
         }
 
         // Règles: Interdire passer en "Terminé" si dateFinReelle pas encore renseigné
         if ($isToDone && $task->getDateReelle() === null) {
             throw new InvalidArgumentException('Assigner la date de fin de la tâche avant de la passer en Terminé.');
         }
-    
+
         // Vérifier la position cible
         if ($targetColumn->getId() === $fromColumn->getId() && $targetPosition === $task->getPosition()) {
             // Pas de changement nécessaire
@@ -243,5 +251,3 @@ class TaskListRepository extends ServiceEntityRepository
 
     //     return (int)($max ?? 0);
     // }
-
-
