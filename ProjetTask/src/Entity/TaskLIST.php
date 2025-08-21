@@ -43,7 +43,7 @@ class TaskList
     private ?string $couleur = null;
 
     // #[ORM\Column(type: 'string', enumType: EnumTaskListColor::class, nullable: true)]
-    // private ?EnumTaskListColor $couleur = null;
+    // private ?EnumTaskListColor $couleur = null
     /**
      * @var Collection<int, Task>
      */

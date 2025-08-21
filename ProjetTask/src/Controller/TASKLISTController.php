@@ -464,7 +464,7 @@ class TaskListController extends AbstractController
             return true;
         }
 
-        // Les chefs de projet peuvent modifier les projets qu'ils dirigent
+        // Les chefs de projet peuvent modifier les projet qu'ils dirigent
         // Corriger cette ligne qui utilise getCHEF_PROJECT au lieu de getChefproject
         return $project->getChefproject() === $user;
     }

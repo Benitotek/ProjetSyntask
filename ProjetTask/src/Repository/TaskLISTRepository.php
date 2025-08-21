@@ -18,12 +18,7 @@ class TaskListRepository extends ServiceEntityRepository
         parent::__construct($registry, TaskList::class);
     }
 
-    /**
-     * Retourne les colonnes d'un projet avec leurs tâches,
-     * triées par position de colonne puis position de tâche.
-     *
-     * @return TaskList[]
-     */
+
     public function findByProjectWithTasksOrdered(Project $project): array
     {
         return $this->createQueryBuilder('tl')
