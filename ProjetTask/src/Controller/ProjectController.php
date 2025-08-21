@@ -29,7 +29,7 @@ class ProjectController extends AbstractController
         private LoggerInterface $logger
     ) {}
 
-    #[Route('/', name: 'app_project_index', methods: ['GET'])]
+    #[Route('/allProjects', name: 'app_project_index', methods: ['GET'])]
     public function index(ProjectRepository $projectRepository): Response
     {
         /** @var User $user */
@@ -148,9 +148,9 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 🔧 SOLUTION POUR LE KANBAN - Méthode corrigée
+     *  SOLUTION POUR LE KANBAN - 
      */
-    #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET', 'POST'])]
+    #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET',])]
     public function kanban(
         Project $project,
         TaskListRepository $taskListRepository,
@@ -163,9 +163,11 @@ class ProjectController extends AbstractController
         // Vérification d'accès avec le voter
         $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project);
 
-        // Récupération des colonnes avec les tâches
-        $taskLists = $taskListRepository->findByProjectWithTasksOrdered($project);
-        if (!$taskLists) {
+        // Récupération des colonnes avec les tâches/
+        //Charge colonnes + tâches en fetch-join (évite N+1 et LazyLoading en vue)
+        
+        $columns = $taskListRepository->findByProjectWithTasksOrdered($project);
+        if (!$columns) {
             // Si aucune colonne n'existe, on en crée 3 par défaut
             $this->createDefaultTaskLists($project, $entityManager);
             $taskLists = $taskListRepository->findByProjectWithTasksOrdered($project);

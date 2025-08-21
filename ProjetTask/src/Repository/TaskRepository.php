@@ -20,6 +20,39 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
     /**
+     * Retourne les tâches d'un projet triées par colonne puis position.
+     *
+     * @return Task[]
+     */
+    public function findByProjectOrdered(Project $project): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.taskList', 'tl')->addSelect('tl')
+            ->andWhere('t.project = :p')->setParameter('p', $project)
+            ->orderBy('tl.positionColumn', 'ASC')
+            ->addOrderBy('t.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Déplace une tâche vers une colonne et met à jour sa position.
+     * Cette implémentation simple fixe la position demandée.
+     * Pour un re-order complet, adaptez en recalculant les positions des frères.
+     */
+    public function moveTaskToColumn(Task $task, TaskList $target, int $position = 0): void
+    {
+        $em = $this->getEntityManager();
+
+        // Assigne nouvelle colonne et position
+        $task->setTaskList($target);
+        if (method_exists($task, 'setPosition')) {
+            $task->setPosition($position);
+        }
+
+        $em->flush();
+    }
+    /**
      * Trouve les activités récentes
      */
     public function findRecent(int $limit = 10): array
@@ -152,7 +185,7 @@ class TaskRepository extends ServiceEntityRepository
     /**
      * Déplace une tâche dans une colonne et ajuste les positions
      */
-    public function moveTaskToColumn(Task $task, TaskList $newColumn, int $newPosition): void
+    public function moveTaskInToNewColumn(Task $task, TaskList $newColumn, int $newPosition): void
     {
         $em = $this->getEntityManager();
         $oldColumn = $task->getTaskList();
