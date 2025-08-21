@@ -48,7 +48,7 @@ class TaskType extends AbstractType
                 'choices' => TaskStatut::cases(), // toutes les valeurs
                 'choice_label' => fn(TaskStatut $choice) => match ($choice) {
                     TaskStatut::EN_ATTENTE => 'En attente',
-                    TaskStatut::EN_COUR => 'En cours',
+                    TaskStatut::EN_COURS => 'En cours',
                     TaskStatut::TERMINER => 'Terminé',
                     TaskStatut::EN_PAUSE => 'En pause',
                     TaskStatut::EN_REPRISE => 'En reprise',

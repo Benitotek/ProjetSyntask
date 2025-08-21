@@ -11,6 +11,7 @@ use App\Repository\ProjectRepository;
 use App\Repository\TaskListRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\ProjectVoter;
+use App\Service\KanbanService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -153,18 +154,40 @@ class ProjectController extends AbstractController
     public function kanban(
         Project $project,
         TaskListRepository $taskListRepository,
-        UserRepository $userRepository,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        KanbanService $kanban
     ): Response {
-        /** @var User $user */
-        $user = $this->getUser();
+
 
         // Vérification d'accès avec le voter
         $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project);
 
         // Récupération des colonnes avec les tâches
         $taskLists = $taskListRepository->findByProjectWithTasksOrdered($project);
+        if (!$taskLists) {
+            // Si aucune colonne n'existe, on en crée 3 par défaut
+            $this->createDefaultTaskLists($project, $entityManager);
+            $taskLists = $taskListRepository->findByProjectWithTasksOrdered($project);
+        }
+        // Vérification si le projet est archivé
+        if ($project->isArchived() === true) {
+            $this->addFlash('danger', 'Ce projet est archivé, vous ne pouvez pas le modifier.');
+            return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
+        }
+        $tasks = $taskListRepository->findTasksByProject($project); // Assuming this method retrieves tasks for the project
+        $kpi = $kanban->computeKpis($project, $tasks); // Pass the correct type
+        $kpi = ['percentDone' => 0, 'overdueCount' => 0, 'avgCycleTime' => '—'];
+        if ($kpi) {
+            $this->logger->info('KPI calculé pour le projet', [
+                'project_id' => $project->getId(),
+                'kpi' => $kpi
+            ]);
+        } else {
+            $this->logger->warning('Aucun KPI disponible pour le projet', [
+                'project_id' => $project->getId()
+            ]);
+        }
 
         // Préparer les membres
         $members = [...$project->getMembres()->toArray()];
@@ -197,6 +220,11 @@ class ProjectController extends AbstractController
             'taskLists' => $taskLists,
             'members' => $members,
             'form' => $form->createView(), // ✅ Formulaire disponible dans Twig
+            'kpi' => $kpi, // ✅ KPI disponible dans Twig
+            'kanbanService' => $kanban, // ✅ Service Kanban disponible dans Twig
+            'taskList' => $taskList, // ✅ Colonne pour le formulaire
+            'isArchived' => $project->isArchived(),
+            'csrfToken' => $this->container->get('security.csrf.token_manager')->getToken('delete_tasklist')->getValue(),
         ]);
     }
     #[Route('/{id}/assign-manager/{userId}', name: 'app_project_assign_manager', methods: ['POST'])]

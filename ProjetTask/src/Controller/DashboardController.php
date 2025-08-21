@@ -75,7 +75,7 @@ class DashboardController extends AbstractController
         }));
 
         $inProgressTasks = count(array_filter($allTasks, function ($task) {
-            return $task->getStatut() === TaskStatut::EN_COUR;
+            return $task->getStatut() === TaskStatut::EN_COURS;
         }));
 
         // Calcul du taux de complétion

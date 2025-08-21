@@ -1,24 +1,76 @@
-/* Badges de statut */
-.badge.statut-EN_ATTENTE { background:#fef3c7; color:#92400e; }
-.badge.statut-EN_COURS { background:#dbeafe; color:#1e40af; }
-.badge.statut-EN_PAUSE { background:#e5e7eb; color:#374151; }
-.badge.statut-EN_REPRISE { background:#ede9fe; color:#6d28d9; }
-.badge.statut-TERMINE { background:#d1fae5; color:#065f46; }
-.badge.statut-ANNULE { background:#fee2e2; color:#991b1b; }
+/* Badges statut */
+.badge.statut-EN_ATTENTE {
+    background: #fef3c7;
+    color: #92400e;
+}
 
-/* Badges de priorité — adaptez aux enums de votre code (URGENT/NORMAL/EN_ATTENTE ou BASSE/MOYENNE/HAUTE) */
-.badge.priority-URGENT, .badge.priority-HAUTE { background:#fecaca; color:#b91c1c; }
-.badge.priority-NORMAL, .badge.priority-MOYENNE { background:#e5e7eb; color:#374151; }
-.badge.priority-EN_ATTENTE, .badge.priority-BASSE { background:#fef3c7; color:#92400e; }
+.badge.statut-EN_COURS {
+    background: #dbeafe;
+    color: #1e40af;
+}
 
-/* Petits helpers Kanban */
-.kanban-board { display:flex; align-items:flex-start; gap:1rem; overflow:auto; padding-bottom:.75rem; }
-.kanban-column { min-width:320px; }
-.kanban-item.card { transition: transform .12s ease, box-shadow .12s ease; }
-.kanban-item.card:hover { transform: translateY(-2px); box-shadow: var(--bs-box-shadow-lg, 0 10px 30px rgba(0,0,0,.08)); }
+.badge.statut-EN_PAUSE {
+    background: #e5e7eb;
+    color: #374151;
+}
 
+.badge.statut-EN_REPRISE {
+    background: #ede9fe;
+    color: #6d28d9;
+}
 
-/* Styles principaux du Kanban */ 
+.badge.statut-TERMINE {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge.statut-ANNULE {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Badges priorité */
+.badge.priority-URGENT,
+.badge.priority-HAUTE {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.badge.priority-NORMAL,
+.badge.priority-MOYENNE {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.badge.priority-EN_ATTENTE,
+.badge.priority-BASSE {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Board */
+.kanban-board {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    overflow: auto;
+    padding-bottom: .75rem;
+}
+
+.kanban-column {
+    min-width: 320px;
+}
+
+.kanban-item.card {
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.kanban-item.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--bs-box-shadow-lg, 0 10px 30px rgba(0, 0, 0, .08));
+}
+
+/* Styles principaux du Kanban */
 /* avant les modifications du 20/08/2025 */
 .kanban-container {
     padding: 20px;
@@ -322,153 +374,154 @@
     gap: 10px;
     margin-top: 5px;
 }
+
 .kanban-column-header {
-padding: 1rem;
-border-top-left-radius: 0.5rem;
-border-top-right-radius: 0.5rem;
-display: flex;
-justify-content: space-between;
-align-items: center;
+    padding: 1rem;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .kanban-column-body {
-flex: 1;
-padding: 0.5rem;
-overflow-y: auto;
-background-color: #f8f9fa;
-border-bottom-left-radius: 0.5rem;
-border-bottom-right-radius: 0.5rem;
+    flex: 1;
+    padding: 0.5rem;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
 }
 
 .task-card {
-background-color: white;
-border-radius: 0.25rem;
-padding: 0.75rem;
-margin-bottom: 0.75rem;
-box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-cursor: move;
-position: relative;
+    background-color: white;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    cursor: move;
+    position: relative;
 }
 
 .task-card:hover {
-box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .task-card-title {
-font-weight: 600;
-margin-bottom: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 .task-card-footer {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-top: 0.5rem;
-font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
 }
 
 .task-actions {
-position: absolute;
-top: 0.5rem;
-right: 0.5rem;
-display: none;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: none;
 }
 
 .task-card:hover .task-actions {
-display: block;
+    display: block;
 }
 
 .column-progress {
-height: 4px;
-margin-top: 0.5rem;
-background-color: #e9ecef;
-border-radius: 0.25rem;
-overflow: hidden;
+    height: 4px;
+    margin-top: 0.5rem;
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+    overflow: hidden;
 }
 
 .column-progress-bar {
-height: 100%;
-background-color: var(--progress-color, #28a745);
+    height: 100%;
+    background-color: var(--progress-color, #28a745);
 }
 
 .dragging {
-opacity: 0.5;
+    opacity: 0.5;
 }
 
 .drag-over {
-background-color: #e9ecef;
+    background-color: #e9ecef;
 }
 
 .priority-badge {
-font-size: 0.75rem;
-padding: 0.15rem 0.5rem;
-border-radius: 0.25rem;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.25rem;
 }
 
 .priority-HAUTE {
-background-color: #fecaca;
-color: #dc2626;
+    background-color: #fecaca;
+    color: #dc2626;
 }
 
 .priority-MOYENNE {
-background-color: #fed7aa;
-color: #ea580c;
+    background-color: #fed7aa;
+    color: #ea580c;
 }
 
 .priority-BASSE {
-background-color: #d1fae5;
-color: #059669;
+    background-color: #d1fae5;
+    color: #059669;
 }
 
 .user-avatar {
-width: 24px;
-height: 24px;
-border-radius: 50%;
-background-color: #6c757d;
-color: white;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 0.75rem;
-font-weight: bold;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
 }
 
 .add-task-form {
-padding: 0.5rem;
-background-color: #f8f9fa;
-border-radius: 0.25rem;
-margin-bottom: 0.75rem;
-display: none;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    margin-bottom: 0.75rem;
+    display: none;
 }
 
 .add-column-btn {
-min-width: 300px;
-height: 60px;
-border: 2px dashed #dee2e6;
-border-radius: 0.5rem;
-display: flex;
-align-items: center;
-justify-content: center;
-color: #6c757d;
-background-color: #f8f9fa;
-margin-right: 1rem;
-cursor: pointer;
-transition: all 0.2s;
+    min-width: 300px;
+    height: 60px;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .add-column-btn:hover {
-background-color: #e9ecef;
-color: #495057;
+    background-color: #e9ecef;
+    color: #495057;
 }
 
 .overdue {
-position: relative;
+    position: relative;
 }
 
 .overdue::after {
-content: "⚠️";
-position: absolute;
-top: -8px;
-right: -8px;
-font-size: 16px;
+    content: "⚠️";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 16px;
 }

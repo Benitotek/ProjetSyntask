@@ -42,7 +42,7 @@ class KanbanService
 
         // Règles: Forcer EN_COURS en colonne "En cours"
         if ($isToInProgress) {
-            $task->setStatut(TaskStatut::EN_COUR);
+            $task->setStatut(TaskStatut::EN_COURS);
         }
 
         // Règles: Passage vers "Terminé" => assignedUser requis + dateFinReelle = now
@@ -144,5 +144,27 @@ class KanbanService
         if (!$column) return false;
         $name = mb_strtolower(trim($column->getNom()));
         return in_array($name, ['en cours', 'in progress', 'doing'], true);
+    }
+    public function computeKpis(Project $project, Task $task): array
+    {
+        if ($project->isArchived()) {
+            throw new RuntimeException('Projet archivé.');
+        }
+
+        if ($task->getStatut() === TaskStatut::TERMINER) {
+            return [
+                'percentDone' => 100, // Example: 100% tasks completed
+                'overdueCount' => 0, // Example: 0 overdue tasks
+                'avgCycleTime' => '0 days', // Example: average cycle time of 0 days
+            ];
+        }
+
+
+        // Example implementation for computing KPIs
+        return [
+            'percentDone' => 75, // Example: 75% tasks completed
+            'overdueCount' => 3, // Example: 3 overdue tasks
+            'avgCycleTime' => '2 days', // Example: average cycle time of 2 days
+        ];
     }
 }

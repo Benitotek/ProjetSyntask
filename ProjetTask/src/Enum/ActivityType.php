@@ -22,6 +22,8 @@ enum ActivityType: string
     case USER_REGISTER = 'user_register';
 
     case COMMENT_CREATE = 'comment_create';
+    case COMMENT_UPDATE = 'comment_update';
+    case COMMENT_DELETE = 'comment_delete';
 
     // Vous pouvez ajouter d'autres types d'activités selon vos besoins
 
@@ -44,6 +46,10 @@ enum ActivityType: string
             self::USER_REGISTER => 'Inscription utilisateur',
 
             self::COMMENT_CREATE => 'Création de commentaire',
+            self::COMMENT_UPDATE => 'Mise à jour de commentaire',
+            self::COMMENT_DELETE => 'Suppression de commentaire',
+
+            default => 'Activité inconnue',
         };
     }
 

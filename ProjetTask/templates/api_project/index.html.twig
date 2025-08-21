@@ -94,7 +94,7 @@
 				<div class="stat-card">
 					<div class="stat-icon">🚀</div>
 					<div class="stat-content">
-						<div class="stat-number" id="EN_COURs-projects">{{ projects|filter(p => p.statut == 'EN_COURS')|length }}</div>
+						<div class="stat-number" id="EN_COURS-projects">{{ projects|filter(p => p.statut == 'EN_COURS')|length }}</div>
 						<div class="stat-label">En Cours</div>
 					</div>
 				</div>
@@ -407,14 +407,14 @@
 			updateStats(projects) {
 				const stats = {
 					total: projects.length,
-					enCours: projects.filter(p => p.statut === 'EN_COURS').length,
+					EN_COURS: projects.filter(p => p.statut === 'EN_COURS').length,
 					TERMINER: projects.filter(p => p.statut === 'TERMINER').length,
 					attente: projects.filter(p => p.statut === 'EN_ATTENTE').length
 				};
 
 				document.getElementById('total-projects').textContent = stats.total;
-				document.getElementById('EN_COURs-projects').textContent = stats.enCours;
-				document.getElementById('TERMINERs-projects').textContent = stats.TERMINER;
+				document.getElementById('EN_COURS-projects').textContent = stats.EN_COURS;
+				document.getElementById('TERMINER-projects').textContent = stats.TERMINER;
 				document.getElementById('attente-projects').textContent = stats.attente;
 			}
 

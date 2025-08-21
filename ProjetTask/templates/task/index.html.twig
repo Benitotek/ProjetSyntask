@@ -110,7 +110,7 @@
 																</td>
 																<td	class="statut-cell"	data-statut="{{ task.statut.value }}">
 																	<span	class="badge
-																			{% if task.statut == constant('App\\Enum\\TaskStatut::EN_COUR') %} badge-primary
+																			{% if task.statut == constant('App\\Enum\\TaskStatut::EN_COURS') %} badge-primary
 																			{% elseif task.statut == constant('App\\Enum\\TaskStatut::TERMINER') %} badge-success
 																			{% elseif task.statut == constant('App\\Enum\\TaskStatut::EN_ATTENTE') %} badge-warning
 																			{% else %} badge-secondary

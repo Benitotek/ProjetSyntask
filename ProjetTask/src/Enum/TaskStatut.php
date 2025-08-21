@@ -5,7 +5,7 @@ namespace App\Enum;
 enum TaskStatut: string
 {
     case EN_ATTENTE = 'EN_ATTENTE';
-    case EN_COUR = 'EN_COUR';
+    case EN_COURS = 'EN_COURS';
     case EN_PAUSE = 'EN_PAUSE';
     case EN_REPRISE = 'EN_REPRISE';
     case TERMINER = 'TERMINER';
@@ -19,7 +19,7 @@ enum TaskStatut: string
     {
         return match ($this) {
             self::EN_ATTENTE => 'En attente',
-            self::EN_COUR => 'En cours',
+            self::EN_COURS => 'En cours',
             self::EN_PAUSE => 'En pause',
             self::EN_REPRISE => 'En reprise',
             self::TERMINER => 'Terminé',

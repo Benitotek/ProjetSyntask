@@ -19,8 +19,8 @@ class TaskListRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne les colonnes d'un projet avec leurs tâches (fetch-join),
-     * ordonnées par position de colonne puis position de tâche.
+     * Retourne les colonnes d'un projet avec leurs tâches,
+     * triées par position de colonne puis position de tâche.
      *
      * @return TaskList[]
      */
@@ -34,24 +34,25 @@ class TaskListRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-
     /**
      * Trouve la position maximale des colonnes d'un project
      * 
      * @param Project $project Le project concerné
      * @return int La position maximale
      */
+
+    /**
+     * La position max des colonnes pour insertion en fin
+     */
     public function findMaxPositionByProject(Project $project): int
     {
-        $result = $this->createQueryBuilder('tl')
+        $max = $this->createQueryBuilder('tl')
             ->select('MAX(tl.positionColumn)')
-            ->where('tl.project = :project')
-            ->setParameter('project', $project)
+            ->andWhere('tl.project = :p')->setParameter('p', $project)
             ->getQuery()
             ->getSingleScalarResult();
 
-        return $result ?: 0;
+        return (int)($max ?? 0);
     }
     public function findLastPositionForProject(Project $project): int
     {
@@ -89,7 +90,7 @@ class TaskListRepository extends ServiceEntityRepository
 
         // Règles: Forcer EN_COURS en colonne "En cours"
         if ($isToInProgress) {
-            $task->setStatut(TaskStatut::EN_COUR);
+            $task->setStatut(TaskStatut::EN_COURS);
         }
 
         // Règles: Passage vers "Terminé" => assignedUser requis + dateFinReelle = now

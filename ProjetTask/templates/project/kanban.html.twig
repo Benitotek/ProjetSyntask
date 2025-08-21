@@ -5,7 +5,7 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
-	<link rel="stylesheet" href="{{ asset('css/kanban.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/kanban.css') }}">
 {% endblock %}
 
 {% block head %}
@@ -17,7 +17,7 @@
 
 {% block styles %}
 	{{ parent() }}
-	<link rel="stylesheet" href="{{ asset('css/kanban.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/kanban.css') }}">
 {% endblock %}
 
 {% block header %}
@@ -41,54 +41,41 @@
 {% endblock %}
 
 {% block body %}
-	<div class="kanban-container" data-project-id="{{ project.id }}" data-read-only="{{ project.archived ? 'true' : 'false' }}">
-
-		<div class="container-fluid py-3">
-			{% if project.archived %}
-				<div class="alert alert-warning d-flex align-items-center" role="alert">
-					<i class="bi bi-lock me-2"></i>
-					Projet archivé — lecture seule
-				</div>
-			{% endif %}
-
-			<div class="d-flex justify-content-between align-items-center mb-3">
-				<div>
-					<nav aria-label="breadcrumb">
-						<ol class="breadcrumb mb-0">
-							<li class="breadcrumb-item">
-								<a href="{{ path('app_project_index') }}">Projets</a>
-							</li>
-							<li class="breadcrumb-item active" aria-current="page">{{ project.titre }}</li>
-						</ol>
-					</nav>
-					<h1 class="h4 mt-2">Kanban</h1>
-				</div>
-				<div class="d-flex gap-2">
-					<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNewTask">
-						<i class="bi bi-plus-lg me-1"></i>Nouvelle tâche</button>
-					<div class="btn-group">
-						<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-							<i class="bi bi-layout-three-columns me-1"></i>Colonnes</button>
-						<ul class="dropdown-menu dropdown-menu-end">
-							<button class="btn btn-primary" id="btn-add-column">
-								<i class="bi bi-plus-lg me-1"></i>
-								Ajouter une colonne
-							</button>
-							<li>
-								<a class="dropdown-item" href="#" id="btn-add-column">Ajouter une colonne</a>
-							</li>
-							<li>
-								<a class="dropdown-item" href="#" data-action="column:edit">Modifier la colonne</a>
-							</li>
-							<li>
-								<a class="dropdown-item text-danger" href="#" data-action="column:delete">Supprimer la colonne</a>
-							</li>
-						</ul>
-					</div>
-				</div>
+	<div class="container-fluid py-3 kanban-container" data-project-id="{{ project.id }}" data-read-only="{{ project.archived ? 'true' : 'false' }}">
+		{% if project.archived %}
+			<div class="alert alert-warning d-flex align-items-center" role="alert">
+				<i class="bi bi-lock me-2"></i>
+				Projet archivé — lecture seule
 			</div>
+		{% endif %}
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<div>
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb mb-0">
+						<li class="breadcrumb-item">
+							<a href="{{ path('app_project_index') }}">Projets</a>
+						</li>
+						<li class="breadcrumb-item active" aria-current="page">{{ project.titre }}</li>
+					</ol>
+				</nav>
+				<h1 class="h4 mt-2">Kanban</h1>
+			</div>
+			<div class="d-flex gap-2">
+				{% if is_granted('EDIT', project) %}
+					<button class="btn btn-primary" id="btn-add-column">
+						<i class="bi bi-plus-lg me-1"></i>
+						Nouvelle colonne
+					</button>
+				{% endif %}
+				<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNewTask">
+					<i class="bi bi-plus-lg me-1"></i>
+					Nouvelle tâche
+				</button>
+			</div>
+		</div>
+		{# KPIs #}
+		{% if kpi is defined %}
 
-			{# KPIs #}
 			<div class="row g-3 mb-3">
 				<div class="col-md-4">
 					<div class="card shadow-sm">
@@ -127,51 +114,55 @@
 					</div>
 				</div>
 			</div>
+		{% endif %}
+		{# Filtres #}
 
-			{# Filtres #}
-			<form id="kanban-filters" class="row g-2 align-items-end mb-3">
-				<div class="col-md-3">
-					<label class="form-label small text-muted">Assigné à</label>
-					<select class="form-select" name="assignee">
-						<option value="">Tous</option>
-						{% for user in assignees %}
-							<option value="{{ user.id }}">{{ user.fullName }}</option>
-						{% endfor %}
-					</select>
-				</div>
-				<div class="col-md-3">
-					<label class="form-label small text-muted">Priorité</label>
-					<select class="form-select" name="priorite">
-						<option value="">Toutes</option>
-						<option value="URGENT">Urgent</option>
-						<option value="NORMAL">Normal</option>
-						<option value="EN_ATTENTE">En attente</option>
-					</select>
-				</div>
-				<div class="col-md-3">
-					<label class="form-label small text-muted">Statut</label>
-					<select class="form-select" name="statut">
-						<option value="">Tous</option>
-						<option value="EN_ATTENTE">En attente</option>
-						<option value="EN_COURS">En cours</option>
-						<option value="TERMINE">Terminé</option>
-					</select>
-				</div>
-				<div class="col-md-3">
-					<label class="form-label small text-muted">Recherche</label>
-					<input class="form-control" type="text" name="q" placeholder="Titre, tag..."/>
-				</div>
-			</form>
+		<form id="kanban-filters" class="row g-2 align-items-end mb-3">
+			<div class="col-md-3">
+				<label class="form-label small text-muted">Assigné à</label>
+				<select class="form-select" name="assignee">
+					<option value="">Tous</option>
+					{% for user in assignees ?? [] %}
+						<option value="{{ user.id }}">{{ user.fullName }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label small text-muted">Priorité</label>
+				<select class="form-select" name="priorite">
+					<option value="">Toutes</option>
+					<option value="URGENT">Urgent</option>
+					<option value="NORMAL">Normal</option>
+					<option value="EN_ATTENTE">En attente</option>
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label small text-muted">Statut</label>
+				<select class="form-select" name="statut">
+					<option value="">Tous</option>
+					<option value="EN_ATTENTE">En attente</option>
+					<option value="EN_COURS">En cours</option>
+					<option value="TERMINE">Terminé</option>
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label small text-muted">Recherche</label>
+				<input class="form-control" type="text" name="q" placeholder="Titre, tag..."/>
+			</div>
+		</form>
+		{# Board #}
 
-			{# Board #}
-			<div class="kanban-board d-flex align-items-start gap-3 overflow-auto pb-3" role="list" aria-label="Colonnes Kanban">
-				{% for column in columns %}
-					<div class="kanban-column card shadow-sm" data-column-id="{{ column.id }}" style="min-width:320px;">
-						<div class="card-header d-flex align-items-center justify-content-between">
-							<div class="d-flex align-items-center gap-2">
-								<span class="fw-semibold">{{ column.name }}</span>
-								<span class="badge bg-secondary">{{ column.tasks|length }}</span>
-							</div>
+		<div class="kanban-board" role="list" aria-label="Colonnes Kanban">
+			{% for column in columns %}
+				{# Couleur: si enum -> .css(), si string -> tel quel #}
+				{% set colorHex = column.couleur is object and column.couleur.css is defined ? column.couleur.css() : (column.couleur ?? '#6b7280') %}
+				<div class="kanban-column card shadow-sm" data-column-id="{{ column.id }}" style="min-width:320px;">
+					<div class="card-header d-flex align-items-center justify-content-between" style="border-top: 3px solid {{ colorHex }}">
+						<div class="d-flex align-items-center gap-2">
+							<span class="fw-semibold">{{ column.nom ?? column.name }}</span>
+							<span class="badge bg-secondary" data-role="count">{{ column.tasks|length }}</span>
+						</div>
+						{% if is_granted('EDIT', project) %}
 							<div class="d-flex align-items-center gap-2">
 								<button class="btn btn-sm btn-outline-secondary" data-handle="column-drag" aria-label="Déplacer la colonne">
 									<i class="bi bi-grip-vertical"></i>
@@ -190,370 +181,147 @@
 									</ul>
 								</div>
 							</div>
-						</div>
-						<div class="card-body p-2">
-							<ul class="kanban-list list-unstyled m-0" role="list" aria-label="Tâches" data-column-id="{{ column.id }}">
-								{% for task in column.tasks|sort((a,b) => a.position <=> b.position) %}
-									<li class="kanban-item card mb-2 shadow-sm" role="listitem" data-task-id="{{ task.id }}">
-										<div class="card-body p-2">
-											<div class="mt-2 d-flex gap-2">
-												<button class="btn btn-sm btn-outline-secondary btn-task-details" data-task-id="{{ task.id }}">
-													<i class="bi bi-eye"></i>
-													Détails
+						{% endif %}
+					</div>
+					<div class="card-body p-2">
+						<ul class="kanban-list list-unstyled m-0" role="list" aria-label="Tâches" data-column-id="{{ column.id }}">
+							{% for task in column.tasks|sort((a,b) => a.position <=> b.position) %}
+								<li class="kanban-item card mb-2 shadow-sm" role="listitem" data-task-id="{{ task.id }}">
+									<div class="card-body p-2">
+										<div class="d-flex align-items-start justify-content-between">
+											<h6 class="card-title mb-1 me-2 {{ task.statut.value == 'TERMINE' ? 'text-decoration-line-through text-muted' : '' }}">
+												{{ task.title ?? task.titre }}
+											</h6>
+											{% if is_granted('EDIT', project) %}
+												<button class="btn btn-sm btn-outline-secondary" data-handle="task-drag" aria-label="Déplacer la tâche">
+													<i class="bi bi-grip-vertical"></i>
 												</button>
+											{% endif %}
+										</div>
+										<div class="d-flex flex-wrap align-items-center gap-2">
+											{% if task.assignedUser ?? task.assignee %}
+												{% set user = task.assignedUser ?? task.assignee %}
+												<span class="badge rounded-pill bg-dark-subtle text-dark" title="{{ user.fullName }}">{{ user.initials ?? (user.firstname|first ~ user.lastname|first)|upper }}</span>
+											{% else %}
+												<span class="badge rounded-pill bg-light text-muted">Non assignée</span>
+											{% endif %}
+											<span class="badge priority-{{ task.priorite.value ?? task.priority.value ?? task.priority }}">{{ task.priorite.label ?? task.priority.label ?? task.priority }}</span>
+											<span class="badge statut-{{ task.statut.value }}">{{ task.statut.label }}</span>
+
+											{% if task.dateDeFin ?? task.dateButoir %}
+												{% set dueDate = (task.dateDeFin ?? task.dateButoir) %}
+												{% set now = "now"|date('U') %}
+												{% set due = dueDate|date('U') %}
+												{% set diff = due - now %}
+												{% set dueClass = (task.statut.value != 'TERMINE' and diff < 0) ? 'text-danger' : ((task.statut.value != 'TERMINE' and diff < 606024*3) ? 'text-warning' : 'text-muted') %}
+												<span class="{{ dueClass }}">
+													<i class="bi bi-calendar-event me-1"></i>
+													{{ dueDate|date('d/m/Y') }}</span>
+											{% endif %}
+
+										</div>
+										<div class="mt-2 d-flex gap-2">
+											<button class="btn btn-sm btn-outline-secondary btn-task-details" data-task-id="{{ task.id }}">
+												<i class="bi bi-eye"></i>
+												Détails
+											</button>
+											{% if is_granted('EDIT', project) %}
 												<button class="btn btn-sm btn-outline-primary" data-action="task:edit" data-task-id="{{ task.id }}">
 													<i class="bi bi-pencil"></i>
 												</button>
 												<button class="btn btn-sm btn-outline-success" data-action="task:status" data-task-id="{{ task.id }}" data-status="TERMINE" {{ task.statut.value == 'TERMINE' ? 'disabled' : '' }} title="Marquer terminé">
 													<i class="bi bi-check2-circle"></i>
 												</button>
-												...
-											</div>
-										</div>
-										<div class="d-flex flex-wrap align-items-center gap-2">
-											{% if task.assignedUser %}
-												<span class="badge rounded-pill bg-dark-subtle text-dark" title="{{ task.assignedUser.fullName }}">{{ task.assignedUser.initials }}</span>
-											{% else %}
-												<span class="badge rounded-pill bg-light text-muted">Non assignée</span>
-											{% endif %}
-											<span class="badge priority-{{ task.priorite.value }}">{{ task.priorite.label }}</span>
-											<span class="badge statut-{{ task.statut.value }}">{{ task.statut.label }}</span>
-											{% if task.tags|length > 0 %}
-												{% for tag in task.tags %}
-													<span class="badge bg-secondary">{{ tag.name }}</span>
-												{% endfor %}
-											{% endif %}
-											{% if task.description %}
-												<span class="text-muted small">
-													<i class="bi bi-chat-left-text me-1"></i>
-													{{ task.description|slice(0, 50) }}{{ task.description|length > 50 ? '...' : '' }}</span>
-											{% endif %}
-											{% if task.dateCreation %}
-												<span class="text-muted small">
-													<i class="bi bi-calendar-plus me-1"></i>
-													{{ task.dateCreation|date('d/m/Y') }}</span>
-											{% endif %}
-											{% if task.dateModification %}
-												<span class="text-muted small">
-													<i class="bi bi-pencil-square me-1"></i>
-													{{ task.dateModification|date('d/m/Y') }}</span>
-											{% endif %}
-											{% if task.dateButoir %}
-												{% set now = "now"|date('U') %}
-												{% set due = task.dateButoir|date('U') %}
-												{% set diff = due - now %}
-												{% set dueClass = (task.statut.value != 'TERMINE' and diff < 0) ? 'text-danger' : ((task.statut.value != 'TERMINE' and diff < 60*60*24*3) ? 'text-warning' : 'text-muted') %}
-												<span class="{{ dueClass }}">
-													<i class="bi bi-calendar-event me-1"></i>
-													{{ task.dateButoir|date('d/m/Y') }}</span>
+												<div class="dropdown">
+													<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+														<i class="bi bi-three-dots"></i>
+													</button>
+													<ul class="dropdown-menu">
+														<li>
+															<a class="dropdown-item" href="#" data-action="task:assign" data-task-id="{{ task.id }}">Assigner</a>
+														</li>
+														<li>
+															<a class="dropdown-item text-danger" href="#" data-action="task:delete" data-task-id="{{ task.id }}">Supprimer</a>
+														</li>
+													</ul>
+												</div>
 											{% endif %}
 										</div>
-										<div class="mt-2 d-flex gap-2">
-											<button class="btn btn-sm btn-outline-primary" data-action="task:edit" data-task-id="{{ task.id }}">
-												<i class="bi bi-pencil"></i>
-											</button>
-											<button class="btn btn-sm btn-outline-success" data-action="task:status" data-task-id="{{ task.id }}" data-status="TERMINER" {{ task.statut.value == 'TERMINE' ? 'disabled' : '' }} title="Marquer terminé">
-												<i class="bi bi-check2-circle"></i>
-											</button>
-											<div class="dropdown">
-												<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
-													<i class="bi bi-three-dots"></i>
-												</button>
-												<ul class="dropdown-menu">
-													<li>
-														<a class="dropdown-item" href="#" data-action="task:assign" data-task-id="{{ task.id }}">Assigner</a>
-													</li>
-													<li>
-														<a class="dropdown-item text-danger" href="#" data-action="task:delete" data-task-id="{{ task.id }}">Supprimer</a>
-													</li>
-												</ul>
-											</div>
-										</div>
-									</li>
-								</div>
-							</li>
-						{% else %}
-							<li class="text-muted small p-2 border rounded border-secondary-subtle">Aucune tâche</li>
-						{% endfor %}
-					</ul>
-				</div>
-				<div class="card-footer bg-white">
-					<button class="btn btn-sm btn-light w-100" data-action="task:new" data-column-id="{{ TaskList.id }}">
-						<i class="bi bi-plus"></i>
-						Ajouter une carte</button>
-				</div>
-			</div>
-		{% endfor %}
-	</div>
-
-	{# Toasts container #}
-	<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-area" aria-live="polite" aria-atomic="true"></div>
-
-	{# Modal Nouvelle Tâche (exemple minimal) #}
-	<div class="modal fade" id="modalNewTask" tabindex="-1" aria-labelledby="modalNewTaskLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="modalNewTaskLabel">Nouvelle tâche</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<form id="form-new-task">
-						<div class="mb-3">
-							<label class="form-label">Titre</label>
-							<input type="text" name="title" class="form-control" required>
+									</div>
+								</li>
+							{% else %}
+								<li class="text-muted small p-2 border rounded border-secondary-subtle">Aucune tâche</li>
+							{% endfor %}
+						</ul>
+					</div>
+					{% if is_granted('EDIT', project) %}
+						<div class="card-footer bg-white">
+							<button class="btn btn-sm btn-light w-100" data-action="task:new" data-column-id="{{ column.id }}">
+								<i class="bi bi-plus"></i>
+								Ajouter une carte
+							</button>
 						</div>
-						<div class="mb-3">
-							<label class="form-label">Priorité</label>
-							<select name="priorite" class="form-select">
-								<option value="NORMAL">Normal</option>
-								<option value="URGENT">Urgent</option>
-								<option value="EN_ATTENTE">En attente</option>
-							</select>
-						</div>
-						<div class="mb-3">
-							<label class="form-label">Échéance</label>
-							<input type="date" name="dateButoir" class="form-control">
-						</div>
-					</form>
+					{% endif %}
 				</div>
-				<div class="modal-footer">
-					<button class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-					<button class="btn btn-primary" data-action="task:create">Créer</button>
+			{% endfor %}
+		</div>
+		{# Modals: Détails tâche #}
+
+		<div class="modal fade" id="task-details-modal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-scrollable">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Détails</h5>
+						<button class="btn btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+					</div>
+					<div class="modal-body task-details-body"></div>
 				</div>
 			</div>
 		</div>
-	</div>
-</div>{% endblock %}{% block modals %}
-{# Modal pour ajouter/modifier une colonne #}
-<div class="modal fade" id="column-modal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="column-modal-title">Nouvelle colonne</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<form id="column-form">
-					<input type="hidden" name="columnId" value="">
-					<input type="hidden" name="projectId" value="{{ project.id }}">
+		{# Modal Nouvelle Tâche #}
 
-					<div class="mb-3">
-						<label for="column-name" class="form-label">Nom de la colonne</label>
-						<input type="text" class="form-control" id="column-name" name="nom" required>
+		<div class="modal fade" id="modalNewTask" tabindex="-1" aria-labelledby="modalNewTaskLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalNewTaskLabel">Nouvelle tâche</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 					</div>
-
-					<div class="mb-3">
-						<label for="column-color" class="form-label">Couleur</label>
-						<input type="color" class="form-control form-control-color" id="column-color" name="couleur" value="#6366F1">
-					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-				<button type="button" class="btn btn-primary" id="save-column">Enregistrer</button>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Modal pour ajouter/modifier une tâche #}
-<div class="modal fade" id="task-modal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="task-modal-title">Nouvelle tâche</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<form id="task-form">
-					<input type="hidden" name="taskId" value="{{ task.id ?? null }}">
-					<input type="hidden" name="columnId" value="{{ task.column_id ?? null }}">
-					<input type="hidden" name="projectId" value="{{ project.id }}">
-
-					<div class="mb-3">
-						<label for="task-title" class="form-label">Titre</label>
-						<input type="text" class="form-control" id="task-title" name="titre" required>
-					</div>
-
-					<div class="mb-3">
-						<label for="task-description" class="form-label">Description</label>
-						<textarea class="form-control" id="task-description" name="description" rows="3"></textarea>
-					</div>
-
-					<div class="mb-3">
-						<label for="task-priority" class="form-label">Priorité</label>
-						<select class="form-select" id="task-priority" name="priority">
-							<option value="BASSE">Basse</option>
-							<option value="MOYENNE">Moyenne</option>
-							<option value="HAUTE">Haute</option>
-						</select>
-					</div>
-
-					<div class="mb-3">
-						<label for="task-due-date" class="form-label">Date d'échéance</label>
-						<input type="text" class="form-control datepicker" id="task-due-date" name="dateButoir">
-					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-				<button type="submit" form="task-form" class="btn btn-primary">Enregistrer</button>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Modal pour assigner un utilisateur #}
-<div class="modal fade" id="assign-modal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Assigner un utilisateur</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<div
-					class="user-list">{# Liste des utilisateurs chargée dynamiquement par JS #}
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Container pour les notifications toast #}
-<div class="toast-container"></div>{% endblock %}{# Modals #}{% if is_granted('EDIT', project) %}
-{# Modal pour ajouter une colonne #}
-<div class="modal fade" id="addColumnModal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Ajouter une colonne</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<div id="addColumnFormContainer"></div>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Modal pour éditer une colonne #}
-<div class="modal fade" id="editColumnModal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Modifier la colonne</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<div id="editColumnFormContainer"></div>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Modal pour supprimer une colonne #}
-<div class="modal fade" id="deleteColumnModal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Supprimer la colonne</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<p>Êtes-vous sûr de vouloir supprimer la colonne
-					<strong id="deleteColumnName"></strong>
-					?</p>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-				<form id="deleteColumnForm" method="post">
-					<input type="hidden" name="_token" value="">
-					<button type="submit" class="btn btn-danger">Supprimer</button>
-				</form>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Modal pour ajouter une tâche #}
-<div class="modal fade" id="addTaskModal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Ajouter une tâche</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<div id="addTaskFormContainer"></div>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Modal pour éditer une tâche #}
-<div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Modifier la tâche</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<div id="editTaskFormContainer"></div>
-			</div>
-		</div>
-	</div>
-</div>
-
-{# Modal pour supprimer une tâche #}
-<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Supprimer la tâche</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<p>Êtes-vous sûr de vouloir supprimer la tâche
-					<strong id="deleteTaskTitle"></strong>
-					?</p>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-				<form id="deleteTaskForm" method="post">
-					<input type="hidden" name="_token" value="">
-					<button type="submit" class="btn btn-danger">Supprimer</button>
-				</form>
-			</div>
-		</div>
-	</div>
-</div>{% endif %}{# Modal pour assigner une tâche à un utilisateur #}{% if is_granted('ASSIGN_TASKS', project) %}
-<div class="modal fade" id="assignTaskModal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Assigner la tâche</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-			</div>
-			<div class="modal-body">
-				<p>Choisissez un utilisateur pour cette tâche:</p>
-				<div class="user-list">
-					{% for user in availableUsers %}
-						<div class="user-item" data-user-id="{{ user.id }}">
-							<div class="user-avatar">{{ user.firstname|slice(0, 1)|upper }}{{ user.lastname|slice(0, 1)|upper }}</div>
-							<div class="user-info">
-								<div class="user-name">{{ user.fullName }}</div>
-								<div class="user-email">{{ user.email }}</div>
+					<div class="modal-body">
+						<form id="form-new-task">
+							<div class="mb-3">
+								<label class="form-label">Titre</label>
+								<input type="text" name="title" class="form-control" required>
 							</div>
-						</div>
-					{% endfor %}
+							<div class="mb-3">
+								<label class="form-label">Priorité</label>
+								<select name="priorite" class="form-select">
+									<option value="NORMAL">Normal</option>
+									<option value="URGENT">Urgent</option>
+									<option value="EN_ATTENTE">En attente</option>
+								</select>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Échéance</label>
+								<input type="date" name="dateDeFin" class="form-control">
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<button class="btn btn-primary" data-action="task:create">Créer</button>
+					</div>
 				</div>
 			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ANNULER</button>
-			</div>
 		</div>
+		{# Toasts #}
+
+		<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-area" aria-live="polite" aria-atomic="true"></div>
 	</div>
-</div>{% endif %}{% endblock %}
+{% endblock %}
+{% block javascripts %}
+	{{ parent() }}
+
+ <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" crossorigin="anonymous"></script>
+	 <script src="{{ asset('js/kanban.js') }}"></script>
+{% endblock %}

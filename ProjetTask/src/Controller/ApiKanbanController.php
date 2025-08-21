@@ -26,29 +26,38 @@ class ApiKanbanController extends AbstractController
     public function __construct(private EntityManagerInterface $em) {}
 
     #[Route('/project/{id}/tasklists/new', name: 'api_tasklist_new', methods: ['POST'])]
-    public function newColumn(#[MapEntity()] Project $project, Request $request, TaskListRepository $tlRepo): JsonResponse
+    public function newColumn(#[MapEntity] Project $project, Request $request, TaskListRepository $tlRepo): JsonResponse
     {
         $this->denyAccessUnlessGranted('EDIT', $project);
 
         $payload = json_decode($request->getContent(), true) ?? [];
         $name = trim((string)($payload['name'] ?? ''));
-        $colorHex = (string)($payload['color'] ?? '#dbeafe');
+        $colorHex = (string)($payload['color'] ?? TaskListColor::BLEU->value);
+
         if ($name === '') {
             return $this->json(['success' => false, 'error' => 'Nom requis'], 400);
         }
 
         $maxPos = $tlRepo->findMaxPositionByProject($project);
+
         $list = (new TaskList())
             ->setProject($project)
             ->setNom($name)
             ->setPositionColumn($maxPos + 1);
 
-        if (enum_exists(TaskListColor::class) && method_exists(TaskListColor::class, 'fromHexColor')) {
-            $list->setCouleur(TaskListColor::fromHexColor($colorHex));
+        // Si l'entité est typée enum TaskListColor:
+        if (method_exists($list, 'getCouleur') && $list->getCouleur() instanceof TaskListColor || (new \ReflectionProperty($list, 'couleur'))->getType()?->getName() === TaskListColor::class) {
+            $list->setCouleur(TaskListColor::fromHex($colorHex));
+        } else {
+            // sinon, stock string hex
+            $list->setCouleur(TaskListColor::tryFrom($colorHex) ?? $colorHex);
         }
 
         $this->em->persist($list);
         $this->em->flush();
+
+        $color = $list->getCouleur();
+        $colorOut = $color instanceof TaskListColor ? $color->css() : (string)$color;
 
         return $this->json([
             'success' => true,
@@ -56,7 +65,7 @@ class ApiKanbanController extends AbstractController
                 'id' => $list->getId(),
                 'nom' => $list->getNom(),
                 'position' => $list->getPositionColumn(),
-                'color' => method_exists($list->getCouleur(), 'getCssColor') ? $list->getCouleur()->getCssColor() : $colorHex,
+                'color' => $colorOut,
             ],
         ]);
     }
@@ -72,17 +81,14 @@ class ApiKanbanController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Format columns invalide'], 400);
         }
 
-        $pos = 0;
-        foreach ($columns as $col) {
-            $id = is_array($col) ? ($col['id'] ?? null) : $col;
-            if (!$id) {
-                continue;
-            }
-            $tl = $tlRepo->find($id);
+        $position = 0;
+        foreach ($columns as $colId) {
+            $tl = $tlRepo->find((int)$colId);
             if ($tl && $tl->getProject()->getId() === $project->getId()) {
-                $tl->setPositionColumn($pos++);
+                $tl->setPositionColumn($position++);
             }
         }
+
         $this->em->flush();
 
         return $this->json(['success' => true]);
@@ -97,19 +103,19 @@ class ApiKanbanController extends AbstractController
         $payload = json_decode($request->getContent(), true) ?? [];
         $columnId = (int)($payload['columnId'] ?? 0);
         $position = (int)($payload['position'] ?? 0);
-        $target = $tlRepo->find($columnId);
 
+        $target = $tlRepo->find($columnId);
         if (!$target || $target->getProject()->getId() !== $project->getId()) {
             return $this->json(['success' => false, 'error' => 'Colonne invalide'], 400);
         }
 
-        // Si colonne "Terminé" => statut TERMINE + date réelle si absente
-        $nameNorm = mb_strtolower($target->getNom());
+        // Règle métier: Terminé -> statut TERMINE + date réelle si manquante
+        $nameNorm = mb_strtolower($target->getNom() ?? '');
         if (in_array($nameNorm, ['termine', 'terminé', 'done', 'finished'], true)) {
-            if (enum_exists(TaskStatut::class) && defined(TaskStatut::class . '::TERMINE')) {
+            if (method_exists($task, 'setStatut')) {
                 $task->setStatut(TaskStatut::TERMINER);
             }
-            if (method_exists($task, 'setDateReelle') && !$task->getDateReelle()) {
+            if (method_exists($task, 'getDateReelle') && method_exists($task, 'setDateReelle') && !$task->getDateReelle()) {
                 $task->setDateReelle(new \DateTime());
             }
         }
@@ -671,7 +677,7 @@ class ApiKanbanController extends AbstractController
 //             case 'en cours':
 //             case 'in progress':
 //             case 'doing':
-//                 $task->setStatut(TaskStatut::EN_COUR);
+//                 $task->setStatut(TaskStatut::EN_COURS);
 //                 break;
 //             case 'terminé':
 //             case 'done':

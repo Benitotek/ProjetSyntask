@@ -1,3 +1,67 @@
+/* Requires: Bootstrap 5 bundle, SortableJS
+   HTML:
+   - .kanban-container[data-project-id][data-read-only]
+   - .kanban-board
+   - .kanban-column[data-column-id]
+   - .kanban-list[data-column-id]
+   - .kanban-item[data-task-id]
+   - #btn-add-column (optionnel)
+   - #task-details-modal (optionnel)
+*/
+'use strict';
+// Import SortableJS if not already included in the page
+if (typeof Sortable === 'undefined') import('sortablejs').then(module => Sortable = module.default);
+// Kanban JavaScript Module
+// This module handles the Kanban board functionality including adding/removing columns, tasks, and drag & drop interactions.
+
+// ----------------------
+// Constants
+// ----------------------
+const ADD_COLUMN_BUTTON = '#btn-add-column';
+const ADD_TASK_BUTTON = '#btn-add-task';
+const EDIT_TASK_BUTTON = '#btn-edit-task';
+const DELETE_TASK_BUTTON = '#btn-delete-task';
+const ASSIGN_TASK_BUTTON = '#btn-assign-task';
+const TASK_SEARCH_BUTTON = '#btn-task-search';
+const TASK_SEARCH_INPUT = '#task-search-input';
+const TASK_SEARCH_RESULTS = '#task-search-results';
+const TASK_DETAILS_BUTTON = '.btn-task-details';
+
+// ----------------------
+// Variables
+// ----------------------
+let currentColumn = null;
+let currentTask = null;
+let currentTaskId = null;
+let currentTaskData = null;
+let currentTaskAssignee = null;
+let currentTaskAssigneeId = null;
+let currentTaskAssigneeData = null;
+let currentTaskAssigneeEmail = null;
+let currentTaskAssigneeName = null;
+let currentTaskAssigneePrenom = null;
+let currentTaskAssigneeNom = null;
+let currentTaskAssigneeInitials = null;
+let currentTaskAssigneeRole = null;
+// let currentTaskAssigneeDepartement = null;
+// let currentTaskAssigneeService = null;
+// let currentTaskAssigneeServiceNom = null;
+// let currentTaskAssigneeServiceSigle = null;
+// let currentTaskAssigneeServiceSigleLong = null;
+// let currentTaskAssigneeServiceSigleLongAbrege = null;
+// let currentTaskAssigneeServiceSigleLongAbregeInitials = null;
+// let currentTaskAssigneeServiceSigleLongInitials = null;
+// let currentTaskAssigneeServiceSigleInitials = null;
+// let currentTaskAssigneeServiceSigleInitialsAbrege = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLong = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLongInitials = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLongInitialsAbrege = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLongInitialsAbregeLong = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLongInitialsAbregeLongInitials = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLongInitialsAbregeLongInitialsAbrege = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLongInitialsAbregeLongInitialsAbregeLong = null;
+// let currentTaskAssigneeServiceSigleInitialsAbregeLongInitialsAbregeLongInitialsAbregeLongInitials = null;
+
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -9,7 +73,9 @@
   const board = $('.kanban-board');
   const readOnly = container.dataset.readOnly === 'true';
 
+  // ----------------------
   // Toast helper
+  // ----------------------
   function showToast(message, type = 'success') {
     let area = $('#toast-area');
     if (!area) {
@@ -32,69 +98,63 @@
     t.show();
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
   }
-
-  // Column count updater
-  function updateColumnCounts() {
-    $$('.kanban-column').forEach(col => {
-      const count = col.querySelectorAll('.kanban-item').length;
-      const badge = col.querySelector('.badge');
-      if (badge) badge.textContent = count;
-    });
-  }
-
-  // API helpers
-  async function apiJson(url, options = {}) {
-    const opts = {
+ async function apiJson(url, options={}) {
+    const res = await fetch(url, {
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      ...options,
-    };
-    const res = await fetch(url, opts);
+      ...options
+    });
     let data = null;
-    try { data = await res.json(); } catch (_) {}
+    try { data = await res.json(); } catch {}
     if (!res.ok || (data && data.success === false)) {
-      const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
-      throw new Error(msg);
+      throw new Error((data && (data.error || data.message)) || `HTTP ${res.status}`);
     }
     return data;
   }
+  // ----------------------
+  // Column count updater
+  // ----------------------
+  function updateColumnCounts() {
+    $$('.kanban-column').forEach(col => {
+      const badge = col.querySelector('.badge.bg-secondary, .badge[data-role="count"]');
+      if (badge) badge.textContent = col.querySelectorAll('.kanban-item').length;
+    });
+  }
 
-  // Add Column (modal-driven)
   function initAddColumn() {
-    const btnAddCol = $('#btn-add-column');
-    if (!btnAddCol || readOnly) return;
-
+    const btn = $('#btn-add-column');
     const modalEl = $('#column-modal');
     const form = $('#column-form');
     const saveBtn = $('#save-column');
+    if (!btn || readOnly) return;
 
-    btnAddCol.addEventListener('click', () => {
-      if (!modalEl) {
-        // Fallback: prompt
-        const name = prompt('Nom de la colonne:', 'Nouvelle colonne');
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (modalEl && form) {
+        form.reset();
+        form.elements.projectId.value = projectId;
+        form.elements.columnId.value = '';
+        $('#column-modal-title').textContent = 'Nouvelle colonne';
+        new bootstrap.Modal(modalEl).show();
+      } else {
+        const name = prompt('Nom de la colonne', 'Nouvelle colonne');
         if (!name) return;
-        createColumn({ name }).catch(e => showToast(e.message, 'danger')).then(() => location.reload());
-        return;
+        apiJson(`/api/project/${projectId}/tasklists/new`, { method: 'POST', body: JSON.stringify({ name, color: '#3b82f6' }) })
+          .then(() => location.reload())
+          .catch(e => showToast(e.message, 'danger'));
       }
-      form.reset();
-      form.elements.projectId.value = projectId;
-      form.elements.columnId.value = '';
-      $('#column-modal-title').textContent = 'Nouvelle colonne';
-      new bootstrap.Modal(modalEl).show();
     });
 
     if (modalEl && saveBtn && form) {
       saveBtn.addEventListener('click', async () => {
-        const formData = new FormData(form);
-        const payload = {
-          name: String(formData.get('nom') || '').trim(),
-          color: String(formData.get('couleur') || '#dbeafe'),
-        };
-        if (!payload.name) {
-          showToast('Le nom de la colonne est requis', 'warning');
-          return;
-        }
+        const fd = new FormData(form);
+        const name = String(fd.get('nom') || '').trim();
+        const color = String(fd.get('couleur') || '#3b82f6');
+        if (!name) { showToast('Nom requis', 'warning'); return; }
         try {
-          await createColumn(payload);
+          await apiJson(`/api/project/${projectId}/tasklists/new`, {
+            method: 'POST',
+            body: JSON.stringify({ name, color })
+          });
           bootstrap.Modal.getInstance(modalEl)?.hide();
           showToast('Colonne créée', 'success');
           location.reload();
@@ -105,26 +165,17 @@
     }
   }
 
-  async function createColumn({ name, color = '#dbeafe' }) {
-    return apiJson(`/api/project/${projectId}/tasklists/new`, {
-      method: 'POST',
-      body: JSON.stringify({ name, color }),
-    });
-  }
-
-  // Task Details (modal)
   function initTaskDetails() {
     const modalEl = $('#task-details-modal');
     if (!modalEl) return;
-
     document.addEventListener('click', async (e) => {
       const btn = e.target.closest('.btn-task-details');
       if (!btn) return;
       e.preventDefault();
-      const id = btn.dataset.taskId;
+      const taskId = btn.dataset.taskId;
       try {
-        const data = await apiJson(`/api/task/${id}`, { method: 'GET' });
-        const t = data.task;
+        const data = await apiJson(`/api/task/${taskId}`, { method: 'GET' });
+        const t = data.task || data;
         modalEl.querySelector('.modal-title').textContent = t.titre || `Tâche #${t.id}`;
         modalEl.querySelector('.task-details-body').innerHTML = `
           <div class="mb-2">
@@ -133,7 +184,7 @@
           </div>
           ${t.description ? `<div class="text-muted mb-2">${t.description}</div>` : ''}
           <div class="small"><i class="bi bi-calendar-event me-1"></i> ${t.dateButoir || '—'}</div>
-          <div class="small"><i class="bi bi-person me-1"></i> ${t.assignedUser ? t.assignedUser.name : 'Non assignée'}</div>
+          <div class="small"><i class="bi bi-person me-1"></i> ${t.assignedUser?.name || 'Non assignée'}</div>
         `;
         new bootstrap.Modal(modalEl).show();
       } catch (e) {
@@ -142,11 +193,8 @@
     });
   }
 
-  // Drag & Drop (SortableJS)
   function initDnD() {
     if (readOnly) return;
-
-    // Tasks within columns
     $$('.kanban-list').forEach(listEl => {
       new Sortable(listEl, {
         group: 'kanban',
@@ -155,26 +203,23 @@
         onEnd: async (evt) => {
           const item = evt.item;
           const taskId = item.dataset.taskId;
-          const targetColumnId = evt.to.dataset.columnId;
-          const targetPosition = evt.newIndex;
-
+          const columnId = evt.to.dataset.columnId;
+          const position = evt.newIndex;
           try {
             await apiJson(`/api/task/${taskId}/move`, {
               method: 'POST',
-              body: JSON.stringify({ columnId: parseInt(targetColumnId, 10), position: targetPosition }),
+              body: JSON.stringify({ columnId: parseInt(columnId, 10), position })
             });
             updateColumnCounts();
             showToast('Tâche déplacée', 'success');
           } catch (e) {
             showToast(e.message, 'danger');
-            // rollback UI
             evt.from.insertBefore(item, evt.from.children[evt.oldIndex] || null);
           }
         }
       });
     });
 
-    // Columns reordering
     new Sortable(board, {
       animation: 150,
       handle: '[data-handle="column-drag"]',
@@ -184,7 +229,7 @@
         try {
           await apiJson(`/api/project/${projectId}/tasklists/reorder`, {
             method: 'POST',
-            body: JSON.stringify({ columns: ids }),
+            body: JSON.stringify({ columns: ids })
           });
           showToast('Colonnes réordonnées', 'success');
         } catch (e) {
@@ -194,12 +239,23 @@
     });
   }
 
-  // Initialize
   initAddColumn();
   initTaskDetails();
   initDnD();
 })();
+  // ----------------------
+  // Initialization
+  // ----------------------
+  function initKanban() {
+    initAddColumn();
+    initTaskDetails();
+    initDnD();
+    updateColumnCounts();
+    $$('.kanban-column').forEach(attachColumnEvents);
+  }
 
+  document.addEventListener('DOMContentLoaded', initKanban);
+// Removed unnecessary parentheses
 
 // public/js/kanban.js avant les modifications du 20/08/2025
 // import Sortable from 'sortablejs';

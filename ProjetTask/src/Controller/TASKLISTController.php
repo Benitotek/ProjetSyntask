@@ -16,83 +16,28 @@ use App\Form\TaskListType;
 use App\Repository\TaskListRepository;
 use Doctrine\Migrations\Version\Version;
 
-// Test Version 3 a voir fait le 10/07/2025
-// #[Route('/tasklist')]
+/**
+ * Controller pour gérer les colonnes de tâches (TaskList) dans un project
+ */
+
 class TaskListController extends AbstractController
 {
-    /**
-     * Affiche la vue Kanban d'un project
-     */
-    // ATTENTION: la route ne fonctionne pas, Methode entiérement commanter
-    // le 27/07/2025(cause accest Denied sur route project/id/kanban) DOUBLON ICI et PORJECT CONTROLLER!!
-
-    // #[Route('/project/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
-    // public function kanban(
-    //     Project $project,
-    //     TaskListRepository $taskListRepository,
-    //     EntityManagerInterface $entityManager
-    // ): Response {
-    //     // Vérifier que l'utilisateur a le droit de voir ce project
-
-    //     // Utilisation du voter
-    //     // if (!$this->isGranted('PROJECT_VIEW', $project)) {
-    //     //     throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour voir ce projet');
-    //     // }
-    //     // Test du Acl(voter) a la place de ce qui a été fait les lignes au dessues
-    //     $this->denyAccessUnlessGranted('PROJECT_VIEW', $project);
-
-
-    //     // Récupérer les colonnes avec leurs tâches
-    //     $taskLists = $taskListRepository->findByProjectWithTasks($project);
-
-    //     // Si aucune colonne n'existe, en créer par défaut
-    //     if (empty($taskLists)) {
-    //         $this->createDefaultTaskLists($project, $entityManager);
-    //         $taskLists = $taskListRepository->findByProjectWithTasks($project);
-    //     }
-
-    //     // Récupérer les membres du project pour l'assignation des tâches
-    //     $members = $project->getMembres()->toArray();
-    //     if (!in_array($project->getChefproject(), $members)) {
-    //         $members[] = $project->getChefproject();
-    //     }
-
-    //     return $this->render('tasklist/kanban.html.twig', [
-    //         'project' => $project,
-    //         'taskLists' => $taskLists,
-    //         'members' => $members,
-    //     ]);
-    // }
 
     /**
-     * Crée les colonnes par défaut pour un project
+     * Affiche la liste des colonnes d'un project
      */
-    private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
+    #[Route('/tasklists/{id}', name: 'app_tasklist_show', methods: ['GET'])]
+    public function show(TaskList $taskList): Response
     {
-        $defaultLists = [
-            ['nom' => 'À faire', 'couleur' => TaskListColor::ORANGE, 'position' => 1],
-            ['nom' => 'En cours', 'couleur' => TaskListColor::JAUNE, 'position' => 2],
-            ['nom' => 'Terminé', 'couleur' => TaskListColor::VERT, 'position' => 3],
-            ['nom' => 'En retard', 'couleur' => TaskListColor::ROUGE, 'position' => 4]
-        ];
-
-        foreach ($defaultLists as $index => $listData) {
-            $taskList = new TaskList();
-            $taskList->setNom($listData['nom']);
-            $taskList->setPositionColumn($listData['position']);
-            $taskList->setProject($project);
-            $taskList->setCouleur($listData['couleur']);
-
-            $entityManager->persist($taskList);
-        }
-
-        $entityManager->flush();
+        return $this->render('task_list/show.html.twig', [
+            'taskList' => $taskList,
+        ]);
     }
 
     /**
      * Vérifie si l'utilisateur peut voir un project
      */
-    private function canViewProject(Project $project): bool
+    private function canSeeProject(Project $project): bool
     {
         // Toujours vérifier si l'utilisateur existe
         $user = $this->getUser();
@@ -122,17 +67,18 @@ class TaskListController extends AbstractController
     /**
      * Affiche les détails d'une colonne
      */
-    #[Route('/tasklists/{id}', name: 'app_tasklist_show', methods: ['GET'])]
-    public function show(TaskList $taskList): Response
+    #[Route('/tasklist/{id}', name: 'app_tasklist', methods: ['GET'])]
+    public function showTaskList(TaskList $taskList): Response
     {
-        return $this->render('task_list/show.html.twig', [
+        return $this->render('tasklist/show.html.twig', [
             'taskList' => $taskList,
         ]);
     }
+
     /**
      * Affiche le formulaire pour créer une nouvelle colonne
      */
-    #[Route('/project/{projectId}/tasklist/new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
+    #[Route('/project//tasklist/new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
     public function ViewformColumn(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -145,12 +91,14 @@ class TaskListController extends AbstractController
         }
 
         // Vérifier que l'utilisateur a le droit de modifier ce project
+
         if (!$this->isGranted('ROLE_ADMIN') && $project->getChefproject() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Vous n\'avez pas les droits pour modifier ce project');
         }
 
         $taskList = new TaskList();
         $taskList->setProject($project);
+        $taskList->setCouleur(TaskListColor::BLEU); // Couleur par défaut
 
         // DéTERMINERr la position de la nouvelle colonne
         $lastPosition = $entityManager->getRepository(TaskList::class)
@@ -256,7 +204,7 @@ class TaskListController extends AbstractController
     /**
      * Réorganise les colonnes d'un project
      */
-    #[Route('/project/{projectId}/tasklists/reorder', name: 'app_tasklist_reorder', methods: ['POST'])]
+    #[Route('/project/tasklists/reorder', name: 'app_tasklist_reorder', methods: ['POST'])]
     public function reorderColumns(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -300,7 +248,7 @@ class TaskListController extends AbstractController
     /**
      * Création d'une nouvelle colonne dans le kanban
      */
-    #[Route('/new/{projectId}', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
+    #[Route('/project/tasklists//new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
     public function newColum(
         Request $request,
         int $projectId,
@@ -361,7 +309,7 @@ class TaskListController extends AbstractController
     /**
      * Modification d'une colonne
      */
-    #[Route('/{id}/edit', name: 'app_tasklist_edit', methods: ['GET', 'POST'])]
+    #[Route('/project/tasklists/{id}/edit', name: 'app_tasklist_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, TaskList $taskList, EntityManagerInterface $entityManager): Response
     {
         $project = $taskList->getProject();
@@ -406,7 +354,7 @@ class TaskListController extends AbstractController
     /**
      * Suppression d'une colonne
      */
-    #[Route('/{id}', name: 'app_tasklist_delete', methods: ['POST'])]
+    #[Route('/project/tasklists/{id}/delete', name: 'app_tasklist_delete', methods: ['POST'])]
     public function delete(
         Request $request,
         TaskList $taskList,
@@ -457,7 +405,7 @@ class TaskListController extends AbstractController
     /**
      * Réordonner les colonnes (drag & drop)
      */
-    #[Route('/reorder/{projectId}', name: 'app_tasklist_reorder', methods: ['POST'])]
+    #[Route('/project/tasklists/drag/reorder', name: 'app_tasklist_reorder', methods: ['POST'])]
     public function DragDropReorderColumns(
         Request $request,
         int $projectId,
