@@ -6,6 +6,7 @@ use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
 use App\Entity\TaskList;
+use App\Enum\TaskStatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -134,7 +135,7 @@ class TaskRepository extends ServiceEntityRepository
             ->where('t.dateButoir < :today')
             ->andWhere('t.statut != :statut')
             ->setParameter('today', new \DateTime())
-            ->setParameter('statut', 'TERMINER')
+            ->setParameter('statut', TaskStatut::TERMINER) // enum, pas string!Revoir autre au cas ou
             ->orderBy('t.dateButoir', 'ASC')
             ->getQuery()
             ->getResult();
@@ -153,7 +154,7 @@ class TaskRepository extends ServiceEntityRepository
             ->andWhere('t.statut != :statut')
             ->setParameter('today', $today)
             ->setParameter('threeDaysLater', $threeDaysLater)
-            ->setParameter('statut', 'TERMINER')
+            ->setParameter('statut',TaskStatut::TERMINER) // enum
             ->orderBy('t.dateButoir', 'ASC')
             ->getQuery()
             ->getResult();
@@ -315,7 +316,7 @@ class TaskRepository extends ServiceEntityRepository
     public function findByProjectAndUser(int $projectId, UserInterface $user): array
     {
         return $this->createQueryBuilder('t')
-            ->andWhere('t.projet = :projectId')
+            ->andWhere('t.project = :projectId')
             ->andWhere('t.assignedUser = :user')
             ->setParameter('projectId', $projectId)
             ->setParameter('user', $user)

@@ -168,5 +168,80 @@ class KanbanService
             'avgCycleTime' => '2 days', // Example: average cycle time of 2 days
         ];
     }
+    // ATTENTION cette méthode est commentée car etais dans le repository TaskListRepository
+    // Elle a été déplacée dans ce service car elle concerne la logique métier.
+    //Verifier si la methode moveTask au desssus a bien toutes les regles metier
+    //sinon la supprimer pour eviter les doublons
+    // /**
+
+        /**
+     * Déplace une tâche dans une autre colonne et position cible, en appliquant les règles métier
+     * et en garantissant la densité des positions (0..N-1).
+     *
+     * @param Task $task La tâche à modifier
+     * @param TaskList $targetColumn La colonne cible
+     * @param int $targetPosition La position cible
+     * @return Task La tâche modifiée
+     * @throws InvalidArgumentException Si la position cible est invalide ou si la tâche est assignéee
+     */
+    // public function moveTask(Task $task, TaskList $targetColumn, int $targetPosition): Task
+    // {
+    //     $conn = $this->getEntityManager()->getConnection();
+    //     $conn->beginTransaction();
+
+    //     $fromColumn = $task->getTaskList();
+    //     $isFromDone = $this->isDoneColumn($fromColumn);
+    //     $isToDone = $this->isDoneColumn($targetColumn);
+    //     $isToInProgress = $this->isInProgressColumn($targetColumn);
+
+    //     // Règles: Interdire quitter la colonne "Terminé"
+    //     if ($isFromDone && $targetColumn->getId() !== $fromColumn->getId()) {
+    //         throw new InvalidArgumentException('Impossible de sortir une tâche de la colonne Terminé.');
+    //     }
+
+    //     // Règles: Forcer EN_COURS en colonne "En cours"
+    //     if ($isToInProgress) {
+    //         $task->setStatut(TaskStatut::EN_COURS);
+    //     }
+
+    //     // Règles: Passage vers "Terminé" => assignedUser requis + dateFinReelle = now
+    //     if ($isToDone) {
+    //         if ($task->getAssignedUser() === null) {
+    //             throw new InvalidArgumentException('Assigner la tâche avant de la passer en Terminé.');
+    //         }
+    //         if ($task->getDateReelle() === null) {
+    //             $task->setDateReelle(new \DateTime('now'));
+    //         }
+    //     }
+
+    //     // Règles: Interdire passer en "Terminé" si dateFinReelle pas encore renseigné
+    //     if ($isToDone && $task->getDateReelle() === null) {
+    //         throw new InvalidArgumentException('Assigner la date de fin de la tâche avant de la passer en Terminé.');
+    //     }
+
+    //     // Vérifier la position cible
+    //     if ($targetColumn->getId() === $fromColumn->getId() && $targetPosition === $task->getPosition()) {
+    //         // Pas de changement nécessaire
+    //         return $task;
+    //     }
+
+    //     if ($targetPosition < 0) {
+    //         throw new InvalidArgumentException('La position cible doit être >= 0.');
+    //     }
+
+    //     // Ajuster les positions des tâches dans la colonne cible
+    //     $this->adjustTargetColumnPositions($targetColumn, $targetPosition);
+
+    //     // Déplacer la tâche
+    //     $task->setTaskList($targetColumn);
+    //     $task->setPosition($targetPosition);
+
+    //     $this->getEntityManager()->persist($task);
+    //     $this->getEntityManager()->flush();
+
+    //     $conn->commit();
+    //     return $task;
+    // }
+
     
 }

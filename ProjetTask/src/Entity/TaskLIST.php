@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Enum\TaskListColor;
+use App\Enum\TaskStatut;
 use App\Repository\TaskListRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -230,10 +231,10 @@ class TaskList
 
         foreach ($tasks as $task) {
             switch ($task->getStatut()) {
-                case 'TERMINER':
+                case TaskStatut::TERMINER:
                     $completed++;
                     break;
-                case 'EN_COURS':
+                case TaskStatut::EN_COURS:
                     $inProgress++;
                     break;
                 default:
@@ -261,9 +262,9 @@ class TaskList
 
         foreach ($this->getTasks() as $task) {
             if (
-                $task->getdateButoir() &&
-                $task->getStatut() !== 'TERMINER' &&
-                $task->getdateButoir() < $now
+                $task->getDateButoir() &&
+                $task->getStatut() !== TaskStatut::TERMINER &&
+                $task->getDateButoir() < $now
             ) {
                 $overdueTasks[] = $task;
             }
@@ -301,7 +302,7 @@ class TaskList
 
         $mostOverdue = $overdueTasks[0];
         foreach ($overdueTasks as $task) {
-            if ($task->getdateButoir() < $mostOverdue->getdateButoir()) {
+            if ($task->getDateButoir() < $mostOverdue->getDateButoir()) {
                 $mostOverdue = $task;
             }
         }
@@ -323,7 +324,7 @@ class TaskList
         ];
 
         foreach ($this->getTasks() as $task) {
-            if (!$task->getdateButoir() || $task->getStatut() === 'TERMINER') {
+            if (!$task->getDateButoir() || $task->getStatut() === TaskStatut::TERMINER) {
                 $delays['on_time']++;
                 continue;
             }

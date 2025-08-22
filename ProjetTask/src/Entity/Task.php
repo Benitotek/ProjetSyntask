@@ -246,10 +246,10 @@ class Task
      * @return bool true si la tâche est en retard, false sinon
      */
     public function isOverdue(): bool
-    { {
+    { 
             if (!$this->dateButoir) return false;
             return $this->dateButoir < new \DateTime() && $this->getStatut() !== TaskStatut::TERMINER;
-        }
+        
     }
 
     public function getPosition(): int
@@ -433,15 +433,16 @@ class Task
     {
         return $this->parent !== null;
     }
+    //ATTENTION fait doublon avec overdue() plus haut!!Voir si utilisé ailleur?
     /**
      * Vérifie si la tâche est en retard
      */
-    public function TaskisOverdue(): bool
-    {
-        return $this->dateButoir !== null
-            && $this->dateButoir < new \DateTime()
-            && $this->statut !== 'TERMINER';
-    }
+    // public function TaskisOverdue(): bool
+    // {
+    //     return $this->dateButoir !== null
+    //         && $this->dateButoir < new \DateTime()
+    //         && $this->statut !== TaskStatut::TERMINER;
+    // }
 
     /**
      * Vérifie si la tâche arrive à échéance bientôt (dans les 2 jours)

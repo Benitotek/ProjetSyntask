@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Project;
 use App\Entity\TaskList;
 use App\Entity\User;
+use App\Form\ProjectType;
 use App\Form\ProjectTypeForm;
 use App\Form\TaskListType;
 use App\Repository\ProjectRepository;
@@ -83,7 +84,7 @@ class ProjectController extends AbstractController
             ->setDateCreation(new \DateTime())
             ->setCreatedBy($this->getUser());
 
-        $form = $this->createForm(ProjectTypeForm::class, $project, [
+        $form = $this->createForm(ProjectType::class, $project, [
             'userRepository' => $userRepository
         ]);
         $form->handleRequest($request);
@@ -118,7 +119,7 @@ class ProjectController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ProjectVoter::EDIT, $project);
 
-        $form = $this->createForm(ProjectTypeForm::class, $project);
+        $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -165,7 +166,7 @@ class ProjectController extends AbstractController
 
         // Récupération des colonnes avec les tâches/
         //Charge colonnes + tâches en fetch-join (évite N+1 et LazyLoading en vue)
-        
+
         $columns = $taskListRepository->findByProjectWithTasksOrdered($project);
         if (!$columns) {
             // Si aucune colonne n'existe, on en crée 3 par défaut
@@ -177,7 +178,7 @@ class ProjectController extends AbstractController
             $this->addFlash('danger', 'Ce projet est archivé, vous ne pouvez pas le modifier.');
             return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
         }
-        $tasks = $taskListRepository->findTasksByProject($project); // Assuming this method retrieves tasks for the project
+        $tasks = $taskListRepository->findByProject($project); // Assuming this method retrieves tasks for the project
         $kpi = $kanban->computeKpis($project, $tasks); // Pass the correct type
         $kpi = ['percentDone' => 0, 'overdueCount' => 0, 'avgCycleTime' => '—'];
         if ($kpi) {

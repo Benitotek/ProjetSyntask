@@ -58,74 +58,6 @@ class TaskListRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult() ?? 0; // retourne 0 si aucune colonne
     }
-    /**
-     * Déplace une tâche dans une autre colonne et position cible, en appliquant les règles métier
-     * et en garantissant la densité des positions (0..N-1).
-     *
-     * @param Task $task La tâche à modifier
-     * @param TaskList $targetColumn La colonne cible
-     * @param int $targetPosition La position cible
-     * @return Task La tâche modifiée
-     * @throws InvalidArgumentException Si la position cible est invalide ou si la tâche est assignéee
-     */
-    public function moveTask(Task $task, TaskList $targetColumn, int $targetPosition): Task
-    {
-        $conn = $this->getEntityManager()->getConnection();
-        $conn->beginTransaction();
-
-        $fromColumn = $task->getTaskList();
-        $isFromDone = $this->isDoneColumn($fromColumn);
-        $isToDone = $this->isDoneColumn($targetColumn);
-        $isToInProgress = $this->isInProgressColumn($targetColumn);
-
-        // Règles: Interdire quitter la colonne "Terminé"
-        if ($isFromDone && $targetColumn->getId() !== $fromColumn->getId()) {
-            throw new InvalidArgumentException('Impossible de sortir une tâche de la colonne Terminé.');
-        }
-
-        // Règles: Forcer EN_COURS en colonne "En cours"
-        if ($isToInProgress) {
-            $task->setStatut(TaskStatut::EN_COURS);
-        }
-
-        // Règles: Passage vers "Terminé" => assignedUser requis + dateFinReelle = now
-        if ($isToDone) {
-            if ($task->getAssignedUser() === null) {
-                throw new InvalidArgumentException('Assigner la tâche avant de la passer en Terminé.');
-            }
-            if ($task->getDateReelle() === null) {
-                $task->setDateReelle(new \DateTime('now'));
-            }
-        }
-
-        // Règles: Interdire passer en "Terminé" si dateFinReelle pas encore renseigné
-        if ($isToDone && $task->getDateReelle() === null) {
-            throw new InvalidArgumentException('Assigner la date de fin de la tâche avant de la passer en Terminé.');
-        }
-
-        // Vérifier la position cible
-        if ($targetColumn->getId() === $fromColumn->getId() && $targetPosition === $task->getPosition()) {
-            // Pas de changement nécessaire
-            return $task;
-        }
-
-        if ($targetPosition < 0) {
-            throw new InvalidArgumentException('La position cible doit être >= 0.');
-        }
-
-        // Ajuster les positions des tâches dans la colonne cible
-        $this->adjustTargetColumnPositions($targetColumn, $targetPosition);
-
-        // Déplacer la tâche
-        $task->setTaskList($targetColumn);
-        $task->setPosition($targetPosition);
-
-        $this->em->persist($task);
-        $this->em->flush();
-
-        $conn->commit();
-        return $task;
-    }
 
     /**
      * Réorganise les positions des colonnes d'un project
@@ -192,10 +124,10 @@ class TaskListRepository extends ServiceEntityRepository
 
         foreach ($taskLists as $taskList) {
             if (array_key_exists($taskList->getNom(), $defaultColors)) {
-                $taskList->setColor($defaultColors[$taskList->getNom()]);
+                $taskList->setCouleur($defaultColors[$taskList->getNom()]);
             } else {
                 // Assigner une couleur dans l'ordre pour les colonnes personnalisées
-                $taskList->setColor($allColors[$colorIndex % count($allColors)]);
+                $taskList->setCouleur($allColors[$colorIndex % count($allColors)]);
                 $colorIndex++;
             }
         }

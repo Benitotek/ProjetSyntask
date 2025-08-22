@@ -7,30 +7,13 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Project>
- *
- * @method Project|null find($id, $lockMode = null, $lockVersion = null)
- * @method Project|null findOneBy(array $criteria, array $orderBy = null)
- * @method Project[]    findAll()
- * @method Project[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
+
 class ProjectRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Project::class);
     }
-    // MAJ V2-V3 date du 02/07/2025
-
-    /**
-     * Trouve les projects dont un utilisateur est chef ou membre, avec filtrage par statut optionnel
-     * 
-     * @param User $user L'utilisateur concerné
-     * @param string $statut Le statut des projects à retourner ('tous' pour tous les projects)
-     * @return Project[] Retourne un tableau d'objets Project
-     */
-
     /**
      * Trouve les projects récents avec stats
      * 
@@ -264,21 +247,20 @@ class ProjectRepository extends ServiceEntityRepository
     }
     // Trouve les projects par date de fin Réelle
 
-    public function findProjectsBydate_Butoir(\DateTimeInterface $daterelle): array
+    public function findProjectsByDateReelle(\DateTimeInterface $dateReelle): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.datereelle = :datereelle')
-            ->setParameter('datereelle', $daterelle)
+            ->where('p.dateReelle = :dateReelle')
+            ->setParameter('dateReelle', $dateReelle)
             ->getQuery()
             ->getResult();
     }
-    // Trouve les projects par date de fin prévue
 
-    public function findProjectsBydate_ButoirPrevue(\DateTimeInterface $dateButoir): array
+    public function findProjectsByDateButoir(\DateTimeInterface $dateButoir): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.datedateButoir = :datedateButoir')
-            ->setParameter('datedateButoir', $dateButoir)
+            ->where('p.dateButoir = :dateButoir')
+            ->setParameter('dateButoir', $dateButoir)
             ->getQuery()
             ->getResult();
     }
@@ -299,6 +281,3 @@ class ProjectRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 }
-
-
-

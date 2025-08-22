@@ -90,7 +90,7 @@ class TaskController extends AbstractController
             'project' => $project,
             'tasks' => $tasks,
             'task' => $task,
-        ])->setstatutCode(Response::HTTP_OK);
+        ])->setStatusCode(Response::HTTP_OK);
     }
 
     /**
