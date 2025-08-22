@@ -74,7 +74,7 @@ class KanbanService
             throw $e;
         }
 
-        // TODO: Émettre un Domain Event TaskMoved si système d'événements en place
+        $this->em->refresh($task);
 
         return $task;
     }

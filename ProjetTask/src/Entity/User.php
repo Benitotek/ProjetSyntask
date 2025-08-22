@@ -53,8 +53,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     private ?string $email = null;
 
-    // #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
-    // #[Assert\Length(min: 6)]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[Assert\Length(min: 6)]
     #[ORM\Column(type: Types::STRING, length: 255)]
     private ?string $Mdp = null;
 
@@ -92,20 +92,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastLoginAt = null;
 
-    public function getLastLoginAt(): ?\DateTimeInterface
-    {
-        return $this->lastLoginAt;
-    }
-
-    public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): self
-    {
-        $this->lastLoginAt = $lastLoginAt;
-        return $this;
-    }
-
-    /**
-     * @var Collection<int, Activity>
-     */
     #[ORM\OneToMany(mappedBy: "user", targetEntity: Activity::class)]
     private Collection $activities;
 
@@ -174,26 +160,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
     public function getRoles(): array
     {
-        // Si la propriété roles est null ou vide, utiliser un tableau vide
         $roles = $this->roles ?: [];
-
-        // Convertir l'enum en rôles Symfony si nécessaire
         if ($this->role) {
             switch ($this->role) {
                 case UserRole::ADMIN:
-                    $roles[] = 'ROLE_ADMIN';
-                    $roles[] = 'ROLE_DIRECTEUR';
-                    $roles[] = 'ROLE_CHEF_PROJET';
-                    $roles[] = 'ROLE_EMPLOYE';
+                    $roles = array_merge($roles, ['ROLE_ADMIN', 'ROLE_DIRECTEUR', 'ROLE_CHEF_PROJET', 'ROLE_EMPLOYE']);
                     break;
                 case UserRole::DIRECTEUR:
-                    $roles[] = 'ROLE_DIRECTEUR';
-                    $roles[] = 'ROLE_CHEF_PROJET';
-                    $roles[] = 'ROLE_EMPLOYE';
+                    $roles = array_merge($roles, ['ROLE_DIRECTEUR', 'ROLE_CHEF_PROJET', 'ROLE_EMPLOYE']);
                     break;
                 case UserRole::CHEF_PROJET:
-                    $roles[] = 'ROLE_CHEF_PROJET';
-                    $roles[] = 'ROLE_EMPLOYE';
+                    $roles = array_merge($roles, ['ROLE_CHEF_PROJET', 'ROLE_EMPLOYE']);
                     break;
                 case UserRole::MEMBRE:
                 case UserRole::EMPLOYE:
@@ -201,10 +178,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                     break;
             }
         }
-
-        // Garantir que ROLE_USER est toujours présent
         $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
@@ -213,13 +187,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = $roles;
         return $this;
     }
-    /**
-     * Returns an array of roles as expected by Symfony.
-     */
-    // public function getRoles(): array
-    // {
-    //     return [$this->role?->value ?? UserRole::EMPLOYE->value];
-    // }
 
     public function hasRole(string $role): bool
     {
@@ -255,7 +222,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
-        // Clear sensitive data here (if applicable)
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     public function getUserIdentifier(): string
@@ -306,29 +274,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->prenom . ' ' . $this->nom;
     }
 
-    public function getprojectsGeres(): Collection
+    public function getLastLoginAt(): ?\DateTimeInterface
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): self
+    {
+        $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+
+    public function getProjectsGeres(): Collection
     {
         return $this->projectsGeres;
     }
-    public function addprojectGere(Project $project): self
+    public function addProjectGere(Project $project): self
     {
         if (!$this->projectsGeres->contains($project)) {
             $this->projectsGeres->add($project);
             $project->setChefproject($this);
         }
-
         return $this;
     }
-
-    public function removeprojectGere(Project $project): self
+    public function removeProjectGere(Project $project): self
     {
-        if ($this->projectsGeres->removeElement($project)) {
-            // set the owning side to null (unless already changed)
-            if ($project->getChefproject() === $this) {
-                $project->setChefproject(null);
-            }
+        if ($this->projectsGeres->removeElement($project) && $project->getChefproject() === $this) {
+            $project->setChefproject(null);
         }
-
         return $this;
     }
     /**
@@ -338,26 +311,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->tachesAssignees;
     }
-
     public function addTachesAssignee(Task $tache): self
     {
         if (!$this->tachesAssignees->contains($tache)) {
             $this->tachesAssignees->add($tache);
             $tache->setAssignedUser($this);
         }
-
         return $this;
     }
-
     public function removeTachesAssignee(Task $tache): self
     {
-        if ($this->tachesAssignees->removeElement($tache)) {
-            // set the owning side to null (unless already changed)
-            if ($tache->getAssignedUser() === $this) {
-                $tache->setAssignedUser(null);
-            }
+        if ($this->tachesAssignees->removeElement($tache) && $tache->getAssignedUser() === $this) {
+            $tache->setAssignedUser(null);
         }
-
         return $this;
     }
 
@@ -382,102 +348,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->avatar = $avatar;
         return $this;
     }
-
-    /**
-     * @return Collection<int, Activity>
-     */
-    public function getActivities(): Collection
-    {
-        return $this->activities;
-    }
-
-    public function addActivity(Activity $activity): self
-    {
-        if (!$this->activities->contains($activity)) {
-            $this->activities->add($activity);
-            $activity->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeActivity(Activity $activity): self
-    {
-        if ($this->activities->removeElement($activity)) {
-            // set the owning side to null (unless already changed)
-            if ($activity->getUser() === $this) {
-                $activity->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-    /**
-     * Retourne les initiales de l'utilisateur
-     */
-    public function getInitials(): string
-    {
-        return mb_substr($this->prenom, 0, 1) . mb_substr($this->nom, 0, 1);
-    }
-
-    /**
-     * Retourne les tâches non terminées assignées à l'utilisateur
-     */
-    public function getOpenTasks(): array
-    {
-        return $this->tachesAssignees->filter(function (Task $task) {
-            return $task->getStatut() !== 'terminée' && !$task->isOverdue();
-        })->toArray();
-    }
-
-    /**
-     * Retourne les tâches en retard assignées à l'utilisateur
-     */
-    public function getOverdueTasks(): array
-    {
-        return $this->tachesAssignees->filter(function (Task $task) {
-            return $task->isOverdue();
-        })->toArray();
-    }
-
-    /**
-     * Vérifie si l'utilisateur est membre d'un projet spécifique
-     */
-    public function isProjectMember(Project $project): bool
-    {
-        // Si l'utilisateur est le créateur du projet
-        if ($project->getChefproject() === $this) {
-            return true;
-        }
-
-        // Si l'utilisateur est dans la liste des membres
-        if ($project->getMembres()->contains($this)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Vérifie si l'utilisateur est assigné à une tâche spécifique
-     */
-    public function isTaskAssignee(Task $task): bool
-    {
-        return $task->getAssignedUser() === $this;
-    }
-
-    /**
-     * Vérifie si l'utilisateur a le rôle de chef de projet pour un projet spécifique
-     * Vérifie si l'utilisateur est chef de projet (rôle) ET membre du projet
-     */
-    public function isChefProjetOf(Project $project): bool
-    {
-        return $this->hasRole('ROLE_CHEF_PROJET') && $project->getMembres()->contains($this);
-    }
-    public function __toString(): string
-    {
-        return $this->nom . ' ' . $this->prenom;
-    }
     public function getNotifications(): Collection
     {
         return $this->notifications;
@@ -486,19 +356,71 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->notifications->contains($notification)) {
             $this->notifications->add($notification);
-            // $notification->setUser($this) 
-            // ;
         }
         return $this;
     }
     public function removeNotification(Notification $notification): self
     {
-        if ($this->notifications->removeElement($notification)) {
-            // set the owning side to null (unless already changed)
-            if ($notification->getUser() === $this) {
-                $notification->setUser(null);
-            }
+        if ($this->notifications->removeElement($notification) && $notification->getUser() === $this) {
+            $notification->setUser(null);
         }
         return $this;
     }
+
+    public function getActivities(): Collection
+    {
+        return $this->activities;
+    }
+    public function addActivity(Activity $activity): self
+    {
+        if (!$this->activities->contains($activity)) {
+            $this->activities->add($activity);
+            $activity->setUser($this);
+        }
+        return $this;
+    }
+    public function removeActivity(Activity $activity): self
+    {
+        if ($this->activities->removeElement($activity) && $activity->getUser() === $this) {
+            $activity->setUser(null);
+        }
+        return $this;
+    }
+
+    public function getInitials(): string
+    {
+        return mb_strtoupper(mb_substr((string)$this->prenom, 0, 1) . mb_substr((string)$this->nom, 0, 1));
+    }
+
+    public function getOpenTasks(): array
+    {
+        return $this->tachesAssignees->filter(fn(Task $t) => $t->getStatut() !== \App\Enum\TaskStatut::TERMINER && !$t->isOverdue())->toArray();
+    }
+
+    public function getOverdueTasks(): array
+    {
+        return $this->tachesAssignees->filter(fn(Task $t) => $t->isOverdue())->toArray();
+    }
+
+    public function isProjectMember(Project $project): bool
+    {
+        if ($project->getChefproject() === $this) return true;
+        return $project->getMembres()->contains($this);
+    }
+
+    public function isTaskAssignee(Task $task): bool
+    {
+        return $task->getAssignedUser() === $this;
+    }
+
+    public function isChefProjetOf(Project $project): bool
+    {
+        return $this->hasRole('ROLE_CHEF_PROJET') && $project->getMembres()->contains($this);
+    }
+
+    public function __toString(): string
+    {
+        return $this->nom . ' ' . $this->prenom;
+    }
+    
 }
