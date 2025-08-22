@@ -144,7 +144,7 @@
 													{% endif %}
 												</td>
 												<td>
-													<span class="badge bg-{{ project.statut == 'EN_COURS' ? 'success' : (project.statut == 'TERMINER' ? 'primary' : 'warning') }}">
+													<span class="badge bg-{{ project.statut == STATUT_EN_COURS ? 'success' : (project.statut == STATUT_TERMINER ? 'primary' : 'warning') }}">
 														{{ project.statut }}
 													</span>
 												</td>

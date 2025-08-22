@@ -387,9 +387,9 @@
 																</td>
 																<td>
 																	<span	class="badge
-																			{% if project.statut == 'EN_COURS' %}bg-primary
-																			{% elseif project.statut == 'TERMINER' %}bg-success
-																			{% elseif project.statut == 'EN_ATTENTE' %}bg-warning
+																			{% if project.statut == STATUT_EN_COURS %}bg-primary
+																			{% elseif project.statut == STATUT_TERMINER %}bg-success
+																			{% elseif project.statut == STATUT_EN_ATTENTE %}bg-warning
 																		{% else %}bg-secondary{% endif %}">
 																		{{ project.statut|replace({'-': ' '})|title }}
 																	</span>
