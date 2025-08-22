@@ -76,7 +76,7 @@ function loadRecentNotifications() {
     // Afficher un indicateur de chargement
     notificationContent.innerHTML = `
         <div class="text-center p-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <div class="spinner-border spinner-border-sm text-primary" role="statut">
                 <span class="visually-hidden">Chargement...</span>
             </div>
         </div>
@@ -220,14 +220,14 @@ function moveTaskToList(taskId, newListId, position) {
         .then(data => {
             if (data.success) {
                 // Mettre à jour le statut de la tâche dans l'interface
-                if (data.newStatus) {
+                if (data.newstatut) {
                     const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
                     if (taskItem) {
-                        const statusBadge = taskItem.querySelector('.task-status');
-                        if (statusBadge) {
+                        const statutBadge = taskItem.querySelector('.task-statut');
+                        if (statutBadge) {
                             // Mettre à jour le badge de statut avec les nouvelles informations
-                            statusBadge.textContent = data.newStatusLabel;
-                            statusBadge.className = `task-status badge bg-${data.newStatusColor}`;
+                            statutBadge.textContent = data.newstatutLabel;
+                            statutBadge.className = `task-statut badge bg-${data.newstatutColor}`;
                         }
                     }
                 }

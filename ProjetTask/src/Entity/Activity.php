@@ -71,7 +71,7 @@ class Activity
             // Fallback pour les anciens types qui ne correspondent pas à l'enum
             return match ($type) {
                 'project_create', 'project_update', 'project_delete' => 'folder',
-                'task_create', 'task_update', 'task_delete', 'task_status_change', 'task_assign' => 'tasks',
+                'task_create', 'task_update', 'task_delete', 'task_statut_change', 'task_assign' => 'tasks',
                 'user_login', 'user_register' => 'user',
                 'comment_create' => 'comment',
                 default => 'info-circle',
@@ -171,7 +171,7 @@ class Activity
             ActivityType::TASK_CREATE,
             ActivityType::TASK_UPDATE,
             ActivityType::TASK_DELETE,
-            ActivityType::TASK_STATUS_CHANGE,
+            ActivityType::TASK_statut_CHANGE,
             ActivityType::TASK_ASSIGN => '/task/' . $this->target,
 
             ActivityType::USER_LOGIN,

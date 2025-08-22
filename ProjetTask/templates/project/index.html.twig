@@ -154,28 +154,28 @@
                                     </button>
                                 </div>
                                 <div class="filter-tabs">
-                                    <a href="#" class="filter-tab active" data-status="all">
+                                    <a href="#" class="filter-tab active" data-statut="all">
                                         Tous (
                                         <span id="countAll">
                                             {{ projects|length }}
                                         </span>
                                         )
                                     </a>
-                                    <a href="#" class="filter-tab" data-status="EN_ATTENTE">
+                                    <a href="#" class="filter-tab" data-statut="EN_ATTENTE">
                                         En attente (
                                         <span id="countEnAttente">
                                             {{ projects|filter(p => p.statut == 'EN_ATTENTE')|length }}
                                         </span>
                                         )
                                     </a>
-                                    <a href="#" class="filter-tab" data-status="EN_COURS">
+                                    <a href="#" class="filter-tab" data-statut="EN_COURS">
                                         En cours (
                                         <span id="countEnCours">
                                             {{ projects|filter(p => p.statut == 'EN_COURS')|length }}
                                         </span>
                                         )
                                     </a>
-                                    <a href="#" class="filter-tab" data-status="TERMINER">
+                                    <a href="#" class="filter-tab" data-statut="TERMINER">
                                         Terminés (
                                         <span id="countTERMINER">
                                             {{ projects|filter(p => p.statut == 'TERMINER')|length }}
@@ -197,7 +197,7 @@
                                             </button>
                                         </th>
                                         <th>
-                                            <button class="sort-header" data-sort="status">
+                                            <button class="sort-header" data-sort="statut">
                                                 Statut
                                                 <i class="fas fa-sort"></i>
                                             </button>
@@ -227,7 +227,7 @@
                                 </thead>
                                 <tbody id="projectsTableBody">
                                     {% for project in projects %}
-                                        <tr class="project-row" data-project-id="{{ project.id }}" data-status="{{ project.statut }}" data-name="{{ project.titre|lower }}">
+                                        <tr class="project-row" data-project-id="{{ project.id }}" data-statut="{{ project.statut }}" data-name="{{ project.titre|lower }}">
                                             <td class="project-cell">
                                                 <div class="project-info">
                                                     <h4 class="project-name">
@@ -241,7 +241,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="statut-badge statut-{{ project.statut|lower|replace({'-': '_'}) }}" data-project-id="{{ project.id }}" data-current-status="{{ project.statut }}" title="Cliquer pour changer le statut">
+                                                <span class="statut-badge statut-{{ project.statut|lower|replace({'-': '_'}) }}" data-project-id="{{ project.id }}" data-current-statut="{{ project.statut }}" title="Cliquer pour changer le statut">
                                                     {{ project.statut|replace({'-': ' '})|title }}
                                                 </span>
                                             </td>
@@ -384,22 +384,22 @@
                     </div>
                 </div>
                 <!-- Modal de changement de statut -->
-                <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+                <div class="modal fade" id="changestatutModal" tabindex="-1" aria-labelledby="changestatutModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="changeStatusModalLabel">
+                                <h5 class="modal-title" id="changestatutModalLabel">
                                     Changer le statut
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="changeStatusForm">
+                                <form id="changestatutForm">
                                     <div class="mb-3">
-                                        <label for="newStatus" class="form-label">
+                                        <label for="newstatut" class="form-label">
                                             Nouveau statut :
                                         </label>
-                                        <select class="form-select" id="newStatus" name="newStatus">
+                                        <select class="form-select" id="newstatut" name="newstatut">
                                             <option value="EN_ATTENTE">
                                                 En attente
                                             </option>
@@ -409,7 +409,7 @@
                                             <option value="TERMINER">
                                                 Terminé
                                             </option>
-                                            <option value="ARRETERR">
+                                            <option value="ARRETER">
                                                 Arrêté
                                             </option>
                                         </select>
@@ -420,7 +420,7 @@
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                     ANNULER
                                 </button>
-                                <button type="button" class="btn btn-primary" id="confirmChangeStatus">
+                                <button type="button" class="btn btn-primary" id="confirmChangestatut">
                                     Confirmer
                                 </button>
                             </div>
@@ -437,7 +437,7 @@
         let currentFilter = 'all';
         let currentSort = { field: null, direction: 'asc' };
         let projectToDelete = null;
-        let projectToChangeStatus = null;
+        let projectToChangestatut = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             initProjectManagement();
@@ -450,7 +450,7 @@
             initSearch();
             initFilters();
             initSorting();
-            initStatusChange();
+            initstatutChange();
             initProjectDeletion();
             initRefreshButton();
             initTooltips();
@@ -513,13 +513,13 @@
                 const chefName = row.querySelector('.user-info-cell')?.textContent.toLowerCase() || '';
 
                 // Appliquer les filtres de statut et de recherche
-                const statusMatch = currentFilter === 'all' || row.dataset.status === currentFilter;
+                const statutMatch = currentFilter === 'all' || row.dataset.statut === currentFilter;
                 const searchMatch = !query || 
                     projectName.includes(query) || 
                     projectRef.includes(query) || 
                     chefName.includes(query);
 
-                if (statusMatch && searchMatch) {
+                if (statutMatch && searchMatch) {
                     row.style.display = '';
                     row.classList.remove('hidden');
                     visibleCount++;
@@ -560,7 +560,7 @@
                     this.classList.add('active');
 
                     // Appliquer le filtre
-                    currentFilter = this.dataset.status;
+                    currentFilter = this.dataset.statut;
                     const searchQuery = document.getElementById('projectSearch').value.toLowerCase().trim();
                     filterProjects(searchQuery);
                 });

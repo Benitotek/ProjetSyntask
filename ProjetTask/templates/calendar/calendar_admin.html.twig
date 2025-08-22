@@ -62,7 +62,7 @@
 		                // Ajoute une classe selon la priorité et le statut
 		                let res = [];
 		                if(arg.event.extendedProps.priority) res.push('fc-event-' + arg.event.extendedProps.priority);
-		                if(arg.event.extendedProps.status) res.push('fc-event-' + arg.event.extendedProps.status);
+		                if(arg.event.extendedProps.statut) res.push('fc-event-' + arg.event.extendedProps.statut);
 		                if(arg.event.extendedProps.projectTitle) res.push('fc-event-projet-' + arg.event.extendedProps.projectTitle.replace(/\s/g, '_'));
 		                return res;
 		            },
@@ -72,7 +72,7 @@
 		                let html = `<div>
 		                    <strong>${ev.title}</strong>
 		                    <hr>
-		                    <strong>Statut:</strong> ${props.statusLabel}<br>
+		                    <strong>Statut:</strong> ${props.statutLabel}<br>
 		                    <strong>Priorité:</strong> ${props.priorityLabel}<br>
 		                    <strong>Projet:</strong> ${props.projectTitle || 'N/A'}<br>
 		                    <strong>Assigné à:</strong> ${props.assignee?.fullName || ''}<br>

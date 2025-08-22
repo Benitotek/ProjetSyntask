@@ -17,7 +17,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class ProjectTypeForm extends AbstractType
+class ProjectType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -98,6 +98,7 @@ class ProjectTypeForm extends AbstractType
                 ]
             ]);
     }
+
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

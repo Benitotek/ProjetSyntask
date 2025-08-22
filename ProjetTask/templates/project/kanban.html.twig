@@ -142,7 +142,7 @@
 					<option value="">Tous</option>
 					<option value="EN_ATTENTE">En attente</option>
 					<option value="EN_COURS">En cours</option>
-					<option value="TERMINE">Terminé</option>
+					<option value="TERMINER">Terminé</option>
 				</select>
 			</div>
 			<div class="col-md-3">
@@ -189,7 +189,7 @@
 								<li class="kanban-item card mb-2 shadow-sm" role="listitem" data-task-id="{{ task.id }}">
 									<div class="card-body p-2">
 										<div class="d-flex align-items-start justify-content-between">
-											<h6 class="card-title mb-1 me-2 {{ task.statut.value == 'TERMINE' ? 'text-decoration-line-through text-muted' : '' }}">
+											<h6 class="card-title mb-1 me-2 {{ task.statut.value == 'TERMINER' ? 'text-decoration-line-through text-muted' : '' }}">
 												{{ task.title ?? task.titre }}
 											</h6>
 											{% if is_granted('EDIT', project) %}
@@ -213,7 +213,7 @@
 												{% set now = "now"|date('U') %}
 												{% set due = dueDate|date('U') %}
 												{% set diff = due - now %}
-												{% set dueClass = (task.statut.value != 'TERMINE' and diff < 0) ? 'text-danger' : ((task.statut.value != 'TERMINE' and diff < 606024*3) ? 'text-warning' : 'text-muted') %}
+												{% set dueClass = (task.statut.value != 'TERMINER' and diff < 0) ? 'text-danger' : ((task.statut.value != 'TERMINER' and diff < 606024*3) ? 'text-warning' : 'text-muted') %}
 												<span class="{{ dueClass }}">
 													<i class="bi bi-calendar-event me-1"></i>
 													{{ dueDate|date('d/m/Y') }}</span>
@@ -229,7 +229,7 @@
 												<button class="btn btn-sm btn-outline-primary" data-action="task:edit" data-task-id="{{ task.id }}">
 													<i class="bi bi-pencil"></i>
 												</button>
-												<button class="btn btn-sm btn-outline-success" data-action="task:status" data-task-id="{{ task.id }}" data-status="TERMINE" {{ task.statut.value == 'TERMINE' ? 'disabled' : '' }} title="Marquer terminé">
+												<button class="btn btn-sm btn-outline-success" data-action="task:statut" data-task-id="{{ task.id }}" data-statut="TERMINER" {{ task.statut.value == 'TERMINER' ? 'disabled' : '' }} title="Marquer terminé">
 													<i class="bi bi-check2-circle"></i>
 												</button>
 												<div class="dropdown">

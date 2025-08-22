@@ -529,7 +529,7 @@ body {
 }
 
 /* Badges */
-.role-badge, .status-badge {
+.role-badge, .statut-badge {
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 12px;
@@ -562,23 +562,23 @@ body {
     color: var(--danger-color);
 }
 
-/* Status badges */
-.status-actif {
+/* statut badges */
+.statut-actif {
     background: rgba(76, 175, 80, 0.1);
     color: var(--success-color);
 }
 
-.status-inactif {
+.statut-inactif {
     background: rgba(244, 67, 54, 0.1);
     color: var(--danger-color);
 }
 
-.status-absent {
+.statut-absent {
     background: rgba(255, 193, 7, 0.1);
     color: var(--warning-color);
 }
 
-.status-en-congé {
+.statut-en-congé {
     background: rgba(156, 39, 176, 0.1);
     color: #9c27b0;
 }
@@ -1441,7 +1441,7 @@ body {
     }
     
     .role-badge, 
-    .status-badge {
+    .statut-badge {
         padding: 4px 8px;
         font-size: 11px;
     }

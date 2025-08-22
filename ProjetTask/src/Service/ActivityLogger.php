@@ -98,19 +98,19 @@ class ActivityLogger
     /**
      * Enregistre le changement de statut d'une tâche
      */
-    public function logTaskStatusChange(
+    public function logTaskstatutChange(
         User $user,
         string $taskTitle,
         int $taskId,
-        string $oldStatus,
-        string $newStatus,
+        string $oldstatut,
+        string $newstatut,
         Project $project
     ): Activity {
         return $this->logActivity(
             $user,
             'a changé le statut de',
-            'la tâche "' . $taskTitle . '" de "' . $this->getStatusLabel($oldStatus) . '" à "' . $this->getStatusLabel($newStatus) . '"',
-            'task_status',
+            'la tâche "' . $taskTitle . '" de "' . $this->getstatutLabel($oldstatut) . '" à "' . $this->getstatutLabel($newstatut) . '"',
+            'task_statut',
             $taskId,
             $project
         );
@@ -163,15 +163,15 @@ class ActivityLogger
     /**
      * Récupère le libellé d'un statut
      */
-    private function getStatusLabel(string $status): string
+    private function getstatutLabel(string $statut): string
     {
-        return match ($status) {
+        return match ($statut) {
             'A_FAIRE' => 'À faire',
             'EN_COURS' => 'En cours',
             'EN_REVUE' => 'En revue',
             'BLOQUEE' => 'Bloquée',
             'COMPLETEE' => 'Complétée',
-            default => $status,
+            default => $statut,
         };
     }
 
@@ -218,11 +218,11 @@ class ActivityLogger
     }
 }
 
-    // public function logTaskStatusChange(string $taskId, string $taskTitle, string $oldStatus, string $newStatus, ?User $user = null): void
+    // public function logTaskstatutChange(string $taskId, string $taskTitle, string $oldstatut, string $newstatut, ?User $user = null): void
     // {
     //     $this->log(
-    //         ActivityType::TASK_STATUS_CHANGE,
-    //         "a changé le statut de '{$oldStatus}' à '{$newStatus}' pour la tâche",
+    //         ActivityType::TASK_statut_CHANGE,
+    //         "a changé le statut de '{$oldstatut}' à '{$newstatut}' pour la tâche",
     //         $taskId,
     //         "/task/{$taskId}",
     //         $user

@@ -109,9 +109,9 @@ class ApiKanbanController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Colonne invalide'], 400);
         }
 
-        // Règle métier: Terminé -> statut TERMINE + date réelle si manquante
+        // Règle métier: Terminé -> statut TERMINER + date réelle si manquante
         $nameNorm = mb_strtolower($target->getNom() ?? '');
-        if (in_array($nameNorm, ['termine', 'terminé', 'done', 'finished'], true)) {
+        if (in_array($nameNorm, ['terminer', 'terminé', 'done', 'finished'], true)) {
             if (method_exists($task, 'setStatut')) {
                 $task->setStatut(TaskStatut::TERMINER);
             }
@@ -178,7 +178,7 @@ class ApiKanbanController extends AbstractController
 //                     'id' => $project->getId(),
 //                     'name' => $project->getTitre(),
 //                     'description' => $project->getDescription(),
-//                     'status' => $project->getStatut(),
+//                     'statut' => $project->getStatut(),
 //                     'progress' => $project->getProgress()
 //                 ],
 //                 'columns' => []
@@ -438,8 +438,8 @@ class ApiKanbanController extends AbstractController
 //             }
 
 //             // Mettre à jour automatiquement le statut selon la colonne si configuré
-//             if (isset($data['update_status']) && $data['update_status']) {
-//                 $this->updateTaskStatusByColumn($task, $newTaskList);
+//             if (isset($data['update_statut']) && $data['update_statut']) {
+//                 $this->updateTaskstatutByColumn($task, $newTaskList);
 //             }
 
 //             $this->entityManager->flush();
@@ -610,8 +610,8 @@ class ApiKanbanController extends AbstractController
 //             'id' => $task->getId(),
 //             'title' => $task->getTitle(),
 //             'description' => $task->getDescription(),
-//             'status' => $task->getStatut()->value,
-//             'status_label' => $task->getStatut()->label(),
+//             'statut' => $task->getStatut()->value,
+//             'statut_label' => $task->getStatut()->label(),
 //             'priority' => $task->getPriorite()->value,
 //             'priority_label' => $task->getPriorite()->label(),
 //             'position' => $task->getPosition(),
@@ -662,7 +662,7 @@ class ApiKanbanController extends AbstractController
 //         return ($maxPosition ?? 0) + 1;
 //     }
 
-//     private function updateTaskStatusByColumn(Task $task, TaskList $taskList): void
+//     private function updateTaskstatutByColumn(Task $task, TaskList $taskList): void
 //     {
 //         // Logique pour mettre à jour automatiquement le statut selon la colonne
 //         // Cette logique peut être personnalisée selon vos besoins

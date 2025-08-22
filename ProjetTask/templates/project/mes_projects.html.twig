@@ -200,15 +200,15 @@
 				}
 				
 				const projectsHTML = projects.map(project => {
-					const statusClass = project.statut ? project.statut.toLowerCase().replace('-', '_') : 'unknown';
-					const statusText = project.statut ? project.statut.replace('-', ' ') : 'Non défini';
+					const statutClass = project.statut ? project.statut.toLowerCase().replace('-', '_') : 'unknown';
+					const statutText = project.statut ? project.statut.replace('-', ' ') : 'Non défini';
 					
 					return `
 						<div class="project-card">
 							<div class="project-header">
 								<h3 class="project-title">${project.titre || 'Titre non défini'}</h3>
-								<span class="project-statut project-statut-${statusClass}">
-									${statusText}
+								<span class="project-statut project-statut-${statutClass}">
+									${statutText}
 								</span>
 							</div>
 							
@@ -449,7 +449,7 @@
 										</a>
 										{% if current_statut is defined %}
 											{# Utiliser current_statut ici #}
-				{# <span class="badge {% if current_statut == 'en_cours' %}bg-primary{% else %}bg-secondary{% endif %}">
+				{# <span class="badge {% if current_statut == 'EN_COURS' %}bg-primary{% else %}bg-secondary{% endif %}">
 												{{ current_statut }}
 											</span>
 										{% else %} #}

@@ -117,6 +117,7 @@ enum TaskListColor: string
      */
     public static function fromHexColor(string $hexColor): self
     {
+        $hexColor = strtolower($hexColor);
         return match ($hexColor) {
             '#007bff' => self::BLEU,
             '#16cd6eff' => self::VERT,

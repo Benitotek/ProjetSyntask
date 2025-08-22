@@ -121,7 +121,7 @@ class NotificationService
     /**
      * Notifie le changement de statut d'une tâche
      */
-    // public function notifyStatusChange(Task $task, string $oldStatus): void
+    // public function notifystatutChange(Task $task, string $oldstatut): void
     // {
     //     $assignedUser = $task->getAssignedUser();
     //     $creator = $task->getCreatedBy();
@@ -136,10 +136,10 @@ class NotificationService
     //         'Statut de tâche modifié',
     //         sprintf('Le statut de la tâche "%s" a été changé de "%s" à "%s"', 
     //             $task->getTitle(), 
-    //             $this->getStatusLabel($oldStatus),
-    //             $task->getStatusLabel()
+    //             $this->getstatutLabel($oldstatut),
+    //             $task->getstatutLabel()
     //         ),
-    //         'status_change',
+    //         'statut_change',
     //         $taskUrl,
     //         'fa-exchange-alt'
     //     );
@@ -154,10 +154,10 @@ class NotificationService
     //         'Statut de tâche modifié',
     //         sprintf('Le statut de la tâche "%s" a été changé de "%s" à "%s"', 
     //             $task->getTitle(), 
-    //             $this->getStatusLabel($oldStatus),
-    //             $task->getStatusLabel()
+    //             $this->getstatutLabel($oldstatut),
+    //             $task->getstatutLabel()
     //         ),
-    //         'status_change',
+    //         'statut_change',
     //         $taskUrl,
     //         'fa-exchange-alt'
     //     );
@@ -269,15 +269,15 @@ class NotificationService
     /**
      * Récupère le libellé d'un statut
      */
-    private function getStatusLabel(string $status): string
+    private function getstatutLabel(string $statut): string
     {
-        return match ($status) {
+        return match ($statut) {
             'A_FAIRE' => 'À faire',
             'EN_COURS' => 'En cours',
             'EN_REVUE' => 'En revue',
             'BLOQUEE' => 'Bloquée',
             'COMPLETEE' => 'Complétée',
-            default => $status,
+            default => $statut,
         };
     }
 
@@ -288,7 +288,7 @@ class NotificationService
     {
         return match ($type) {
             'task_assigned' => 'fa-tasks',
-            'status_change' => 'fa-exchange-alt',
+            'statut_change' => 'fa-exchange-alt',
             'new_comment' => 'fa-comment',
             'due_soon' => 'fa-clock',
             'project_invitation' => 'fa-user-plus',
@@ -299,7 +299,7 @@ class NotificationService
     }
     //  * Notifie un utilisateur pour un changement de statut de tâche
     //  
-    // public function notifyTaskStatusChange(Task $task, string $oldStatus, string $newStatus): void
+    // public function notifyTaskstatutChange(Task $task, string $oldstatut, string $newstatut): void
     // {
     //     $taskTitle = $task->getTitle();
     //     $assignedUser = $task->getAssignedUser();
@@ -309,7 +309,7 @@ class NotificationService
     //     }
 
     //     $titre = "Statut de tâche modifié";
-    //     $message = "La tâche \"$taskTitle\" est passée de \"$oldStatus\" à \"$newStatus\".";
+    //     $message = "La tâche \"$taskTitle\" est passée de \"$oldstatut\" à \"$newstatut\".";
     //     $lien = "/task/{$task->getId()}";
 
     //     $this->createNotification($assignedUser, $titre, $message, $lien, 'info');

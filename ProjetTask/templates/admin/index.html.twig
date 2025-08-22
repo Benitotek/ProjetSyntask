@@ -188,7 +188,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="status-badge status-{{ user.statut.value|lower|replace({' ': '-'}) }}">
+                                        <span class="statut-badge statut-{{ user.statut.value|lower|replace({' ': '-'}) }}">
                                             <i class="fas fa-circle"></i>
                                             {{ user.statut.value }}
                                         </span>
@@ -226,7 +226,7 @@
                                                     <a href="#" onclick="sendActivationEmail({{ user.id }})">
                                                         <i class="fas fa-envelope"></i> Renvoyer email d'activation
                                                     </a>
-                                                    <a href="#" onclick="toggleUserStatus({{ user.id }})">
+                                                    <a href="#" onclick="toggleUserstatut({{ user.id }})">
                                                         <i class="fas fa-{{ user.statut.value == 'Actif' ? 'pause' : 'play' }}"></i>
                                                         {{ user.statut.value == 'Actif' ? 'Désactiver' : 'Activer' }}
                                                     </a>

@@ -27,7 +27,7 @@ class Task
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre de la tâche est obligatoire")]
     #[Assert\Length(
         min: 3,
@@ -94,55 +94,19 @@ class Task
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['persist'])]
     private Collection $sousTask;
 
-    public function getCreatedBy(): ?User
-    {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(?User $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-        return $this;
-    }
+    #[ORM\Column(nullable: true)]
+    private ?int $nbSousTaches = 0;
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     private ?Project $project = null;
-
 
     // Ajout de cette propriété et ses méthodes associées pour pouvoir m'aider:
     //  -à suivre la date de complétion de la tâche
     //  -faire les vérifications pour le dashboardindex de base au niveau des TeamMember
 
-
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCompletion = null;
 
-    public function getDateCompletion(): ?\DateTimeInterface
-    {
-        return $this->dateCompletion;
-    }
-
-    public function setDateCompletion(?\DateTimeInterface $dateCompletion): self
-    {
-        $this->dateCompletion = $dateCompletion;
-        return $this;
-    }
-
-    /**
-     * Vérifie si la tâche est en retard
-     * 
-     * @return bool true si la tâche est en retard, false sinon
-     */
-    public function isOverdue(): bool
-    {
-        // Si pas de date butoir, la tâche ne peut pas être en retard
-        if (!$this->dateButoir) {
-            return false;
-        }
-
-        // Une tâche est en retard si sa date butoir est dépassée et qu'elle n'est pas terminée
-        return $this->dateButoir < new \DateTime() && $this->statut !== TaskStatut::TERMINER;
-    }
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "tachesAssignees")]
     #[ORM\JoinColumn(name: "assigned_user_id", referencedColumnName: "id", nullable: true)]
@@ -197,18 +161,19 @@ class Task
         if (is_string($this->statut) || is_int($this->statut)) {
             return TaskStatut::from($this->statut);
         }
-        // Default fallback if statut is null or invalid
-        return TaskStatut::EN_ATTENTE;
+
+        return $this->statut ?? TaskStatut::EN_ATTENTE;
     }
-    public function getStatutLabel(): string
-    {
-        return $this->getStatut()->label();
-    }
+    // Removed duplicate method declaration
 
     public function setStatut(TaskStatut $statut): static
     {
         $this->statut = $statut;
         return $this;
+    }
+    public function getStatutLabel(): string
+    {
+        return $this->getStatut()->label();
     }
     public function getPriorite(): TaskPriority
     {
@@ -218,8 +183,8 @@ class Task
         if (is_string($this->priorite) || is_int($this->priorite)) {
             return TaskPriority::from($this->priorite);
         }
-        // Default fallback if priorite is null or invalid
-        return TaskPriority::NORMAL;
+
+        return $this->priorite ?? TaskPriority::NORMAL;
     }
     public function getPrioriteLabel(): string
     {
@@ -264,13 +229,35 @@ class Task
     }
 
 
+    public function getDateCompletion(): ?\DateTimeInterface
+    {
+        return $this->dateCompletion;
+    }
+
+    public function setDateCompletion(?\DateTimeInterface $dateCompletion): self
+    {
+        $this->dateCompletion = $dateCompletion;
+        return $this;
+    }
+
+    /**
+     * Vérifie si la tâche est en retard
+     * 
+     * @return bool true si la tâche est en retard, false sinon
+     */
+    public function isOverdue(): bool
+    { {
+            if (!$this->dateButoir) return false;
+            return $this->dateButoir < new \DateTime() && $this->getStatut() !== TaskStatut::TERMINER;
+        }
+    }
 
     public function getPosition(): int
     {
         return $this->position;
     }
 
-    public function setPosition(int $position): static
+    public function setPosition(int $position): self
     {
         $this->position = $position;
         return $this;
@@ -284,6 +271,17 @@ class Task
     public function setTaskList(?TaskList $taskList): static
     {
         $this->taskList = $taskList;
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
         return $this;
     }
 
@@ -342,7 +340,7 @@ class Task
         return $this->comments;
     }
 
-    public function addComment(Comment $comment): static
+    public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
             $this->comments->add($comment);
@@ -352,7 +350,7 @@ class Task
         return $this;
     }
 
-    public function removeComment(Comment $comment): static
+    public function removeComment(Comment $comment): self
     {
         if ($this->comments->removeElement($comment)) {
             // set the owning side to null (unless already changed)
@@ -372,7 +370,7 @@ class Task
         return $this->tags;
     }
 
-    public function addTag(Tag $tag): static
+    public function addTag(Tag $tag): self
     {
         if (!$this->tags->contains($tag)) {
             $this->tags->add($tag);
@@ -381,7 +379,7 @@ class Task
         return $this;
     }
 
-    public function removeTag(Tag $tag): static
+    public function removeTag(Tag $tag): self
     {
         $this->tags->removeElement($tag);
         return $this;
@@ -474,59 +472,34 @@ class Task
         return $this->project->isMembre($user);
     }
 
-    /**
-     * Retourne le label de priorité pour l'affichage
-     */
-    public function getPriorityLabel(): string
-    {
-        return match ($this->priorite) {
-            'URGENT' => 'Urgente',
-            'HAUTE' => 'Haute',
-            'BASSE' => 'Basse',
-            default => 'Moyenne', // MOYENNE ou autre
-        };
-    }
-
-    /**
-     * Retourne le label de statut pour l'affichage
-     */
+    // Labels d’affichage basés sur enums
     public function getStatusLabel(): string
     {
-        return match ($this->statut) {
-            'A_FAIRE' => 'À faire',
-            'EN_COURS' => 'En cours',
-            'EN_REVUE' => 'En revue',
-            'BLOQUEE' => 'Bloquée',
-            'COMPLETEE' => 'Complétée',
-            default => $this->statut->label(), // Pour les autres cas, on utilise le label de l'énumération
-        };
+        return $this->getStatut()->label();
+    }
+    public function getPriorityLabel(): string
+    {
+        return $this->getPriorite()->label();
     }
 
-    /**
-     * Retourne la classe de couleur correspondant au statut
-     */
     public function getStatusColor(): string
     {
-        return match ($this->statut) {
-            'A_FAIRE' => 'secondary',
-            'EN_COURS' => 'primary',
-            'EN_REVUE' => 'warning',
-            'BLOQUEE' => 'danger',
-            'COMPLETEE' => 'success',
-            default => 'light',
+        return match ($this->getStatut()) {
+            TaskStatut::EN_ATTENTE => 'secondary',
+            TaskStatut::EN_COURS   => 'primary',
+            TaskStatut::EN_PAUSE   => 'warning',
+            TaskStatut::EN_REPRISE => 'info',
+            TaskStatut::TERMINER   => 'success',
+            TaskStatut::ANNULER    => 'danger',
         };
     }
 
-    /**
-     * Retourne la classe de couleur correspondant à la priorité
-     */
     public function getPriorityColor(): string
     {
-        return match ($this->priorite) {
-            'URGENT' => 'danger',
-            'HAUTE' => 'warning',
-            'BASSE' => 'info',
-            default => 'secondary', // MOYENNE ou autre
+        return match ($this->getPriorite()) {
+            TaskPriority::URGENT     => 'danger',
+            TaskPriority::EN_ATTENTE => 'warning',
+            TaskPriority::NORMAL     => 'secondary',
         };
     }
 }

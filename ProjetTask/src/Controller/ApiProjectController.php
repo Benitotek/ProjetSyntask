@@ -184,7 +184,7 @@ public function list(Request $request): JsonResponse
                 isset($data['dateDebut']) ? new \DateTime($data['dateDebut']) : new \DateTime()
             );
             $project->setDateButoir(
-                isset($data['date_Buttoir']) ? new \DateTime($data['date_Buttoir']) : null
+                isset($data['date_Butoir']) ? new \DateTime($data['date_Butoir']) : null
             );
             $project->setCreatedBy($this->getUser());
             $project->setDateCreation(new \DateTime());
@@ -262,8 +262,8 @@ public function list(Request $request): JsonResponse
             if (isset($data['dateDebut'])) {
                 $project->setDateCreation(new \DateTime($data['dateDebut']));
             }
-            if (isset($data['date_Buttoir'])) {
-                $project->setDateButoir(new \DateTime($data['date_Buttoir']));
+            if (isset($data['date_Butoir'])) {
+                $project->setDateButoir(new \DateTime($data['date_Butoir']));
             }
 
             // Validation
@@ -497,7 +497,7 @@ public function list(Request $request): JsonResponse
             'nom' => $project->getTitre(),
             'description' => $project->getDescription(),
             'dateDebut' => $project->getDateCreation()?->format('Y-m-d'),
-            'date_Buttoir' => $project->getDateButoir()?->format('Y-m-d'),
+            'date_Butoir' => $project->getDateButoir()?->format('Y-m-d'),
             'dateCreation' => $project->getDateCreation()?->format('Y-m-d H:i:s'),
             'createdBy' => [
                 'id' => $project->getCreatedBy()?->getId(),
@@ -512,7 +512,7 @@ public function list(Request $request): JsonResponse
                 $data['tasks'][] = [
                     'id' => $task->getId(),
                     'titre' => $task->getTitle(),
-                    'status' => $task->getStatut(),
+                    'statut' => $task->getStatut(),
                     'dueDate' => $task->getDateButoir()?->format('Y-m-d'),
                 ];
             }

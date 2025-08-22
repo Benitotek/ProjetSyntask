@@ -101,7 +101,7 @@
 				<div class="stat-card">
 					<div class="stat-icon">✅</div>
 					<div class="stat-content">
-						<div class="stat-number" id="TERMINERs-projects">{{ projects|filter(p => p.statut == 'TERMINER')|length }}</div>
+						<div class="stat-number" id="TERMINER-projects">{{ projects|filter(p => p.statut == 'TERMINER')|length }}</div>
 						<div class="stat-label">Terminés</div>
 					</div>
 				</div>
@@ -187,7 +187,7 @@
 						</div>
 						<div class="form-group">
 							<label for="projet-date-fin">Date de fin</label>
-							<input type="date" id="projet-date-fin" name="date_Buttoir">
+							<input type="date" id="projet-date-fin" name="date_Butoir">
 						</div>
 					</div>
 					<div class="modal-actions">
@@ -346,10 +346,10 @@
 							${this.renderProgress(project.tasks || [])}
 						</td>
 						<td>
-							${project.date_Buttoir ? `
+							${project.date_Butoir ? `
 								<div class="date-cell">
-									${this.formatDate(project.date_Buttoir)}
-									${this.isOverdue(project.date_Buttoir, project.statut) ? '<span class="overdue-badge">En retard</span>' : ''}
+									${this.formatDate(project.date_Butoir)}
+									${this.isOverdue(project.date_Butoir, project.statut) ? '<span class="overdue-badge">En retard</span>' : ''}
 								</div>
 							` : '<span class="text-muted">Non définie</span>'}
 						</td>
@@ -426,7 +426,7 @@
 					nom: formData.get('nom'),
 					description: formData.get('description'),
 					dateDebut: formData.get('dateDebut'),
-					date_Buttoir: formData.get('date_Buttoir')
+					date_Butoir: formData.get('date_Butoir')
 				};
 
 				try {
@@ -539,9 +539,9 @@
 				return date.toLocaleDateString('fr-FR');
 			}
 
-			isOverdue(date_Buttoir, statut) {
-				if (!date_Buttoir || statut === 'TERMINER') return false;
-				return new Date(date_Buttoir) < new Date();
+			isOverdue(date_Butoir, statut) {
+				if (!date_Butoir || statut === 'TERMINER') return false;
+				return new Date(date_Butoir) < new Date();
 			}
 
 			renderTeamAvatars(members) {
@@ -573,7 +573,7 @@
 				}
 
 				const totalTasks = tasks.length;
-				const completedTasks = tasks.filter(t => t.status === 'TERMINER').length;
+				const completedTasks = tasks.filter(t => t.statut === 'TERMINER').length;
 				const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
 				return `

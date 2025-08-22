@@ -24,7 +24,7 @@ class TaskList
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    // Position dans l'ordre des colonnes(changer le float pour un int)
+    // Position dans l'ordre des colonnes
     #[ORM\Column(nullable: true)]
     private ?int $position = null;
 
@@ -55,7 +55,7 @@ class TaskList
     {
         $this->tasks = new ArrayCollection();
         $this->dateTime = new \DateTime();
-        $this->couleur = TaskListColor::VERT->value; // Stocke la valeur string, pas l'enum
+        $this->couleur = TaskListColor::VERT->value;
     }
 
     public function getId(): ?int
@@ -121,35 +121,24 @@ class TaskList
         $this->dateTime = $dateTime;
         return $this;
     }
-    // Correction des méthodes pour l'enum
+    // Enum exposée en API publique
     public function getCouleur(): ?TaskListColor
     {
         return $this->couleur ? TaskListColor::tryFrom($this->couleur) : null;
     }
 
-    public function setCouleur(?TaskListColor $couleur): static
+    public function setCouleur(?TaskListColor $couleur): self
     {
         $this->couleur = $couleur?->value;
         return $this;
     }
-
-    // public function getCouleur(): ?TaskListColor
-    // {
-    //     return $this->couleur;
-    // }
-
-    // public function setCouleur(?TaskListColor $couleur): static
-    // {
-    //     $this->couleur = $couleur;
-    //     return $this;
-    // }
 
     public function getProject(): ?Project
     {
         return $this->project;
     }
 
-    public function setProject(?Project $project): static
+    public function setProject(?Project $project): self
     {
         $this->project = $project;
 
@@ -164,7 +153,7 @@ class TaskList
         return $this->tasks;
     }
 
-    public function addTask(Task $task): static
+    public function addTask(Task $task): self
     {
         if (!$this->tasks->contains($task)) {
             $this->tasks->add($task);
@@ -174,10 +163,10 @@ class TaskList
         return $this;
     }
 
-    public function removeTask(Task $task): static
+    public function removeTask(Task $task): self
     {
         if ($this->tasks->removeElement($task)) {
-            // set the owning side to null (unless already changed)
+
             if ($task->getTaskList() === $this) {
                 $task->setTaskList(null);
             }
@@ -194,22 +183,17 @@ class TaskList
     public function calculateAutoColor(): TaskListColor
     {
         $tasks = $this->getTasks();
-
-        if ($tasks->isEmpty()) {
-            return TaskListColor::VERT;
-        }
+        if ($tasks->isEmpty()) return TaskListColor::VERT;
 
         $maxDelay = 0;
         $now = new \DateTime();
-
         foreach ($tasks as $task) {
-            if ($task->getdateButoir() && $task->getStatut() !== 'TERMINER') {
-                $delay = $now->diff($task->getdateButoir());
-                $delayDays = $delay->invert ? $delay->days : 0;
-                $maxDelay = max($maxDelay, $delayDays);
+            if ($task->getDateButoir() && $task->getStatut()->value !== 'TERMINER') {
+                $diff = $now->diff($task->getDateButoir());
+                $days = $diff->invert ? $diff->days : 0;
+                $maxDelay = max($maxDelay, (int)$days);
             }
         }
-
         return TaskListColor::calculateByDelay($maxDelay);
     }
 
@@ -219,7 +203,7 @@ class TaskList
     public function updateAutoColor(): void
     {
         $this->setCouleur($this->calculateAutoColor());
-        // $this->couleur = $this->calculateAutoColor();
+        
     }
 
     /**

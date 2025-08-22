@@ -12,7 +12,7 @@ enum ActivityType: string
     case TASK_CREATE = 'task_create';
     case TASK_UPDATE = 'task_update';
     case TASK_DELETE = 'task_delete';
-    case TASK_STATUS_CHANGE = 'task_status_change';
+    case TASK_statut_CHANGE = 'task_statut_change';
     case TASK_ASSIGN = 'task_assign';
     case TASK_COMMENT = 'task_comment'; // ← ajoute cette ligne
     // ... autres cas
@@ -37,7 +37,7 @@ enum ActivityType: string
             self::TASK_CREATE => 'Création de tâche',
             self::TASK_UPDATE => 'Mise à jour de tâche',
             self::TASK_DELETE => 'Suppression de tâche',
-            self::TASK_STATUS_CHANGE => 'Changement de statut de tâche',
+            self::TASK_statut_CHANGE => 'Changement de statut de tâche',
             self::TASK_ASSIGN => 'Attribution de tâche',
             self::TASK_COMMENT => 'Commentaire sur la tâche', // �� ajoute cette ligne
 
@@ -58,7 +58,7 @@ enum ActivityType: string
         return match ($this) {
             self::PROJECT_CREATE, self::PROJECT_UPDATE, self::PROJECT_DELETE => 'fa-folder',
             self::TASK_CREATE, self::TASK_UPDATE, self::TASK_DELETE,
-            self::TASK_STATUS_CHANGE, self::TASK_ASSIGN => 'fa-tasks',
+            self::TASK_statut_CHANGE, self::TASK_ASSIGN => 'fa-tasks',
             self::USER_LOGIN, self::USER_REGISTER => 'fa-user',
             self::COMMENT_CREATE => 'fa-comment',
             default => 'fa-info-circle',

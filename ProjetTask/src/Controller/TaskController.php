@@ -69,7 +69,7 @@ class TaskController extends AbstractController
     //             // Passer l'utilisateur pour les permissions
     //             'user' => $user,
     //             'task' => $task,
-    //         ])->setStatusCode(Response::HTTP_OK);
+    //         ])->setstatutCode(Response::HTTP_OK);
     //     }
     /**
      * Liste des tâches d'un project
@@ -90,7 +90,7 @@ class TaskController extends AbstractController
             'project' => $project,
             'tasks' => $tasks,
             'task' => $task,
-        ])->setStatusCode(Response::HTTP_OK);
+        ])->setstatutCode(Response::HTTP_OK);
     }
 
     /**
@@ -180,34 +180,34 @@ class TaskController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-    #[Route('/task/{id}/status', name: 'app_task_status_change', methods: ['POST'])]
-    public function changeStatus(
+    #[Route('/task/{id}/statut', name: 'app_task_statut_change', methods: ['POST'])]
+    public function changestatut(
         Task $task,
         Request $request,
         EntityManagerInterface $entityManager,
         ActivityLogger $activityLogger
     ): Response {
-        $oldStatus = $task->getStatut()->label();
-        $newStatus = $request->request->get('status');
+        $oldstatut = $task->getStatut()->label();
+        $newstatut = $request->request->get('statut');
 
         // Convertir la valeur en enum TaskStatut
         try {
-            $enumStatus = TaskStatut::from($newStatus);
+            $enumstatut = TaskStatut::from($newstatut);
         } catch (\ValueError $e) {
             throw $this->createNotFoundException('Statut de tâche invalide');
         }
 
         // Mettre à jour le statut
-        $task->setStatut($enumStatus);
+        $task->setStatut($enumstatut);
         $entityManager->flush();
 
         // Enregistrer l'activité de changement de statut
-        $activityLogger->logTaskStatusChange(
+        $activityLogger->logTaskstatutChange(
             $this->getUser(),
             $task->getTitle(),
             $task->getId(),
-            $oldStatus,
-            $newStatus,
+            $oldstatut,
+            $newstatut,
             $task->getProject()
         );
 

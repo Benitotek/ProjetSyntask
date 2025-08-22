@@ -114,10 +114,10 @@ class TaskType extends AbstractType
 
         // Gestion du statut selon les droits
         if ($options['edit_mode'] && $project && $options['user'] && $project->getMembres()->contains($options['user'])) {
-            $builder->add('status', TextType::class, [
+            $builder->add('statut', TextType::class, [
                 'label' => 'Statut',
                 'required' => true,
-                'attr' => ['class' => 'form-select status-select'],
+                'attr' => ['class' => 'form-select statut-select'],
             ]);
         }
     }
@@ -220,11 +220,11 @@ class TaskType extends AbstractType
 
     //     // Gestion du statut selon les droits
     //     if ($options['edit_mode'] && $project && $project->getMembres()->contains($options['user'])) {
-    //         $builder->add('status', TextType::class, [
+    //         $builder->add('statut', TextType::class, [
     //             'label' => 'Statut',
     //             'required' => true,
     //             'attr' => [
-    //                 'class' => 'form-select status-select'
+    //                 'class' => 'form-select statut-select'
     //             ]
     //         ]);
     //     }

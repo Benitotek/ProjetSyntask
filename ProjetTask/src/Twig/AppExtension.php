@@ -24,7 +24,7 @@ class AppExtension extends AbstractExtension
             // Fallback pour les anciens types qui ne correspondent pas à l'enum
             return match ($type) {
                 'project_create', 'project_update', 'project_delete' => 'folder',
-                'task_create', 'task_update', 'task_delete', 'task_status_change', 'task_assign' => 'tasks',
+                'task_create', 'task_update', 'task_delete', 'task_statut_change', 'task_assign' => 'tasks',
                 'user_login', 'user_register' => 'user',
                 'comment_create' => 'comment',
                 default => 'info-circle',

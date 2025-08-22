@@ -15,13 +15,13 @@ class TaskVoter extends Voter
     public const DELETE = 'TASK_DELETE';
     public const CREATE = 'TASK_CREATE';
     public const MOVE = 'TASK_MOVE';
-    public const STATUS = 'TASK_STATUS';
+    public const statut = 'TASK_statut';
 
     public function __construct(private Security $security) {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return    in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::CREATE, self::MOVE, self::STATUS], true)
+        return    in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::CREATE, self::MOVE, self::statut], true)
             && $subject instanceof Task;
     }
 
@@ -65,11 +65,11 @@ class TaskVoter extends Voter
 
             case self::EDIT:
             case self::MOVE:
-            case self::STATUS:
+            case self::statut:
                 if ($isArchived) {
                     return false;
                 }
-                // Project manager, Director, or assignee of the task can edit/move/status
+                // Project manager, Director, or assignee of the task can edit/move/statut
                 return $project && ($project->isManager($user) || $user->hasRole('ROLE_DIRECTEUR') || $task->getAssignedUser()?->getId() === $user->getId());
         }
 

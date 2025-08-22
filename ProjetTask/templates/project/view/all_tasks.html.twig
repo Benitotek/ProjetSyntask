@@ -127,7 +127,7 @@
 											{% endif %}
 										</td>
 										<td>
-											<span class="badge {% if task.statut.value == 'en_cours' %}bg-primary{% elseif task.statut.value == 'TERMINER' %}bg-success{% else %}bg-warning{% endif %}">
+											<span class="badge {% if task.statut.value == 'EN_COURS' %}bg-primary{% elseif task.statut.value == 'TERMINER' %}bg-success{% else %}bg-warning{% endif %}">
 												{{ task.statut.value }}
 											</span>
 										</td>
@@ -203,7 +203,7 @@
 							<div class="col-md-6">
 								<h6>Statut</h6>
 								<p>
-									<span class="badge {% if task.statut.value == 'en_cours' %}bg-primary{% elseif task.statut.value == 'TERMINER' %}bg-success{% else %}bg-warning{% endif %}">
+									<span class="badge {% if task.statut.value == 'EN_COURS' %}bg-primary{% elseif task.statut.value == 'TERMINER' %}bg-success{% else %}bg-warning{% endif %}">
 										{{ task.statut.value }}
 									</span>
 								</p>

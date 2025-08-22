@@ -17,7 +17,7 @@ class Project
     public const STATUT_EN_COURS = 'EN_COURS';
     public const STATUT_TERMINER = 'TERMINER';
     public const STATUT_EN_PAUSE = 'EN_PAUSE';
-    public const STATUT_ARRETER = 'ARRETERR';
+    public const STATUT_ARRETER = 'ARRETER';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -100,15 +100,14 @@ class Project
         $this->activities = new ArrayCollection();
         $this->membres = new ArrayCollection();
         $this->tags = new ArrayCollection();
-        $this->membres = new ArrayCollection();
         $this->taskLists = new ArrayCollection();
-        $this->statut = 'EN_COURS';
+        $this->statut = self::STATUT_EN_COURS;
         $this->tasks = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
     }
     #[ORM\PreUpdate]
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->dateMaj = new \DateTime();
     }

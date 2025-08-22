@@ -142,7 +142,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $qb = $this->createQueryBuilder('u');
 
         return $qb
-            ->leftJoin('u.assignedTasks', 't', 'WITH', 't.status != :completed')
+            ->leftJoin('u.assignedTasks', 't', 'WITH', 't.statut != :completed')
             ->where('u.roles LIKE :role')
             ->groupBy('u.id')
             ->having($qb->expr()->lt('COUNT(t.id)', ':maxTasks'))

@@ -47,7 +47,7 @@ final class ApiTaskController extends AbstractController
         $user = $this->getUser();
         $filters = [
             'project' => $request->query->get('project'),
-            'status' => $request->query->get('status'),
+            'statut' => $request->query->get('statut'),
             'priority' => $request->query->get('priority'),
             'assigned_user' => $request->query->get('assigned_user'),
             'tag' => $request->query->get('tag'),
@@ -123,8 +123,8 @@ final class ApiTaskController extends AbstractController
             $task->setCreatedBy($this->getUser());
 
             // Statut
-            if (isset($data['status'])) {
-                $task->setStatut(TaskStatut::from($data['status']));
+            if (isset($data['statut'])) {
+                $task->setStatut(TaskStatut::from($data['statut']));
             }
 
             // Priorité
@@ -225,13 +225,13 @@ final class ApiTaskController extends AbstractController
                 $task->setDescription($data['description']);
             }
 
-            if (isset($data['status'])) {
-                $oldStatus = $task->getStatut();
-                $newStatus = TaskStatut::from($data['status']);
-                $task->setStatut($newStatus);
+            if (isset($data['statut'])) {
+                $oldstatut = $task->getStatut();
+                $newstatut = TaskStatut::from($data['statut']);
+                $task->setStatut($newstatut);
 
                 // Si la tâche est terminée, on met à jour la date de completion
-                if ($newStatus === TaskStatut::TERMINER && $oldStatus !== TaskStatut::TERMINER) {
+                if ($newstatut === TaskStatut::TERMINER && $oldstatut !== TaskStatut::TERMINER) {
                     $task->setDateCompletion(new \DateTime());
                 }
             }
@@ -510,8 +510,8 @@ final class ApiTaskController extends AbstractController
             'id' => $task->getId(),
             'title' => $task->getTitle(),
             'description' => $task->getDescription(),
-            'status' => $task->getStatut()->value,
-            'status_label' => $task->getStatut()->label(),
+            'statut' => $task->getStatut()->value,
+            'statut_label' => $task->getStatut()->label(),
             'priority' => $task->getPriorite()->value,
             'priority_label' => $task->getPriorite()->label(),
             'position' => $task->getPosition(),

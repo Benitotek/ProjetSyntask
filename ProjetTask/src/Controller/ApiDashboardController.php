@@ -73,7 +73,7 @@ class ApiDashboardController extends AbstractController
                 'id' => $task->getId(),
                 'title' => $task->getTitle(),
                 'dueDate' => $task->getDueDate()?->format('Y-m-d'),
-                'status' => $task->getStatus(),
+                'statut' => $task->getstatut(),
             ];
         }
 
@@ -98,7 +98,7 @@ class ApiDashboardController extends AbstractController
                     'nom' => $task->getAssignedUser()?->getNom()
                 ],
                 'dueDate' => $task->getDateButoir()?->format('Y-m-d'),
-                'status' => $task->getStatut()?->value,
+                'statut' => $task->getStatut()?->value,
                 'priority' => [
                     'value' => $task->getPriorite()?->value,
                     'label' => $task->getPriorite()?->label

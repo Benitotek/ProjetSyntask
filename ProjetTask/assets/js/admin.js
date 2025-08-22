@@ -177,8 +177,8 @@ function sendActivationEmail(userId) {
     });
 }
 
-function toggleUserStatus(userId) {
-    fetch(`/admin/users/${userId}/toggle-status`, {
+function toggleUserstatut(userId) {
+    fetch(`/admin/users/${userId}/toggle-statut`, {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',

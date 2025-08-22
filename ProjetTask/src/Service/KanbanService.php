@@ -5,10 +5,8 @@ namespace App\Service;
 use App\Entity\Task;
 use App\Entity\TaskList; // Column
 use App\Entity\Project;
-use App\Enum\StatutTask;
 use App\Enum\TaskStatut;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\DBAL\Connection;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use RuntimeException;
@@ -17,7 +15,9 @@ class KanbanService
 {
     public function __construct(
         private readonly EntityManagerInterface $em
-    ) {}
+    ) {
+
+    }
 
     /**
      * Déplace une tâche dans une colonne et position cible, en appliquant les règles métier
@@ -75,6 +75,7 @@ class KanbanService
         }
 
         // TODO: Émettre un Domain Event TaskMoved si système d'événements en place
+
         return $task;
     }
 
@@ -136,7 +137,7 @@ class KanbanService
     {
         if (!$column) return false;
         $name = mb_strtolower(trim($column->getNom()));
-        return in_array($name, ['terminé', 'termine', 'done', 'finished'], true);
+        return in_array($name, ['terminé', 'terminer', 'done', 'finished'], true);
     }
 
     private function isInProgressColumn(?TaskList $column): bool
@@ -167,4 +168,5 @@ class KanbanService
             'avgCycleTime' => '2 days', // Example: average cycle time of 2 days
         ];
     }
+    
 }

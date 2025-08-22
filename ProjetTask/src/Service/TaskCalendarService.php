@@ -47,8 +47,8 @@ class TaskCalendarService
                 'start' => $start,
                 'end' => $end,
                 'url' => '/tasks/' . $task->getId(),
-                'status' => $task->getStatut()?->value ?? null,
-                'statusLabel' => $task->getStatut()?->label() ?? '',
+                'statut' => $task->getStatut()?->value ?? null,
+                'statutLabel' => $task->getStatut()?->label() ?? '',
                 'priority' => $task->getPriorite()?->value ?? null,
                 'priorityLabel' => $task->getPriorite()?->label() ?? '',
                 'projectTitle' => $task->getProject()?->getTitre(),
@@ -82,8 +82,8 @@ class TaskCalendarService
                 'start' => $start,
                 'end' => $end,
                 'url' => '/tasks/' . $task->getId(),
-                'status' => $task->getStatut()?->value ?? null,
-                'statusLabel' => $task->getStatut()?->label() ?? '',
+                'statut' => $task->getStatut()?->value ?? null,
+                'statutLabel' => $task->getStatut()?->label() ?? '',
                 'priority' => $task->getPriorite()?->value ?? null,
                 'priorityLabel' => $task->getPriorite()?->label() ?? '',
                 'projectTitle' => $task->getProject()?->getTitre(),
@@ -117,13 +117,13 @@ class TaskCalendarService
                 'title' => $task->getTitle(),
                 'start' => $task->getDateCreation() ? $task->getDateReelle()->format('Y-m-d') : null,
                 'url' => '/task/' . $task->getId(),
-                'backgroundColor' => $this->getColorForStatus($task->getStatus()),
-                'borderColor' => $this->getColorForStatus($task->getStatus()),
+                'backgroundColor' => $this->getColorForstatut($task->getstatut()),
+                'borderColor' => $this->getColorForstatut($task->getstatut()),
                 'textColor' => '#eb5a12ff',
                 'description' => $task->getDescription() ? (strlen($task->getDescription()) > 100 ? substr($task->getDescription(), 0, 97) . '...' : $task->getDescription()) : '',
                 'extendedProps' => [
-                    'status' => $task->getStatus(),
-                    'statusLabel' => $task->getStatusLabel(),
+                    'statut' => $task->getstatut(),
+                    'statutLabel' => $task->getstatutLabel(),
                     'priority' => $task->getPriority(),
                     'priorityLabel' => $task->getPriorityLabel(),
                     'projectId' => $task->getProject() ? $task->getProject()->getId() : null,
@@ -142,9 +142,9 @@ class TaskCalendarService
     /**
      * Récupère la couleur associée à un statut
      */
-    private function getColorForStatus(string $status): string
+    private function getColorForstatut(string $statut): string
     {
-        return match ($status) {
+        return match ($statut) {
             'A_FAIRE' => '#6c757d',  // Gris
             'EN_COURS' => '#0d6efd', // Bleu
             'EN_REVUE' => '#ffc107', // Jaune
@@ -169,8 +169,8 @@ class TaskCalendarService
                 'start'        => $start,
                 'end'          => $end,
                 'url'          => '/tasks/' . $task->getId(),
-                'status'       => $task->getStatut()?->value ?? null,
-                'statusLabel'  => $task->getStatut()?->label() ?? '',
+                'statut'       => $task->getStatut()?->value ?? null,
+                'statutLabel'  => $task->getStatut()?->label() ?? '',
                 'priority'     => $task->getPriorite()?->value ?? null,
                 'priorityLabel' => $task->getPriorite()?->label() ?? '',
                 'projectTitle' => $task->getProject()?->getTitre(),
@@ -205,8 +205,8 @@ class TaskCalendarService
     //             'start'        => $start,
     //             'end'          => $end,
     //             'url'          => '/admin/all/tasks' . $task->getId(),
-    //             'status'       => $task->getStatut()?->value ?? null,
-    //             'statusLabel'  => $task->getStatut()?->getLabel() ?? '',
+    //             'statut'       => $task->getStatut()?->value ?? null,
+    //             'statutLabel'  => $task->getStatut()?->getLabel() ?? '',
     //             'priority'     => $task->getPriorite()?->value ?? null,
     //             'priorityLabel' => $task->getPriorite()?->getLabel() ?? '',
     //             'projectTitle' => $task->getProject()?->getTitre(),

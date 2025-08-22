@@ -37,7 +37,8 @@ class TaskListController extends AbstractController
     /**
      * Vérifie si l'utilisateur peut voir un project
      */
-    private function canSeeProject(Project $project): bool
+   
+    private function canViewProject(Project $project): bool
     {
         // Toujours vérifier si l'utilisateur existe
         $user = $this->getUser();
@@ -64,21 +65,11 @@ class TaskListController extends AbstractController
 
         return false;
     }
-    /**
-     * Affiche les détails d'une colonne
-     */
-    #[Route('/tasklist/{id}', name: 'app_tasklist', methods: ['GET'])]
-    public function showTaskList(TaskList $taskList): Response
-    {
-        return $this->render('tasklist/show.html.twig', [
-            'taskList' => $taskList,
-        ]);
-    }
 
     /**
      * Affiche le formulaire pour créer une nouvelle colonne
      */
-    #[Route('/project//tasklist/new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
+    #[Route('/project/tasklist/new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
     public function ViewformColumn(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -248,7 +239,7 @@ class TaskListController extends AbstractController
     /**
      * Création d'une nouvelle colonne dans le kanban
      */
-    #[Route('/project/tasklists//new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
+    #[Route('/project/tasklists/new', name: 'app_tasklist_new', methods: ['GET', 'POST'])]
     public function newColum(
         Request $request,
         int $projectId,

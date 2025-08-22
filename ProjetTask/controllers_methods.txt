@@ -33,7 +33,7 @@ src\Controller\ApiKanbanController.php:445:    private function formatTaskListDa
 src\Controller\ApiKanbanController.php:472:    private function formatTaskData(Task $task): array
 src\Controller\ApiKanbanController.php:524:    private function getNextColumnPosition(Project $project): int
 src\Controller\ApiKanbanController.php:536:    private function getNextTaskPosition(TaskList $taskList): int
-src\Controller\ApiKanbanController.php:548:    private function updateTaskStatusByColumn(Task $task, TaskList 
+src\Controller\ApiKanbanController.php:548:    private function updateTaskstatutByColumn(Task $task, TaskList 
 $taskList): void
 src\Controller\ApiKanbanController.php:579:    private function formatValidationErrors($errors): array
 src\Controller\ApiProjectController.php:22:    public function __construct(
@@ -213,7 +213,7 @@ EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $r
 src\Controller\TaskController.php:126:    public function markCompleted(Task $task, EntityManagerInterface $em, 
 ActivityLogger $logger): Response
 src\Controller\TaskController.php:141:    public function new(
-src\Controller\TaskController.php:184:    public function changeStatus(
+src\Controller\TaskController.php:184:    public function changestatut(
 src\Controller\TaskController.php:222:    public function show(Task $task): Response
 src\Controller\TaskController.php:240:    public function edit(Request $request, Task $task, EntityManagerInterface 
 $entityManager): Response

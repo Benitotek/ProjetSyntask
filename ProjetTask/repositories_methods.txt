@@ -43,9 +43,9 @@ src\Repository\ProjectRepository.php:228:    public function findActiveProjects(
 src\Repository\ProjectRepository.php:241:    public function findActiveProjectsByUser(User $user): array
 src\Repository\ProjectRepository.php:257:    public function findProjectsByDateCreation(\DateTimeInterface 
 $dateCreation): array
-src\Repository\ProjectRepository.php:267:    public function findProjectsBydate_Buttoir(\DateTimeInterface 
+src\Repository\ProjectRepository.php:267:    public function findProjectsBydate_Butoir(\DateTimeInterface 
 $daterelle): array
-src\Repository\ProjectRepository.php:277:    public function findProjectsBydate_ButtoirPrevue(\DateTimeInterface 
+src\Repository\ProjectRepository.php:277:    public function findProjectsBydate_ButoirPrevue(\DateTimeInterface 
 $dateButoir): array
 src\Repository\ProjectRepository.php:287:    public function findWithKanbanData(int $projectId): ?Project
 src\Repository\ResetPasswordRequestRepository.php:20:    public function __construct(ManagerRegistry $registry)

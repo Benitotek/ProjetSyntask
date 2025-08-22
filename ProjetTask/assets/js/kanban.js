@@ -87,7 +87,7 @@ let currentTaskAssigneeRole = null;
     const toast = document.createElement('div');
     const color = (type === 'success' ? 'success' : type === 'warning' ? 'warning' : type === 'info' ? 'info' : 'danger');
     toast.className = `toast align-items-center text-bg-${color} border-0`;
-    toast.setAttribute('role', 'status');
+    toast.setAttribute('role', 'statut');
     toast.innerHTML = `
       <div class="d-flex">
         <div class="toast-body">${message}</div>
@@ -106,7 +106,7 @@ let currentTaskAssigneeRole = null;
     let data = null;
     try { data = await res.json(); } catch {}
     if (!res.ok || (data && data.success === false)) {
-      throw new Error((data && (data.error || data.message)) || `HTTP ${res.status}`);
+      throw new Error((data && (data.error || data.message)) || `HTTP ${res.statut}`);
     }
     return data;
   }
@@ -270,7 +270,7 @@ let currentTaskAssigneeRole = null;
 // if (!area) return;
 // const toast = document.createElement('div');
 // toast.className = `toast align-items-center text-bg-${type} border-0`;
-// toast.role = 'status';
+// toast.role = 'statut';
 // toast.ariaLive = 'polite';
 // toast.innerHTML = <div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>;
 // area.appendChild(toast);
