@@ -80,41 +80,34 @@ class UserTypeForm extends AbstractType
                 'attr' => ['class' => 'form-select']
             ])
             // NOUVEAU: Utilisation de RepeatedType pour gérer automatiquement la validation
-            ->add('plainPassword', RepeatedType::class, [
-                'type' => PasswordType::class,
-                'mapped' => false,
-                'first_options' => [
-                    'label' => 'Mot de passe',
-                    'attr' => ['class' => 'form-control']
-                ],
-                'second_options' => [
-                    'label' => 'Confirmer le mot de passe',
-                    'attr' => ['class' => 'form-control']
-                ],
-                'invalid_message' => 'Les mots de passe ne correspondent pas.',
-                'constraints' => [
-                    new NotBlank(['message' => 'Le mot de passe est obligatoire']),
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
-                        'max' => 4096,
-                    ]),
-                ],
-            ])
-            ->add('estActif', CheckboxType::class, [
-                'required' => false,
-            ]);
-
-        if (!$isEdit) {
-            $builder->add('avatar', TextType::class, [
-                'label' => 'Avatar (URL)',
-                'required' => false,
-                'attr' => ['class' => 'form-control'],
-                'constraints' => [
-                    new Length(['max' => 255]),
-                ]
-            ]);
-        }
+          ->add('plainPassword', RepeatedType::class, [
+    'type' => PasswordType::class,
+    'mapped' => false,
+    'required' => !$isEdit, // obligatoire seulement en création
+    'first_options' => [
+        'label' => 'Mot de passe',
+        'attr' => ['class' => 'form-control']
+    ],
+    'second_options' => [
+        'label' => 'Confirmer le mot de passe',
+        'attr' => ['class' => 'form-control']
+    ],
+    'invalid_message' => 'Les mots de passe ne correspondent pas.',
+    'constraints' => $isEdit
+        ? [new Length([
+            'min' => 6,
+            'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+            'max' => 4096,
+        ])]
+        : [
+            new NotBlank(['message' => 'Le mot de passe est obligatoire']),
+            new Length([
+                'min' => 6,
+                'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+                'max' => 4096,
+            ]),
+        ],
+    ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

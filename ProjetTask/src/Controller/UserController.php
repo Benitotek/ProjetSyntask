@@ -65,8 +65,8 @@ class UserController extends AbstractController
         $user = new User();
         $form = $this->createForm(UserTypeForm::class, $user, [
             'can_choose_role' => true,
+            'is_edit' => false,
         ]);
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -94,12 +94,15 @@ class UserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
-        $form = $this->createForm(UserTypeForm::class, $user);
+        $form = $this->createForm(UserTypeForm::class, $user, [
+            'can_choose_role' => true,
+            'is_edit' => true,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $plainPassword = $form->get('password')->getData();
-            if ($plainPassword) {
+            $plainPassword = $form->get('plainPassword')->getData();
+            if (!empty($plainPassword)) {
                 $hashedPassword = $passwordHasher->hashPassword($user, $plainPassword);
                 $user->setMdp($hashedPassword);
             }
@@ -107,7 +110,7 @@ class UserController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Utilisateur modifié avec succès.');
-            return $this->redirectToRoute('app_user_index');
+            return $this->redirectToRoute('app_admin');
         }
 
         return $this->render('user/edit.html.twig', [
