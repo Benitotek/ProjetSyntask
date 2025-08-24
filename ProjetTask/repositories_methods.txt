@@ -3,8 +3,7 @@ src\Repository\ActivityRepository.php:20:    public function __construct(Manager
 src\Repository\ActivityRepository.php:24:    public function getStats()
 src\Repository\ActivityRepository.php:35:    public function findRecent(int $limit = 10): array
 src\Repository\ActivityRepository.php:47:    public function findByUser(User $user, int $limit = 10): array
-src\Repository\ActivityRepository.php:61:    public function findByProject(string $projectId, int $limit = 10): 
-array
+src\Repository\ActivityRepository.php:61:    public function findByProject(string $projectId, int $limit = 10): array
 src\Repository\ActivityRepository.php:76:    public function findByTask(string $taskId, int $limit = 10): array
 src\Repository\CommentRepository.php:22:    public function __construct(ManagerRegistry $registry)
 src\Repository\CommentRepository.php:30:    public function findByTask(Task $task): array
@@ -14,122 +13,85 @@ src\Repository\CommentRepository.php:69:    public function findRecentComments(i
 src\Repository\CommentRepository.php:81:    public function findRecentForUser(User $user, int $limit = 10): array
 src\Repository\CommentRepository.php:97:    public function countByTask(Task $task): int
 src\Repository\NotificationRepository.php:20:    public function __construct(ManagerRegistry $registry)
-src\Repository\NotificationRepository.php:28:    public function findUnreadByUser(User $user, int $limit = null): 
-array
+src\Repository\NotificationRepository.php:28:    public function findUnreadByUser(User $user, int $limit = null): array
 src\Repository\NotificationRepository.php:47:    public function countUnreadByUser(User $user): int
-src\Repository\NotificationRepository.php:62:    public function findRecentByUser(User $user, int $limit = 10): 
-array
-src\Repository\NotificationRepository.php:77:    public function deleteOldReadNotifications(\DateTimeInterface 
-$olderThan): int
+src\Repository\NotificationRepository.php:62:    public function findRecentByUser(User $user, int $limit = 10): array
+src\Repository\NotificationRepository.php:77:    public function deleteOldReadNotifications(\DateTimeInterface $olderThan): int
 src\Repository\NotificationRepository.php:93:    //    public function findByExampleField($value): array
 src\Repository\NotificationRepository.php:105:    //    public function findOneBySomeField($value): ?Notification
-src\Repository\ProjectRepository.php:20:    public function __construct(ManagerRegistry $registry)
-src\Repository\ProjectRepository.php:41:    public function findRecentWithStats(?User $user = null, int $limit = 
-5): array
-src\Repository\ProjectRepository.php:67:    public function findByChefDeproject(User $user): array
-src\Repository\ProjectRepository.php:83:    public function findByMembre(User $user): array
-src\Repository\ProjectRepository.php:100:    public function findByAssignedUser(User $user): array
-src\Repository\ProjectRepository.php:117:    public function countAll(): int
-src\Repository\ProjectRepository.php:131:    public function countBystatut(array $statuts): int
-src\Repository\ProjectRepository.php:147:    public function findRecent(int $limit = 5): array
-src\Repository\ProjectRepository.php:161:    public function getProjectsWithBudgetStats(): array
-src\Repository\ProjectRepository.php:171:    public function findProjectsAsMember(User $user): array
-src\Repository\ProjectRepository.php:184:    public function findProjectsAsMemberBystatut(User $user, string 
-$statut): array
-src\Repository\ProjectRepository.php:199:    public function findProjectsByUser(User $user, string $statut = 
-'tous'): array
-src\Repository\ProjectRepository.php:220:    public function findByStatut(string $statut): array
-src\Repository\ProjectRepository.php:228:    public function findActiveProjects(): array
-src\Repository\ProjectRepository.php:241:    public function findActiveProjectsByUser(User $user): array
-src\Repository\ProjectRepository.php:257:    public function findProjectsByDateCreation(\DateTimeInterface 
-$dateCreation): array
-src\Repository\ProjectRepository.php:267:    public function findProjectsBydate_Butoir(\DateTimeInterface 
-$daterelle): array
-src\Repository\ProjectRepository.php:277:    public function findProjectsBydate_ButoirPrevue(\DateTimeInterface 
-$dateButoir): array
-src\Repository\ProjectRepository.php:287:    public function findWithKanbanData(int $projectId): ?Project
+src\Repository\ProjectRepository.php:13:    public function __construct(ManagerRegistry $registry)
+src\Repository\ProjectRepository.php:24:    public function findRecentWithStats(?User $user = null, int $limit = 5): array
+src\Repository\ProjectRepository.php:50:    public function findByChefDeproject(User $user): array
+src\Repository\ProjectRepository.php:66:    public function findByMembre(User $user): array
+src\Repository\ProjectRepository.php:83:    public function findByAssignedUser(User $user): array
+src\Repository\ProjectRepository.php:100:    public function countAll(): int
+src\Repository\ProjectRepository.php:114:    public function countBystatut(array $statuts): int
+src\Repository\ProjectRepository.php:130:    public function findRecent(int $limit = 5): array
+src\Repository\ProjectRepository.php:144:    public function getProjectsWithBudgetStats(): array
+src\Repository\ProjectRepository.php:154:    public function findProjectsAsMember(User $user): array
+src\Repository\ProjectRepository.php:167:    public function findProjectsAsMemberBystatut(User $user, string $statut): array
+src\Repository\ProjectRepository.php:182:    public function findProjectsByUser(User $user, string $statut = 'tous'): array
+src\Repository\ProjectRepository.php:203:    public function findByStatut(string $statut): array
+src\Repository\ProjectRepository.php:211:    public function findActiveProjects(): array
+src\Repository\ProjectRepository.php:224:    public function findActiveProjectsByUser(User $user): array
+src\Repository\ProjectRepository.php:240:    public function findProjectsByDateCreation(\DateTimeInterface $dateCreation): array
+src\Repository\ProjectRepository.php:250:    public function findProjectsByDateReelle(\DateTimeInterface $dateReelle): array
+src\Repository\ProjectRepository.php:259:    public function findProjectsByDateButoir(\DateTimeInterface $dateButoir): array
+src\Repository\ProjectRepository.php:269:    public function findWithKanbanData(int $projectId): ?Project
 src\Repository\ResetPasswordRequestRepository.php:20:    public function __construct(ManagerRegistry $registry)
-src\Repository\ResetPasswordRequestRepository.php:28:    public function createResetPasswordRequest(object $user, 
-\DateTimeInterface $expiresAt, string $selector, string $hashedToken): ResetPasswordRequestInterface
+src\Repository\ResetPasswordRequestRepository.php:28:    public function createResetPasswordRequest(object $user, \DateTimeInterface $expiresAt, string $selector, string $hashedToken): 
+ResetPasswordRequestInterface
 src\Repository\TagRepository.php:16:    public function __construct(ManagerRegistry $registry)
 src\Repository\TagRepository.php:23:    public function findByProject(int|Project $project): array
 src\Repository\TagRepository.php:36:    public function findByNameLike(string $term): array
 src\Repository\TagRepository.php:49:    public function findGlobalTags(): array
 src\Repository\TagRepository.php:61:    public function findMostUsedTags(int $limit = 10): array
-src\Repository\TagRepository.php:74:    public function apiList(TagRepository $tagRepository, ?int $projectId = 
-null): Response
+src\Repository\TagRepository.php:74:    public function apiList(TagRepository $tagRepository, ?int $projectId = null): Response
 src\Repository\TagRepository.php:79:        $formattedTags = array_map(function ($tag) {
 src\Repository\TagRepository.php:97:    //    public function findByExampleField($value): array
 src\Repository\TagRepository.php:109:    //    public function findOneBySomeField($value): ?Tag
-src\Repository\TaskListRepository.php:14:    public function __construct(ManagerRegistry $registry)
-src\Repository\TaskListRepository.php:26:    public function findByProjectWithTasks(Project $project): array
-src\Repository\TaskListRepository.php:44:    public function findMaxPositionByProject(Project $project): int
-src\Repository\TaskListRepository.php:61:    public function reorganizePositions(Project $project): void
-src\Repository\TaskListRepository.php:81:    public function reorderColumns(Project $project, array $columns): void
-src\Repository\TaskListRepository.php:103:    public function updateAutoColorsForProject(Project $project): void
-src\Repository\TaskListRepository.php:142:    // public static function create(ManagerRegistry $registry): self
-src\Repository\TaskListRepository.php:150:    // public function findOneByIdAndProject(int $id, Project $project): 
-?TaskList
-src\Repository\TaskListRepository.php:163://     public function createDefaultColumns(Project $project): void
-src\Repository\TaskListRepository.php:192://     public function findByProject(Project $project): array
-src\Repository\TaskListRepository.php:205://     public function findMaxPositionByProject(Project $project): int
-src\Repository\TaskListRepository.php:220://     public function findByProjectWithTasks(Project $project): array
-src\Repository\TaskListRepository.php:237://     public function reorderColumns(Project $project, array $newOrder): 
-void
-src\Repository\TaskListRepository.php:255://     public function reorganizePositions(Project $project): void
-src\Repository\TaskListRepository.php:271://     public function findWithTaskCounts(Project $project): array
-src\Repository\TaskListRepository.php:287://     public function updateAutoColorsForProject(Project $project): void
-src\Repository\TaskListRepository.php:303://     public function findColumnsWithOverdueTasks(Project $project): 
-array
-src\Repository\TaskListRepository.php:322://     public function getColorStatsForProject(Project $project): array
-src\Repository\TaskListRepository.php:345://     public function findMostDelayedColumn(Project $project): ?TaskList
-src\Repository\TaskRepository.php:18:    public function __construct(ManagerRegistry $registry)
-src\Repository\TaskRepository.php:25:    public function findRecent(int $limit = 10): array
-src\Repository\TaskRepository.php:39:    public function findAllEmployeeTasks(): array
-src\Repository\TaskRepository.php:51:    public function findByProject(Project $project): array
-src\Repository\TaskRepository.php:66:    public function findByAssignedUser(User $user): array
-src\Repository\TaskRepository.php:83:    public function findNextPositionInColumn(TaskList $taskList): int
-src\Repository\TaskRepository.php:98:    public function findOverdue(): array
-src\Repository\TaskRepository.php:113:    public function findTasksWithDeadlineApproaching(): array
-src\Repository\TaskRepository.php:133:    public function reorganizePositionsInColumn(TaskList $column, int 
-$deletedPosition): void
-src\Repository\TaskRepository.php:155:    public function moveTaskToColumn(Task $task, TaskList $newColumn, int 
-$newPosition): void
-src\Repository\TaskRepository.php:223:    public function findByStatut(string $statut): array
-src\Repository\TaskRepository.php:236:    public function findByPriority(string $priority): array
-src\Repository\TaskRepository.php:249:    public function findRecentTasks(int $limit = 10): array
-src\Repository\TaskRepository.php:261:    public function findUpcomingDueDatesForUser(User $user): array
-src\Repository\TaskRepository.php:272:    public function findAssignedToUser(UserInterface $user): array
-src\Repository\TaskRepository.php:282:    public function findByProjectAndUser(int $projectId, UserInterface 
-$user): array
-src\Repository\TaskRepository.php:313://     public function __construct(ManagerRegistry $registry)
-src\Repository\TaskRepository.php:324://     public function findByProject(Project $project): array
-src\Repository\TaskRepository.php:342://     public function findByAssignedUser(User $user): array
-src\Repository\TaskRepository.php:358://     public function findNextPositionInColumn(TaskList $taskList): int
-src\Repository\TaskRepository.php:375://     public function findOverdue(): array
-src\Repository\TaskRepository.php:394://     public function findTasksWithDeadlineApproaching(): array
-src\Repository\TaskRepository.php:417://     public function moveTaskToColumn(Task $task, TaskList $newColumn, int 
-$newPosition): void
-src\Repository\TaskRepository.php:507://     public function reorganizePositionsInColumn(TaskList $column, int 
-$deletedPosition): void
+src\Repository\TaskListRepository.php:16:    public function __construct(ManagerRegistry $registry)
+src\Repository\TaskListRepository.php:22:    public function findByProjectWithTasksOrdered(Project $project): array
+src\Repository\TaskListRepository.php:42:    public function findMaxPositionByProject(Project $project): int
+src\Repository\TaskListRepository.php:52:    public function findLastPositionForProject(Project $project): int
+src\Repository\TaskListRepository.php:67:    public function reorganizePositions(Project $project): void
+src\Repository\TaskListRepository.php:87:    public function reorderColumns(Project $project, array $columns): void
+src\Repository\TaskListRepository.php:109:    public function updateAutoColorsForProject(Project $project): void
+src\Repository\TaskListRepository.php:145://     public function __construct(ManagerRegistry $registry)
+src\Repository\TaskListRepository.php:157://     public function findByProjectWithTasks(Project $project): array
+src\Repository\TaskListRepository.php:172:    // public function findMaxPositionByProject(Project $project): int
+src\Repository\TaskRepository.php:19:    public function __construct(ManagerRegistry $registry)
+src\Repository\TaskRepository.php:28:    public function findByProjectOrdered(Project $project): array
+src\Repository\TaskRepository.php:44:    public function moveTaskToColumn(Task $task, TaskList $target, int $position = 0): void
+src\Repository\TaskRepository.php:59:    public function findRecent(int $limit = 10): array
+src\Repository\TaskRepository.php:73:    public function findAllEmployeeTasks(): array
+src\Repository\TaskRepository.php:85:    public function findByProject(Project $project): array
+src\Repository\TaskRepository.php:100:    public function findByAssignedUser(User $user): array
+src\Repository\TaskRepository.php:117:    public function findNextPositionInColumn(TaskList $taskList): int
+src\Repository\TaskRepository.php:132:    public function findOverdue(): array
+src\Repository\TaskRepository.php:147:    public function findTasksWithDeadlineApproaching(): array
+src\Repository\TaskRepository.php:167:    public function reorganizePositionsInColumn(TaskList $column, int $deletedPosition): void
+src\Repository\TaskRepository.php:189:    public function moveTaskInToNewColumn(Task $task, TaskList $newColumn, int $newPosition): void
+src\Repository\TaskRepository.php:257:    public function findByStatut(string $statut): array
+src\Repository\TaskRepository.php:270:    public function findByPriority(string $priority): array
+src\Repository\TaskRepository.php:283:    public function findRecentTasks(int $limit = 10): array
+src\Repository\TaskRepository.php:295:    public function findUpcomingDueDatesForUser(User $user): array
+src\Repository\TaskRepository.php:306:    public function findAssignedToUser(UserInterface $user): array
+src\Repository\TaskRepository.php:316:    public function findByProjectAndUser(int $projectId, UserInterface $user): array
 src\Repository\UserRepository.php:27:    public function __construct(ManagerRegistry $registry)
 src\Repository\UserRepository.php:31:    public function save(User $entity, bool $flush = false): void
 src\Repository\UserRepository.php:40:    public function remove(User $entity, bool $flush = false): void
-src\Repository\UserRepository.php:52:    public function upgrade(PasswordAuthenticatedUserInterface $user, string 
-$newHashedPassword): void
+src\Repository\UserRepository.php:52:    public function upgrade(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
 src\Repository\UserRepository.php:66:    public function searchByTerm(string $term): array
-src\Repository\UserRepository.php:80:    public function searchNonProjectMembers(string $term, Project $project): 
-array
+src\Repository\UserRepository.php:80:    public function searchNonProjectMembers(string $term, Project $project): array
 src\Repository\UserRepository.php:109:    public function findProjectMembers(Project $project): array
 src\Repository\UserRepository.php:124:    public function findUsersWithTasksInProject(Project $project): array
 src\Repository\UserRepository.php:140:    public function findAvailableEmployees(int $maxTasks = 5): array
 src\Repository\UserRepository.php:159:    public function countByRole(string $roleValue): int
 src\Repository\UserRepository.php:175:    public function findByRole(string $roleValue): array
 src\Repository\UserRepository.php:191:    public function delete(User $user): void
-src\Repository\UserRepository.php:197:    public function updatePassword(PasswordAuthenticatedUserInterface $user, 
-string $newHashedPassword): void
-src\Repository\UserRepository.php:208:    public function upgradePassword(PasswordAuthenticatedUserInterface $user, 
-string $newHashedPassword): void
+src\Repository\UserRepository.php:197:    public function updatePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
+src\Repository\UserRepository.php:208:    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
 src\Repository\UserRepository.php:216:    public function countActive(): int
 src\Repository\UserRepository.php:229:    public function findChefsprojects(): array
 src\Repository\UserRepository.php:243:    public function findActiveUsers(?string $statut = null): array

@@ -1,10 +1,8 @@
 ﻿
 src\Controller\ActivityController.php:20:    public function index(ActivityRepository $activityRepository): Response
 src\Controller\ActivityController.php:35:    public function all(ActivityRepository $activityRepository): Response
-src\Controller\ActivityController.php:46:    public function projectActivities(string $id, ActivityRepository 
-$activityRepository): Response
-src\Controller\ActivityController.php:58:public function activityIndex(ActivityRepository $activityRepository): 
-Response
+src\Controller\ActivityController.php:46:    public function projectActivities(string $id, ActivityRepository $activityRepository): Response
+src\Controller\ActivityController.php:58:public function activityIndex(ActivityRepository $activityRepository): Response
 src\Controller\ActivityController.php:71://     public function index(): Response
 src\Controller\AdminController.php:26:    public function __construct(EmailVerifier $emailVerifier)
 src\Controller\AdminController.php:33:    public function newUser(
@@ -17,46 +15,42 @@ src\Controller\AdminController.php:130:    public function projects(ProjectRepos
 src\Controller\ApiDashboardController.php:19:    public function activityData(
 src\Controller\ApiDashboardController.php:38:    public function recentActivities(
 src\Controller\ApiDashboardController.php:64:    public function upcomingDueDates(
-src\Controller\ApiDashboardController.php:87:    public function assignedTasks(TaskRepository $taskRepository): 
-JsonResponse
-src\Controller\ApiKanbanController.php:26:    public function __construct(
-src\Controller\ApiKanbanController.php:35:    public function getProjectBoard(int $projectId): JsonResponse
-src\Controller\ApiKanbanController.php:90:    public function createColumn(Request $request): JsonResponse
-src\Controller\ApiKanbanController.php:153:    public function updateColumn(int $id, Request $request): JsonResponse
-src\Controller\ApiKanbanController.php:220:    public function deleteColumn(int $id): JsonResponse
-src\Controller\ApiKanbanController.php:266:    public function moveTask(int $id, Request $request): JsonResponse
-src\Controller\ApiKanbanController.php:354:    public function reorderColumns(int $projectId, Request $request): 
-JsonResponse
-src\Controller\ApiKanbanController.php:399:    public function reorderTasks(int $taskListId, Request $request): 
-JsonResponse
-src\Controller\ApiKanbanController.php:445:    private function formatTaskListData(TaskList $taskList): array
-src\Controller\ApiKanbanController.php:472:    private function formatTaskData(Task $task): array
-src\Controller\ApiKanbanController.php:524:    private function getNextColumnPosition(Project $project): int
-src\Controller\ApiKanbanController.php:536:    private function getNextTaskPosition(TaskList $taskList): int
-src\Controller\ApiKanbanController.php:548:    private function updateTaskstatutByColumn(Task $task, TaskList 
-$taskList): void
-src\Controller\ApiKanbanController.php:579:    private function formatValidationErrors($errors): array
+src\Controller\ApiDashboardController.php:87:    public function assignedTasks(TaskRepository $taskRepository): JsonResponse
+src\Controller\ApiKanbanController.php:26:    public function __construct(private EntityManagerInterface $em) {}
+src\Controller\ApiKanbanController.php:29:    public function newColumn(#[MapEntity] Project $project, Request $request, TaskListRepository $tlRepo): JsonResponse
+src\Controller\ApiKanbanController.php:74:    public function reorderColumns(#[MapEntity] Project $project, Request $request, TaskListRepository $tlRepo): JsonResponse
+src\Controller\ApiKanbanController.php:98:    public function moveTask(Task $task, Request $request, TaskListRepository $tlRepo, TaskRepository $tRepo): JsonResponse
+src\Controller\ApiKanbanController.php:143://     public function __construct(
+src\Controller\ApiKanbanController.php:152://     public function getProjectBoard(int $projectId): JsonResponse
+src\Controller\ApiKanbanController.php:207://     public function createColumn(Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:270://     public function updateColumn(int $id, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:337://     public function deleteColumn(int $id): JsonResponse
+src\Controller\ApiKanbanController.php:383://     public function moveTask(int $id, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:471://     public function reorderColumns(int $projectId, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:516://     public function reorderTasks(int $taskListId, Request $request): JsonResponse
+src\Controller\ApiKanbanController.php:562://     private function formatTaskListData(TaskList $taskList): array
+src\Controller\ApiKanbanController.php:589://     private function formatTaskData(Task $task): array
+src\Controller\ApiKanbanController.php:641://     private function getNextColumnPosition(Project $project): int
+src\Controller\ApiKanbanController.php:653://     private function getNextTaskPosition(TaskList $taskList): int
+src\Controller\ApiKanbanController.php:665://     private function updateTaskstatutByColumn(Task $task, TaskList $taskList): void
+src\Controller\ApiKanbanController.php:696://     private function formatValidationErrors($errors): array
 src\Controller\ApiProjectController.php:22:    public function __construct(
-src\Controller\ApiProjectController.php:33:    public function list(Request $request): JsonResponse
-src\Controller\ApiProjectController.php:71:    public function indexView(ProjectRepository $projectRepository): 
-Response
-src\Controller\ApiProjectController.php:84:    public function show(int $id): JsonResponse
-src\Controller\ApiProjectController.php:120:    public function create(Request $request): JsonResponse
-src\Controller\ApiProjectController.php:178:    public function update(int $id, Request $request): JsonResponse
-src\Controller\ApiProjectController.php:254:    public function delete(int $id): JsonResponse
-src\Controller\ApiProjectController.php:293:    public function members(int $id): JsonResponse
-src\Controller\ApiProjectController.php:338:    public function addMember(int $id, Request $request): JsonResponse
-src\Controller\ApiProjectController.php:390:    public function manageMembers(
-src\Controller\ApiProjectController.php:423:    private function handleAddMember(Project $project, $user, 
-EntityManagerInterface $entityManager): void
-src\Controller\ApiProjectController.php:434:    private function handleRemoveMember(Project $project, $user, 
-EntityManagerInterface $entityManager): void
-src\Controller\ApiProjectController.php:445:    private function serializeProject(Project $project, bool $detailed 
-= false): array
-src\Controller\ApiProjectController.php:488:    private function canAccessProject(Project $project): bool
-src\Controller\ApiProjectController.php:513:    private function canEditProject(Project $project): bool
-src\Controller\ApiProjectController.php:533:    private function canDeleteProject(Project $project): bool
-src\Controller\ApiProjectController.php:551:    public function index(): Response
+src\Controller\ApiProjectController.php:33:public function list(Request $request): JsonResponse
+src\Controller\ApiProjectController.php:119:    public function indexView(ProjectRepository $projectRepository): Response
+src\Controller\ApiProjectController.php:132:    public function show(int $id): JsonResponse
+src\Controller\ApiProjectController.php:168:    public function create(Request $request): JsonResponse
+src\Controller\ApiProjectController.php:226:    public function update(int $id, Request $request): JsonResponse
+src\Controller\ApiProjectController.php:302:    public function delete(int $id): JsonResponse
+src\Controller\ApiProjectController.php:341:    public function members(int $id): JsonResponse
+src\Controller\ApiProjectController.php:386:    public function addMember(int $id, Request $request): JsonResponse
+src\Controller\ApiProjectController.php:438:    public function manageMembers(
+src\Controller\ApiProjectController.php:471:    private function handleAddMember(Project $project, $user, EntityManagerInterface $entityManager): void
+src\Controller\ApiProjectController.php:482:    private function handleRemoveMember(Project $project, $user, EntityManagerInterface $entityManager): void
+src\Controller\ApiProjectController.php:493:    private function serializeProject(Project $project, bool $detailed = false): array
+src\Controller\ApiProjectController.php:536:    private function canAccessProject(Project $project): bool
+src\Controller\ApiProjectController.php:561:    private function canEditProject(Project $project): bool
+src\Controller\ApiProjectController.php:581:    private function canDeleteProject(Project $project): bool
+src\Controller\ApiProjectController.php:599:    public function index(): Response
 src\Controller\ApiTaskController.php:32:    public function __construct(
 src\Controller\ApiTaskController.php:45:    public function list(Request $request): JsonResponse
 src\Controller\ApiTaskController.php:63:            $tasksData = array_map(function (Task $task) {
@@ -68,20 +62,15 @@ src\Controller\ApiTaskController.php:332:    public function getComments(int $id
 src\Controller\ApiTaskController.php:366:    public function addComment(int $id, Request $request): JsonResponse
 src\Controller\ApiTaskController.php:420:    public function addTag(int $id, Request $request): JsonResponse
 src\Controller\ApiTaskController.php:468:    public function removeTag(int $id, int $tagId): JsonResponse
-src\Controller\ApiTaskController.php:507:    private function formatTaskData(Task $task, bool $detailed = false): 
-array
+src\Controller\ApiTaskController.php:507:    private function formatTaskData(Task $task, bool $detailed = false): array
 src\Controller\ApiTaskController.php:559:    private function getNextPosition(TaskList $taskList): int
 src\Controller\ApiTaskController.php:571:    private function formatValidationErrors($errors): array
 src\Controller\CalendarController.php:27:    public function __construct(TaskCalendarService $calendarService)
-src\Controller\CalendarController.php:33:    // public function allEmployeeTasks(TaskCalendarService 
-$taskCalendarService): JsonResponse
-src\Controller\CalendarController.php:40:    public function allTasksCalendarAdmin(TaskCalendarService 
-$calendarService): JsonResponse
+src\Controller\CalendarController.php:33:    // public function allEmployeeTasks(TaskCalendarService $taskCalendarService): JsonResponse
+src\Controller\CalendarController.php:40:    public function allTasksCalendarAdmin(TaskCalendarService $calendarService): JsonResponse
 src\Controller\CalendarController.php:50:    public function allTasksCalendar(): Response
-src\Controller\CalendarController.php:60:    public function userTasks(TaskCalendarService $calendarService): 
-JsonResponse
-src\Controller\CalendarController.php:68:    public function projectTasks(int $id, TaskCalendarService 
-$calendarService): JsonResponse
+src\Controller\CalendarController.php:60:    public function userTasks(TaskCalendarService $calendarService): JsonResponse
+src\Controller\CalendarController.php:68:    public function projectTasks(int $id, TaskCalendarService $calendarService): JsonResponse
 src\Controller\CalendarController.php:76:    public function index(ProjectRepository $projectRepository): Response
 src\Controller\CalendarController.php:88:    public function getUserTasks(): Response
 src\Controller\CalendarController.php:96:    public function getProjectTasks(Project $project): Response
@@ -95,164 +84,114 @@ src\Controller\CommentController.php:220:    // public function index(): Respons
 src\Controller\DashboardController.php:32:    public function index(
 src\Controller\DashboardController.php:69:        $completedTasks = count(array_filter($allTasks, function ($task) {
 src\Controller\DashboardController.php:73:        $pendingTasks = count(array_filter($allTasks, function ($task) {
-src\Controller\DashboardController.php:77:        $inProgressTasks = count(array_filter($allTasks, function ($task) 
-{
+src\Controller\DashboardController.php:77:        $inProgressTasks = count(array_filter($allTasks, function ($task) {
 src\Controller\DashboardController.php:116:        usort($dueDates, function ($a, $b) {
-src\Controller\DashboardController.php:129:                $userCompletedTasks = count(array_filter($userTasks, 
-function ($task) {
-src\Controller\DashboardController.php:133:                $userOverdueTasks = count(array_filter($userTasks, 
-function ($task) {
+src\Controller\DashboardController.php:129:                $userCompletedTasks = count(array_filter($userTasks, function ($task) {
+src\Controller\DashboardController.php:133:                $userOverdueTasks = count(array_filter($userTasks, function ($task) {
 src\Controller\HomeController.php:12:    public function index(): Response
 src\Controller\MemberController.php:23:    public function __construct(
 src\Controller\MemberController.php:35:    public function members(Project $project): Response
-src\Controller\MemberController.php:59:    public function addMember(Project $project, Request $request, 
-UserRepository $userRepository): Response
+src\Controller\MemberController.php:59:    public function addMember(Project $project, Request $request, UserRepository $userRepository): Response
 src\Controller\MemberController.php:113:    public function removeMember(
-src\Controller\MemberController.php:186:    public function searchPotentialMembers(Project $project, Request 
-$request, UserRepository $userRepository): Response
-src\Controller\MemberController.php:220:    public function changeMemberRole(Project $project, int $userId, Request 
-$request, UserRepository $userRepository): Response
+src\Controller\MemberController.php:186:    public function searchPotentialMembers(Project $project, Request $request, UserRepository $userRepository): Response
+src\Controller\MemberController.php:220:    public function changeMemberRole(Project $project, int $userId, Request $request, UserRepository $userRepository): Response
 src\Controller\MemberController.php:297:    // public function index(): Response
 src\Controller\NotificationController.php:22:    public function __construct(
-src\Controller\NotificationController.php:32:    public function index(NotificationRepository 
-$notificationRepository): Response
-src\Controller\NotificationController.php:46:    public function markAsRead(Notification $notification, Request 
-$request): Response
+src\Controller\NotificationController.php:32:    public function index(NotificationRepository $notificationRepository): Response
+src\Controller\NotificationController.php:46:    public function markAsRead(Notification $notification, Request $request): Response
 src\Controller\NotificationController.php:76:    public function markAllAsRead(Request $request): Response
-src\Controller\NotificationController.php:96:    public function delete(Notification $notification, Request 
-$request): Response
-src\Controller\NotificationController.php:121:    public function deleteAll(Request $request, 
-NotificationRepository $notificationRepository): Response
-src\Controller\NotificationController.php:147:    public function getUnreadCount(NotificationRepository 
-$notificationRepository): Response
-src\Controller\NotificationController.php:157:    public function getRecent(NotificationRepository 
-$notificationRepository): Response
+src\Controller\NotificationController.php:96:    public function delete(Notification $notification, Request $request): Response
+src\Controller\NotificationController.php:121:    public function deleteAll(Request $request, NotificationRepository $notificationRepository): Response
+src\Controller\NotificationController.php:147:    public function getUnreadCount(NotificationRepository $notificationRepository): Response
+src\Controller\NotificationController.php:157:    public function getRecent(NotificationRepository $notificationRepository): Response
 src\Controller\NotificationController.php:161:        $formattedNotifications = array_map(function ($notification) {
-src\Controller\ProjectController.php:25:    public function __construct(
-src\Controller\ProjectController.php:30:    public function index(ProjectRepository $projectRepository): Response
-src\Controller\ProjectController.php:51:    public function mesProjects(Request $request, ProjectRepository 
-$projectRepository): Response
-src\Controller\ProjectController.php:76:    public function new(Request $request, EntityManagerInterface 
-$entityManager, UserRepository $userRepository): Response
-src\Controller\ProjectController.php:104:    public function show(Project $project): Response
-src\Controller\ProjectController.php:114:    public function edit(Request $request, Project $project, 
-EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:134:    public function delete(Request $request, Project $project, 
-EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:151:    public function kanban(
-src\Controller\ProjectController.php:190:    public function assignManager(
-src\Controller\ProjectController.php:219:private function createDefaultTaskLists(Project $project, 
-EntityManagerInterface $entityManager): void
-src\Controller\ProjectController.php:238:    private function handleAddMember(Project $project, User $user, 
-EntityManagerInterface $entityManager): void
-src\Controller\ProjectController.php:247:    private function handleRemoveMember(Project $project, User $user, 
-EntityManagerInterface $entityManager): void
-src\Controller\ProjectController.php:261:    public function archived(Request $request, Project $project, 
-EntityManagerInterface $entityManager): Response
-src\Controller\ProjectController.php:269:    public function archivedIndex(ProjectRepository $projectRepository): 
-Response
-src\Controller\ProjectController.php:277:    public function archive(Project $project, ProjectRepository $repo)
-src\Controller\ProjectController.php:288:    public function unarchive(Project $project, ProjectRepository $repo)
-src\Controller\RegistrationController.php:25:    public function __construct(private EmailVerifier $emailVerifier) 
-{}
-src\Controller\RegistrationController.php:29:    public function register(Request $request, 
-UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
-src\Controller\RegistrationController.php:57:    public function signup(Request $request, 
-UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
-src\Controller\RegistrationController.php:82:    public function verifyUserEmail(Request $request, 
-TranslatorInterface $translator): Response
+src\Controller\ProjectController.php:29:    public function __construct(
+src\Controller\ProjectController.php:35:    public function index(ProjectRepository $projectRepository): Response
+src\Controller\ProjectController.php:56:    public function mesProjects(Request $request, ProjectRepository $projectRepository): Response
+src\Controller\ProjectController.php:81:    public function new(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
+src\Controller\ProjectController.php:109:    public function show(Project $project): Response
+src\Controller\ProjectController.php:119:    public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
+src\Controller\ProjectController.php:139:    public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
+src\Controller\ProjectController.php:156:    public function kanban(
+src\Controller\ProjectController.php:255:    public function assignManager(
+src\Controller\ProjectController.php:284:    private function createDefaultTaskLists(Project $project, EntityManagerInterface $entityManager): void
+src\Controller\ProjectController.php:303:    private function handleAddMember(Project $project, User $user, EntityManagerInterface $entityManager): void
+src\Controller\ProjectController.php:312:    private function handleRemoveMember(Project $project, User $user, EntityManagerInterface $entityManager): void
+src\Controller\ProjectController.php:326:    public function archived(Request $request, Project $project, EntityManagerInterface $entityManager): Response
+src\Controller\ProjectController.php:334:    public function archivedIndex(ProjectRepository $projectRepository): Response
+src\Controller\ProjectController.php:342:    public function archive(Project $project, ProjectRepository $repo)
+src\Controller\ProjectController.php:353:    public function unarchive(Project $project, ProjectRepository $repo)
+src\Controller\RegistrationController.php:25:    public function __construct(private EmailVerifier $emailVerifier) {}
+src\Controller\RegistrationController.php:29:    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+src\Controller\RegistrationController.php:57:    public function signup(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+src\Controller\RegistrationController.php:82:    public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response
 src\Controller\ReportController.php:20:    public function teamReport(
-src\Controller\ReportController.php:47:                $userTasks = 
-array_filter($taskRepository->findByAssignedUser($teamMember), function ($task) use ($project) {
-src\Controller\ReportController.php:69:                $userTasks = array_filter($userTasks, function ($task) use 
-($date) {
-src\Controller\ReportController.php:75:            $userCompletedTasks = count(array_filter($userTasks, function 
-($task) {
-src\Controller\ReportController.php:79:            $userOverdueTasks = count(array_filter($userTasks, function 
-($task) {
-src\Controller\ReportController.php:91:            $completedTasksWithDates = array_filter($userTasks, function 
-($task) {
+src\Controller\ReportController.php:47:                $userTasks = array_filter($taskRepository->findByAssignedUser($teamMember), function ($task) use ($project) {
+src\Controller\ReportController.php:69:                $userTasks = array_filter($userTasks, function ($task) use ($date) {
+src\Controller\ReportController.php:75:            $userCompletedTasks = count(array_filter($userTasks, function ($task) {
+src\Controller\ReportController.php:79:            $userOverdueTasks = count(array_filter($userTasks, function ($task) {
+src\Controller\ReportController.php:91:            $completedTasksWithDates = array_filter($userTasks, function ($task) {
 src\Controller\ReportController.php:133:        usort($teamPerformance, function ($a, $b) {
 src\Controller\ResetPasswordController.php:28:    public function __construct(
-src\Controller\ResetPasswordController.php:38:    public function request(Request $request, MailerInterface 
-$mailer, TranslatorInterface $translator): Response
+src\Controller\ResetPasswordController.php:38:    public function request(Request $request, MailerInterface $mailer, TranslatorInterface $translator): Response
 src\Controller\ResetPasswordController.php:60:    public function checkEmail(): Response
-src\Controller\ResetPasswordController.php:77:    public function reset(Request $request, 
-UserPasswordHasherInterface $passwordHasher, TranslatorInterface $translator, ?string $token = null): Response
-src\Controller\ResetPasswordController.php:132:    private function processSendingPasswordResetEmail(string 
-$emailFormData, MailerInterface $mailer, TranslatorInterface $translator): RedirectResponse
+src\Controller\ResetPasswordController.php:77:    public function reset(Request $request, UserPasswordHasherInterface $passwordHasher, TranslatorInterface $translator, ?string $token = null): Response
+src\Controller\ResetPasswordController.php:132:    private function processSendingPasswordResetEmail(string $emailFormData, MailerInterface $mailer, TranslatorInterface $translator): RedirectResponse
 src\Controller\SecurityController.php:19:    public function __construct(CsrfTokenManagerInterface $csrf)
 src\Controller\SecurityController.php:32:    public function generateCsrfToken(Request $request): JsonResponse
-src\Controller\SecurityController.php:46:    public function login(AuthenticationUtils $authenticationUtils, 
-Request $request): Response
-src\Controller\SecurityController.php:57:    // public function login(\Symfony\Component\HttpFoundation\Request 
-$request, AuthenticationUtils $authenticationUtils): Response
+src\Controller\SecurityController.php:46:    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
+src\Controller\SecurityController.php:57:    // public function login(\Symfony\Component\HttpFoundation\Request $request, AuthenticationUtils $authenticationUtils): Response
 src\Controller\SecurityController.php:79:    public function logout(): void
 src\Controller\SecurityController.php:86:    public function register(): Response
-src\Controller\SecurityController.php:95:    public function forgotPassword(Request $request, UserRepository 
-$userRepository, MailerInterface $mailer): Response
+src\Controller\SecurityController.php:95:    public function forgotPassword(Request $request, UserRepository $userRepository, MailerInterface $mailer): Response
 src\Controller\TagController.php:21:    public function __construct(EntityManagerInterface $entityManager)
 src\Controller\TagController.php:27:    public function index(TagRepository $tagRepository): Response
 src\Controller\TagController.php:37:    public function new(Request $request): Response
 src\Controller\TagController.php:59:    public function show(Tag $tag): Response
 src\Controller\TagController.php:67:    public function edit(Request $request, Tag $tag): Response
 src\Controller\TagController.php:87:    public function delete(Request $request, Tag $tag): Response
-src\Controller\TagController.php:106:    public function apiList(TagRepository $tagRepository, Request $request): 
-Response
+src\Controller\TagController.php:106:    public function apiList(TagRepository $tagRepository, Request $request): Response
 src\Controller\TagController.php:119:        $formattedTags = array_map(function ($tag) {
 src\Controller\TagController.php:135:    public function apiCreate(Request $request): Response
 src\Controller\TagController.php:173:    public function apiShow(Tag $tag): Response
 src\Controller\TagController.php:184:    public function apiDelete(Request $request, Tag $tag): Response
-src\Controller\TaskController.php:34:    public function index(TaskRepository $taskRepository, TaskListRepository 
-$taskListRepository): Response
+src\Controller\TaskController.php:34:    public function index(TaskRepository $taskRepository, TaskListRepository $taskListRepository): Response
 src\Controller\TaskController.php:54:    //     public function index(TaskRepository $taskRepository): Response
-src\Controller\TaskController.php:79:    public function ProjetTasks(Project $project, TaskRepository 
-$taskRepository): Response
-src\Controller\TaskController.php:101:    public function myTasks(TaskRepository $taskRepository, 
-EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
-src\Controller\TaskController.php:126:    public function markCompleted(Task $task, EntityManagerInterface $em, 
-ActivityLogger $logger): Response
+src\Controller\TaskController.php:79:    public function ProjetTasks(Project $project, TaskRepository $taskRepository): Response
+src\Controller\TaskController.php:101:    public function myTasks(TaskRepository $taskRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
+src\Controller\TaskController.php:126:    public function markCompleted(Task $task, EntityManagerInterface $em, ActivityLogger $logger): Response
 src\Controller\TaskController.php:141:    public function new(
 src\Controller\TaskController.php:184:    public function changestatut(
 src\Controller\TaskController.php:222:    public function show(Task $task): Response
-src\Controller\TaskController.php:240:    public function edit(Request $request, Task $task, EntityManagerInterface 
-$entityManager): Response
+src\Controller\TaskController.php:240:    public function edit(Request $request, Task $task, EntityManagerInterface $entityManager): Response
 src\Controller\TaskController.php:288:    public function moveTask(
 src\Controller\TaskController.php:333:    public function assignUser(
 src\Controller\TaskController.php:387:    public function unassignTask(
 src\Controller\TaskController.php:416:    private function canViewProject(Project $project): bool
 src\Controller\TaskController.php:447:    private function canModifyProject($project): bool
 src\Controller\TaskController.php:467:    private function canAssignTasks($project): bool
-src\Controller\TaskController.php:487:    public function delete(Request $request, Task $task, 
-EntityManagerInterface $entityManager): Response
+src\Controller\TaskController.php:487:    public function delete(Request $request, Task $task, EntityManagerInterface $entityManager): Response
 src\Controller\TaskController.php:532://     public function new(
 src\Controller\TaskController.php:583://     public function edit(
 src\Controller\TaskController.php:628://     public function delete(
 src\Controller\TaskController.php:672://     public function assign(
 src\Controller\TaskController.php:708://     public function changestatut(
 src\Controller\TaskController.php:749://     public function setPriority(
-src\Controller\TaskListController.php:30:    // public function kanban(
-src\Controller\TaskListController.php:70:    private function createDefaultTaskLists(Project $project, 
-EntityManagerInterface $entityManager): void
-src\Controller\TaskListController.php:95:    private function canViewProject(Project $project): bool
-src\Controller\TaskListController.php:126:    public function show(TaskList $taskList): Response
-src\Controller\TaskListController.php:136:    public function ViewformColumn(
-src\Controller\TaskListController.php:191:    public function EditformColumn(
-src\Controller\TaskListController.php:233:    public function deleteColumn(
-src\Controller\TaskListController.php:260:    public function reorderColumns(
-src\Controller\TaskListController.php:304:    public function newColum(
-src\Controller\TaskListController.php:365:    public function edit(Request $request, TaskList $taskList, 
-EntityManagerInterface $entityManager): Response
-src\Controller\TaskListController.php:410:    public function delete(
-src\Controller\TaskListController.php:461:    public function DragDropReorderColumns(
-src\Controller\TaskListController.php:506:    private function canModifyProject($project): bool
+src\Controller\TaskListController.php:30:    public function show(TaskList $taskList): Response
+src\Controller\TaskListController.php:41:    private function canViewProject(Project $project): bool
+src\Controller\TaskListController.php:73:    public function ViewformColumn(
+src\Controller\TaskListController.php:130:    public function EditformColumn(
+src\Controller\TaskListController.php:172:    public function deleteColumn(
+src\Controller\TaskListController.php:199:    public function reorderColumns(
+src\Controller\TaskListController.php:243:    public function newColum(
+src\Controller\TaskListController.php:304:    public function edit(Request $request, TaskList $taskList, EntityManagerInterface $entityManager): Response
+src\Controller\TaskListController.php:349:    public function delete(
+src\Controller\TaskListController.php:400:    public function DragDropReorderColumns(
+src\Controller\TaskListController.php:445:    private function canModifyProject($project): bool
 src\Controller\UserController.php:24:    public function index(UserRepository $userRepository): Response
-src\Controller\UserController.php:39:    public function myProfile(Request $request, EntityManagerInterface $em): 
-Response
+src\Controller\UserController.php:39:    public function myProfile(Request $request, EntityManagerInterface $em): Response
 src\Controller\UserController.php:59:    public function new(
-src\Controller\UserController.php:95:    public function edit(Request $request, User $user, EntityManagerInterface 
-$entityManager, UserPasswordHasherInterface $passwordHasher): Response
-src\Controller\UserController.php:121:    public function delete(Request $request, User $user, 
-EntityManagerInterface $entityManager): Response
+src\Controller\UserController.php:95:    public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
+src\Controller\UserController.php:124:    public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
 
 

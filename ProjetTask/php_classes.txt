@@ -10,7 +10,8 @@ src\Command\UpdateTaskCompletionDatesCommand.php:18:class UpdateTaskCompletionDa
 src\Controller\ActivityController.php:11:class ActivityController extends AbstractController
 src\Controller\AdminController.php:22:class AdminController extends AbstractController
 src\Controller\ApiDashboardController.php:14:class ApiDashboardController extends AbstractController
-src\Controller\ApiKanbanController.php:24:final class ApiKanbanController extends AbstractController
+src\Controller\ApiKanbanController.php:24:class ApiKanbanController extends AbstractController
+src\Controller\ApiKanbanController.php:141:// final class ApiKanbanController extends AbstractController
 src\Controller\ApiProjectController.php:20:final class ApiProjectController extends AbstractController
 src\Controller\ApiTaskController.php:30:final class ApiTaskController extends AbstractController
 src\Controller\CalendarController.php:20:class CalendarController extends AbstractController
@@ -19,14 +20,14 @@ src\Controller\DashboardController.php:28:class DashboardController extends Abst
 src\Controller\HomeController.php:9:final class HomeController extends AbstractController
 src\Controller\MemberController.php:17:class MemberController extends AbstractController
 src\Controller\NotificationController.php:17:class NotificationController extends AbstractController
-src\Controller\ProjectController.php:23:class ProjectController extends AbstractController
+src\Controller\ProjectController.php:27:class ProjectController extends AbstractController
 src\Controller\RegistrationController.php:23:class RegistrationController extends AbstractController
 src\Controller\ReportController.php:16:class ReportController extends AbstractController
 src\Controller\ResetPasswordController.php:24:class ResetPasswordController extends AbstractController
 src\Controller\SecurityController.php:15:class SecurityController extends AbstractController
 src\Controller\TagController.php:17:class TagController extends AbstractController
 src\Controller\TaskController.php:28:class TaskController extends AbstractController
-src\Controller\TaskListController.php:21:class TaskListController extends AbstractController
+src\Controller\TaskListController.php:23:class TaskListController extends AbstractController
 src\Controller\UserController.php:20:class UserController extends AbstractController
 src\Entity\Activity.php:13:class Activity
 src\Entity\Comment.php:16:class Comment
@@ -35,31 +36,28 @@ src\Entity\Project.php:14:class Project
 src\Entity\ResetPasswordRequest.php:11:class ResetPasswordRequest implements ResetPasswordRequestInterface
 src\Entity\Tag.php:13:class Tag
 src\Entity\Task.php:22:class Task
-src\Entity\TaskList.php:14:class TaskList
+src\Entity\TaskList.php:15:class TaskList
 src\Entity\User.php:23:class User implements UserInterface, PasswordAuthenticatedUserInterface
 src\EventListener\UserRoleSynchronizer.php:14:class UserRoleSynchronizer
 src\Form\ChangePasswordForm.php:15:class ChangePasswordForm extends AbstractType
 src\Form\CommentTypeForm.php:15:class CommentTypeForm extends AbstractType
-src\Form\ProjectTypeForm.php:20:class ProjectTypeForm extends AbstractType
+src\Form\ProjectType.php:20:class ProjectType extends AbstractType
 src\Form\RegistrationFormType.php:18:class RegistrationFormType extends AbstractType
 src\Form\ResetPasswordRequestForm.php:11:class ResetPasswordRequestForm extends AbstractType
 src\Form\TagTypeForm.php:17:class TagTypeForm extends AbstractType
-src\Form\TaskListTypeForm.php:16:class TaskListType extends AbstractType
-src\Form\TaskListTypeForm.php:57:// class TaskListTypeForm extends AbstractType
-src\Form\TaskTypeForm.php:27:class TaskType extends AbstractType
+src\Form\TaskListType.php:16:class TaskListType extends AbstractType
+src\Form\TaskType.php:27:class TaskType extends AbstractType
 src\Form\UserTypeForm.php:20:class UserTypeForm extends AbstractType
 src\Repository\ActivityRepository.php:18:class ActivityRepository extends ServiceEntityRepository
 src\Repository\CommentRepository.php:20:class CommentRepository extends ServiceEntityRepository
 src\Repository\NotificationRepository.php:18:class NotificationRepository extends ServiceEntityRepository
-src\Repository\ProjectRepository.php:18:class ProjectRepository extends ServiceEntityRepository
-src\Repository\ResetPasswordRequestRepository.php:16:class ResetPasswordRequestRepository extends 
-ServiceEntityRepository implements ResetPasswordRequestRepositoryInterface
+src\Repository\ProjectRepository.php:11:class ProjectRepository extends ServiceEntityRepository
+src\Repository\ResetPasswordRequestRepository.php:16:class ResetPasswordRequestRepository extends ServiceEntityRepository implements ResetPasswordRequestRepositoryInterface
 src\Repository\TagRepository.php:14:class TagRepository extends ServiceEntityRepository
-src\Repository\TaskListRepository.php:12:class TaskListRepository extends ServiceEntityRepository
-src\Repository\TaskRepository.php:16:class TaskRepository extends ServiceEntityRepository
-src\Repository\TaskRepository.php:311:// class TaskRepository extends ServiceEntityRepository
-src\Repository\UserRepository.php:25:class UserRepository extends ServiceEntityRepository implements 
-PasswordUpgraderInterface
+src\Repository\TaskListRepository.php:14:class TaskListRepository extends ServiceEntityRepository
+src\Repository\TaskListRepository.php:143:// class TaskListRepository extends ServiceEntityRepository
+src\Repository\TaskRepository.php:17:class TaskRepository extends ServiceEntityRepository
+src\Repository\UserRepository.php:25:class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 src\Security\EmailVerifier.php:13:class EmailVerifier
 src\Security\LoginFormAuthenticator.php:19:class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 src\Security\RoleConverter.php:8:class RoleConverter
@@ -68,7 +66,7 @@ src\Security\UserProvider.php:50:        return User::class === $class || is_sub
 src\Security\Voter\ProjectVoter.php:12:class ProjectVoter extends Voter
 src\Security\Voter\TaskVoter.php:11:class TaskVoter extends Voter
 src\Service\ActivityLogger.php:16:class ActivityLogger
-src\Service\KanbanService.php:16:class KanbanService
+src\Service\KanbanService.php:14:class KanbanService
 src\Service\NotificationService.php:13:class NotificationService
 src\Service\NotificationService.php:45:            // ->setIconClass($iconClass ?? $this->getIconForType($type))
 src\Service\TaskCalendarService.php:13:class TaskCalendarService
