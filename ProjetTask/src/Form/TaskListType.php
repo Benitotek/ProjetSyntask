@@ -34,12 +34,9 @@ class TaskListType extends AbstractType
             ])
             ->add('couleur', ChoiceType::class, [
                 'label' => 'Couleur',
-                'choices' => [
-                    'Vert' => TaskListColor::VERT->value,
-                    'Jaune' => TaskListColor::JAUNE->value,
-                    'Orange' => TaskListColor::ORANGE->value,
-                    'Rouge' => TaskListColor::ROUGE->value,
-                ],
+                'choices' => TaskListColor::cases(), // objets Enum
+                'choice_value' => fn(?TaskListColor $case) => $case?->value, // string
+                'choice_label' => fn(TaskListColor $case) => $case->label(), // label
                 'placeholder' => 'Choisir une couleur',
                 'required' => false,
                 'help' => 'La couleur peut aussi être calculée automatiquement en fonction des échéances des tâches',
@@ -53,45 +50,3 @@ class TaskListType extends AbstractType
         ]);
     }
 }
-
-// class TaskListTypeForm extends AbstractType
-// {
-//      public function buildForm(FormBuilderInterface $builder, array $options): void
-//     {
-//         $builder
-//             ->add('nom', TextType::class, [
-//                 'label' => 'Nom de la colonne',
-//                 'attr' => [
-//                     'class' => 'form-control',
-//                     'maxlength' => 50
-//                 ]
-//             ])
-//         ;
-//     }
-
-//     public function configureOptions(OptionsResolver $resolver): void
-//     {
-//         $resolver->setDefaults([
-//             'data_class' => TaskList::class,
-//         ]);
-//     }
-// }
-    // public function buildForm(FormBuilderInterface $builder, array $options): void
-    // {
-    //     $builder
-    //         ->add('nom')
-    //         ->add('description')
-    //         ->add('position')
-    //         ->add('project', EntityType::class, [
-    //             'class' => Project::class,
-    //             'choice_label' => 'id',
-    //         ])
-    //     ;
-    // }
-
-    // public function configureOptions(OptionsResolver $resolver): void
-    // {
-    //     $resolver->setDefaults([
-    //         'data_class' => TaskList::class,
-    //     ]);
-    // }

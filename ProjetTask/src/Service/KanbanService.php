@@ -15,9 +15,7 @@ class KanbanService
 {
     public function __construct(
         private readonly EntityManagerInterface $em
-    ) {
-
-    }
+    ) {}
 
     /**
      * Déplace une tâche dans une colonne et position cible, en appliquant les règles métier
@@ -152,20 +150,34 @@ class KanbanService
             throw new RuntimeException('Projet archivé.');
         }
 
-        if ($task->getStatut() === TaskStatut::TERMINER) {
-            return [
-                'percentDone' => 100, // Example: 100% tasks completed
-                'overdueCount' => 0, // Example: 0 overdue tasks
-                'avgCycleTime' => '0 days', // Example: average cycle time of 0 days
-            ];
+        $isDone = $task->getStatut() === TaskStatut::TERMINER;
+        $isOverdue = false;
+        $today = new \DateTimeImmutable('today');
+
+        if ($task->getDateButoir() instanceof \DateTimeInterface) {
+            $isOverdue = !$isDone && $task->getDateButoir() < $today;
         }
 
+        // Exemple de cycle time simple: dateCreation -> aujourd’hui ou dateReelle si done
+        $cycleTimeDays = 0;
+        $start = $task->getDateCreation() ?? null; // adaptez selon votre entité
+        if ($start instanceof \DateTimeInterface) {
+            $end = $isDone
+                ? ($task->getDateReelle() ?? new \DateTimeImmutable())
+                : new \DateTimeImmutable();
+            $cycleTimeDays = max(0, (int) ceil(($end->getTimestamp() - $start->getTimestamp()) / 86400));
+        }
 
-        // Example implementation for computing KPIs
+        // Retour compatible avec agrégation
         return [
-            'percentDone' => 75, // Example: 75% tasks completed
-            'overdueCount' => 3, // Example: 3 overdue tasks
-            'avgCycleTime' => '2 days', // Example: average cycle time of 2 days
+            'total' => 1,
+            'done' => $isDone ? 1 : 0,
+            'overdue' => $isOverdue ? 1 : 0,
+            'cycleTimeDays' => $cycleTimeDays,
+            // Si besoin, retournez des catégories par statut
+            'cycleTimeDaysDone' => $isDone ? $cycleTimeDays : 0,
+            'cycleTimeDaysInProgress' => (!$isDone && $task->getStatut() === TaskStatut::EN_COURS) ? $cycleTimeDays : 0,
+            'cycleTimeDaysToDo' => (!$isDone && $task->getStatut() !== TaskStatut::EN_COURS) ? $cycleTimeDays : 0,
         ];
     }
     // ATTENTION cette méthode est commentée car etais dans le repository TaskListRepository
@@ -174,7 +186,7 @@ class KanbanService
     //sinon la supprimer pour eviter les doublons
     // /**
 
-        /**
+    /**
      * Déplace une tâche dans une autre colonne et position cible, en appliquant les règles métier
      * et en garantissant la densité des positions (0..N-1).
      *
@@ -243,5 +255,5 @@ class KanbanService
     //     return $task;
     // }
 
-    
+
 }

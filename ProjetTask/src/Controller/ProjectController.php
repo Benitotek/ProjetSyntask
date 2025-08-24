@@ -27,7 +27,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProjectController extends AbstractController
 {
     public function __construct(
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private KanbanService $kanbanService
     ) {}
 
     #[Route('/allProjects', name: 'app_project_index', methods: ['GET'])]
@@ -151,7 +152,7 @@ class ProjectController extends AbstractController
     /**
      *  SOLUTION POUR LE KANBAN - 
      */
-    #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET',])]
+    #[Route('/{id}/kanban', name: 'app_project_kanban', methods: ['GET'])]
     public function kanban(
         Project $project,
         TaskListRepository $taskListRepository,
@@ -159,50 +160,37 @@ class ProjectController extends AbstractController
         EntityManagerInterface $entityManager,
         KanbanService $kanban
     ): Response {
-
-
-        // Vérification d'accès avec le voter
+        // 1) Sécurité
         $this->denyAccessUnlessGranted(ProjectVoter::VIEW, $project);
 
-        // Récupération des colonnes avec les tâches/
-        //Charge colonnes + tâches en fetch-join (évite N+1 et LazyLoading en vue)
-
-        $columns = $taskListRepository->findByProjectWithTasksOrdered($project);
-        if (!$columns) {
-            // Si aucune colonne n'existe, on en crée 3 par défaut
-            $this->createDefaultTaskLists($project, $entityManager);
-            $taskLists = $taskListRepository->findByProjectWithTasksOrdered($project);
-        }
-        // Vérification si le projet est archivé
+        // 2) Projet archivé => lecture seule, redirection avec message
         if ($project->isArchived() === true) {
             $this->addFlash('danger', 'Ce projet est archivé, vous ne pouvez pas le modifier.');
             return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
         }
-        $tasks = $taskListRepository->findByProject($project); // Assuming this method retrieves tasks for the project
-        $kpi = $kanban->computeKpis($project, $tasks); // Pass the correct type
-        $kpi = ['percentDone' => 0, 'overdueCount' => 0, 'avgCycleTime' => '—'];
-        if ($kpi) {
-            $this->logger->info('KPI calculé pour le projet', [
-                'project_id' => $project->getId(),
-                'kpi' => $kpi
-            ]);
-        } else {
-            $this->logger->warning('Aucun KPI disponible pour le projet', [
-                'project_id' => $project->getId()
-            ]);
+
+        // 3) Charger colonnes + tâches (entités) une seule fois
+        $columns = $taskListRepository->findByProjectWithTasksOrdered($project);
+
+        // Si aucune colonne, initialiser et recharger
+        if (!$columns || count($columns) === 0) {
+            $this->createDefaultTaskLists($project, $entityManager);
+            $entityManager->persist($project);
+            $entityManager->flush();
+            $columns = $taskListRepository->findByProjectWithTasksOrdered($project);
         }
 
-        // Préparer les membres
+        // 4) Préparer les membres (chef de projet inclus)
         $members = [...$project->getMembres()->toArray()];
-        if ($project->getChefproject() && !in_array($project->getChefproject(), $members)) {
+        if ($project->getChefproject() && !in_array($project->getChefproject(), $members, true)) {
             $members[] = $project->getChefproject();
         }
 
-        // --- Formulaire de création de colonne ---
+        // 5) Formulaire de création de colonne
         $taskList = new TaskList();
         $taskList->setProject($project);
 
-        // Déterminer la position de la nouvelle colonne
+        // Déterminer la prochaine position de colonne
         $lastPosition = $taskListRepository->findBy(['project' => $project], ['positionColumn' => 'DESC'], 1);
         $position = $lastPosition ? $lastPosition[0]->getPositionColumn() + 1 : 1;
         $taskList->setPositionColumn($position);
@@ -218,18 +206,50 @@ class ProjectController extends AbstractController
             return $this->redirectToRoute('app_project_kanban', ['id' => $project->getId()]);
         }
 
+        // 6) Calcul KPI: agrégation sur les tâches entités
+        $kpis = [
+            'total' => 0,
+            'done' => 0,
+            'overdue' => 0,
+            // Exemples de KPI additionnels: moyennes
+            'avgCycleTime' => '0 days',
+            'avgCycleTimeDone' => '0 days',
+            'avgCycleTimeInProgress' => '0 days',
+            'avgCycleTimeToDo' => '0 days',
+            'avgCycleTimeOverdue' => '0 days',
+        ];
+
+        // Exemple simple d’agrégation: additionner des flags/valeurs renvoyés par computeKpis
+        foreach ($columns as $col) {
+            foreach ($col->getTasks() as $task) {
+                $metrics = $kanban->computeKpis($project, $task); // $task est une entité
+                $kpis['total'] += $metrics['total'] ?? 0;        // si computeKpis les fournit
+                $kpis['done'] += $metrics['done'] ?? 0;
+                $kpis['overdue'] += $metrics['overdue'] ?? 0;
+                // TODO: si vous calculez des temps de cycle en nombre, accumulez ici pour moyenne
+            }
+        }
+
+        $this->logger->info('KPI calculés pour le projet', [
+            'project_id' => $project->getId(),
+            'kpis' => $kpis
+        ]);
+
+        // 7) Rendu
         return $this->render('tasklist/kanban.html.twig', [
             'project' => $project,
-            'taskLists' => $taskLists,
+            'taskLists' => $columns,       // alias: dans Twig, utilisez taskLists ou columns
+            'columns' => $columns,
+            'tasks' => null,               // on n’expose pas un array incohérent
             'members' => $members,
-            'form' => $form->createView(), // ✅ Formulaire disponible dans Twig
-            'kpi' => $kpi, // ✅ KPI disponible dans Twig
-            'kanbanService' => $kanban, // ✅ Service Kanban disponible dans Twig
-            'taskList' => $taskList, // ✅ Colonne pour le formulaire
+            'form' => $form->createView(),
+            'kpi' => $kpis,
+            'kanbanService' => $kanban,
             'isArchived' => $project->isArchived(),
             'csrfToken' => $this->container->get('security.csrf.token_manager')->getToken('delete_tasklist')->getValue(),
         ]);
     }
+
     #[Route('/{id}/assign-manager/{userId}', name: 'app_project_assign_manager', methods: ['POST'])]
     #[IsGranted('ROLE_DIRECTEUR')]
     public function assignManager(

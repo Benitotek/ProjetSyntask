@@ -39,9 +39,12 @@ class TaskList
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateTime = null;
 
-    // Correction du mapping de l'enum
-    #[ORM\Column(type: 'string', length: 10, nullable: true)]
-    private ?string $couleur = null;
+    // // Correction du mapping de l'enum
+    // #[ORM\Column(type: 'string', length: 10, nullable: true)]
+    // private ?string $couleur = null;
+
+    #[ORM\Column(enumType: TaskListColor::class)]
+    private ?TaskListColor $couleur = null;
 
     // #[ORM\Column(type: 'string', enumType: EnumTaskListColor::class, nullable: true)]
     // private ?EnumTaskListColor $couleur = null
@@ -56,7 +59,7 @@ class TaskList
     {
         $this->tasks = new ArrayCollection();
         $this->dateTime = new \DateTime();
-        $this->couleur = TaskListColor::VERT->value;
+        $this->couleur = TaskListColor::VERT; // Couleur par défaut
     }
 
     public function getId(): ?int
@@ -125,12 +128,12 @@ class TaskList
     // Enum exposée en API publique
     public function getCouleur(): ?TaskListColor
     {
-        return $this->couleur ? TaskListColor::tryFrom($this->couleur) : null;
+        return $this->couleur; // TaskListColor::from($this->couleur) : null;
     }
 
     public function setCouleur(?TaskListColor $couleur): self
     {
-        $this->couleur = $couleur?->value;
+        $this->couleur = $couleur; // $couleur?->value;
         return $this;
     }
 
@@ -204,7 +207,6 @@ class TaskList
     public function updateAutoColor(): void
     {
         $this->setCouleur($this->calculateAutoColor());
-        
     }
 
     /**
