@@ -1,0 +1,17 @@
+.sortable-demo {
+    list-style: none;
+    padding: 0;
+    width: 200px;
+}
+
+.sortable-demo li {
+    padding: 10px;
+    margin: 5px 0;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: grab;
+}
+
+.blue-background-class {
+    background: rgb(12, 150, 197) !important;
+}
