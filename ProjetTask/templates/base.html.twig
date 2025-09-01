@@ -8,7 +8,7 @@
 			{% endblock %}
 		</title>
 		<link rel="icon" href="{{ asset('favicon.ico') }}">
-                <meta name="description" content="{% block meta_description %}Gestionnaire de tâches et de projets open-source.{% endblock %}">
+		<meta name="description" content="{% block meta_description %}Gestionnaire de tâches et de projets open-source.{% endblock %}">
 		{% block stylesheets %}
 			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 			<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -26,9 +26,7 @@
 		<meta name="theme-color" content="#ffffff"> {% block extra_styles %}{% endblock %}
 
 		{% block javascripts %}
-			 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" 
-			        integrity="sha384-iU94BoOYf9P7JdkHjV5TI0yQ8fEON6DZMS+YVxbQE6+V9rw1QzMlwk1gqDQBo2Bb" 
-			        crossorigin="anonymous"></script>
+			 <script	src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha384-eeLEhtwdMwD3X9y+8P3Cn7Idl/M+w8H4uZqkgD/2eJVkWIN1yKzEj6XegJ9dL3q0" crossorigin="anonymous"></script>
 			 <script src="{{ asset('js/notifications.js') }}"></script>
 			 <script src="{{ asset('js/search.js') }}"></script>
 			 <script src="{{ asset('js/dashboard.js') }}"></script>
