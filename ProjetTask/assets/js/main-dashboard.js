@@ -107,17 +107,39 @@ function initCharts() {
             }
         });
     }
+    async function loadActivityData() {
+        try {
+            const response = await fetch('/api/activity-data.json');
 
+            // Vérifier le type de contenu
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La réponse n\'est pas du JSON');
+            }
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            // Traiter les données
+
+        } catch (error) {
+            console.error('Erreur lors du chargement des données d\'activité:', error);
+            // Afficher un message à l'utilisateur ou utiliser des données par défaut
+        }
+    }
     // Graphique d'activité sur les derniers jours
     const activityChartCtx = document.getElementById('chart-activity');
 
     if (activityChartCtx && typeof Chart !== 'undefined') {
         // Récupérer les données d'activité via l'API
-        fetch('/api/dashboard/activity-data', {
+
+        fetch('/api/activity-data.json'), {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
-        })
+        }
             .then(response => response.json())
             .then(data => {
                 new Chart(activityChartCtx, {

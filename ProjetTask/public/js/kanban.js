@@ -10,10 +10,11 @@
 */
 'use strict';
 // Import SortableJS if not already included in the page
+// import Sortable from 'sortablejs';
 if (typeof Sortable === 'undefined') import('sortablejs').then(module => Sortable = module.default);
 // Kanban JavaScript Module
 // This module handles the Kanban board functionality including adding/removing columns, tasks, and drag & drop interactions.
-
+const Sortable = window.Sortable;
 // ----------------------
 // Constants
 // ----------------------
@@ -253,7 +254,43 @@ let currentTaskAssigneeRole = null;
     updateColumnCounts();
     $$('.kanban-column').forEach(attachColumnEvents);
   }
-
+function initAddColumn() {
+    // Votre logique d'ajout de colonne
+    const addButton = document.querySelector('.add-column-btn');
+    if (addButton) {
+        addButton.addEventListener('click', function() {
+            // Logique d'ajout
+            const projectId = document.getElementById('kanban-board').dataset.projectId;
+            const modal = new bootstrap.Modal(document.getElementById('column-modal'));
+            document.getElementById('column_project').value = projectId;
+            modal.show();
+            document.getElementById('column-modal-title').textContent = 'Ajouter une colonne';
+            document.getElementById('column-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const name = formData.get('name');
+                const color = formData.get('color');
+                try {
+                    const response = await fetch('/api/tasklist', {
+                        method: 'POST',
+                        body: JSON.stringify({ name, color, projectId })
+                    });
+                    const data = await response.json();
+                    if (data.error) {
+                        showToast(data.message, 'danger');
+                    } else {
+                        showToast('Colonne ajoutée', 'success');
+                        modal.hide();
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showToast('Une erreur s’est produite lors de l’ajout de la colonne.', 'danger');
+                }
+            });
+        });
+    }
+}
   document.addEventListener('DOMContentLoaded', initKanban);
 // Removed unnecessary parentheses
 
