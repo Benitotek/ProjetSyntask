@@ -126,6 +126,14 @@ class Task
         $this->assignedUsers = new ArrayCollection();
     }
 
+    /**
+ * Get the deadline of the task.
+ */
+public function getDeadline(): ?\DateTimeInterface
+{
+    return $this->deadline ?? null;
+}
+
     public function getId(): ?int
     {
         return $this->id;

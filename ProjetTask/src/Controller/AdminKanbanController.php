@@ -27,7 +27,16 @@ class AdminKanbanController extends AbstractController
         private UserRepository $userRepository,
         private TaskListRepository $taskListRepository
     ) {}
-
+// Assigner un utilisateur à un projet
+#[Route('/project/assign/{userId}/{projectId}', name: 'assign_user_to_project')]
+public function assignUserToProject(int $userId, int $projectId): Response
+{
+    $user = $this->userRepository->find($userId);
+    $project = $this->projectRepository->find($projectId);
+    
+    $result = $this->adminKanbanService->assignUserToProject($userId, $projectId, $this->getUser());
+    return $this->json($result);
+}
     /**
      * 🎯 PAGE PRINCIPALE - Vue Kanban Globale Admin
      */
@@ -43,7 +52,7 @@ class AdminKanbanController extends AbstractController
             'due_soon' => $request->query->get('due_soon', false)
         ];
 
-        $kanbanData = $this->adminKanbanService->getAllKanbanData($filters);
+        $kanbanData = $this->adminKanbanService->getAllKanbanDatas($filters);
 
         return $this->render('admin/kanban/global.html.twig', [
             'data' => $kanbanData,
@@ -198,7 +207,7 @@ class AdminKanbanController extends AbstractController
             'date_to' => $request->query->get('date_to')
         ];
 
-        $data = $this->adminKanbanService->getAllKanbanData($filters);
+        $data = $this->adminKanbanService->getAllKanbanDatas($filters);
 
         switch ($format) {
             case 'json':
@@ -219,7 +228,7 @@ class AdminKanbanController extends AbstractController
     public function refreshData(Request $request): JsonResponse
     {
         $filters = $request->query->all();
-        $data = $this->adminKanbanService->getAllKanbanData($filters);
+        $data = $this->adminKanbanService->getAllKanbanDatas($filters);
 
         return $this->json([
             'success' => true,

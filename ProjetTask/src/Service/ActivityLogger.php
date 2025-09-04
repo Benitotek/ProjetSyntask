@@ -32,19 +32,29 @@ class ActivityLogger
     }
     /**
      * Log the assignment of a user to a project.
- */
-public function logProjectAssignment(User $user, Project $project, User $assignedBy): void
-{
-   
-    $activity = new Activity();
-    $activity->setType(ActivityType::PROJECT_ASSIGN);
-    $activity->setUser($user);
-    $activity->setProject($project);
-    $activity->setPerformedBy($assignedBy);
-    $activity->setDateCreation(new \DateTime());
-    $this->entityManager->persist($activity);
-    $this->entityManager->flush();
-}
+     */
+    // public function logProjectAssignment(User $user, Project $project, User $assignedBy): void
+    // {
+    //     // Code pour journaliser l'événement d'affectation
+    //     $activity = new Activity();
+    //     $activity->setUser($assignedBy);
+    //     $activity->setMessage(sprintf("L'utilisateur %s a été assigné au projet %s.", $user->getUsername(), $project->getTitle()));
+
+    //     $this->entityManager->persist($activity);
+    //     $this->entityManager->flush();
+    // }
+    public function logProjectAssignment(User $user, Project $project, User $assignedBy): void
+    {
+
+        $activity = new Activity();
+        $activity->setType(ActivityType::PROJECT_ASSIGN);
+        $activity->setUser($user);
+        $activity->setProject($project);
+        $activity->setDescription(sprintf("L'utilisateur %s a été assigné au projet %s par %s.", $user->getUsername(), $project->getId(), $assignedBy->getUsername()));
+        $activity->setDateCreation(new \DateTimeImmutable());
+        $this->entityManager->persist($activity);
+        $this->entityManager->flush();
+    }
     /**
      * Enregistre une activité dans un projet
      */
@@ -214,7 +224,7 @@ public function logProjectAssignment(User $user, Project $project, User $assigne
             $description,
             $type->value,
             $entityId,
-           
+
         );
     }
     public function logProjectCreation(string $projectId, string $projectName, ?User $user = null): void
@@ -231,33 +241,45 @@ public function logProjectAssignment(User $user, Project $project, User $assigne
             $user
         );
     }
-}
 
-    // public function logTaskstatutChange(string $taskId, string $taskTitle, string $oldstatut, string $newstatut, ?User $user = null): void
+    // public function logProjectstatutChange(string $taskId, string $taskTitle, string $oldstatut, string $newstatut, ?User $user = null): void
     // {
     //     $this->log(
-    //         ActivityType::TASK_statut_CHANGE,
+    //         ActivityType::TASK_statut_CHANGE,Project::class,
     //         "a changé le statut de '{$oldstatut}' à '{$newstatut}' pour la tâche",
     //         $taskId,
-    //         "/task/{$taskId}",
+    //         "/project/task/{$taskId}",
     //         $user
     //     );
     // }
 
-    // public function logTaskCompletion(string $taskId, string $taskTitle): void
-    // {
-    //     // Créez le message à enregistrer
-    //     $message = sprintf("Tâche #%s (%s) terminée à %s\n", $taskId, $taskTitle, date('Y-m-d H:i:s'));
+    public function logTaskCompletion(string $taskId, string $taskTitle): void
+    {
+        // Créez le message à enregistrer
+        $message = sprintf("Tâche #%s (%s) terminée à %s\n", $taskId, $taskTitle, date('Y-m-d H:i:s'));
 
-    //     // Chemin du fichier log
-    //     $logFile = $this->getLogFilePath();
+        // Chemin du fichier log
+        $logFile = $this->getLogFilePath();
 
-    //     // Écrire dans le fichier
-    //     file_put_contents($logFile, $message, FILE_APPEND);
-    // }
+        // Écrire dans le fichier
+        file_put_contents($logFile, $message, FILE_APPEND);
+    }
 
-    // private function getLogFilePath(): string
-    // {
-    //     // Utiliser le répertoire de logs standard d'un projet Symfony
-    //     return __DIR__ . '/../../var/log/task_activity.log';
-    // }
+    private function getLogFilePath(): string
+    {
+        // Utiliser le répertoire de logs standard d'un projet Symfony
+        return __DIR__ . '/../../var/log/task_activity.log';
+    }
+
+    public function logChefProjetPromotion(User $user, User $promotedUser, Project $project, User $promotedBy): Activity
+    {
+        return $this->logActivity(
+            $promotedBy,
+            'a promu',
+            'l\'utilisateur "' . $promotedUser->getUsername() . '" au rôle de Chef de projet sur le projet "' . $project->getId() . '"',
+            'project_role_change',
+            $project->getId(),
+            $project
+        );
+    }
+}

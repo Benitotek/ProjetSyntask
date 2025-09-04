@@ -33,8 +33,9 @@ class NotificationService
 
         $notification = new Notification();
         $notification->setType('project_assignment');
-        $notification->setProject($project);
+        $notification->setTitre('Nouvelle assignation de projet');
         $notification->setUser($user);
+        $notification->setDateCreation(new \DateTime());
         $notification->setMessage(sprintf('%s vous a ajouté au projet %s', $assignedBy->getNom(), $project->getTitre()));
         $this->entityManager->persist($notification);
         $this->entityManager->flush();

@@ -11,6 +11,8 @@ admin_routes:
     type: annotation
     prefix: /admin
 
+    
+
 # # Route pour le dashboard employé
 # employe_dashboard:
 #     path: /dashboard

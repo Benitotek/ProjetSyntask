@@ -11,6 +11,7 @@ use App\Repository\TaskListRepository;
 use App\Repository\TaskRepository;
 use App\Enum\TaskListColor;
 use App\Enum\TaskStatut;
+use App\Service\AdminKanbanService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,12 +34,12 @@ class ApiKanbanController extends AbstractController
     private $adminKanbanService;
 
     public function __construct(
+        AdminKanbanService $adminKanbanService,
         EntityManagerInterface $entityManager,
         ProjectRepository $projectRepository,
         TaskListRepository $taskListRepository,
         TaskRepository $taskRepository,
-        ValidatorInterface $validator,
-        $adminKanbanService
+        ValidatorInterface $validator
     ) {
         $this->entityManager = $entityManager;
         $this->projectRepository = $projectRepository;
