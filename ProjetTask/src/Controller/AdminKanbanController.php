@@ -34,7 +34,7 @@ public function assignUserToProject(int $userId, int $projectId): Response
     $user = $this->userRepository->find($userId);
     $project = $this->projectRepository->find($projectId);
     
-    $result = $this->adminKanbanService->assignUserToProject($user, $project, $this->getUser());
+    $result = $this->adminKanbanService->assignUserToProject($userId, $projectId, $this->getUser());
     return $this->json($result);
 }
     /**
@@ -52,7 +52,7 @@ public function assignUserToProject(int $userId, int $projectId): Response
             'due_soon' => $request->query->get('due_soon', false)
         ];
 
-        $kanbanData = $this->adminKanbanService->getAllKanbanData($filters);
+        $kanbanData = $this->adminKanbanService->getAllKanbanDatas($filters);
 
         return $this->render('admin/kanban/global.html.twig', [
             'data' => $kanbanData,
@@ -207,7 +207,7 @@ public function assignUserToProject(int $userId, int $projectId): Response
             'date_to' => $request->query->get('date_to')
         ];
 
-        $data = $this->adminKanbanService->getAllKanbanData($filters);
+        $data = $this->adminKanbanService->getAllKanbanDatas($filters);
 
         switch ($format) {
             case 'json':
@@ -228,7 +228,7 @@ public function assignUserToProject(int $userId, int $projectId): Response
     public function refreshData(Request $request): JsonResponse
     {
         $filters = $request->query->all();
-        $data = $this->adminKanbanService->getAllKanbanData($filters);
+        $data = $this->adminKanbanService->getAllKanbanDatas($filters);
 
         return $this->json([
             'success' => true,

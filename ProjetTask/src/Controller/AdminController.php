@@ -61,7 +61,7 @@ class AdminController extends AbstractController
     {
         $this->denyAccessUnlessGranted(AdminVoter::MANAGE_ALL_PROJECTS, null, AdminVoter::VIEW_ALL_KANBAN);
 
-        $kanbanData = $this->adminKanbanService->getAllKanbanData();
+        $kanbanData = $this->adminKanbanService->getAllKanbanDatas();
 
         return $this->render('admin/kanban/index.html.twig', [
             'projects' => $kanbanData['projects'],

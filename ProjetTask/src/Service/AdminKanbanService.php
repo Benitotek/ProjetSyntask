@@ -32,6 +32,308 @@ class AdminKanbanService
         private Security $security,
         private PaginatorInterface $paginator
     ) {}
+
+    /**
+ * Returns a list of overdue tasks.
+ */
+public function getOverdueTasks(): array
+{
+    // Assuming you have access to TaskRepository via DI or service locator
+    // Replace $this->taskRepository with your actual repository instance
+    return $this->taskRepository->findTasksOverdue();
+}
+
+    /**
+     * Returns recent activities for analytics dashboard.
+     */
+    public function getRecentActivities(): array
+    {
+        // Example implementation, replace with actual logic as needed
+        return [];
+    }
+
+    /**
+     * Perform a global search for tasks, projects, or users matching the query.
+     *
+     * @param string $query
+     * @return array
+     */
+    public function globalSearch(string $query): array
+    {
+        // Example implementation, adapt as needed
+        // Search tasks by title
+        $tasks = $this->taskRepository->findByTitleLike($query);
+
+        // Search projects by title
+        $projects = $this->projectRepository->findByTitleLike($query);
+
+        // Search users by name
+        $users = $this->userRepository->findByNameLike($query);
+
+        return [
+            'tasks' => $tasks,
+            'projects' => $projects,
+            'users' => $users
+        ];
+    }
+
+    /**
+ * Returns workload distribution data for admin kanban.
+ */
+public function getWorkloadDistribution(): array
+{
+    // Example implementation, adjust as needed
+    // You may want to fetch tasks and group by assigned user, etc.
+    $tasks = $this->taskRepository->findAll();
+    $distribution = [];
+
+    foreach ($tasks as $task) {
+        foreach ($task->getTaskUsers() as $taskUser) {
+            $user = $taskUser->getUser();
+            $userId = $user->getId();
+            if (!isset($distribution[$userId])) {
+                $distribution[$userId] = [
+                    'user' => $user,
+                    'taskCount' => 0
+                ];
+            }
+            $distribution[$userId]['taskCount']++;
+        }
+    }
+
+    return array_values($distribution);
+}
+
+     /**
+     * Returns performance metrics for admin kanban dashboard.
+     */
+    public function getPerformanceMetrics(): array
+    {
+        // Example implementation, replace with actual logic as needed
+        return [
+            'tasksCompleted' => 0,
+            'tasksInProgress' => 0,
+            'averageCompletionTime' => 0,
+        ];
+    }
+
+    /**
+     * Create a quick task from provided data.
+     */
+    public function createQuickTask(array $data): array
+    {
+        // Implement your logic to create a quick task here.
+        // Example stub:
+        // $task = new Task();
+        // $task->setTitle($data['title'] ?? 'Quick Task');
+        // ... set other properties ...
+        // $this->entityManager->persist($task);
+        // $this->entityManager->flush();
+
+        // Return a result array (customize as needed)
+        return [
+            'success' => true,
+            'message' => 'Quick task created successfully',
+            // 'taskId' => $task->getId(),
+        ];
+    }
+
+    /**
+     * Déplace une tâche dans une nouvelle liste et position.
+     *
+     * @param int $taskId
+     * @param int $newListId
+     * @param int $newPosition
+     * @return bool
+     */
+    public function moveTask(int $taskId, int $newListId, int $newPosition): bool
+    {
+        // Implémentation de la logique de déplacement de tâche
+        // Exemple basique, à adapter selon votre modèle
+        try {
+            $task = $this->entityManager->getRepository(Task::class)->find($taskId);
+            $newList = $this->entityManager->getRepository(TaskList::class)->find($newListId);
+
+            if (!$task || !$newList) {
+                return false;
+            }
+
+            $task->setTaskList($newList);
+            $task->setPosition($newPosition);
+
+            $this->entityManager->flush();
+
+            return true;
+        } catch (\Exception $e) {
+            // Optionnel : logger l'erreur
+            return false;
+        }
+    }
+
+    /**
+     * Retourne les statistiques globales pour le dashboard admin.
+     */
+    public function getGlobalStatistics(): array
+    {
+        // Exemple de statistiques, à adapter selon vos besoins
+        return [
+            'total_projects' => 0,
+            'total_tasks' => 0,
+            'total_users' => 0,
+            // Ajoutez d'autres statistiques ici
+        ];
+    }
+
+    /**
+     * Format a Task entity for response.
+     */
+    private function formatTaskForResponse(Task $task): array
+    {
+        return [
+            'id' => $task->getId(),
+            'title' => $task->getTitle(),
+            'description' => $task->getDescription(),
+            'statut' => $task->getStatut(),
+            'priority' => $task->getPriorite(),
+            'deadline' => $task->getDeadline()?->format('Y-m-d H:i:s'),
+            'position' => $task->getPosition(),
+            'project' => [
+                'id' => $task->getTaskList()->getProject()->getId(),
+                'name' => $task->getTaskList()->getProject()->getTitre()
+            ],
+            'taskList' => [
+                'id' => $task->getTaskList()->getId(),
+                'name' => $task->getTaskList()->getName()
+            ],
+            'assignedUser' => $task->getAssignedUser() ? $this->formatUserForResponse($task->getAssignedUser()) : null
+        ];
+    }
+
+    /**
+     * Format a Project entity for response.
+     */
+    private function formatProjectForResponse(Project $project): array
+    {
+        return [
+            'id' => $project->getId(),
+            'titre' => $project->getTitre(),
+            'description' => $project->getDescription(),
+            'statut' => $project->getStatut(),
+            'chefProjet' => $project->getChefproject() ?
+                $this->formatUserForResponse($project->getChefproject()) : null,
+            'membresCount' => $project->getMembres()->count()
+        ];
+    }
+
+    /**
+     * Format a User entity for response.
+     */
+    private function formatUserForResponse(User $user): array
+    {
+        return [
+            'id' => $user->getId(),
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+            'statut' => $user->getStatut(),
+            'avatar' => $user->getAvatar() ?? null
+        ];
+    }
+
+    /**
+     * 🕑 Récupérer les activités récentes pour un utilisateur (employé)
+     */
+    private function getRecentActivitiesForUser(User $user, int $limit = 10): array
+    {
+        // Suppose que le repository a une méthode pour cela, sinon à implémenter
+        if (method_exists($this->activityRepository, 'findRecentByUser')) {
+            return $this->activityRepository->findRecentByUser($user, $limit);
+        }
+        // Fallback: récupérer les projets de l'utilisateur et utiliser la méthode existante
+        $projects = $this->projectRepository->findByMembre($user);
+        return $this->getRecentActivitiesForProjects($projects, $limit);
+    }
+
+    /**
+     * 🕑 Récupérer les activités récentes pour une liste de projets
+     */
+    private function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
+    {
+        $projectIds = array_map(fn($project) => $project->getId(), $projects);
+        if (empty($projectIds)) {
+            return [];
+        }
+        $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
+        // Vous pouvez formater les activités ici si besoin
+        return $activities;
+    }
+
+    /**
+     * Calcule les statistiques globales pour les projets et tâches donnés
+     */
+    private function calculateStatistics(array $projects, array $tasks): array
+    {
+        $totalProjects = count($projects);
+        $totalTasks = count($tasks);
+        $completedTasks = 0;
+        $inProgressTasks = 0;
+        $overdueTasks = 0;
+
+        foreach ($tasks as $task) {
+            if ($task->getStatut() === 'TERMINER') {
+                $completedTasks++;
+            } elseif ($task->getStatut() === 'EN_COURS') {
+                $inProgressTasks++;
+            }
+            if ($task->getDeadline() && $task->getDeadline() < new \DateTime() && $task->getStatut() !== 'TERMINER') {
+                $overdueTasks++;
+            }
+        }
+
+        return [
+            'totalProjects' => $totalProjects,
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
+            'inProgressTasks' => $inProgressTasks,
+            'overdueTasks' => $overdueTasks,
+            'completionRate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0
+        ];
+    }
+
+    /**
+     * Filtre les tâches selon les filtres fournis (statut, priorité, etc.)
+     */
+    private function applyFilters(array $tasks, array $filters = []): array
+    {
+        return array_filter($tasks, function ($task) use ($filters) {
+            if (isset($filters['statut']) && $task->getStatut() !== $filters['statut']) {
+                return false;
+            }
+            if (isset($filters['priority']) && $task->getPriority() !== $filters['priority']) {
+                return false;
+            }
+            if (isset($filters['assignedUser']) && method_exists($task, 'getAssignedUser')) {
+                $assignedUser = $task->getAssignedUser();
+                if (!$assignedUser || $assignedUser->getId() !== $filters['assignedUser']) {
+                    return false;
+                }
+            }
+            // Ajoutez d'autres filtres ici si nécessaire
+            return true;
+        });
+    }
+    public function getAllKanbanDatas(): array
+{
+    // Replace the following with actual logic to fetch projects, tasks, users, taskLists, and statistics
+    return [
+        'projects' => [],      // Fetch projects from repository
+        'tasks' => [],         // Fetch tasks from repository
+        'users' => [],         // Fetch users from repository
+        'taskLists' => [],     // Fetch task lists from repository
+        'statistics' => []     // Compute statistics as needed
+    ];
+}
     /**
      * 📊 Données Kanban pour Admin et Directeur (accès total)
      */
@@ -149,6 +451,25 @@ class AdminKanbanService
         ];
     }
 
+    /**
+     * 👥 Récupérer tous les utilisateurs des projets donnés
+     */
+    private function getUsersFromProjects(array $projects): array
+    {
+        $users = [];
+        foreach ($projects as $project) {
+            $projectMembers = $project->getMembres()->toArray();
+            $users = array_merge($users, $projectMembers);
+
+            // Ajouter le chef de projet
+            if ($project->getChefproject()) {
+                $users[] = $project->getChefproject();
+            }
+        }
+
+        return array_unique($users, SORT_REGULAR);
+    }
+
     /**  
      * 👨‍💼 Données Kanban pour Employé  
      */
@@ -183,6 +504,55 @@ class AdminKanbanService
             'recentActivities' => $this->getRecentActivitiesForUser($employe),
             'userRole' => 'EMPLOYE'
         ];
+    }
+
+    /**
+     * 📊 Statistiques spécifiques pour employé
+     */
+    private function calculateEmployeStatistics(User $employe, array $assignedTasks): array
+    {
+        $completedTasks = array_filter($assignedTasks, fn($t) => $t->getStatut() === 'TERMINER');
+        $overdueTasks = array_filter($assignedTasks, function ($t) {
+            return $t->getDeadline() &&
+                $t->getDeadline() < new \DateTime() &&
+                $t->getStatut() !== 'TERMINER';
+        });
+
+        return [
+            'totalAssignedTasks' => count($assignedTasks),
+            'totalCompletedTasks' => count($completedTasks),
+            'completedTasks' => count($completedTasks),
+            'inProgressTasks' => count(array_filter($assignedTasks, fn($t) => $t->getStatut() === 'EN_COURS')),
+            'overdueTasks' => count($overdueTasks),
+            'completionRate' => count($assignedTasks) > 0 ?
+                round((count($completedTasks) / count($assignedTasks)) * 100, 1) : 0,
+            'efficiency' => $this->calculateUserEfficiency($employe)
+        ];
+    }
+
+    /**
+     * 📊 Calcule l'efficacité d'un utilisateur basé sur les tâches terminées à temps
+     */
+    private function calculateUserEfficiency(User $user): float
+    {
+        $tasks = $this->taskRepository->findByAssignedUser($user);
+        if (empty($tasks)) {
+            return 0.0;
+        }
+
+        $onTimeCompletions = 0;
+        $totalCompleted = 0;
+
+        foreach ($tasks as $task) {
+            if ($task->getStatut() === 'TERMINER') {
+                $totalCompleted++;
+                if ($task->getDeadline() && $task->getDeadline() >= $task->getUpdatedAt()) {
+                    $onTimeCompletions++;
+                }
+            }
+        }
+
+        return $totalCompleted > 0 ? round(($onTimeCompletions / $totalCompleted) * 100, 1) : 0.0;
     }
 
     /**  
@@ -353,33 +723,34 @@ return [
     /**
      * 📋 Récupérer la liste des utilisateurs assignables
      */
-    public function getAssignableUsersForProject(User $currentUser, ?Project $project = null): array
-    {
-        $currentUserRoles = $currentUser->getRoles();
+public function getAssignableUsersForProject(User $currentUser, ?Project $project = null): array
+{
+    $currentUserRoles = $currentUser->getRoles();
 
-        // Admin et Directeur voient tous les utilisateurs
-        if (in_array('ROLE_ADMIN', $currentUserRoles) || in_array('ROLE_DIRECTEUR', $currentUserRoles)) {
-            return $this->userRepository->findActiveUsers();
-        }
-
-        // Chef de projet voit les membres de ses projets + utilisateurs assignables
-        if (in_array('ROLE_CHEF_PROJET', $currentUserRoles)) {
-            if ($project && $project->getChefproject() === $currentUser) {
-                // Membres actuels + utilisateurs disponibles
-                $projectMembers = $project->getMembres()->toArray();
-                $availableUsers = $this->userRepository->findAvailableForProject($project);
-
-                return array_unique(array_merge($projectMembers, $availableUsers), SORT_REGULAR);
-            }
-
-        //     // Seulement les membres de ses projets
-        //     return $this->getUsersFromManagedProjects($currentUser);
-        // }
-
-        // // Employé ne peut assigner personne
-        // return [];
+    // Admin et Directeur voient tous les utilisateurs
+    if (in_array('ROLE_ADMIN', $currentUserRoles) || in_array('ROLE_DIRECTEUR', $currentUserRoles)) {
+        return $this->userRepository->findActiveUsers();
     }
-}
+
+    // Chef de projet voit les membres de ses projets + utilisateurs assignables
+    if (in_array('ROLE_CHEF_PROJET', $currentUserRoles)) {
+        if ($project && $project->getChefproject() === $currentUser) {
+            // Membres actuels + utilisateurs disponibles
+            $projectMembers = $project->getMembres()->toArray();
+            $availableUsers = $this->userRepository->findAvailableForProject($project);
+
+            return array_unique(array_merge($projectMembers, $availableUsers), SORT_REGULAR);
+        }
+        // Seulement les membres de ses projets
+        // Si le projet n'est pas fourni ou l'utilisateur n'est pas chef du projet, retourner les membres des projets qu'il gère
+        // Si la méthode getUsersFromManagedProjects existe, décommentez la ligne suivante :
+        // return $this->getUsersFromManagedProjects($currentUser);
+        // Sinon, retournez un tableau vide
+        return [];
+    }
+
+    // Employé ne peut assigner personne
+    return [];
 }
 
 
@@ -457,6 +828,7 @@ return [
     //     if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
     //         return true;
     //     }
+    }
 
     //     // Chef de projet peut déplacer dans ses projets
     //     if (in_array('ROLE_CHEF_PROJET', $roles)) {
