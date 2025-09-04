@@ -1,0 +1,215 @@
+<div
+	class="task-card admin-task priority-{{ task.priority.value|lower }}" data-task-id="{{ task.id }}" data-project-id="{{ task.taskList.project.id }}" data-priority="{{ task.priority.value }}" data-status="{{ task.statut.value }}" onclick="openTaskDetailsModal({{ task.id }})">
+
+	<!-- En-tête admin avec tous les contrôles -->
+	<div class="task-header admin-task-header">
+		<div class="task-meta">
+			<div class="task-id">#{{ task.id }}</div>
+			<div class="task-priority">
+				<span class="priority-badge {{ task.priority.value|lower }}">
+					{{ task.priority.getIcon() }}
+				</span>
+			</div>
+			<div class="task-project-indicator" style="background-color: {{ task.taskList.project.color ?? '#1FA2FF' }}"></div>
+		</div>
+
+		<div class="task-actions admin-actions">
+			<button class="task-action-btn" onclick="editTask({{ task.id }}); event.stopPropagation();" title="Modifier">
+				✏️
+			</button>
+			<button class="task-action-btn" onclick="assignTaskUsers({{ task.id }}); event.stopPropagation();" title="Assigner">
+				👥
+			</button>
+			<button class="task-action-btn" onclick="duplicateTask({{ task.id }}); event.stopPropagation();" title="Dupliquer">
+				📋
+			</button>
+			<button class="task-action-btn" onclick="moveToProject({{ task.id }}); event.stopPropagation();" title="Déplacer vers autre projet">
+				🔀
+			</button>
+			<button class="task-action-btn danger" onclick="deleteTask({{ task.id }}); event.stopPropagation();" title="Supprimer">
+				🗑️
+			</button>
+		</div>
+	</div>
+
+	<!-- Contenu principal -->
+	<div class="task-content admin-content">
+		<div class="task-title">{{ task.title }}</div>
+
+		{% if task.description %}
+			<div class="task-description">
+				{{ task.description }}
+			</div>
+		{% endif %}
+		{% if task.description %}
+			<div class="task-description">
+				{{ task.description|length > 100 ? task.description[:100] ~ '...' : task.description }}
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Informations projet détaillées -->
+	<div class="task-project-info admin-project-info">
+		<div class="project-badge" style="border-left-color: {{ task.taskList.project.color ?? '#1FA2FF' }}">
+			<span class="project-icon">🏗️</span>
+			<span class="project-name">{{ task.taskList.project.titre }}</span>
+			{% if task.taskList.project.chefproject %}
+				<span class="chef-badge">👨‍💼
+					{{ task.taskList.project.chefproject.prenom }}
+					{{ task.taskList.project.chefproject.nom[:1] }}.</span>
+			{% endif %}
+		</div>
+		<div class="list-badge">
+			<span class="list-icon">📋</span>
+			<span class="list-name">{{ task.taskList.lastName }}</span>
+		</div>
+	</div>
+
+	<!-- Tags avec gestion complète -->
+	{% if task.taskTags|length > 0 %}
+		<div class="task-tags admin-tags">
+			{% for taskTag in task.taskTags|slice(0, 4) %}
+				<span class="tag admin-tag" style="background-color: {{ taskTag.tag.color }}" onclick="filterByTag('{{ taskTag.tag.lastName }}'); event.stopPropagation();">
+					{{ taskTag.tag.lastName }}
+				</span>
+			{% endfor %}
+			{% if task.taskTags|length > 4 %}
+				<span class="tag-more" onclick="showAllTags({{ task.id }}); event.stopPropagation();">
+					+{{ task.taskTags|length - 4 }}
+				</span>
+			{% endif %}
+		</div>
+	{% endif %}
+
+	<!-- Métriques étendues -->
+	<div class="task-metrics admin-metrics">
+		{% if task.comments is defined and task.comments|length > 0 %}
+			<div class="metric" onclick="showTaskComments({{ task.id }}); event.stopPropagation();">
+				<span class="metric-icon">💬</span>
+				<span class="metric-value">{{ task.comments|length }}</span>
+			</div>
+		{% endif %}
+
+		{% if task.attachments is defined and task.attachments|length > 0 %}
+			<div class="metric" onclick="showTaskAttachments({{ task.id }}); event.stopPropagation();">
+				<span class="metric-icon">📎</span>
+				<span class="metric-value">{{ task.attachments|length }}</span>
+			</div>
+		{% endif %}
+
+		{% if task.subtasks is defined and task.subtasks|length > 0 %}
+			<div class="metric">
+				<span class="metric-icon">📝</span>
+				<span class="metric-value">{{ task.completedSubtasks|length }}/{{ task.subtasks|length }}</span>
+			</div>
+		{% endif %}
+
+		<!-- Temps passé (si disponible) -->
+		{% if task.timeSpent is defined and task.timeSpent %}
+			<div class="metric">
+				<span class="metric-icon">⏱️</span>
+				<span class="metric-value">{{ task.timeSpent }}h</span>
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Assignés avec possibilité de drag & drop -->
+	<div class="task-assignees admin-assignees">
+		<div class="assignees-list">
+			{% set maxAvatars = 3 %}
+			{% for taskUser in task.taskUsers|slice(0, maxAvatars) %}
+				<div class="avatar admin-avatar" title="{{ taskUser.user.prenom }} {{ taskUser.user.nom }} - {{ taskUser.user.role.value }}" data-user-id="{{ taskUser.user.id }}" onclick="showUserProfile({{ taskUser.user.id }}); event.stopPropagation();">
+					{% if taskUser.user.avatar %}
+						<img src="{{ taskUser.user.avatar }}" alt="Avatar">
+					{% else %}
+						{{ taskUser.user.prenom[:1] }}{{ taskUser.user.nom[:1] }}
+					{% endif %}
+					<span class="user-role-indicator {{ taskUser.user.role.value|lower }}"></span>
+				</div>
+			{% endfor %}
+			{% if task.taskUsers|length > maxAvatars %}
+				<div class="avatar-more" onclick="showAllAssignees({{ task.id }}); event.stopPropagation();">
+					+{{ task.taskUsers|length - maxAvatars }}
+				</div>
+			{% endif %}
+		</div>
+
+		<div class="assignee-actions">
+			<button class="assign-btn" onclick="openAssignModal({{ task.id }}); event.stopPropagation();" title="Assigner des utilisateurs">
+				➕
+			</button>
+		</div>
+	</div>
+
+	<!-- Informations temporelles détaillées -->
+	<div class="task-timing admin-timing">
+		<div class="timing-row">
+			{% if task.deadline %}
+				{% set isOverdue = task.deadline < date() and task.statut.value != 'TERMINER' %}
+				{% set isDueSoon = task.deadline < date('+3 days') and task.statut.value != 'TERMINER' %}
+				<div class="task-deadline {{ isOverdue ? 'overdue' : (isDueSoon ? 'due-soon' : '') }}">
+					{% if isOverdue %}
+						⚠️ Retard:
+						{{ task.deadline|date('d/m/Y') }}
+					{% elseif isDueSoon %}
+						🟡 Échéance:
+						{{ task.deadline|date('d/m/Y') }}
+					{% else %}
+						📅
+						{{ task.deadline|date('d/m/Y') }}
+					{% endif %}
+				</div>
+			{% endif %}
+
+			{% if task.estimatedTime %}
+				<div class="task-estimate">
+					⏱️
+					{{ task.estimatedTime }}h estimées
+				</div>
+			{% endif %}
+		</div>
+
+		<div class="timing-row secondary">
+			<div class="task-created">
+				📅 Créée:
+				{{ task.dateCreation|date('d/m') }}
+			</div>
+			{% if task.dateCompletion %}
+				<div class="task-completed">
+					✅ Terminée:
+					{{ task.dateCompletion|date('d/m') }}
+				</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- Indicateurs de statut et priorité -->
+	<div class="status-indicators">
+		<div class="status-indicator {{ task.statut.value|lower }}"></div>
+		<div class="priority-indicator {{ task.priority.value|lower }}"></div>
+	</div>
+
+	<!-- Barre de progression pour sous-tâches -->
+	{% if task.subtasks is defined and task.subtasks|length > 0 %}
+		{% set progress = (task.completedSubtasks|length / task.subtasks|length) * 100 %}
+		<div class="subtask-progress">
+			<div class="progress-bar admin-progress" style="width: {{ progress }}%"></div>
+			<span class="progress-text">{{ progress|round }}% terminé</span>
+		</div>
+	{% endif %}
+
+	<!-- Overlay pour actions rapides au survol -->
+	<div class="task-overlay admin-overlay">
+		<div class="overlay-actions">
+			<button class="overlay-action" onclick="quickComplete({{ task.id }}); event.stopPropagation();" title="Marquer terminé">
+				✅
+			</button>
+			<button class="overlay-action" onclick="quickAssign({{ task.id }}); event.stopPropagation();" title="Assigner rapidement">
+				👥
+			</button>
+			<button class="overlay-action" onclick="quickEdit({{ task.id }}); event.stopPropagation();" title="Édition rapide">
+				✏️
+			</button>
+		</div>
+	</div>
+</div>

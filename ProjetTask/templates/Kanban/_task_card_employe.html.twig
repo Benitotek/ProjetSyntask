@@ -1,0 +1,168 @@
+<div
+	class="task-card employe-task priority-{{ task.priority.value|lower }} {{ isMyTask ? 'my-task' : 'team-task' }}" data-task-id="{{ task.id }}" data-project-id="{{ task.taskList.project.id }}" data-priority="{{ task.priority.value }}" data-status="{{ task.statut.value }}" data-is-mine="{{ isMyTask ? 'true' : 'false' }}" onclick="openTaskDetailsModal({{ task.id }})">
+
+	<!-- En-tête employé -->
+	<div class="task-header employe-header">
+		<div class="task-meta">
+			{% if isMyTask %}
+				<div class="my-task-indicator">✅</div>
+			{% endif %}
+			<div class="task-priority">
+				<span class="priority-badge {{ task.priority.value|lower }}">
+					{{ task.priority.getIcon() }}
+				</span>
+			</div>
+		</div>
+
+		<div class="task-actions employe-actions">
+			{% if isMyTask %}
+				<button class="task-action-btn" onclick="updateTaskStatus({{ task.id }}); event.stopPropagation();" title="Mettre à jour le statut">
+					🔄
+				</button>
+				<button class="task-action-btn" onclick="addTaskComment({{ task.id }}); event.stopPropagation();" title="Ajouter un commentaire">
+					💬
+				</button>
+				{% if task.statut.value == 'EN_COURS' %}
+					<button class="task-action-btn success" onclick="markComplete({{ task.id }}); event.stopPropagation();" title="Marquer comme terminé">
+						✅
+					</button>
+				{% endif %}
+			{% else %}
+				<button class="task-action-btn" onclick="viewTaskDetails({{ task.id }}); event.stopPropagation();" title="Voir les détails">
+					👁️
+				</button>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- Contenu simplifié -->
+	<div class="task-content employe-content">
+		<div class="task-title {{ isMyTask ? 'my-task-title' : '' }}">
+			{{ task.title }}
+			{% if isMyTask %}
+				<span class="ownership-badge">👤</span>
+			{% endif %}
+		</div>
+
+		{% if task.description and isMyTask %}
+			<div class="task-description">
+				{{ task.description|length > 60 ? task.description[:60] ~ '...' : task.description }}
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Information projet simplifiée -->
+	<div class="task-project-info employe-project-info">
+		<div class="project-badge {{ isMyTask ? 'my-project' : 'team-project' }}">
+			🏗️
+			{{ task.taskList.project.titre }}
+		</div>
+	</div>
+
+	<!-- Timing crucial -->
+	{% if task.deadline %}
+		{% set isOverdue = task.deadline < date() and task.statut.value != 'TERMINER' %}
+		{% set isDueSoon = task.deadline < date('+1 day') and task.statut.value != 'TERMINER' %}
+		<div class="task-deadline {{ isOverdue ? 'overdue' : (isDueSoon ? 'critical' : '') }}">
+			{% if isOverdue %}
+				⚠️ En retard depuis
+				{{ task.deadline|date('d/m/Y') }}
+			{% elseif isDueSoon %}
+				🚨 À rendre
+				{{ task.deadline|date('d/m à H:i') }}
+			{% else %}
+				📅 Échéance:
+				{{ task.deadline|date('d/m/Y') }}
+			{% endif %}
+		</div>
+	{% endif %}
+
+	<!-- Statut personnel -->
+	{% if isMyTask %}
+		<div class="my-task-status">
+			<div class="status-badge {{ task.statut.value|lower }}">
+				{% if task.statut.value == 'EN_ATTENTE' %}
+					⏳ À commencer
+				{% elseif task.statut.value == 'EN_COURS' %}
+					🔄 En cours
+				{% else %}
+					✅ Terminé
+				{% endif %}
+			</div>
+
+			{% if task.statut.value == 'EN_COURS' %}
+				<div class="work-timer" id="timer-{{ task.id }}">
+					⏱️
+					<span id="time-{{ task.id }}">00:00</span>
+				</div>
+			{% endif %}
+		</div>
+	{% endif %}
+
+	<!-- Actions rapides pour mes tâches -->
+	{% if isMyTask %}
+		<div class="my-task-actions">
+			{% if task.statut.value == 'EN_ATTENTE' %}
+				<button class="quick-action start-work" onclick="startWork({{ task.id }}); event.stopPropagation();">
+					▶️ Commencer
+				</button>
+			{% elseif task.statut.value == 'EN_COURS' %}
+				<div class="in-progress-actions">
+					<button class="quick-action pause-work" onclick="pauseWork({{ task.id }}); event.stopPropagation();">
+						⏸️ Pause
+					</button>
+					<button class="quick-action complete-work" onclick="completeWork({{ task.id }}); event.stopPropagation();">
+						✅ Terminer
+					</button>
+				</div>
+			{% endif %}
+
+			<div class="task-help">
+				<button class="help-btn" onclick="requestHelp({{ task.id }}); event.stopPropagation();" title="Demander de l'aide">
+					🆘
+				</button>
+			</div>
+		</div>
+	{% else %}
+		<!-- Vue équipe pour tâches non-assignées -->
+		<div class="team-task-info">
+			<div class="team-assignees">
+				{% if task.taskUsers|length > 0 %}
+					<span class="assignees-label">Assigné à:</span>
+					{% for taskUser in task.taskUsers|slice(0, 2) %}
+						<span class="teammate-name">{{ taskUser.user.prenom }}
+							{{ taskUser.user.nom[:1] }}.</span>
+					{% endfor %}
+					{% if task.taskUsers|length > 2 %}
+						<span class="more-assignees">+{{ task.taskUsers|length - 2 }}</span>
+					{% endif %}
+				{% else %}
+					<span class="no-assignees">Non assignée</span>
+				{% endif %}
+			</div>
+		</div>
+	{% endif %}
+
+	<!-- Indicateurs visuels -->
+	<div class="task-indicators employe-indicators">
+		{% if task.hasNewComments is defined and task.hasNewComments %}
+			<div class="indicator new-comments" title="Nouveaux commentaires">💬</div>
+		{% endif %}
+
+		{% if task.isUrgent is defined and task.isUrgent %}
+			<div class="indicator urgent" title="Tâche urgente">🚨</div>
+		{% endif %}
+
+		{% if task.needsAttention is defined and task.needsAttention %}
+			<div class="indicator attention" title="Attention requise">⚠️</div>
+		{% endif %}
+	</div>
+
+	<!-- Barre de progression personnelle -->
+	{% if isMyTask and task.personalProgress is defined %}
+		<div class="personal-progress">
+			<div class="progress-bar employe-progress" style="width: {{ task.personalProgress }}%"></div>
+			<span class="progress-text">{{ task.personalProgress }}% fait</span>
+		</div>
+	{% endif %}
+</div>

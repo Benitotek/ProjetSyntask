@@ -1,0 +1,166 @@
+<div
+	class="task-card chef-projet-task priority-{{ task.priority.value|lower }} {{ isManaged ? 'manageable' : 'member-view' }}" data-task-id="{{ task.id }}" data-project-id="{{ task.taskList.project.id }}" data-priority="{{ task.priority.value }}" data-status="{{ task.statut.value }}" data-is-managed="{{ isManaged ? 'true' : 'false' }}" onclick="openTaskDetailsModal({{ task.id }})">
+
+	<!-- En-tête chef de projet -->
+	<div class="task-header chef-projet-header">
+		<div class="task-meta">
+			<div class="task-id">#{{ task.id }}</div>
+			<div class="task-priority">
+				<span class="priority-badge {{ task.priority.value|lower }}">
+					{{ task.priority.getIcon() }}
+				</span>
+			</div>
+			{% if isManaged %}
+				<div class="management-indicator" title="Vous pouvez gérer cette tâche">👑</div>
+			{% endif %}
+		</div>
+
+		<div class="task-actions chef-projet-actions">
+			{% if isManaged %}
+				<button class="task-action-btn" onclick="editTask({{ task.id }}); event.stopPropagation();" title="Modifier">
+					✏️
+				</button>
+				<button class="task-action-btn" onclick="assignTaskTeam({{ task.id }}); event.stopPropagation();" title="Assigner à l'équipe">
+					👥
+				</button>
+				<button class="task-action-btn" onclick="setDeadline({{ task.id }}); event.stopPropagation();" title="Définir échéance">
+					📅
+				</button>
+			{% endif %}
+			<button class="task-action-btn" onclick="addComment({{ task.id }}); event.stopPropagation();" title="Commenter">
+				💬
+			</button>
+		</div>
+	</div>
+
+	<!-- Contenu -->
+	<div class="task-content chef-projet-content">
+		<div class="task-title">{{ task.title }}</div>
+
+		{% if task.description %}
+			<div class="task-description">
+				{{ task.description|length > 80 ? task.description[:80] ~ '...' : task.description }}
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Informations projet -->
+	<div class="task-project-info chef-projet-project-info">
+		<div class="project-badge {{ isManaged ? 'managed-project' : 'member-project' }}">
+			🏗️
+			{{ task.taskList.project.titre }}
+			{% if isManaged %}
+				<span class="managed-indicator">👑</span>
+			{% endif %}
+		</div>
+		<div class="list-badge">
+			📋
+			{{ task.taskList.lastName }}
+		</div>
+	</div>
+
+	<!-- Assignés avec focus équipe -->
+	<div class="task-assignees chef-projet-assignees">
+		<div class="assignees-header">
+			<span class="assignees-label">Équipe:</span>
+		</div>
+		<div class="assignees-list">
+			{% if task.taskUsers|length > 0 %}
+				{% for taskUser in task.taskUsers|slice(0, 4) %}
+					<div class="avatar team-avatar" title="{{ taskUser.user.prenom }} {{ taskUser.user.nom }}" data-user-id="{{ taskUser.user.id }}">
+						{{ taskUser.user.prenom[:1] }}{{ taskUser.user.nom[:1] }}
+						<span class="availability-indicator {{ taskUser.user.isAvailable ? 'available' : 'busy' }}"></span>
+					</div>
+				{% endfor %}
+				{% if task.taskUsers|length > 4 %}
+					<div class="avatar-more">+{{ task.taskUsers|length - 4 }}</div>
+				{% endif %}
+			{% else %}
+				<div class="no-assignees">
+					<span class="no-assignees-text">Non assignée</span>
+					{% if isManaged %}
+						<button class="assign-quick-btn" onclick="quickAssignTeam({{ task.id }}); event.stopPropagation();">
+							➕ Assigner
+						</button>
+					{% endif %}
+				</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- Timing et progression -->
+	<div class="task-timing chef-projet-timing">
+		{% if task.deadline %}
+			{% set isOverdue = task.deadline < date() and task.statut.value != 'TERMINER' %}
+			{% set isDueSoon = task.deadline < date('+2 days') and task.statut.value != 'TERMINER' %}
+			<div class="task-deadline {{ isOverdue ? 'overdue' : (isDueSoon ? 'due-soon' : '') }}">
+				{% if isOverdue %}
+					⚠️ Retard
+				{% elseif isDueSoon %}
+					🟡 Urgent
+				{% else %}
+					📅
+				{% endif %}
+				{{ task.deadline|date('d/m') }}
+			</div>
+		{% endif %}
+
+		{% if task.estimatedTime %}
+			<div class="task-estimate">
+				⏱️
+				{{ task.estimatedTime }}h
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Métriques pour chef de projet -->
+	<div class="task-metrics chef-projet-metrics">
+		{% if task.comments is defined and task.comments|length > 0 %}
+			<div class="metric">
+				<span class="metric-icon">💬</span>
+				<span class="metric-value">{{ task.comments|length }}</span>
+			</div>
+		{% endif %}
+
+		<!-- Indicateur de blocage -->
+		{% if task.isBlocked is defined and task.isBlocked %}
+			<div class="metric blocked">
+				<span class="metric-icon">🚫</span>
+				<span class="metric-label">Bloquée</span>
+			</div>
+		{% endif %}
+
+		<!-- Pourcentage d'avancement -->
+		{% if task.progress is defined %}
+			<div class="metric progress">
+				<span class="metric-icon">📊</span>
+				<span class="metric-value">{{ task.progress }}%</span>
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Actions rapides selon le statut -->
+	{% if isManaged %}
+		<div class="quick-actions chef-projet-quick-actions">
+			{% if task.statut.value == 'EN_ATTENTE' %}
+				<button class="quick-action start" onclick="startTask({{ task.id }}); event.stopPropagation();" title="Démarrer">
+					▶️
+				</button>
+			{% elseif task.statut.value == 'EN_COURS' %}
+				<button class="quick-action complete" onclick="completeTask({{ task.id }}); event.stopPropagation();" title="Terminer">
+					✅
+				</button>
+				<button class="quick-action pause" onclick="pauseTask({{ task.id }}); event.stopPropagation();" title="Mettre en pause">
+					⏸️
+				</button>
+			{% endif %}
+		</div>
+	{% endif %}
+
+	<!-- Barre de progression -->
+	{% if task.progress is defined and task.progress > 0 %}
+		<div class="task-progress">
+			<div class="progress-bar chef-projet-progress" style="width: {{ task.progress }}%"></div>
+		</div>
+	{% endif %}
+</div>
