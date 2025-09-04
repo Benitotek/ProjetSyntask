@@ -388,96 +388,6 @@ class ApiKanbanController extends AbstractController
         }
     }
 
-    // #[Route('/tasks/{id}/move', name: 'move_task', methods: ['PATCH'])]
-    // public function moveTask(int $id, Request $request): JsonResponse
-    // {
-    //     $task = $this->taskRepository->find($id);
-
-    //     if (!$task) {
-    //         return $this->json([
-    //             'success' => false,
-    //             'message' => 'Tâche non trouvée'
-    //         ], 404);
-    //     }
-
-    //     if (!$task->getProject()->isMembre($this->getUser())) {
-    //         return $this->json([
-    //             'success' => false,
-    //             'message' => 'Accès non autorisé'
-    //         ], 403);
-    //     }
-
-    //     $data = json_decode($request->getContent(), true);
-
-    //     if (!isset($data['task_list_id'])) {
-    //         return $this->json([
-    //             'success' => false,
-    //             'message' => 'ID de la liste de tâches requis'
-    //         ], 400);
-    //     }
-
-    //     try {
-    //         $newTaskList = $this->taskListRepository->find($data['task_list_id']);
-
-    //         if (!$newTaskList) {
-    //             return $this->json([
-    //                 'success' => false,
-    //                 'message' => 'Liste de tâches non trouvée'
-    //             ], 404);
-    //         }
-
-    //         // Vérifier que la nouvelle liste appartient au même projet
-    //         if ($newTaskList->getProject() !== $task->getProject()) {
-    //             return $this->json([
-    //                 'success' => false,
-    //                 'message' => 'La liste de tâches n\'appartient pas au même projet'
-    //             ], 400);
-    //         }
-
-    //         // Déplacer la tâche
-    //         $oldTaskList = $task->getTaskList();
-    //         $task->setTaskList($newTaskList);
-
-    //         // Mettre à jour la position si fournie
-    //         if (isset($data['position'])) {
-    //             $task->setPosition($data['position']);
-    //         } else {
-    //             // Si pas de position spécifiée, mettre à la fin
-    //             $task->setPosition($this->getNextTaskPosition($newTaskList));
-    //         }
-
-    //         // Mettre à jour automatiquement le statut selon la colonne si configuré
-    //         if (isset($data['update_statut']) && $data['update_statut']) {
-    //             $this->updateTaskstatutByColumn($task, $newTaskList);
-    //         }
-
-    //         $this->entityManager->flush();
-
-    //         // Mettre à jour les couleurs automatiques des colonnes
-    //         if ($oldTaskList) {
-    //             $oldTaskList->updateAutoColor();
-    //         }
-    //         $newTaskList->updateAutoColor();
-
-    //         $this->entityManager->flush();
-
-    //         return $this->json([
-    //             'success' => true,
-    //             'message' => 'Tâche déplacée avec succès',
-    //             'data' => $this->formatTaskData($task)
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         return $this->json([
-    //             'success' => false,
-    //             'message' => 'Erreur lors du déplacement de la tâche',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-   
-
     #[Route('/tasks/{taskListId}/reorder', name: 'reorder_tasks', methods: ['PATCH'])]
     public function reorderTasks(int $taskListId, Request $request): JsonResponse
     {
@@ -672,4 +582,92 @@ class ApiKanbanController extends AbstractController
         }
         return $formattedErrors;
     }
+// version RolebaseKanbanController.php  modification du 04/09/2025
+#[Route('/kanban')]  
+#[IsGranted('ROLE_USER')]  
+
+  
+    /**  
+     * 🎯 ROUTE PRINCIPALE - Dashboard Kanban adapté au rôle  
+     */  
+    #[Route('/dashboard', name: 'kanban_dashboard', methods: ['GET'])]  
+    public function dashboard(Request $request): Response  
+    {  
+        $user = $this->getUser();  
+        $filters = $this->getFiltersFromRequest($request);  
+        
+        // Récupérer les données selon le rôle  
+        $kanbanData = $this->adminKanbanService->getKanbanDataByRole($user, $filters);  
+        
+        // Utilisateurs assignables selon le rôle  
+        $assignableUsers = $this->adminKanbanService->getAssignableUsers($user);  
+        
+        // Template selon le rôle  
+        $template = $this->getTemplateByRole($user);  
+        
+        return $this->render($template, [  
+            'data' => $kanbanData,  
+            'filters' => $filters,  
+            'assignableUsers' => $assignableUsers,  
+            'currentUser' => $user,  
+            'userPermissions' => $this->getUserPermissions($user)  
+        ]);  
+    }  
+
+    /**  
+     * 🔄 API - Déplacer une tâche avec vérification des droits  
+     */  
+    #[Route('/move-task', name: 'kanban_move_task', methods: ['POST'])]  
+    public function moveTask(Request $request): JsonResponse  
+    {  
+        $data = json_decode($request->getContent(), true);  
+        $user = $this->getUser();  
+        
+        $result = $this->adminKanbanService->moveTaskWithRoleCheck(  
+            $data['taskId'],  
+            $data['newListId'],  
+            $data['newPosition'],  
+            $user  
+        );  
+
+        return $this->json($result);  
+    }  
+
+    /**  
+     * 👥 API - Assigner un utilisateur à un projet  
+     */  
+    #[Route('/assign-user-project', name: 'kanban_assign_user_project', methods: ['POST'])]  
+    public function assignUserToProject(Request $request): JsonResponse  
+    {  
+        $data = json_decode($request->getContent(), true);  
+        $user = $this->getUser();  
+        
+        $result = $this->adminKanbanService->assignUserToProject(  
+            $data['userId'],  
+            $data['projectId'],  
+            $user  
+        );  
+
+        return $this->json($result);  
+    }  
+
+    /**  
+     * 📋 API - Assigner un utilisateur à une tâche  
+     */  
+ 
+    #[Route('/assign-user-task', name: 'kanban_assign_user_task', methods: ['POST'])]
+    public function assignUserToTask(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $user = $this->getUser();
+        
+        $result = $this->adminKanbanService->assignUserToTask(
+            $data['userId'],
+            $data['taskId'],
+            $user
+        );
+
+        return $this->json($result);
+    }
+
 }
