@@ -1,0 +1,762 @@
+/**  
+ * 🎯 SynTask Kanban Roles - Extension CSS  
+ * Styles spécialisés pour les rôles et drag & drop  
+ */  
+
+/* =========================  
+   🏗️ BASE ET LAYOUT  
+   ========================= */  
+
+.kanban-dashboard {  
+    min-height: 100vh;  
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  
+    font-family: 'Inter', sans-serif;  
+}  
+
+/* Header spécialisé */  
+.kanban-header {  
+    background: rgba(255, 255, 255, 0.95);  
+    backdrop-filter: blur(10px);  
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);  
+    padding: 1rem 2rem;  
+    display: flex;  
+    align-items: center;  
+    justify-content: space-between;  
+    position: sticky;  
+    top: 0;  
+    z-index: 100;  
+}  
+
+.logo {  
+    display: flex;  
+    align-items: center;  
+    gap: 0.5rem;  
+}  
+
+.logo-img {  
+    height: 32px;  
+    width: auto;  
+}  
+
+/* Indicateurs de rôle */  
+.role-badge {  
+    padding: 0.25rem 0.75rem;  
+    border-radius: 1rem;  
+    font-size: 0.75rem;  
+    font-weight: 600;  
+    text-transform: uppercase;  
+    letter-spacing: 0.5px;  
+}  
+
+.role-badge.role-admin {  
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);  
+    color: white;  
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);  
+}  
+
+.role-badge.role-directeur {  
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);  
+    color: white;  
+    box-shadow: 0 2px 10px rgba(78, 205, 196, 0.3);  
+}  
+
+.role-badge.role-chef_projet {  
+    background: linear-gradient(135deg, #45b7d1, #96c93d);  
+    color: white;  
+    box-shadow: 0 2px 10px rgba(69, 183, 209, 0.3);  
+}  
+
+.role-badge.role-employe {  
+    background: linear-gradient(135deg, #f093fb, #f5576c);  
+    color: white;  
+    box-shadow: 0 2px 10px rgba(240, 147, 251, 0.3);  
+}  
+
+/* =========================  
+   📊 STATISTIQUES  
+   ========================= */  
+
+.stats-grid {  
+    display: grid;  
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));  
+    gap: 1.5rem;  
+    margin: 2rem 0;  
+    padding: 0 2rem;  
+}  
+
+.stat-card {  
+    background: rgba(255, 255, 255, 0.95);  
+    backdrop-filter: blur(10px);  
+    border-radius: 1rem;  
+    padding: 1.5rem;  
+    display: flex;  
+    align-items: center;  
+    gap: 1rem;  
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);  
+    transition: transform 0.3s ease, box-shadow 0.3s ease;  
+    border: 1px solid rgba(255, 255, 255, 0.2);  
+    position: relative;  
+    overflow: hidden;  
+}  
+
+.stat-card::before {  
+    content: '';  
+    position: absolute;  
+    top: 0;  
+    left: 0;  
+    right: 0;  
+    height: 4px;  
+    background: var(--card-accent, linear-gradient(135deg, #667eea, #764ba2));  
+}  
+
+.stat-card:hover {  
+    transform: translateY(-4px);  
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);  
+}  
+
+.stat-card.primary { --card-accent: linear-gradient(135deg, #667eea, #764ba2); }  
+.stat-card.success { --card-accent: linear-gradient(135deg, #48bb78, #38a169); }  
+.stat-card.warning { --card-accent: linear-gradient(135deg, #ed8936, #dd6b20); }  
+.stat-card.info { --card-accent: linear-gradient(135deg, #4299e1, #3182ce); }  
+.stat-card.special { --card-accent: linear-gradient(135deg, #9f7aea, #805ad5); }  
+
+.stat-icon {  
+    font-size: 2.5rem;  
+    opacity: 0.8;  
+}  
+
+.stat-content {  
+    flex: 1;  
+}  
+
+.stat-number {  
+    font-size: 2rem;  
+    font-weight: 700;  
+    color: #2d3748;  
+    line-height: 1;  
+}  
+
+.stat-label {  
+    color: #718096;  
+    font-size: 0.875rem;  
+    margin-top: 0.25rem;  
+    font-weight: 500;  
+}  
+
+.stat-detail {  
+    color: #a0aec0;  
+    font-size: 0.75rem;  
+    margin-top: 0.25rem;  
+}  
+
+/* =========================  
+   🎯 KANBAN COLONNES SPÉCIALISÉES  
+   ========================= */  
+
+.admin-column {  
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));  
+    border: 2px solid transparent;  
+    background-clip: padding-box;  
+}  
+
+.admin-column::before {  
+    content: '👑';  
+    position: absolute;  
+    top: 0.5rem;  
+    right: 0.5rem;  
+    font-size: 1rem;  
+    opacity: 0.6;  
+}  
+
+.chef-projet-column.managed-project {  
+    background: linear-gradient(135deg, rgba(69, 183, 209, 0.1), rgba(150, 201, 61, 0.1));  
+    border-left: 4px solid #45b7d1;  
+}  
+
+.chef-projet-column.member-project {  
+    background: linear-gradient(135deg, rgba(160, 174, 192, 0.1), rgba(160, 174, 192, 0.05));  
+    border-left: 4px solid #a0aec0;  
+}  
+
+.employe-column {  
+    background: rgba(255, 255, 255, 0.95);  
+    position: relative;  
+}  
+
+/* =========================  
+   🃏 CARTES DE TÂCHES SPÉCIALISÉES  
+   ========================= */  
+
+.task-card.admin-task {  
+    border: 2px solid transparent;  
+    background: linear-gradient(white, white) padding-box,  
+                linear-gradient(135deg, #667eea, #764ba2) border-box;  
+    position: relative;  
+    padding: 1rem;  
+}  
+
+.admin-task-header {  
+    display: flex;  
+    justify-content: space-between;  
+    align-items: flex-start;  
+    margin-bottom: 0.75rem;  
+}  
+
+.task-actions.admin-actions {  
+    display: flex;  
+    gap: 0.25rem;  
+    opacity: 0;  
+    transition: opacity 0.2s ease;  
+}  
+
+.admin-task:hover .admin-actions {  
+    opacity: 1;  
+}  
+
+.task-action-btn {  
+    background: rgba(255, 255, 255, 0.9);  
+    border: 1px solid rgba(0, 0, 0, 0.1);  
+    border-radius: 0.375rem;  
+    width: 1.75rem;  
+    height: 1.75rem;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    font-size: 0.75rem;  
+    cursor: pointer;  
+    transition: all 0.2s ease;  
+}  
+
+.task-action-btn:hover {  
+    background: rgba(255, 255, 255, 1);  
+    transform: scale(1.1);  
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);  
+}  
+
+.task-action-btn.danger:hover {  
+    background: #fee2e2;  
+    color: #dc2626;  
+}  
+
+/* =========================  
+   🎯 DRAG & DROP  
+   ========================= */  
+
+.task-ghost {  
+    opacity: 0.5;  
+    transform: rotate(3deg);  
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);  
+}  
+
+.task-chosen {  
+    opacity: 0.8;  
+    transform: scale(1.02);  
+}  
+
+.task-drag {  
+    transform: rotate(-2deg);  
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);  
+}  
+
+.drag-over {  
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));  
+    border: 2px dashed #22c55e;  
+    border-radius: 0.5rem;  
+}  
+
+.task-drag-over {  
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));  
+    border-left: 4px solid #3b82f6;  
+    transform: scale(1.02);  
+}  
+
+.valid-drop-zone {  
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.1));  
+    border: 2px dashed #22c55e;  
+    border-radius: 0.5rem;  
+    animation: pulse-valid 2s infinite;  
+}  
+
+.invalid-drop-zone {  
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.1));  
+    border: 2px dashed #ef4444;  
+    border-radius: 0.5rem;  
+    opacity: 0.6;  
+}  
+
+@keyframes pulse-valid {  
+    0%, 100% { transform: scale(1); }  
+    50% { transform: scale(1.02); }  
+}  
+
+/* =========================  
+   👥 PANELS ET MODALES  
+   ========================= */  
+
+.users-panel, .team-panel {  
+    position: fixed;  
+    top: 0;  
+    right: 0;  
+    width: 400px;  
+    height: 100vh;  
+    background: rgba(255, 255, 255, 0.98);  
+    backdrop-filter: blur(10px);  
+    border-left: 1px solid rgba(0, 0, 0, 0.1);  
+    z-index: 1000;  
+    transform: translateX(100%);  
+    transition: transform 0.3s ease;  
+    overflow: hidden;  
+    display: flex;  
+    flex-direction: column;  
+}  
+
+.users-panel:not(.hidden), .team-panel:not(.hidden) {  
+    transform: translateX(0);  
+}  
+
+.panel-header {  
+    background: linear-gradient(135deg, #667eea, #764ba2);  
+    color: white;  
+    padding: 1.5rem;  
+    display: flex;  
+    justify-content: space-between;  
+    align-items: center;  
+}  
+
+.panel-header h3 {  
+    margin: 0;  
+    font-size: 1.125rem;  
+    font-weight: 600;  
+}  
+
+.panel-close {  
+    background: rgba(255, 255, 255, 0.2);  
+    border: none;  
+    color: white;  
+    width: 2rem;  
+    height: 2rem;  
+    border-radius: 50%;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    cursor: pointer;  
+    transition: background 0.2s ease;  
+}  
+
+.panel-close:hover {  
+    background: rgba(255, 255, 255, 0.3);  
+}  
+
+.panel-content {  
+    flex: 1;  
+    padding: 1.5rem;  
+    overflow-y: auto;  
+}  
+
+/* =========================  
+   👤 UTILISATEURS  
+   ========================= */  
+
+.user-item, .member-item {  
+    display: flex;  
+    align-items: center;  
+    gap: 1rem;  
+    padding: 1rem;  
+    border-radius: 0.5rem;  
+    cursor: pointer;  
+    transition: all 0.2s ease;  
+    border: 1px solid transparent;  
+    margin-bottom: 0.5rem;  
+}  
+
+.user-item:hover, .member-item:hover {  
+    background: rgba(103, 126, 234, 0.1);  
+    border-color: rgba(103, 126, 234, 0.2);  
+    transform: translateY(-1px);  
+}  
+
+.user-avatar, .member-avatar {  
+    width: 40px;  
+    height: 40px;  
+    border-radius: 50%;  
+    background: linear-gradient(135deg, #667eea, #764ba2);  
+    color: white;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    font-weight: 600;  
+    font-size: 0.875rem;  
+}  
+
+.user-info, .member-info {  
+    flex: 1;  
+}  
+
+.user-name, .member-name {  
+    font-weight: 600;  
+    color: #1f2937;  
+    margin-bottom: 0.25rem;  
+}  
+
+.user-role, .member-role {  
+    font-size: 0.75rem;  
+    padding: 0.125rem 0.5rem;  
+    border-radius: 0.25rem;  
+    font-weight: 500;  
+    text-transform: uppercase;  
+}  
+
+.user-role.role-admin { background: #fecaca; color: #b91c1c; }  
+.user-role.role-directeur { background: #bbf7d0; color: #166534; }  
+.user-role.role-chef_projet { background: #dbeafe; color: #1d4ed8; }  
+.user-role.role-employe { background: #e5e7eb; color: #374151; }  
+
+.draggable-user {  
+    cursor: grab;  
+    border: 2px solid transparent;  
+}  
+
+.draggable-user:active {  
+    cursor: grabbing;  
+}  
+
+.draggable-user.dragging {  
+    opacity: 0.5;  
+    transform: rotate(2deg);  
+}  
+
+/* =========================  
+   📊 STATISTIQUES ET MÉTRIQUES  
+   ========================= */  
+
+.task-metrics {  
+    display: flex;  
+    gap: 0.5rem;  
+    margin-top: 0.5rem;  
+    flex-wrap: wrap;  
+}  
+
+.metric {  
+    display: flex;  
+    align-items: center;  
+    gap: 0.25rem;  
+    font-size: 0.75rem;  
+    color: #6b7280;  
+    background: rgba(0, 0, 0, 0.05);  
+    padding: 0.25rem 0.5rem;  
+    border-radius: 0.25rem;  
+    cursor: pointer;  
+    transition: all 0.2s ease;  
+}  
+
+.metric:hover {  
+    background: rgba(103, 126, 234, 0.1);  
+    color: #667eea;  
+}  
+
+.metric-icon {  
+    font-size: 0.875rem;  
+}  
+
+/* =========================  
+   ⚡ ACTIONS RAPIDES  
+   ========================= */  
+
+.quick-actions-fab {  
+    position: fixed;  
+    bottom: 2rem;  
+    right: 2rem;  
+    z-index: 1000;  
+}  
+
+.fab-main {  
+    width: 3.5rem;  
+    height: 3.5rem;  
+    border-radius: 50%;  
+    background: linear-gradient(135deg, #667eea, #764ba2);  
+    color: white;  
+    border: none;  
+    box-shadow: 0 8px 24px rgba(103, 126, 234, 0.4);  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    font-size: 1.25rem;  
+    cursor: pointer;  
+    transition: all 0.3s ease;  
+    position: relative;  
+}  
+
+.fab-main:hover {  
+    transform: scale(1.1);  
+    box-shadow: 0 12px 32px rgba(103, 126, 234, 0.5);  
+}  
+
+.fab-actions {  
+    position: absolute;  
+    bottom: 4rem;  
+    right: 0;  
+    display: flex;  
+    flex-direction: column;  
+    gap: 0.75rem;  
+    opacity: 1;  
+    transform: translateY(0);  
+    transition: all 0.3s ease;  
+}  
+
+.fab-actions.hidden {  
+    opacity: 0;  
+    transform: translateY(1rem);  
+    pointer-events: none;  
+}  
+
+.fab-action {  
+    width: 2.75rem;  
+    height: 2.75rem;  
+    border-radius: 50%;  
+    background: white;  
+    color: #667eea;  
+    border: 2px solid #667eea;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    cursor: pointer;  
+    transition: all 0.3s ease;  
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);  
+}  
+
+.fab-action:hover {  
+    background: #667eea;  
+    color: white;  
+    transform: scale(1.1);  
+}  
+
+/* =========================  
+   📱 RESPONSIVE  
+   ========================= */  
+
+@media (max-width: 768px) {  
+    .users-panel, .team-panel {  
+        width: 100vw;  
+    }  
+    
+    .stats-grid {  
+        grid-template-columns: 1fr;  
+        gap: 1rem;  
+    }  
+    
+    .kanban-header {  
+        flex-direction: column;  
+        gap: 1rem;  
+        padding: 1rem;  
+    }  
+    
+    .header-center, .header-right {  
+        width: 100%;  
+    }  
+    
+    .kanban-nav {  
+        justify-content: center;  
+        flex-wrap: wrap;  
+    }  
+    
+    .quick-actions {  
+        flex-direction: column;  
+        gap: 0.5rem;  
+    }  
+    
+    .kanban-board {  
+        padding: 1rem;  
+        gap: 1rem;  
+    }  
+    
+    .kanban-column {  
+        min-width: 280px;  
+    }  
+}  
+
+@media (max-width: 480px) {  
+    .fab-main {  
+        width: 3rem;  
+        height: 3rem;  
+        bottom: 1rem;  
+        right: 1rem;  
+    }  
+    
+    .fab-action {  
+        width: 2.5rem;  
+        height: 2.5rem;  
+    }  
+    
+    .task-card {  
+        margin-bottom: 0.75rem;  
+    }  
+    
+    .task-actions {  
+        gap: 0.25rem;  
+    }  
+}  
+
+/* =========================  
+   🎨 THÈMES ET ANIMATIONS  
+   ========================= */  
+
+@keyframes slideIn {  
+    from {  
+        opacity: 0;  
+        transform: translateY(1rem);  
+    }  
+    to {  
+        opacity: 1;  
+        transform: translateY(0);  
+    }  
+}  
+
+@keyframes fadeIn {  
+    from { opacity: 0; }  
+    to { opacity: 1; }  
+}  
+
+.task-card {  
+    animation: slideIn 0.3s ease;  
+}  
+
+.notification {  
+    position: fixed;  
+    top: 2rem;  
+    right: 2rem;  
+    z-index: 9999;  
+    max-width: 400px;  
+    opacity: 0;  
+    transform: translateX(100%);  
+    transition: all 0.3s ease;  
+}  
+
+.notification.show {  
+    opacity: 1;  
+    transform: translateX(0);  
+}  
+
+.notification.success {  
+    background: linear-gradient(135deg, #10b981, #059669);  
+    color: white;  
+}  
+
+.notification.error {  
+    background: linear-gradient(135deg, #ef4444, #dc2626);  
+    color: white;  
+}  
+
+.notification.warning {  
+    background: linear-gradient(135deg, #f59e0b, #d97706);  
+    color: white;  
+}  
+
+.notification.info {  
+    background: linear-gradient(135deg, #3b82f6, #2563eb);  
+    color: white;  
+}  
+
+.notification-content {  
+    padding: 1rem;  
+    border-radius: 0.5rem;  
+    display: flex;  
+    justify-content: space-between;  
+    align-items: center;  
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);  
+}  
+
+.notification-close {  
+    background: none;  
+    border: none;  
+    color: inherit;  
+    cursor: pointer;  
+    padding: 0.25rem;  
+    margin-left: 1rem;  
+}  
+
+/* =========================  
+   🔍 RECHERCHE  
+   ========================= */  
+
+.search-container {  
+    position: relative;  
+}  
+
+.search-input {  
+    width: 300px;  
+    padding: 0.5rem 1rem;  
+    border: 1px solid rgba(0, 0, 0, 0.1);  
+    border-radius: 2rem;  
+    background: rgba(255, 255, 255, 0.9);  
+    backdrop-filter: blur(10px);  
+    transition: all 0.3s ease;  
+}  
+
+.search-input:focus {  
+    outline: none;  
+    border-color: #667eea;  
+    box-shadow: 0 0 0 3px rgba(103, 126, 234, 0.1);  
+    width: 350px;  
+}  
+
+.search-results {  
+    position: absolute;  
+    top: 100%;  
+    left: 0;  
+    right: 0;  
+    background: white;  
+    border: 1px solid rgba(0, 0, 0, 0.1);  
+    border-radius: 0.5rem;  
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);  
+    max-height: 300px;  
+    overflow-y: auto;  
+    z-index: 1000;  
+    margin-top: 0.5rem;  
+}  
+
+/* =========================  
+   🎯 FILTRES  
+   ========================= */  
+
+.dashboard-controls {  
+    background: rgba(255, 255, 255, 0.9);  
+    backdrop-filter: blur(10px);  
+    padding: 1rem 2rem;  
+    border-radius: 1rem;  
+    margin: 1rem 2rem;  
+    display: flex;  
+    justify-content: space-between;  
+    align-items: center;  
+    flex-wrap: wrap;  
+    gap: 1rem;  
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);  
+}  
+
+.view-switcher {  
+    display: flex;  
+    background: rgba(0, 0, 0, 0.05);  
+    border-radius: 0.5rem;  
+    padding: 0.25rem;  
+    gap: 0.25rem;  
+}  
+
+.view-switcher button {  
+    background: none;  
+    border: none;  
+    cursor: pointer;  
+    padding: 0.5rem 1rem;  
+    border-radius: 0.5rem;  
+    font-weight: 500;  
+    color: #6B7280;  
+    transition: all 0.3s ease;  
+}  
+
+.view-switcher button.active {  
+    background: #667eea;  
+    color: white;  
+}  
+
+.view-switcher button:hover {  
+    background: #667eea;  
+    color: white;  
+}

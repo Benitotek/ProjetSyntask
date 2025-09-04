@@ -283,7 +283,7 @@ public function getEmployeKanbanData(User $user, array $filters = []): array
             $this->entityManager->flush();
 
             // Log de l'activité  
-            $this->activityLogger->logProjectAssignment($project, $user, $assignedBy);
+            $this->activityLogger->logProjectAssignment($user, $project, $assignedBy);
 
             // Notification  
             $this->notificationService->createProjectAssignmentNotification($project, $user, $assignedBy);
@@ -446,7 +446,7 @@ public function getEmployeKanbanData(User $user, array $filters = []): array
     /**
      * 📋 Récupérer la liste des utilisateurs assignables
      */
-    public function getAssignableUsers(User $currentUser, Project $project = null): array
+    public function getAssignableUsersForProject(User $currentUser, ?Project $project = null): array
     {
         $currentUserRoles = $currentUser->getRoles();
 
@@ -495,7 +495,7 @@ public function getEmployeKanbanData(User $user, array $filters = []): array
             }
 
             // Utiliser le service Kanban existant
-            $this->kanbanService->moveTaskToColumn($task, $newList, $newPosition);
+            $this->kanbanService->moveTask($task, $newListId, $newPosition);
 
             // Log spécifique selon le changement de projet
             if ($oldProject->getId() !== $newProject->getId()) {
