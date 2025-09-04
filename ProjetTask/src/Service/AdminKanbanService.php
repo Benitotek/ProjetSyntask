@@ -19,6 +19,36 @@ use Symfony\Bundle\SecurityBundle\Security;
 class AdminKanbanService
 
 {
+    /**
+     * 📊 Données Kanban pour Admin et Directeur (accès total)
+     */
+    private function getAllKanbanData(array $filters = []): array
+    {
+        $projects = $this->projectRepository->findAll();
+        $tasks = [];
+        $taskLists = [];
+
+        foreach ($projects as $project) {
+            $projectTasks = $this->taskRepository->findByProject($project);
+            $projectTaskLists = $this->taskListRepository->findByProjectWithTasksOrdered($project);
+
+            $tasks = array_merge($tasks, $projectTasks);
+            $taskLists = array_merge($taskLists, $projectTaskLists);
+        }
+
+        $users = $this->userRepository->findActiveUsers();
+
+        return [
+            'projects' => $projects,
+            'tasks' => $this->applyFilters($tasks, $filters),
+            'users' => $users,
+            'taskLists' => $taskLists,
+            'statistics' => $this->calculateStatistics($projects, $tasks),
+            'recentActivities' => $this->getRecentActivitiesForProjects($projects),
+            'userRole' => 'ADMIN'
+        ];
+    }
+
     public function __construct(
         private ProjectRepository $projectRepository,
         private TaskRepository $taskRepository,
@@ -33,124 +63,6 @@ class AdminKanbanService
         private Security $security,
         private PaginatorInterface $paginator
     ) {}
-    /**  
-     * 🎯 NOUVELLE MÉTHODE - Récupère toutes les données Kanban (Admin/Directeur)  
-     */
-    public function getGlobalStatistics(): array
-{
-    // Exemple de logique à adapter selon tes besoins
-    $totalProjects = $this->projectRepository->count([]);
-    $totalTasks = $this->taskRepository->count([]);
-    $totalUsers = $this->userRepository->count([]);
-
-    return [
-        'total_projects' => $totalProjects,
-        'total_tasks' => $totalTasks,
-        'total_users' => $totalUsers,
-        // Ajoute d'autres statistiques si besoin
-    ];
-}
-
-public function moveTask(int $taskId, int $newListId, int $newPosition): bool
-{
-    // Exemple de logique à adapter selon ta structure
-    $task = $this->taskRepository->find($taskId);
-    $newList = $this->taskListRepository->find($newListId);
-
-    if (!$task || !$newList) {
-        return false;
-    }
-
-    $task->setTaskList($newList);
-    $task->setPosition($newPosition);
-    $this->entityManager->flush();
-
-    return true;
-}
-
-    /**  
-     * 🎯 NOUVELLE MÉTHODE - Récupère les utilisateurs pouvant être assignés à un projet  
-     */
-    public function getAssignableUsers(User $currentUser, ?Project $project = null): array
-    {
-        $userRoles = $currentUser->getRoles();
-
-        // Admin et Directeur : Tous les utilisateurs actifs  
-        if (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_DIRECTEUR', $userRoles)) {
-            return $this->userRepository->findActiveUsers();
-        }
-
-        // Chef de projet : Utilisateurs de ses projets uniquement  
-        if (in_array('ROLE_CHEF_PROJET', $userRoles) && $project) {
-            return $project->getMembres()->toArray();
-        }
-
-        return [];
-    }
-
-    /**  
-     * 🎯 NOUVELLE MÉTHODE - Récupère toutes les données Kanban (Admin/Directeur)  
-     */
-public function getAllKanbanData(array $filters = []): array
-{
-    $projects = $this->projectRepository->findAll();
-    $tasks = [];
-    $taskLists = [];
-
-    foreach ($projects as $project) {
-        $projectTasks = $this->taskRepository->findByProject($project);
-        $projectTaskLists = $this->taskListRepository->findByProjectWithTasksOrdered($project);
-
-        $tasks = array_merge($tasks, $projectTasks);
-        $taskLists = array_merge($taskLists, $projectTaskLists);
-    }
-
-    $users = $this->userRepository->findActiveUsers();
-
-    return [
-        'projects' => $projects,
-        'tasks' => $this->applyFilters($tasks, $filters),
-        'users' => $users,
-        'taskLists' => $taskLists,
-        'statistics' => $this->getStatistics($projects, $tasks),
-        'recentActivities' => $this->getRecentActivitiesForProjects($projects),
-        'userRole' => 'ADMIN'
-    ];
-}
-public function getDirecteurKanbanData(User $user, array $filters = []): array
-{
-    // Logique pour récupérer les données Kanban du directeur
-    // Exemple basique :
-    $projects = $this->projectRepository->findByDirecteur($user);
-    $tasks = [];
-    $taskLists = [];
-
-    foreach ($projects as $project) {
-        $tasks = array_merge($tasks, $this->taskRepository->findByProject($project));
-        $taskLists = array_merge($taskLists, $this->taskListRepository->findByProjectWithTasksOrdered($project));
-    }
-
-    $users = $this->getUsersFromProjects($projects);
-
-    return [
-        'projects' => $projects,
-        'tasks' => $this->applyFilters($tasks, $filters),
-        'users' => $users,
-        'taskLists' => $taskLists,
-        'statistics' => $this->calculateStatistics($projects, $tasks),
-        'recentActivities' => $this->getRecentActivitiesForProjects($projects),
-        'userRole' => 'DIRECTEUR'
-    ];
-}
-public function getChefProjetKanbanData(User $user, array $filters = []): array
-{
-    // Logique pour chef de projet (similaire à ce que tu fais déjà)
-}
-
-public function getEmployeKanbanData(User $user, array $filters = []): array
-{
-    // Logique pour employé (similaire à ce que tu fais déjà)
-}
 
     /**  
      * 🎯 NOUVELLE MÉTHODE - Récupère les données selon les droits de l'utilisateur  
@@ -686,6 +598,29 @@ public function getEmployeKanbanData(User $user, array $filters = []): array
 
     // Méthodes utilitaires supplémentaires...
 
+    /**
+     * Filtre les tâches selon les filtres fournis (statut, priorité, etc.)
+     */
+    private function applyFilters(array $tasks, array $filters = []): array
+    {
+        return array_filter($tasks, function ($task) use ($filters) {
+            if (isset($filters['statut']) && $task->getStatut() !== $filters['statut']) {
+                return false;
+            }
+            if (isset($filters['priority']) && $task->getPriority() !== $filters['priority']) {
+                return false;
+            }
+            if (isset($filters['assignedUser']) && method_exists($task, 'getAssignedUser')) {
+                $assignedUser = $task->getAssignedUser();
+                if (!$assignedUser || $assignedUser->getId() !== $filters['assignedUser']) {
+                    return false;
+                }
+            }
+            // Ajoutez d'autres filtres ici si nécessaire
+            return true;
+        });
+    }
+
     public function getProjectsByRole(User $user): array
     {
         $roles = $user->getRoles();
@@ -701,5 +636,65 @@ public function getEmployeKanbanData(User $user, array $filters = []): array
         }
 
         return $this->projectRepository->findByMembre($user);
+    }
+
+    /**
+     * 📊 Calcule les statistiques globales pour les projets et tâches donnés
+     */
+    private function calculateStatistics(array $projects, array $tasks): array
+    {
+        $totalProjects = count($projects);
+        $totalTasks = count($tasks);
+        $completedTasks = 0;
+        $inProgressTasks = 0;
+        $overdueTasks = 0;
+
+        foreach ($tasks as $task) {
+            if ($task->getStatut() === 'TERMINER') {
+                $completedTasks++;
+            } elseif ($task->getStatut() === 'EN_COURS') {
+                $inProgressTasks++;
+            }
+            if ($task->getDeadline() && $task->getDeadline() < new \DateTime() && $task->getStatut() !== 'TERMINER') {
+                $overdueTasks++;
+            }
+        }
+
+        return [
+            'totalProjects' => $totalProjects,
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
+            'inProgressTasks' => $inProgressTasks,
+            'overdueTasks' => $overdueTasks,
+            'completionRate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0
+        ];
+    }
+
+    /**
+     * 🕑 Récupérer les activités récentes pour une liste de projets
+     */
+    private function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
+    {
+        $projectIds = array_map(fn($project) => $project->getId(), $projects);
+        if (empty($projectIds)) {
+            return [];
+        }
+        $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
+        // Vous pouvez formater les activités ici si besoin
+        return $activities;
+    }
+
+    /**
+     * 🕑 Récupérer les activités récentes pour un utilisateur (employé)
+     */
+    private function getRecentActivitiesForUser(User $user, int $limit = 10): array
+    {
+        // Suppose que le repository a une méthode pour cela, sinon à implémenter
+        if (method_exists($this->activityRepository, 'findRecentByUser')) {
+            return $this->activityRepository->findRecentByUser($user, $limit);
+        }
+        // Fallback: récupérer les projets de l'utilisateur et utiliser la méthode existante
+        $projects = $this->projectRepository->findByMembre($user);
+        return $this->getRecentActivitiesForProjects($projects, $limit);
     }
 }

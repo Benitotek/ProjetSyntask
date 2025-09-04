@@ -16,6 +16,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -29,19 +30,22 @@ class ApiKanbanController extends AbstractController
     private TaskListRepository $taskListRepository;
     private TaskRepository $taskRepository;
     private ValidatorInterface $validator;
+    private $adminKanbanService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         ProjectRepository $projectRepository,
         TaskListRepository $taskListRepository,
         TaskRepository $taskRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        $adminKanbanService
     ) {
         $this->entityManager = $entityManager;
         $this->projectRepository = $projectRepository;
         $this->taskListRepository = $taskListRepository;
         $this->taskRepository = $taskRepository;
         $this->validator = $validator;
+        $this->adminKanbanService = $adminKanbanService;
     }
     private EntityManagerInterface $em;
 
