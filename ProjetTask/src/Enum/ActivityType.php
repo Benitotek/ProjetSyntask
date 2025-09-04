@@ -8,7 +8,7 @@ enum ActivityType: string
     case PROJECT_CREATE = 'project_create';
     case PROJECT_UPDATE = 'project_update';
     case PROJECT_DELETE = 'project_delete';
-    case PROJECT_ASSIGNMENT = 'project_assignment';
+    case PROJECT_ASSIGN = 'project_assignment';
 
     case TASK_CREATE = 'task_create';
     case TASK_UPDATE = 'task_update';
