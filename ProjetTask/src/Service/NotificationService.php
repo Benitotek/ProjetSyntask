@@ -25,7 +25,21 @@ class NotificationService
         $this->urlGenerator = $urlGenerator;
         $this->notificationRepository = $notificationRepository;
     }
-
+/**
+ * Crée une notification lors de l'assignation d'un utilisateur à un projet.
+ */
+public function createProjectAssignmentNotification(Project $project, User $user, User $assignedBy): void
+{
+    
+    $notification = new Notification();
+    $notification->setType('project_assignment');
+    $notification->setProject($project);
+    $notification->setUser($user);
+    $notification->setCreatedBy($assignedBy);
+    $notification->setMessage(sprintf('%s vous a ajouté au projet %s', $assignedBy->getNom(), $project->getTitre()));
+    $this->entityManager->persist($notification);
+    $this->entityManager->flush();
+}
     /**
      * Crée une notification pour un utilisateur
      */
