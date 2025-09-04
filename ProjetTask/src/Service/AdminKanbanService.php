@@ -19,6 +19,19 @@ use Symfony\Bundle\SecurityBundle\Security;
 class AdminKanbanService
 
 {
+    public function __construct(
+        private ProjectRepository $projectRepository,
+        private TaskRepository $taskRepository,
+        private UserRepository $userRepository,
+        private TaskListRepository $taskListRepository,
+        private ActivityRepository $activityRepository,
+        private EntityManagerInterface $entityManager,
+        private KanbanService $kanbanService,
+        private ActivityLogger $activityLogger,
+        private NotificationService $notificationService,
+        private Security $security,
+        private PaginatorInterface $paginator
+    ) {}
     /**
      * 📊 Données Kanban pour Admin et Directeur (accès total)
      */
@@ -49,20 +62,7 @@ class AdminKanbanService
         ];
     }
 
-    public function __construct(
-        private ProjectRepository $projectRepository,
-        private TaskRepository $taskRepository,
-        private UserRepository $userRepository,
-        private TaskListRepository $taskListRepository,
-        private ActivityRepository $activityRepository,
-        private EntityManagerInterface $entityManager,
-        private KanbanService $kanbanService,
-        private AdminKanbanService $adminKanbanService,
-        private ActivityLogger $activityLogger,
-        private NotificationService $notificationService,
-        private Security $security,
-        private PaginatorInterface $paginator
-    ) {}
+
 
     /**  
      * 🎯 NOUVELLE MÉTHODE - Récupère les données selon les droits de l'utilisateur  
@@ -96,11 +96,7 @@ class AdminKanbanService
     {
         // Projets gérés par le chef  
         $managedProjects = $this->projectRepository->findByChefDeproject($chefProjet);
-
-        // Projets où il est membre  
         $memberProjects = $this->projectRepository->findByMembre($chefProjet);
-
-        // Fusionner et dédoublonner  
         $allProjects = array_unique(array_merge($managedProjects, $memberProjects), SORT_REGULAR);
 
         $tasks = [];
@@ -136,8 +132,6 @@ class AdminKanbanService
     {
         // Projets où l'employé est membre  
         $projects = $this->projectRepository->findByMembre($employe);
-
-        // Tâches assignées à l'employé  
         $assignedTasks = $this->taskRepository->findByAssignedUser($employe);
 
         // Toutes les tâches des projets (pour contexte)  
@@ -224,34 +218,25 @@ class AdminKanbanService
                 return ['success' => false, 'message' => 'Utilisateur ou tâche introuvable'];
             }
 
-            $project = $task->getTaskList()->getProject();
-
-            // Vérifier les droits d'assignation  
-            if (!$this->canAssignToTask($assignedBy, $task)) {
-                return ['success' => false, 'message' => 'Droits insuffisants pour cette assignation'];
+            // Vérifier si déjà assigné  
+            if ($task->getAssignedUser() === $user) {
+                return ['success' => false, 'message' => 'Utilisateur déjà assigné à cette tâche'];
             }
 
-            // Vérifier si l'utilisateur est membre du projet  
-            if (!$project->getMembres()->contains($user) && $project->getChefproject() !== $user) {
-                return ['success' => false, 'message' => 'L\'utilisateur doit être membre du projet'];
-            }
-
-            // Assigner (selon votre modèle de données)  
-            if (method_exists($task, 'setAssignedUser')) {
-                $task->setAssignedUser($user);
-            }
-            // Ou si vous utilisez TaskUser  
-            if (method_exists($task, 'addTaskUser')) {
-                // Créer une relation TaskUser si nécessaire  
-            }
-
+            // Assigner  
+            $task->setAssignedUser($user);
             $this->entityManager->flush();
 
             // Log de l'activité  
-            $this->activityLogger->logTaskAssignment($task, $user, $assignedBy);
+            $this->activityLogger->logTaskAssignment($user, $task, $assignedBy);
 
             // Notification  
             $this->notificationService->createTaskAssignmentNotification($task, $user, $assignedBy);
+
+            // Mettre à jour la tâche et la tâche list  
+            if ($task->getTaskList()->getProject()->getChefproject() === $user) {
+                $this->updateTaskList($task->getTaskList());
+            }
 
             return [
                 'success' => true,
