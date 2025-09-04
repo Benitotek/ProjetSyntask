@@ -53,7 +53,8 @@ class AdminKanbanService
 
         return [
             'projects' => $projects,
-            'tasks' => $this->applyFilters($tasks, $filters),
+            'tasks' => $this->
+                applyFilters($tasks, $filters),
             'users' => $users,
             'taskLists' => $taskLists,
             'statistics' => $this->calculateStatistics($projects, $tasks),
@@ -250,28 +251,23 @@ class AdminKanbanService
             $task->setAssignedUser($user);
             $this->entityManager->flush();
 
-            // Log de l'activité  
-            $this->activityLogger->logTaskAssignment($user, $task, $assignedBy);
+// Log de l'activité
+$this->activityLogger->logTaskCreation($assignedBy, $task->getTitle(), $task->getId(), $task->getTaskList()->getProject());
 
-            // Notification  
-            $this->notificationService->createTaskAssignmentNotification($task, $user, $assignedBy);
+// Notification
+$this->notificationService->notifyTaskAssignment($task, $task->getAssignedUser());
 
-            // Mettre à jour la tâche et la tâche list  
-            if ($task->getTaskList()->getProject()->getChefproject() === $user) {
-                $this->updateTaskList($task->getTaskList());
-            }
-
-            return [
-                'success' => true,
-                'message' => 'Utilisateur assigné à la tâche avec succès',
-                'user' => $this->formatUserForResponse($user),
-                'task' => $this->formatTaskForResponse($task)
-            ];
+return [
+    'success' => true,
+    'message' => 'Utilisateur assigné à la tâche avec succès',
+    'user' => $this->formatUserForResponse($user),
+    'task' => $this->formatTaskForResponse($task)
+];
         } catch (\Exception $e) {
             return ['success' => false, 'message' => 'Erreur lors de l\'assignation: ' . $e->getMessage()];
         }
     }
-
+    
     /**  
      * 🔐 Vérifier si un utilisateur peut assigner à un projet  
      */
@@ -326,31 +322,22 @@ class AdminKanbanService
                 return ['success' => false, 'message' => 'Utilisateur ou projet introuvable'];
             }
 
-            // Seuls Admin et Directeur peuvent promouvoir  
-            $promoterRoles = $promotedBy->getRoles();
-            if (!in_array('ROLE_ADMIN', $promoterRoles) && !in_array('ROLE_DIRECTEUR', $promoterRoles)) {
-                return ['success' => false, 'message' => 'Droits insuffisants pour cette promotion'];
+            // Vérifier si l'utilisateur a les droits pour promouvoir
+            // if (!$this->canPromoteToChefProjet($promotedBy, $project)) {
+            //     return ['success' => false, 'message' => 'Droits insuffisants pour promouvoir'];
+            // }
+
+            // Vérifier si l'utilisateur est déjà chef de projet
+            if ($project->getChefproject() === $user) {
+                return ['success' => false, 'message' => 'Utilisateur déjà chef de projet'];
             }
 
-            // Ajouter le rôle CHEF_PROJET si nécessaire  
-            $userRoles = $user->getRoles();
-            if (!in_array('ROLE_CHEF_PROJET', $userRoles)) {
-                $userRoles[] = 'ROLE_CHEF_PROJET';
-                $user->setRoles($userRoles);
-            }
-
-            // Assigner comme chef de projet  
+            // Promouvoir l'utilisateur à chef de projet
             $project->setChefproject($user);
-
-            // S'assurer qu'il est membre du projet  
-            if (!$project->getMembres()->contains($user)) {
-                $project->addMembre($user);
-            }
-
             $this->entityManager->flush();
 
-            // Log de l'activité  
-            $this->activityLogger->logChefProjetPromotion($project, $user, $promotedBy);
+            // Log de l'activité
+            $this->activityLogger->logChefProjetPromotion($promotedBy, $user, $project, $promotedBy);
 
             return [
                 'success' => true,
@@ -385,324 +372,412 @@ class AdminKanbanService
                 return array_unique(array_merge($projectMembers, $availableUsers), SORT_REGULAR);
             }
 
-            // Seulement les membres de ses projets
-            return $this->getUsersFromManagedProjects($currentUser);
-        }
+        //     // Seulement les membres de ses projets
+        //     return $this->getUsersFromManagedProjects($currentUser);
+        // }
 
-        // Employé ne peut assigner personne
-        return [];
+        // // Employé ne peut assigner personne
+        // return [];
     }
+}
+}
+
 
     /**
      * 🔄 Déplacer une tâche avec vérification des droits
      */
-    public function moveTaskWithRoleCheck(int $taskId, int $newListId, int $newPosition, User $user): array
-    {
-        try {
-            $task = $this->taskRepository->find($taskId);
-            $newList = $this->taskListRepository->find($newListId);
 
-            if (!$task || !$newList) {
-                return ['success' => false, 'message' => 'Tâche ou liste introuvable'];
-            }
+    // public function moveTaskWithRoleCheck(int $taskId, int $newListId, int $newPosition, User $user): array
 
-            $oldProject = $task->getTaskList()->getProject();
-            $newProject = $newList->getProject();
+    // {
 
-            // Vérifier les droits selon le rôle
-            if (!$this->canMoveTask($user, $task, $newList)) {
-                return ['success' => false, 'message' => 'Droits insuffisants pour ce déplacement'];
-            }
+    //     try {
+    //         $task = $this->taskRepository->find($taskId);
+    //         $newList = $this->taskListRepository->find($newListId);
 
-            // Utiliser le service Kanban existant
-            $this->kanbanService->moveTask($task, $newListId, $newPosition);
+    //         if (!$task || !$newList) {
+    //             return ['success' => false, 'message' => 'Tâche ou liste introuvable'];
+    //         }
 
-            // Log spécifique selon le changement de projet
-            if ($oldProject->getId() !== $newProject->getId()) {
-                $this->activityLogger->logTaskTransfer($task, $oldProject, $newProject, $user);
+    //         $oldProject = $task->getTaskList()->getProject();
+    //         $newProject = $newList->getProject();
 
-                // Notification aux chefs de projets concernés
-                $this->notificationService->createTaskTransferNotification(
-                    $task,
-                    $oldProject,
-                    $newProject,
-                    $user
-                );
-            } else {
-                $this->activityLogger->logTaskMove(
-                    $task,
-                    $user,
-                    $task->getTaskList()->getLastName(),
-                    $newList->getLastName()
-                );
-            }
+    //         // Vérifier les droits selon le rôle
+    //         if (!$this->canMoveTask($user, $task, $newList)) {
+    //             return ['success' => false, 'message' => 'Droits insuffisants pour ce déplacement'];
+    //         }
 
-            $this->entityManager->flush();
+    //         // Utiliser le service Kanban existant
+    //         $this->kanbanService->moveTask($task, $newListId, $newPosition);
 
-            return [
-                'success' => true,
-                'message' => 'Tâche déplacée avec succès',
-                'task' => $this->formatTaskForResponse($task),
-                'crossProject' => $oldProject->getId() !== $newProject->getId()
-            ];
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Erreur lors du déplacement: ' . $e->getMessage()
-            ];
-        }
-    }
+    //     //     // Log spécifique selon le changement de projet
+    //     //     if ($oldProject->getId() !== $newProject->getId()) {
+    //     //         $this->activityLogger->logTaskTransfer(
+    //     //             $task,
+    //     //             $user,
+    //     //             $oldProject,
+    //     //             $newProject
+    //     //         );
 
+    //             // Notification aux chefs de projets concernés
+    //             $this->notificationService->createTaskTransferNotification(
+    //                 $task,
+    //                 $oldProject,
+    //                 $newProject,
+    //                 $user
+    //             );
+
+    //         // }
+
+        //     $this->entityManager->flush();
+
+        //     return [
+        //         'success' => true,
+        //         'message' => 'Tâche déplacée avec succès',
+        //         'task' => $this->formatTaskForResponse($task),
+        //         'crossProject' => $oldProject->getId() !== $newProject->getId()
+        //     ];
+        // } catch (\Exception $e) {
+        //     return [
+        //         'success' => false,
+        //         'message' => 'Erreur lors du déplacement: ' . $e->getMessage()
+        //     ];
+        // }
+    // }
     /**
      * 🔐 Vérifier si un utilisateur peut déplacer une tâche
      */
-    private function canMoveTask(User $user, Task $task, TaskList $targetList): bool
-    {
-        $roles = $user->getRoles();
-        $currentProject = $task->getTaskList()->getProject();
-        $targetProject = $targetList->getProject();
+    // private function canMoveTask(User $user, Task $task, TaskList $targetList): bool
+    // {
+    //     $roles = $user->getRoles();
+    //     $currentProject = $task->getTaskList()->getProject();
+    //     $targetProject = $targetList->getProject();
 
-        // Admin et Directeur peuvent tout déplacer
-        if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
-            return true;
-        }
+    //     // Admin et Directeur peuvent tout déplacer
+    //     if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
+    //         return true;
+    //     }
 
-        // Chef de projet peut déplacer dans ses projets
-        if (in_array('ROLE_CHEF_PROJET', $roles)) {
-            return ($currentProject->getChefproject() === $user) ||
-                ($targetProject->getChefproject() === $user);
-        }
+    //     // Chef de projet peut déplacer dans ses projets
+    //     if (in_array('ROLE_CHEF_PROJET', $roles)) {
+    //         return ($currentProject->getChefproject() === $user) ||
+    //             ($targetProject->getChefproject() === $user);
+    //     }
 
-        // Employé peut déplacer ses propres tâches dans le même projet
-        if (in_array('ROLE_EMPLOYE', $roles)) {
-            // Vérifier si c'est sa tâche et même projet
-            $isAssigned = $this->isTaskAssignedToUser($task, $user);
-            $sameProject = $currentProject->getId() === $targetProject->getId();
+    //     // Employé peut déplacer ses propres tâches dans le même projet
+    //     if (in_array('ROLE_EMPLOYE', $roles)) {
+    //         // Vérifier si c'est sa tâche et même projet
+    //         $isAssigned = $this->isTaskAssignedToUser($task, $user);
+    //         $sameProject = $currentProject->getId() === $targetProject->getId();
 
-            return $isAssigned && $sameProject;
-        }
-
-        return false;
-    }
+    //         return $isAssigned && $sameProject;
+    //     }
+    // }
 
     /**
      * 📊 Statistiques spécifiques pour employé
      */
-    private function calculateEmployeStatistics(User $employe, array $assignedTasks): array
-    {
-        $completedTasks = array_filter($assignedTasks, fn($t) => $t->getStatut() === 'TERMINER');
-        $overdueTasks = array_filter($assignedTasks, function ($t) {
-            return $t->getDeadline() &&
-                $t->getDeadline() < new \DateTime() &&
-                $t->getStatut() !== 'TERMINER';
-        });
+    // private function calculateEmployeStatistics(User $employe, array $assignedTasks): array
+    // {
+    //     $completedTasks = array_filter($assignedTasks, fn($t) => $t->getStatut() === 'TERMINER');
+    //     $overdueTasks = array_filter($assignedTasks, function ($t) {
+    //         return $t->getDeadline() &&
+    //             $t->getDeadline() < new \DateTime() &&
+    //             $t->getStatut() !== 'TERMINER';
+    //     });
 
-        return [
-            'totalAssignedTasks' => count($assignedTasks),
-            'completedTasks' => count($completedTasks),
-            'inProgressTasks' => count(array_filter($assignedTasks, fn($t) => $t->getStatut() === 'EN_COURS')),
-            'overdueTasks' => count($overdueTasks),
-            'completionRate' => count($assignedTasks) > 0 ?
-                round((count($completedTasks) / count($assignedTasks)) * 100, 1) : 0,
-            'efficiency' => $this->calculateUserEfficiency($employe)
-        ];
-    }
+    //     return [
+    //         'totalAssignedTasks' => count($assignedTasks),
+    //         'totalCompletedTasks' => count($completedTasks),
+    //         'completedTasks' => count($completedTasks),
+    //         'inProgressTasks' => count(array_filter($assignedTasks, fn($t) => $t->getStatut() === 'EN_COURS')),
+    //         'overdueTasks' => count($overdueTasks),
+    //         'completionRate' => count($assignedTasks) > 0 ?
+    //             round((count($completedTasks) / count($assignedTasks)) * 100, 1) : 0,
+    //         'efficiency' => $this->calculateUserEfficiency($employe)
+    //     ];
+    // }
 
-    /**
-     * 👥 Récupérer les utilisateurs des projets gérés
-     */
-    private function getUsersFromManagedProjects(User $chefProjet): array
-    {
-        $managedProjects = $this->projectRepository->findByChefDeproject($chefProjet);
-        return $this->getUsersFromProjects($managedProjects);
-    }
+    // /**
+    //  * 👥 Récupérer les utilisateurs des projets gérés
+    //  */
+    // private function getUsersFromManagedProjects(User $chefProjet): array
+    // {
+    //     $managedProjects = $this->projectRepository->findByChefDeproject($chefProjet);
+    //     return $this->getUsersFromProjects($managedProjects);
+    // }
 
-    /**
-     * 👥 Récupérer tous les utilisateurs des projets donnés
-     */
-    private function getUsersFromProjects(array $projects): array
-    {
-        $users = [];
-        foreach ($projects as $project) {
-            $projectMembers = $project->getMembres()->toArray();
-            $users = array_merge($users, $projectMembers);
+    // /**
+    //  * 👥 Récupérer tous les utilisateurs des projets donnés
+    //  */
+    // private function getUsersFromProjects(array $projects): array
+    // {
+    //     $users = [];
+    //     foreach ($projects as $project) {
+    //         $projectMembers = $project->getMembres()->toArray();
+    //         $users = array_merge($users, $projectMembers);
 
-            // Ajouter le chef de projet
-            if ($project->getChefproject()) {
-                $users[] = $project->getChefproject();
-            }
-        }
+    //         // Ajouter le chef de projet
+    //         if ($project->getChefproject()) {
+    //             $users[] = $project->getChefproject();
+    //         }
+    //     }
 
-        return array_unique($users, SORT_REGULAR);
-    }
+    //     return array_unique($users, SORT_REGULAR);
+    // }
 
     /**
      * 🔍 Vérifier si une tâche est assignée à un utilisateur
      */
-    private function isTaskAssignedToUser(Task $task, User $user): bool
-    {
-        // Selon votre modèle de données
-        foreach ($task->getTaskUsers() as $taskUser) {
-            if ($taskUser->getUser()->getId() === $user->getId()) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    /**
-     * 📤 Formater les réponses
-     */
-    private function formatUserForResponse(User $user): array
-    {
-        return [
-            'id' => $user->getId(),
-            'nom' => $user->getNom(),
-            'prenom' => $user->getPrenom(),
-            'email' => $user->getEmail(),
-            'roles' => $user->getRoles(),
-            'statut' => $user->getStatut(),
-            'avatar' => $user->getAvatar() ?? null
-        ];
-    }
+//     private function isTaskAssignedToUser(Task $task, User $user): bool
+//     {
+//         // Selon votre modèle de données
+//         foreach ($task->getTaskUsers() as $taskUser) {
+//             if ($taskUser->getUser()->getId() === $user->getId()) {
+//                 return true;
+//             }
+//         }
+//         return false;
+//     }
 
-    private function formatProjectForResponse(Project $project): array
-    {
-        return [
-            'id' => $project->getId(),
-            'titre' => $project->getTitre(),
-            'description' => $project->getDescription(),
-            'statut' => $project->getStatut(),
-            'chefProjet' => $project->getChefproject() ?
-                $this->formatUserForResponse($project->getChefproject()) : null,
-            'membresCount' => $project->getMembres()->count()
-        ];
-    }
+//     /**
+//      * 📤 Formater les réponses
+//      */
+//     private function formatUserForResponse(User $user): array
+//     {
+//         return [
+//             'id' => $user->getId(),
+//             'nom' => $user->getNom(),
+//             'prenom' => $user->getPrenom(),
+//             'email' => $user->getEmail(),
+//             'roles' => $user->getRoles(),
+//             'statut' => $user->getStatut(),
+//             'avatar' => $user->getAvatar() ?? null
+//         ];
+//     }
 
-    private function formatTaskForResponse(Task $task): array
-    {
-        return [
-            'id' => $task->getId(),
-            'title' => $task->getTitle(),
-            'description' => $task->getDescription(),
-            'statut' => $task->getStatut(),
-            'priority' => $task->getPriority(),
-            'deadline' => $task->getDeadline()?->format('Y-m-d H:i:s'),
-            'position' => $task->getPosition(),
-            'project' => [
-                'id' => $task->getTaskList()->getProject()->getId(),
-                'name' => $task->getTaskList()->getProject()->getTitre()
-            ],
-            'taskList' => [
-                'id' => $task->getTaskList()->getId(),
-                'name' => $task->getTaskList()->getLastName()
-            ],
-            'assignedUsers' => array_map(
-                fn($tu) => $this->formatUserForResponse($tu->getUser()),
-                $task->getTaskUsers()->toArray()
-            )
-        ];
-    }
+//     private function formatProjectForResponse(Project $project): array
+//     {
+//         return [
+//             'id' => $project->getId(),
+//             'titre' => $project->getTitre(),
+//             'description' => $project->getDescription(),
+//             'statut' => $project->getStatut(),
+//             'chefProjet' => $project->getChefproject() ?
+//                 $this->formatUserForResponse($project->getChefproject()) : null,
+//             'membresCount' => $project->getMembres()->count()
+//         ];
+//     }
 
-    // Méthodes utilitaires supplémentaires...
+//     private function formatTaskForResponse(Task $task): array
+//     {
+//         return [
+//             'id' => $task->getId(),
+//             'title' => $task->getTitle(),
+//             'description' => $task->getDescription(),
+//             'statut' => $task->getStatut(),
+//             'priority' => $task->getPriority(),
+//             'deadline' => $task->getDeadline()?->format('Y-m-d H:i:s'),
+//             'position' => $task->getPosition(),
+//             'project' => [
+//                 'id' => $task->getTaskList()->getProject()->getId(),
+//                 'name' => $task->getTaskList()->getProject()->getTitre()
+//             ],
+//             'taskList' => [
+//                 'id' => $task->getTaskList()->getId(),
+//                 'name' => $task->getTaskList()->getLastName()
+//             ],
+//             'assignedUsers' => array_map(
+//                 fn($tu) => $this->formatUserForResponse($tu->getUser()),
+//                 $task->getTaskUsers()->toArray()
+//             )
+//         ];
+//     }
 
-    /**
-     * Filtre les tâches selon les filtres fournis (statut, priorité, etc.)
-     */
-    private function applyFilters(array $tasks, array $filters = []): array
-    {
-        return array_filter($tasks, function ($task) use ($filters) {
-            if (isset($filters['statut']) && $task->getStatut() !== $filters['statut']) {
-                return false;
-            }
-            if (isset($filters['priority']) && $task->getPriority() !== $filters['priority']) {
-                return false;
-            }
-            if (isset($filters['assignedUser']) && method_exists($task, 'getAssignedUser')) {
-                $assignedUser = $task->getAssignedUser();
-                if (!$assignedUser || $assignedUser->getId() !== $filters['assignedUser']) {
-                    return false;
-                }
-            }
-            // Ajoutez d'autres filtres ici si nécessaire
-            return true;
-        });
-    }
+//     // Méthodes utilitaires supplémentaires...
 
-    public function getProjectsByRole(User $user): array
-    {
-        $roles = $user->getRoles();
+//     /**
+//      * Filtre les tâches selon les filtres fournis (statut, priorité, etc.)
+//      */
+//     private function applyFilters(array $tasks, array $filters = []): array
+//     {
+//         return array_filter($tasks, function ($task) use ($filters) {
+//             if (isset($filters['statut']) && $task->getStatut() !== $filters['statut']) {
+//                 return false;
+//             }
+//             if (isset($filters['priority']) && $task->getPriority() !== $filters['priority']) {
+//                 return false;
+//             }
+//             if (isset($filters['assignedUser']) && method_exists($task, 'getAssignedUser')) {
+//                 $assignedUser = $task->getAssignedUser();
+//                 if (!$assignedUser || $assignedUser->getId() !== $filters['assignedUser']) {
+//                     return false;
+//                 }
+//             }
+//             // Ajoutez d'autres filtres ici si nécessaire
+//             return true;
+//         });
+//     }
 
-        if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
-            return $this->projectRepository->findAll();
-        }
+//     public function getProjectsByRole(User $user): array
+//     {
+//         $roles = $user->getRoles();
 
-        if (in_array('ROLE_CHEF_PROJET', $roles)) {
-            $managed = $this->projectRepository->findByChefDeproject($user);
-            $member = $this->projectRepository->findByMembre($user);
-            return array_unique(array_merge($managed, $member), SORT_REGULAR);
-        }
+//         if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
+//             return $this->projectRepository->findAll();
+//         }
 
-        return $this->projectRepository->findByMembre($user);
-    }
+//         if (in_array('ROLE_CHEF_PROJET', $roles)) {
+//             $managed = $this->projectRepository->findByChefDeproject($user);
+//             $member = $this->projectRepository->findByMembre($user);
+//             return array_unique(array_merge($managed, $member), SORT_REGULAR);
+//         }
 
-    /**
-     * 📊 Calcule les statistiques globales pour les projets et tâches donnés
-     */
-    private function calculateStatistics(array $projects, array $tasks): array
-    {
-        $totalProjects = count($projects);
-        $totalTasks = count($tasks);
-        $completedTasks = 0;
-        $inProgressTasks = 0;
-        $overdueTasks = 0;
+//         return $this->projectRepository->findByMembre($user);
+//     }
 
-        foreach ($tasks as $task) {
-            if ($task->getStatut() === 'TERMINER') {
-                $completedTasks++;
-            } elseif ($task->getStatut() === 'EN_COURS') {
-                $inProgressTasks++;
-            }
-            if ($task->getDeadline() && $task->getDeadline() < new \DateTime() && $task->getStatut() !== 'TERMINER') {
-                $overdueTasks++;
-            }
-        }
+//     /**
+//      * 📊 Calcule les statistiques globales pour les projets et tâches donnés
+//      */
+//     private function calculateStatistics(array $projects, array $tasks): array
+//     {
+//         $totalProjects = count($projects);
+//         $totalTasks = count($tasks);
+//         $completedTasks = 0;
+//         $inProgressTasks = 0;
+//         $overdueTasks = 0;
 
-        return [
-            'totalProjects' => $totalProjects,
-            'totalTasks' => $totalTasks,
-            'completedTasks' => $completedTasks,
-            'inProgressTasks' => $inProgressTasks,
-            'overdueTasks' => $overdueTasks,
-            'completionRate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0
-        ];
-    }
+//         foreach ($tasks as $task) {
+//             if ($task->getStatut() === 'TERMINER') {
+//                 $completedTasks++;
+//             } elseif ($task->getStatut() === 'EN_COURS') {
+//                 $inProgressTasks++;
+//             }
+//             if ($task->getDeadline() && $task->getDeadline() < new \DateTime() && $task->getStatut() !== 'TERMINER') {
+//                 $overdueTasks++;
+//             }
+//         }
 
-    /**
-     * 🕑 Récupérer les activités récentes pour une liste de projets
-     */
-    private function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
-    {
-        $projectIds = array_map(fn($project) => $project->getId(), $projects);
-        if (empty($projectIds)) {
-            return [];
-        }
-        $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
-        // Vous pouvez formater les activités ici si besoin
-        return $activities;
-    }
+//         return [
+//             'totalProjects' => $totalProjects,
+//             'totalTasks' => $totalTasks,
+//             'completedTasks' => $completedTasks,
+//             'inProgressTasks' => $inProgressTasks,
+//             'overdueTasks' => $overdueTasks,
+//             'completionRate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0
+//         ];
+//     }
 
-    /**
-     * 🕑 Récupérer les activités récentes pour un utilisateur (employé)
-     */
-    private function getRecentActivitiesForUser(User $user, int $limit = 10): array
-    {
-        // Suppose que le repository a une méthode pour cela, sinon à implémenter
-        if (method_exists($this->activityRepository, 'findRecentByUser')) {
-            return $this->activityRepository->findRecentByUser($user, $limit);
-        }
-        // Fallback: récupérer les projets de l'utilisateur et utiliser la méthode existante
-        $projects = $this->projectRepository->findByMembre($user);
-        return $this->getRecentActivitiesForProjects($projects, $limit);
-    }
-}
+//     /**
+//      * 🕑 Récupérer les activités récentes pour une liste de projets
+//      */
+//     private function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
+//     {
+//         $projectIds = array_map(fn($project) => $project->getId(), $projects);
+//         if (empty($projectIds)) {
+//             return [];
+//         }
+//         $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
+//         // Vous pouvez formater les activités ici si besoin
+//         return $activities;
+//     }
+
+//     /**
+//      * 🕑 Récupérer les activités récentes pour un utilisateur (employé)
+//      */
+//     private function getRecentActivitiesForUser(User $user, int $limit = 10): array
+//     {
+//         // Suppose que le repository a une méthode pour cela, sinon à implémenter
+//         if (method_exists($this->activityRepository, 'findRecentByUser')) {
+//             return $this->activityRepository->findRecentByUser($user, $limit);
+//         }
+//         // Fallback: récupérer les projets de l'utilisateur et utiliser la méthode existante
+//         $projects = $this->projectRepository->findByMembre($user);
+//         return $this->getRecentActivitiesForProjects($projects, $limit);
+//     }
+// }
+
+//     /**
+//      * 📊 Calcule l'efficacité d'un utilisateur basé sur les tâches terminées à temps
+//      */
+//     private function calculateUserEfficiency(User $user): float
+//     {
+//         $tasks = $this->taskRepository->findByAssignedUser($user);
+//         if (empty($tasks)) {
+//             return 0.0;
+//         }
+
+//         $onTimeCompletions = 0;
+//         $totalCompleted = 0;
+
+//         foreach ($tasks as $task) {
+//             if ($task->getStatut() === 'TERMINER') {
+//                 $totalCompleted++;
+//                 if ($task->getDeadline() && $task->getDeadline() >= $task->getUpdatedAt()) {
+//                     $onTimeCompletions++;
+//                 }
+//             }
+//         }
+
+//         return $totalCompleted > 0 ? round(($onTimeCompletions / $totalCompleted) * 100, 1) : 0.0;
+//     }
+
+//     /**
+//      * 📊 Calcule le taux de remplissage d'une liste de projets
+//      */
+//     private function calculateProjectFillRate(array $projects): float
+//     {
+//         $totalTasks = 0;
+//         $completedTasks = 0;
+
+//         foreach ($projects as $project) {
+//             $totalTasks += $project->getTaskLists()->count();
+//             $completedTasks += count($project->getTasks()->filter(fn($task) => $task->getStatut() === 'TERMINER'));
+//         }
+
+//         return $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0.0;
+//     }
+// }
+//         $this->kanbanService->moveTask($task, $newList, $newPosition);
+
+//             // Log spécifique selon le changement de projet
+//             if ($oldProject->getId() !== $newProject->getId()) {
+//                 $this->activityLogger->logTaskTransfer(
+//                     $task,
+//                     $user,
+//                     $oldProject,
+//                     $newProject
+//                 );
+
+//                 // Notification aux chefs de projets concernés
+//                 $this->notificationService->createTaskTransferNotification(
+//                     $task,
+//                     $oldProject,
+//                     $newProject,
+//                     $user
+//                 );
+//             } else {
+//                 $this->activityLogger->logTaskMove(
+//                     $task,
+//                     $user,
+//                     $task->getTaskList()->getLastName(),
+//                     $newList->getLastName()
+//                 );
+//             }
+
+//             $this->entityManager->flush();
+
+//             return [
+//                 'success' => true,
+//                 'message' => 'Tâche déplacée avec succès',
+//                 'task' => $this->formatTaskForResponse($task),
+//                 'crossProject' => $oldProject->getId() !== $newProject->getId()
+//             ];
+//         } catch (\Exception $e) {
+//             return [
+//                 'success' => false,
+//                 'message' => 'Erreur lors du déplacement: ' . $e->getMessage()
+//             ];
+//         }
+//     }
