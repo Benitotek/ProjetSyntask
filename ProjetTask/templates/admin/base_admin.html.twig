@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin - SynTask{% endblock %}</title>
+    
+    {% block stylesheets %}
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="{{ asset('css/admin-kanban.css') }}" rel="stylesheet">
+    {% endblock %}
+</head>
+<body class="admin-body">
+    <!-- Header Admin -->
+    <header class="admin-header">
+        <div class="header-left">
+            <div class="logo">
+                <img src="{{ asset('images/logo-syntask.svg') }}" alt="SynTask" />
+            </div>
+            <h1>Administration</h1>
+        </div>
+        
+        <nav class="admin-nav">
+            <a href="{{ path('admin_dashboard') }}" class="nav-link">
+                📊 Dashboard
+            </a>
+            <a href="{{ path('admin_kanban_view') }}" class="nav-link active">
+                📋 Kanban Global
+            </a>
+            <a href="{{ path('admin_users_list') }}" class="nav-link">
+                👥 Utilisateurs
+            </a>
+            <a href="{{ path('admin_reports') }}" class="nav-link">
+                📈 Rapports
+            </a>
+        </nav>
+        
+        <div class="header-right">
+            <div class="user-menu">
+                <span>{{ app.user.prenom }} {{ app.user.nom }}</span>
+                <a href="{{ path('app_logout') }}" class="logout-btn">Déconnexion</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="admin-main">
+        {% block body %}{% endblock %}
+    </main>
+
+    {% block javascripts %}
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+        <script src="{{ asset('js/admin-kanban.js') }}"></script>
+    {% endblock %}
+</body>
+</html>

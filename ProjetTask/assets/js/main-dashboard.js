@@ -9,7 +9,21 @@ document.addEventListener('DOMContentLoaded', function () {
     initDashboardWidgets();
     initFilters();
 });
+function initCharts() {
+    const projectProgressCtx = document.getElementById('chart-project-progress');
+    if (projectProgressCtx) {
+        new Chart(projectProgressCtx, { // Assurez-vous que Chart est chargé
+            // Configuration ici
+        });
+    }
 
+    fetch('/api/activity-data.json').then(response => {
+        if (!response.ok) throw new Error('Erreur réseau');
+        return response.json();
+    }).then(data => {
+        // Traiter les données ici
+    }).catch(err => console.error('Erreur lors de la récupération des données d\'activité:', err));
+}
 /**
  * Initialise les graphiques du tableau de bord
  */

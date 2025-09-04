@@ -154,7 +154,7 @@ class TaskRepository extends ServiceEntityRepository
             ->andWhere('t.statut != :statut')
             ->setParameter('today', $today)
             ->setParameter('threeDaysLater', $threeDaysLater)
-            ->setParameter('statut',TaskStatut::TERMINER) // enum
+            ->setParameter('statut', TaskStatut::TERMINER) // enum
             ->orderBy('t.dateButoir', 'ASC')
             ->getQuery()
             ->getResult();
@@ -323,7 +323,46 @@ class TaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    
+    /**
+     * Trouve toutes les tâches avec relations
+     */
+    public function findAllWithRelations(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.taskList', 'tl')
+            ->leftJoin('tl.project', 'p')
+            ->leftJoin('t.taskUsers', 'tu')
+            ->leftJoin('tu.user', 'u')
+            ->leftJoin('t.taskTags', 'tt')
+            ->leftJoin('tt.tag', 'tag')
+            ->addSelect('tl', 'p', 'tu', 'u', 'tt', 'tag')
+            ->orderBy('t.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByStatus(string $status): int
+    {
+        return $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.statut = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countOverdueTasks(): int
+    {
+        return $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.deadline < :now')
+            ->andWhere('t.statut != :completed')
+
+            ->setParameters([
+                'now' => new \DateTime(),
+                'completed' => TaskStatut::TERMINER,
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
-
-
