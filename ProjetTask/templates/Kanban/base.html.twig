@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>
+			{% block title %}Kanban - SynTask
+			{% endblock %}
+		</title>
+
+		{% block stylesheets %}
+			<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+			<link href="{{ asset('css/kanban-roles.css') }}" rel="stylesheet">
+		{% endblock %}
+
+		 <script>  
+		        // Configuration globale JavaScript  
+		        window.SYNTASK_CONFIG = {  
+		            userId: {{ app.user.id }},  
+		            userRole: '{{ userPermissions.role }}',  
+		            permissions: {{ userPermissions|json_encode|raw }},  
+		            csrfToken: '{{ csrf_token('kanban') }}'  
+		        };  
+		    </script>
+	</head>
+
+	<body
+		class="kanban-dashboard {{ userPermissions.role|lower }}-dashboard">
+		<!-- Header unifié -->
+		<header class="kanban-header">
+			<div class="header-left">
+				<div class="logo">
+					<img src="{{ asset('images/logo-syntask.svg') }}" alt="SynTask" class="logo-img">
+					<span class="app-name">SynTask</span>
+				</div>
+
+				<div class="role-indicator">
+					<span class="role-badge role-{{ userPermissions.role|lower }}">
+						{% if userPermissions.role == 'ADMIN' %}👑
+							{% elseif userPermissions.role == 'DIRECTEUR' %}🎯
+							{% elseif userPermissions.role == 'CHEF_PROJET' %}👨‍💼
+							{% else %}👤
+						{% endif %}
+						{{ userPermissions.role }}
+					</span>
+					<div class="role-indicator">
+						<span class="role-badge role-{{ userPermissions.role|lower }}">
+							{% if userPermissions.role == 'ADMIN' %}👑
+								{% elseif userPermissions.role == 'DIRECTEUR' %}🎯
+								{% elseif userPermissions.role == 'CHEF_PROJET' %}👨‍💼
+								{% else %}👤
+							{% endif %}
+							{{ userPermissions.role }}
+						</span>
+					</div>
+				</div>
+
+				<div
+					class="header-center">
+					<!-- Navigation selon le rôle -->
+					<nav class="kanban-nav">
+						<a href="{{ path('kanban_dashboard') }}" class="nav-link active">
+							📊 Dashboard
+						</a>
+
+						{% if userPermissions.canViewAllProjects %}
+							<a href="{{ path('kanban_admin_dashboard') }}" class="nav-link">
+								🏗️ Tous les Projets
+							</a>
+						{% endif %}
+
+						{% if userPermissions.canManageUsers %}
+							<a href="{{ path('admin_users_list') }}" class="nav-link">
+								👥 Utilisateurs
+							</a>
+						{% endif %}
+
+						{% if userPermissions.role == 'CHEF_PROJET' %}
+							<a href="{{ path('kanban_chef_projet_dashboard') }}" class="nav-link">
+								📋 Mes Projets
+							</a>
+						{% endif %}
+
+						{% if userPermissions.role == 'EMPLOYE' %}
+							<a href="{{ path('kanban_employe_dashboard') }}" class="nav-link">
+								✅ Mes Tâches
+							</a>
+						{% endif %}
+					</nav>
+				</div>
+
+				<div
+					class="header-right">
+					<!-- Barre de recherche globale -->
+					<div class="search-container">
+						<input type="text" id="globalSearch" placeholder="🔍 Rechercher..." class="search-input">
+						<div id="searchResults" class="search-results hidden"></div>
+					</div>
+
+					<!-- Actions rapides selon le rôle -->
+					<div class="quick-actions">
+						{% if userPermissions.canCreateProject %}
+							<button class="btn btn-primary" onclick="openCreateProjectModal()">
+								➕ Projet
+							</button>
+						{% endif %}
+
+						<button class="btn btn-secondary" onclick="openCreateTaskModal()">
+							📝 Tâche
+						</button>
+
+						<button class="btn btn-ghost" onclick="refreshDashboard()" title="Actualiser">
+							🔄
+						</button>
+					</div>
+
+					<!-- Menu utilisateur -->
+					<div class="user-menu">
+						<div class="user-avatar" onclick="toggleUserMenu()">
+							{{ app.user.prenom[:1] }}{{ app.user.nom[:1] }}
+						</div>
+						<div class="user-dropdown hidden" id="userDropdown">
+							<div class="user-info">
+								<div class="user-name">{{ app.user.prenom }}
+									{{ app.user.nom }}</div>
+								<div class="user-email">{{ app.user.email }}</div>
+							</div>
+							<hr>
+							<a href="{{ path('profile') }}" class="dropdown-item">👤 Profil</a>
+							<a href="{{ path('settings') }}" class="dropdown-item">⚙️ Paramètres</a>
+							<hr>
+							<a href="{{ path('app_logout') }}" class="dropdown-item">🚪 Déconnexion</a>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<!-- Barre d'alertes -->
+			<div id="alertsBar" class="alerts-bar hidden"></div>
+
+			<!-- Contenu principal -->
+			<main class="kanban-main"> {% block body %}{% endblock %}
+				</main>
+
+				<!-- Panel utilisateurs assignables (drag & drop) -->
+				<div id="usersPanel" class="users-panel hidden">
+					<div class="panel-header">
+						<h3>👥 Utilisateurs Assignables</h3>
+						<button class="panel-close" onclick="closeUsersPanel()">&times;</button>
+					</div>
+					<div class="panel-content">
+						<div class="search-users">
+							<input type="text" placeholder="🔍 Rechercher un utilisateur..." id="searchUsers" class="search-input-small">
+						</div>
+						<div
+							id="usersList" class="users-list"><!-- Utilisateurs chargés dynamiquement -->
+						</div>
+					</div>
+				</div>
+
+				<!-- Modales -->
+				{% block modals %}
+					{{ include('kanban/_modals.html.twig') }}
+				{% endblock %}
+
+				{% block javascripts %}
+					 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+					 <script src="{{ asset('js/kanban-roles.js') }}"></script>{% block page_javascripts %}
+				{% endblock %}
+			{% endblock %}
+		</body>
+	</body>
+</html>

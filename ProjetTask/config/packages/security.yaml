@@ -88,16 +88,28 @@ security:
 
     # Contrôle d'accès
     access_control:
-        # Administration (mettre ces règles en premier)
+       # Administration (mettre ces règles en premier)
         - { path: ^/admin, role: ROLE_ADMIN }
         - { path: ^/signup, roles: PUBLIC_ACCESS }
 
-        # Routes des projets
+        # === NOUVELLES ROUTES KANBAN ===
+        - { path: ^/kanban/admin-dashboard, role: ROLE_ADMIN }
+        - { path: ^/kanban/directeur-dashboard, role: ROLE_DIRECTEUR }
+        - { path: ^/kanban/chef-projet-dashboard, role: ROLE_CHEF_PROJET }
+        - { path: ^/kanban/employe-dashboard, role: ROLE_EMPLOYE }
+        - { path: ^/kanban/dashboard, role: ROLE_EMPLOYE }
+        - { path: ^/kanban/move-task, role: ROLE_EMPLOYE }
+        - { path: ^/kanban/assign-user-project, role: ROLE_CHEF_PROJET }
+        - { path: ^/kanban/assign-user-task, role: ROLE_CHEF_PROJET }
+        - { path: ^/kanban/promote-chef-projet, role: ROLE_DIRECTEUR }
+        - { path: ^/kanban, role: ROLE_EMPLOYE }
+
+        # Routes des projets existantes
         - { path: ^/project, role: ROLE_EMPLOYE }
         - { path: ^/mes-projects, role: ROLE_CHEF_PROJET }
-        # Normaliser le chemin de kanban
         - { path: ^/project/\d+/kanban, role: ROLE_EMPLOYE }
-        # Pages publiques
+        
+        # Configuration existante...
         - { path: ^/login, role: PUBLIC_ACCESS }
         - { path: ^/register, role: PUBLIC_ACCESS }
         - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
@@ -105,25 +117,8 @@ security:
         - { path: ^/public, role: PUBLIC_ACCESS }
         - { path: ^/$, role: PUBLIC_ACCESS }
 
-        # Administration
-        - { path: ^/admin, role: ROLE_ADMIN }
-
-        # ... ACL existantes ...
-        - { path: ^/admin/kanban, roles: ROLE_ADMIN }
-        - { path: ^/admin, roles: [ROLE_ADMIN, ROLE_DIRECTEUR] }
-
-        # API
-        # API publique
-        - { path: ^/api/login, role: PUBLIC_ACCESS }
-        - { path: ^/api/public, role: PUBLIC_ACCESS }
-
-        # API privée
-        - { path: ^/api, roles: ROLE_DIRECTEUR }
-        - { path: ^/api, roles: ROLE_ADMIN }
-
         # Dashboards et zones protégées
         - { path: ^/dashboard, role: ROLE_EMPLOYE }
-        - { path: ^/project, role: ROLE_EMPLOYE }
         - { path: ^/task, role: ROLE_EMPLOYE }
         - { path: ^/mes-taches, role: ROLE_EMPLOYE }
         - { path: ^/profile, role: ROLE_EMPLOYE }
@@ -131,13 +126,6 @@ security:
         # Zones restreintes aux chefs de projet
         - { path: ^/tasklist, role: ROLE_CHEF_PROJET }
         - { path: ^/statistiques, role: ROLE_CHEF_PROJET }
-        
-        # Zones accessibles aux employés et supérieurs
-        - { path: ^/dashboard, role: ROLE_EMPLOYE }
-        - { path: ^/project, role: ROLE_EMPLOYE }
-        - { path: ^/task, role: ROLE_EMPLOYE }
-        - { path: ^/mes-taches, role: ROLE_EMPLOYE }
-        - { path: ^/profile, role: ROLE_EMPLOYE }
 
         # Par défaut, tout requiert une authentification
         - { path: ^/, role: ROLE_EMPLOYE }

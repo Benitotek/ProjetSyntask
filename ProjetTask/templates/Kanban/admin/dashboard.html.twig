@@ -1,0 +1,256 @@
+{% extends 'kanban/base.html.twig' %}
+
+{% block title %}Admin Dashboard - SynTask
+{% endblock %}
+
+{% block body %}
+	<div
+		class="admin-dashboard">
+		<!-- Statistiques principales -->
+		<div class="stats-grid">
+			<div class="stat-card primary">
+				<div class="stat-icon">🏗️</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.totalProjects }}</div>
+					<div class="stat-label">Projets Total</div>
+					<div class="stat-detail">{{ data.statistics.activeProjects }}
+						actifs</div>
+				</div>
+				<div class="stat-trend positive">+{{ data.statistics.projectsThisMonth ?? 0 }}</div>
+			</div>
+
+			<div class="stat-card success">
+				<div class="stat-icon">✅</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.completedTasks }}</div>
+					<div class="stat-label">Tâches Terminées</div>
+					<div class="stat-detail">{{ data.statistics.completionRate }}% de réussite</div>
+				</div>
+				<div class="stat-progress">
+					<div class="progress-bar" style="width: {{ data.statistics.completionRate }}%"></div>
+				</div>
+			</div>
+
+			<div class="stat-card warning">
+				<div class="stat-icon">⚠️</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.overdueTasks }}</div>
+					<div class="stat-label">En Retard</div>
+					<div class="stat-detail">Attention requise</div>
+				</div>
+				<button class="stat-action" onclick="showOverdueTasks()">Voir</button>
+			</div>
+
+			<div class="stat-card info">
+				<div class="stat-icon">👥</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.activeUsers }}</div>
+					<div class="stat-label">Utilisateurs Actifs</div>
+					<div class="stat-detail">{{ data.statistics.totalUsers }}
+						total</div>
+				</div>
+				<button class="stat-action" onclick="showUsersPanel()">Gérer</button>
+			</div>
+
+			<div class="stat-card special">
+				<div class="stat-icon">⚡</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.completedThisWeek }}</div>
+					<div class="stat-label">Cette Semaine</div>
+					<div class="stat-detail">{{ data.statistics.avgTasksPerUser }}
+						tâches/personne</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Contrôles et filtres -->
+		<div class="dashboard-controls">
+			<div class="controls-left">
+				<div class="view-switcher">
+					<button class="view-btn active" data-view="kanban" onclick="switchView('kanban')">
+						📋 Kanban
+					</button>
+					<button class="view-btn" data-view="list" onclick="switchView('list')">
+						📝 Liste
+					</button>
+					<button class="view-btn" data-view="calendar" onclick="switchView('calendar')">
+						📅 Calendrier
+					</button>
+				</div>
+			</div>
+
+			<div class="controls-center">
+				<div class="filters-container">
+					<select id="projectFilter" class="filter-select">
+						<option value="">🏗️ Tous les projets</option>
+						{% for project in data.projects %}
+							<option value="{{ project.id }}">{{ project.titre }}</option>
+						{% endfor %}
+					</select>
+
+					<select id="userFilter" class="filter-select">
+						<option value="">👤 Tous les utilisateurs</option>
+						{% for user in data.users %}
+							<option value="{{ user.id }}">{{ user.prenom }}
+								{{ user.nom }}</option>
+						{% endfor %}
+					</select>
+
+					<select id="priorityFilter" class="filter-select">
+						<option value="all">🎯 Toutes priorités</option>
+						{% for priority in enum('App\\Enum\\TaskPriority').cases %}
+							<option value="{{ priority.value }}">
+								{% if priority.value == 'URGENT' %}🔴
+									{% elseif priority.value == 'NORMAL' %}🟡
+									{% else %}🟢
+								{% endif %}
+								{{ priority.getDisplayName() }}
+							</option>
+						{% endfor %}
+					</select>
+
+					<select id="statusFilter" class="filter-select">
+						<option value="all">📊 Tous statuts</option>
+						{% for status in enum('App\\Enum\\TaskStatut').cases %}
+							<option value="{{ status.value }}">{{ status.getDisplayName() }}</option>
+						{% endfor %}
+					</select>
+
+					<button class="filter-reset" onclick="resetFilters()">🔄 Reset</button>
+				</div>
+			</div>
+
+			<div class="controls-right">
+				<button class="btn btn-secondary" onclick="toggleUsersPanel()" title="Gérer les utilisateurs">
+					👥 Utilisateurs
+				</button>
+				<button class="btn btn-secondary" onclick="exportData()" title="Exporter les données">
+					📤 Export
+				</button>
+				<div class="live-indicator" title="Mise à jour en temps réel">
+					<span class="live-dot"></span>
+					Live
+				</div>
+			</div>
+		</div>
+
+		<!-- Vue Kanban principale -->
+		<div id="kanbanView" class="kanban-view active">
+			<div class="kanban-board admin-board" id="kanbanBoard">
+				{% set tasksByList = {} %}
+				{% for task in data.tasks %}
+					{% set listId = task.taskList.id %}
+					{% if tasksByList[listId] is not defined %}
+						{% set tasksByList = tasksByList|merge({(listId): []}) %}
+					{% endif %}
+					{% set tasksByList = tasksByList|merge({(listId): tasksByList[listId]|merge([task])}) %}
+				{% endfor %}
+
+				{% for taskList in data.taskLists %}
+					<div
+						class="kanban-column admin-column" data-list-id="{{ taskList.id }}" data-project-id="{{ taskList.project.id }}" style="border-top: 4px solid {{ taskList.taskListColor ? taskList.taskListColor.colorCode : '#1FA2FF' }}">
+
+						<!-- En-tête de colonne -->
+						<div class="column-header admin-header">
+							<div class="column-title-section">
+								<div class="column-title">{{ taskList.lastName }}</div>
+								<div class="column-project">
+									<span class="project-name">{{ taskList.project.titre }}</span>
+									{% if taskList.project.chefproject %}
+										<span class="chef-badge">👨‍💼
+											{{ taskList.project.chefproject.prenom }}
+											{{ taskList.project.chefproject.nom[:1] }}.</span>
+									{% endif %}
+								</div>
+							</div>
+
+							<div class="column-stats">
+								<div class="task-count">
+									<span class="count-number">{{ tasksByList[taskList.id]|length ?? 0 }}</span>
+									<span class="count-label">tâches</span>
+								</div>
+
+								<div class="column-actions">
+									<button class="column-action" onclick="addTaskToColumn({{ taskList.id }})" title="Ajouter une tâche">
+										➕
+									</button>
+									<button class="column-action" onclick="showColumnStats({{ taskList.id }})" title="Statistiques">
+										📊
+									</button>
+									<button class="column-action" onclick="manageColumn({{ taskList.id }})" title="Gérer la colonne">
+										⚙️
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<!-- Container des tâches -->
+						<div class="tasks-container sortable admin-sortable" data-list-id="{{ taskList.id }}">
+							{% if tasksByList[taskList.id] is defined %}
+								{% for task in tasksByList[taskList.id] %}
+									{{ include('kanban/_task_card_admin.html.twig', {'task': task}) }}
+								{% endfor %}
+							{% endif %}
+						</div>
+
+						<!-- Zone de drop pour utilisateurs -->
+						<div class="user-drop-zone" data-list-id="{{ taskList.id }}">
+							<div class="drop-zone-content">
+								<span class="drop-icon">👥</span>
+								<span class="drop-text">Glisser un utilisateur pour l'assigner au projet</span>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		<!-- Vue Liste (alternative) -->
+		<div id="listView" class="list-view hidden">
+			<div class="list-container">
+				<div class="list-header">
+					<div class="list-title">📝 Vue Liste - Toutes les Tâches</div>
+					<div class="list-controls">
+						<button class="btn btn-sm" onclick="exportListView()">📤 Exporter</button>
+					</div>
+				</div>
+
+				<div class="list-table">
+					<table class="tasks-table">
+						<thead>
+							<tr>
+								<th>Tâche</th>
+								<th>Projet</th>
+								<th>Assigné à</th>
+								<th>Statut</th>
+								<th>Priorité</th>
+								<th>Échéance</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody
+							id="tasksTableBody"><!-- Contenu chargé dynamiquement -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- Vue Calendrier (alternative) -->
+		<div id="calendarView" class="calendar-view hidden">
+			<div id="taskCalendar" class="task-calendar"></div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block page_javascripts %}
+	 <script>
+	document.addEventListener('DOMContentLoaded', function() {
+	    window.adminKanban = new AdminKanbanManager({
+	        userRole: '{{ userPermissions.role }}',
+	        permissions: {{ userPermissions|json_encode|raw }},
+	        assignableUsers: {{ assignableUsers|json_encode|raw }}
+	    });
+	});
+	</script>
+{% endblock %}
