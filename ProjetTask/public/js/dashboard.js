@@ -2,10 +2,24 @@
  * dashboard.js - Script principal pour le backoffice
  */
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () { });
+{
+    const columns = $$('.kanban-column');
+    const toastEl = document.getElementById('toast-area');
+    const modalEl = document.getElementById('column-modal');
+    const saveBtn = document.getElementById('save-column-btn');
     // Initialiser les composants du tableau de bord
+    initDarkMode();
     // Gestion des notifications
-    initNotifications();
+
+    initNotifications(
+        toastEl,
+        () => {
+            // Mettre à jour le compteur de notifications non lues
+            refreshNotificationCount();
+        }
+
+    );
 
     // Gestion du drag and drop des tâches
     initTaskDragAndDrop();
@@ -15,7 +29,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialisation des tooltips et popovers Bootstrap
     initBootstrapComponents();
+    // Utiliser Bootstrap pour l'initialisation
+    if (modalEl) {
+        modalEl.addEventListener('show.bs.modal', () => {
+            // Réinitialiser le modal
+            $('#column-form').reset();
+            $('#column-modal-title').textContent = 'Nouvelle colonne';
+        });
+    }
 
+    saveBtn?.addEventListener('click', async () => {
+        const form = $('#column-form');
+        // Ajouter gestion toast
+        const response = await apiJson('/api/project/${projectId}/tasklists/new', {
+            method: 'POST',
+            body: JSON.stringify({ name: form.elements.name.value })
+        });
+        // Gérer réponse
+    });
+}
+
+// Assurez-vous que le modal et vos éléments Bootstrap sont bien initialisés
+document.addEventListener('DOMContentLoaded', () => {
+    const columns = $$('.kanban-column');
+    const toastEl = document.getElementById('toast-area');
+    const modalEl = document.getElementById('column-modal');
+    const saveBtn = document.getElementById('save-column-btn');
     // Gestion des formulaires modaux (pour éviter les soumissions accidentelles)
     initModalForms();
 

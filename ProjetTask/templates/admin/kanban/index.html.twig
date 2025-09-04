@@ -1,0 +1,108 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Kanban Global - Admin SynTask
+{% endblock %}
+
+{% block body %}
+	<div
+		class="kanban-container">
+		<!-- En-tête avec statistiques -->
+		<div class="kanban-header">
+			<div class="stats-overview">
+				<div class="stat-card">
+					<div class="stat-number">{{ statistics.totalProjects }}</div>
+					<div class="stat-label">Projets Total</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-number">{{ statistics.activeProjects }}</div>
+					<div class="stat-label">Projets Actifs</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-number">{{ statistics.totalTasks }}</div>
+					<div class="stat-label">Tâches Total</div>
+				</div>
+				<div class="stat-card warning">
+					<div class="stat-number">{{ statistics.overdueTasks }}</div>
+					<div class="stat-label">En Retard</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-number">{{ statistics.totalUsers }}</div>
+					<div class="stat-label">Utilisateurs</div>
+				</div>
+			</div>
+
+			<!-- Filtres et actions -->
+			<div class="kanban-controls">
+				<div class="filters">
+					<select id="projectFilter" class="filter-select">
+						<option value="">Tous les projets</option>
+						{% for project in projects %}
+							<option value="{{ project.id }}">{{ project.titre }}</option>
+						{% endfor %}
+					</select>
+
+					<select id="userFilter" class="filter-select">
+						<option value="">Tous les utilisateurs</option>
+						{% for user in users %}
+							<option value="{{ user.id }}">{{ user.prenom }}
+								{{ user.nom }}</option>
+						{% endfor %}
+					</select>
+
+					<select id="priorityFilter" class="filter-select">
+						<option value="">Toutes priorités</option>
+						<option value="URGENT">🔴 Urgent</option>
+						<option value="NORMAL">🟡 Normal</option>
+						<option value="EN_ATTENTE">🟢 En attente</option>
+					</select>
+				</div>
+
+				<div class="actions">
+					<button class="btn btn-primary" onclick="openCreateTaskModal()">
+						➕ Nouvelle Tâche
+					</button>
+					<button class="btn btn-secondary" onclick="openCreateProjectModal()">
+						📁 Nouveau Projet
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tableau Kanban -->
+		<div class="kanban-board" id="kanban-board">
+			{% for taskList in taskLists %}
+				<div class="kanban-column" data-list-id="{{ taskList.id }}">
+					<div class="column-header">
+						<div class="column-title">{{ taskList.lastName }}</div>
+						<div class="task-count">
+							{% set taskCount = 0 %}
+							{% for task in tasks %}
+								{% if task.taskList.id == taskList.id %}
+									{% set taskCount = taskCount + 1 %}
+								{% endif %}
+							{% endfor %}
+							{{ taskCount }}
+						</div>
+					</div>
+
+					<div class="tasks-container sortable" data-list-id="{{ taskList.id }}">
+						{% for task in tasks %}
+							{% if task.taskList.id == taskList.id %}
+								{{ include('admin/kanban/_task_card.html.twig', {'task': task}) }}
+							{% endif %}
+						{% endfor %}
+					</div>
+
+					<div class="add-task-button" onclick="openQuickAddTask({{ taskList.id }})">
+						➕ Ajouter une tâche
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+
+	<!-- Modales -->
+	{{ include('admin/kanban/_task_modal.html.twig') }}
+	{{ include('admin/kanban/_project_modal.html.twig') }}
+
+{% endblock %}

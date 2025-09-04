@@ -25,7 +25,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/api/tasks', name: 'api_task_')]
+#[Route('/api/comments', name: 'api_task_')]
 #[IsGranted('ROLE_USER')]
 final class ApiTaskController extends AbstractController
 {
@@ -41,7 +41,7 @@ final class ApiTaskController extends AbstractController
         private ValidatorInterface $validator
     ) {}
 
-    #[Route('', name: 'list', methods: ['GET'])]
+    #[Route('/list', name: 'list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
         $user = $this->getUser();

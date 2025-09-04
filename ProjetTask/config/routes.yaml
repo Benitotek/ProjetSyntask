@@ -4,6 +4,12 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+# Routes pour l'administration et new kanban service (à commenter si besoin)04/08/2025
+
+admin_routes:
+    resource: ../src/Controller/AdminController.php
+    type: annotation
+    prefix: /admin
 
 # # Route pour le dashboard employé
 # employe_dashboard:

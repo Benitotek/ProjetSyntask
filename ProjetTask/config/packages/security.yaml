@@ -108,9 +108,18 @@ security:
         # Administration
         - { path: ^/admin, role: ROLE_ADMIN }
 
+        # ... ACL existantes ...
+        - { path: ^/admin/kanban, roles: ROLE_ADMIN }
+        - { path: ^/admin, roles: [ROLE_ADMIN, ROLE_DIRECTEUR] }
+
+        # API
         # API publique
         - { path: ^/api/login, role: PUBLIC_ACCESS }
         - { path: ^/api/public, role: PUBLIC_ACCESS }
+
+        # API privée
+        - { path: ^/api, roles: ROLE_DIRECTEUR }
+        - { path: ^/api, roles: ROLE_ADMIN }
 
         # Dashboards et zones protégées
         - { path: ^/dashboard, role: ROLE_EMPLOYE }

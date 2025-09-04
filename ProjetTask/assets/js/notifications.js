@@ -5,12 +5,26 @@
 let notificationsSocket;
 
 document.addEventListener('DOMContentLoaded', function () {
-    initNotificationBadge();
-    initNotificationDropdown();
+
+    initNotificationBadge(
+        document.querySelector('.topbar-action[title="Notifications"]')
+            .addEventListener('click', function () {
+                this.classList.toggle('active');
+                document.querySelector('.topbar-dropdown').classList.toggle('show');
+            })
+    );
+    initNotificationDropdown(
+
+    );
 
     // Tentative de connexion WebSocket si l'utilisateur est connecté
     if (document.querySelector('.topbar-user')) {
-        initNotificationSocket();
+        initNotificationSocket(
+            document.querySelector('.topbar-user').addEventListener('click', function (e) {
+                e.preventDefault();
+                window.location.href = '/profile';
+            })
+        );
     }
 });
 
@@ -69,6 +83,8 @@ function initNotificationDropdown() {
 
             // Si le dropdown existe déjà, le basculer
             if (dropdown) {
+                dropdown.querySelector('.notification-list').innerHTML = '';
+
                 dropdown.classList.toggle('show');
                 return;
             }
@@ -273,6 +289,17 @@ function initNotificationSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws/notifications`;
 
+    // Fermer la connexion WebSocket si elle est encore ouverte
+    if (notificationsSocket && notificationsSocket.readyState === WebSocket.OPEN) {
+        notificationsSocket.close();
+    }
+
+    // Créer une nouvelle connexion WebSocket
+    console.log('Tentative de connexion WebSocket...');
+    notificationsSocket = null;
+    setTimeout(initNotificationSocket, 5000);
+    
+
     notificationsSocket = new WebSocket(wsUrl);
 
     notificationsSocket.onopen = function () {
@@ -315,10 +342,12 @@ function showRealTimeNotification(notification) {
     if ('Notification' in window && Notification.permission === 'granted') {
         const notif = new Notification(notification.title, {
             body: notification.message,
+            // icon: notification.icon
             icon: '/img/logo.png'
         });
 
         notif.onclick = function () {
+
             window.focus();
             window.location.href = notification.url;
         };
@@ -326,6 +355,7 @@ function showRealTimeNotification(notification) {
 
     // Afficher également un toast
     showToast(notification.message, getNotificationTypeForToast(notification.type), 10000, notification.title);
+
 }
 
 /**
@@ -348,6 +378,28 @@ function getNotificationIcon(type) {
         default:
             return 'bell';
     }
+
+}
+function updateNotificationCount() {
+    fetch('/api/notifications/count')
+        .then(response => {
+            if (!response.ok) throw new Error('Erreur réseau');
+            return response.json();
+        })
+        .then(data => {
+            const badge = document.querySelector('.badge-notification');
+            badge.textContent = data.count > 0 ? data.count : '';
+            badge.classList.toggle('d-none', data.count === 0);
+        })
+        .catch(err => console.error('Erreur lors de la mise à jour du compteur:', err));
+}
+
+function loadRecentNotifications() {
+    fetch('/api/notifications/recent').then(response => response.json()).then(data => {
+        // Vérifiez si les données sont valides
+        if (!data.notifications) throw new Error('Pas de notifications');
+        // Procéder à l'affichage...
+    }).catch(err => console.error('Erreur lors du chargement des notifications:', err));
 }
 
 /**
@@ -365,4 +417,5 @@ function getNotificationTypeForToast(type) {
         default:
             return 'info';
     }
+
 }

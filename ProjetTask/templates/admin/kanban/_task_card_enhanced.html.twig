@@ -1,0 +1,147 @@
+<div
+	class="task-card enhanced priority-{{ task.priority|lower }}" data-task-id="{{ task.id }}" data-project-id="{{ task.taskList.project.id }}" data-priority="{{ task.priority }}" data-status="{{ task.statut }}" onclick="openTaskDetailsModal({{ task.id }})">
+
+	<!-- En-tête de la carte -->
+	<div class="task-header enhanced">
+		<div class="task-meta">
+			<div class="task-id">#{{ task.id }}</div>
+			<div class="task-priority">
+				{% if task.priority == 'URGENT' %}
+					<span class="priority-badge urgent">🔴</span>
+				{% elseif task.priority == 'NORMAL' %}
+					<span class="priority-badge normal">🟡</span>
+				{% else %}
+					<span class="priority-badge low">🟢</span>
+				{% endif %}
+			</div>
+		</div>
+
+		<div class="task-actions enhanced">
+			<button class="task-action-btn" onclick="editTask({{ task.id }}); event.stopPropagation();" title="Modifier">
+				✏️
+			</button>
+			<button class="task-action-btn" onclick="duplicateTask({{ task.id }}); event.stopPropagation();" title="Dupliquer">
+				📋
+			</button>
+			<button class="task-action-btn danger" onclick="deleteTask({{ task.id }}); event.stopPropagation();" title="Supprimer">
+				🗑️
+			</button>
+		</div>
+	</div>
+
+	<!-- Contenu principal -->
+	<div class="task-content enhanced">
+		<div class="task-title">{{ task.title }}</div>
+
+		{% if task.description %}
+			<div class="task-description">
+				{{ task.description|length > 80 ? task.description[:80] ~ '...' : task.description }}
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Informations projet -->
+	<div class="task-project-info">
+		<span class="project-badge" style="border-left-color: {{ task.taskList.project.color ?? '#1FA2FF' }}">
+			🏗️
+			{{ task.taskList.project.titre }}
+		</span>
+		<span class="list-badge">
+			📋
+			{{ task.taskList.lastName }}
+		</span>
+	</div>
+
+	<!-- Tags -->
+	{% if task.taskTags|length > 0 %}
+		<div class="task-tags enhanced">
+			{% for taskTag in task.taskTags|slice(0, 3) %}
+				<span class="tag" style="background-color: {{ taskTag.tag.color }}">
+					{{ taskTag.tag.lastName }}
+				</span>
+			{% endfor %}
+			{% if task.taskTags|length > 3 %}
+				<span class="tag-more">+{{ task.taskTags|length - 3 }}</span>
+			{% endif %}
+		</div>
+	{% endif %}
+
+	<!-- Métriques de la tâche -->
+	<div class="task-metrics">
+		{% if task.comments is defined and task.comments|length > 0 %}
+			<div class="metric">
+				<span class="metric-icon">💬</span>
+				<span class="metric-value">{{ task.comments|length }}</span>
+			</div>
+		{% endif %}
+
+		{% if task.attachments is defined and task.attachments|length > 0 %}
+			<div class="metric">
+				<span class="metric-icon">📎</span>
+				<span class="metric-value">{{ task.attachments|length }}</span>
+			</div>
+		{% endif %}
+
+		{% if task.subtasks is defined and task.subtasks|length > 0 %}
+			<div class="metric">
+				<span class="metric-icon">📝</span>
+				<span class="metric-value">{{ task.completedSubtasks|length }}/{{ task.subtasks|length }}</span>
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Pied de carte -->
+	<div
+		class="task-footer enhanced">
+		<!-- Assignés -->
+		<div class="task-assignees enhanced">
+			{% set maxAvatars = 3 %}
+			{% for taskUser in task.taskUsers|slice(0, maxAvatars) %}
+				<div class="avatar enhanced" title="{{ taskUser.user.prenom }} {{ taskUser.user.nom }}" style="background-color: {{ taskUser.user.avatarColor ?? '#7A60FF' }}">
+					{{ taskUser.user.prenom[:1] }}{{ taskUser.user.nom[:1] }}
+				</div>
+			{% endfor %}
+			{% if task.taskUsers|length > maxAvatars %}
+				<div class="avatar-more">+{{ task.taskUsers|length - maxAvatars }}</div>
+			{% endif %}
+		</div>
+
+		<!-- Informations temporelles -->
+		<div class="task-timing">
+			{% if task.deadline %}
+				{% set isOverdue = task.deadline < date() and task.statut != 'TERMINER' %}
+				{% set isDueSoon = task.deadline < date('+3 days') and task.statut != 'TERMINER' %}
+				<div class="task-deadline {{ isOverdue ? 'overdue' : (isDueSoon ? 'due-soon' : '') }}">
+					{% if isOverdue %}
+						⚠️
+						{{ task.deadline|date('d/m') }}
+					{% elseif isDueSoon %}
+						🟡
+						{{ task.deadline|date('d/m') }}
+					{% else %}
+						📅
+						{{ task.deadline|date('d/m') }}
+					{% endif %}
+				</div>
+			{% endif %}
+
+			{% if task.estimatedHours %}
+				<div class="task-estimate">
+					⏱️
+					{{ task.estimatedHours }}h
+				</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- Indicateur de statut -->
+	<div class="status-indicator {{ task.statut|lower }}"></div>
+
+	<!-- Progress bar pour les sous-tâches -->
+	{% if task.subtasks is defined and task.subtasks|length > 0 %}
+		{% set progress = (task.completedSubtasks|length / task.subtasks|length) * 100 %}
+		<div class="subtask-progress">
+			<div class="progress-bar" style="width: {{ progress }}%"></div>
+		</div>
+	{% endif %}
+</div>

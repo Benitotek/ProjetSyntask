@@ -160,7 +160,31 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    /**
+     * Trouve tous les projets avec statistiques
+     */
+    public function findAllWithStats(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.taskLists', 'tl')
+            ->leftJoin('tl.tasks', 't')
+            ->leftJoin('p.projectMembers', 'pm')
+            ->leftJoin('pm.user', 'u')
+            ->addSelect('tl', 't', 'pm', 'u')
+            ->orderBy('p.dateCreation', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
+    public function countByStatus(string $status): int
+    {
+        return $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.statut = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
     /**
      * Trouve les projects où l'utilisateur est membre avec un statut spécifique
      */

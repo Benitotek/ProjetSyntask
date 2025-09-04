@@ -1,0 +1,73 @@
+<div
+	class="task-card priority-{{ task.priority|lower }}" data-task-id="{{ task.id }}" data-project-id="{{ task.taskList.project.id }}" onclick="openTaskDetails({{ task.id }})">
+
+	<!-- En-tête de la carte -->
+	<div class="task-header">
+		<div class="task-priority">
+			{% if task.priority == 'URGENT' %}
+				<span class="priority-badge urgent">🔴 Urgent</span>
+			{% elseif task.priority == 'NORMAL' %}
+				<span class="priority-badge normal">🟡 Normal</span>
+			{% else %}
+				<span class="priority-badge low">🟢 Basse</span>
+			{% endif %}
+		</div>
+
+		<div class="task-actions">
+			<button class="task-action-btn" onclick="editTask({{ task.id }}); event.stopPropagation();">✏️</button>
+			<button class="task-action-btn" onclick="deleteTask({{ task.id }}); event.stopPropagation();">🗑️</button>
+		</div>
+	</div>
+
+	<!-- Contenu de la carte -->
+	<div class="task-title">{{ task.title }}</div>
+
+	{% if task.description %}
+		<div class="task-description">
+			{{ task.description|length > 80 ? task.description[:80] ~ '...' : task.description }}
+		</div>
+	{% endif %}
+
+	<!-- Informations projet -->
+	<div class="task-project">
+		<span class="project-badge">📁
+			{{ task.taskList.project.titre }}</span>
+	</div>
+
+	<!-- Tags -->
+	{% if task.taskTags|length > 0 %}
+		<div class="task-tags">
+			{% for taskTag in task.taskTags %}
+				<span class="tag" style="background-color: {{ taskTag.tag.color }}">
+					{{ taskTag.tag.lastName }}
+				</span>
+			{% endfor %}
+		</div>
+	{% endif %}
+
+	<!-- Pied de carte -->
+	<div
+		class="task-footer">
+		<!-- Assignés -->
+		<div class="task-assignees">
+			{% for taskUser in task.taskUsers %}
+				<div class="avatar" title="{{ taskUser.user.prenom }} {{ taskUser.user.nom }}">
+					{{ taskUser.user.prenom[:1] }}{{ taskUser.user.nom[:1] }}
+				</div>
+			{% endfor %}
+		</div>
+
+		<!-- Date d'échéance -->
+		{% if task.deadline %}
+			<div class="task-deadline {% if task.deadline < date() and task.statut != 'TERMINER' %}overdue{% endif %}">
+				{% if task.deadline < date() and task.statut != 'TERMINER' %}
+					⚠️
+					{{ task.deadline|date('d/m') }}
+				{% else %}
+					📅
+					{{ task.deadline|date('d/m') }}
+				{% endif %}
+			</div>
+		{% endif %}
+	</div>
+</div>
