@@ -37,7 +37,7 @@ public function logProjectAssignment(User $user, Project $project, User $assigne
 {
    
     $activity = new Activity();
-    $activity->setType(ActivityType::PROJECT_ASSIGNMENT);
+    $activity->setType(ActivityType::PROJECT_ASSIGN);
     $activity->setUser($user);
     $activity->setProject($project);
     $activity->setPerformedBy($assignedBy);
