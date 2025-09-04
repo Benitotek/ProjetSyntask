@@ -25,21 +25,20 @@ class NotificationService
         $this->urlGenerator = $urlGenerator;
         $this->notificationRepository = $notificationRepository;
     }
-/**
- * Crée une notification lors de l'assignation d'un utilisateur à un projet.
- */
-public function createProjectAssignmentNotification(Project $project, User $user, User $assignedBy): void
-{
-    
-    $notification = new Notification();
-    $notification->setType('project_assignment');
-    $notification->setProject($project);
-    $notification->setUser($user);
-    $notification->setCreatedBy($assignedBy);
-    $notification->setMessage(sprintf('%s vous a ajouté au projet %s', $assignedBy->getNom(), $project->getTitre()));
-    $this->entityManager->persist($notification);
-    $this->entityManager->flush();
-}
+    /**
+     * Crée une notification lors de l'assignation d'un utilisateur à un projet.
+     */
+    public function createProjectAssignmentNotification(Project $project, User $user, User $assignedBy): void
+    {
+
+        $notification = new Notification();
+        $notification->setType('project_assignment');
+        $notification->setProject($project);
+        $notification->setUser($user);
+        $notification->setMessage(sprintf('%s vous a ajouté au projet %s', $assignedBy->getNom(), $project->getTitre()));
+        $this->entityManager->persist($notification);
+        $this->entityManager->flush();
+    }
     /**
      * Crée une notification pour un utilisateur
      */
@@ -415,5 +414,19 @@ public function createProjectAssignmentNotification(Project $project, User $user
         $date->modify('-' . $daysToKeep . ' days');
 
         return $this->notificationRepository->deleteOldReadNotifications($date);
+    }
+    /**
+     * Crée une notification lors de l'assignation d'une tâche à un utilisateur.
+     */
+    public function createTaskAssignmentNotification(Task $task, User $assignedUser, User $assignedBy): void
+    {
+        // Implémentez ici la logique de création de notification selon votre modèle.
+        // Exemple basique :
+        // $notification = new Notification();
+        // $notification->setUser($assignedUser);
+        // $notification->setMessage(sprintf('Vous avez été assigné à la tâche "%s" par %s.', $task->getTitle(), $assignedBy->getNom()));
+        // $notification->setCreatedAt(new \DateTime());
+        // $this->entityManager->persist($notification);
+        // $this->entityManager->flush();
     }
 }

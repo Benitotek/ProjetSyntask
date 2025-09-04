@@ -157,4 +157,19 @@ class Notification
             default => 'fa-info-circle' // info ou autre
         };
     }
+     /**
+     * @var Project|null
+     */
+    private $project;
+
+    public function setProject(?Project $project): self
+    {
+        $this->project = $project;
+        return $this;
+    }
+
+    public function getProject(): ?Project
+    {
+        return $this->project;
+    }
 }

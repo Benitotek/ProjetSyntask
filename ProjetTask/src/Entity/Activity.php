@@ -186,4 +186,23 @@ class Activity
     {
         return $this->action;
     }
+    private ?User $performedBy = null;
+
+/**
+ * Set the user who performed the activity.
+ */
+public function setPerformedBy(?User $user): self
+{
+    $this->performedBy = $user;
+    return $this;
+}
+
+/**
+ * Get the user who performed the activity.
+ */
+public function getPerformedBy(): ?User
+{
+    return $this->performedBy;
+}
+
 }

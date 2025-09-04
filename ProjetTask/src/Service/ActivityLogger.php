@@ -41,7 +41,7 @@ public function logProjectAssignment(User $user, Project $project, User $assigne
     $activity->setUser($user);
     $activity->setProject($project);
     $activity->setPerformedBy($assignedBy);
-    $activity->setCreatedAt(new \DateTime());
+    $activity->setDateCreation(new \DateTime());
     $this->entityManager->persist($activity);
     $this->entityManager->flush();
 }

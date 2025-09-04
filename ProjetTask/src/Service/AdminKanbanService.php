@@ -19,6 +19,20 @@ use Symfony\Bundle\SecurityBundle\Security;
 class AdminKanbanService
 
 {
+     public function __construct(
+        private ProjectRepository $projectRepository,
+        private TaskRepository $taskRepository,
+        private UserRepository $userRepository,
+        private TaskListRepository $taskListRepository,
+        private ActivityRepository $activityRepository,
+        private EntityManagerInterface $entityManager,
+        private KanbanService $kanbanService,
+        private AdminKanbanService $adminKanbanService,
+        private ActivityLogger $activityLogger,
+        private NotificationService $notificationService,
+        private Security $security,
+        private PaginatorInterface $paginator
+    ) {}
     /**
      * 📊 Données Kanban pour Admin et Directeur (accès total)
      */
@@ -49,20 +63,7 @@ class AdminKanbanService
         ];
     }
 
-    public function __construct(
-        private ProjectRepository $projectRepository,
-        private TaskRepository $taskRepository,
-        private UserRepository $userRepository,
-        private TaskListRepository $taskListRepository,
-        private ActivityRepository $activityRepository,
-        private EntityManagerInterface $entityManager,
-        private KanbanService $kanbanService,
-        private AdminKanbanService $adminKanbanService,
-        private ActivityLogger $activityLogger,
-        private NotificationService $notificationService,
-        private Security $security,
-        private PaginatorInterface $paginator
-    ) {}
+   
 
     /**  
      * 🎯 NOUVELLE MÉTHODE - Récupère les données selon les droits de l'utilisateur  
