@@ -9,6 +9,8 @@
 // import './styles/app.css';
 import Sortable from 'sortablejs';
 import './styles/app.css';
+console.log("Toto");
+
 document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('sortable-list');
     if (el) {

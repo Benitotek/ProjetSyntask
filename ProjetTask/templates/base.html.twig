@@ -26,9 +26,7 @@
 		<meta name="theme-color" content="#ffffff"> {% block extra_styles %}{% endblock %}
 
 		{% block javascripts %}
-			 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" 
-			        integrity="sha384-iU94BoOYf9P7JdkHjV5TI0yQ8fEON6DZMS+YVxbQE6+V9rw1QzMlwk1gqDQBo2Bb" 
-			        crossorigin="anonymous"></script>
+		<script src="{{ asset('/js/Sortable.min.js') }}"></script>
 			 <script src="{{ asset('js/notifications.js') }}"></script>
 			 <script src="{{ asset('js/search.js') }}"></script>
 			 <script src="{{ asset('js/dashboard.js') }}"></script>
