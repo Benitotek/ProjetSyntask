@@ -62,7 +62,30 @@ class AdminKanbanService
         ];
     }
 
+    public function assignUserATProject(User $user, Project $project, User $assignedBy): array
+    {
+        // Validate the user and project
+        if (!$user || !$project) {
+            return ['success' => false, 'message' => 'Utilisateur ou projet introuvable.'];
+        }
 
+        // Check the user's permission to assign
+        if (!$this->canAssignToProject($assignedBy, $project)) {
+            return ['success' => false, 'message' => 'Droits insuffisants pour cette assignation.'];
+        }
+
+        // Assign the user to the project
+        $project->addMembre($user);
+        $this->entityManager->flush();
+
+        // Log the activity
+        $this->activityLogger->logProjectAssignment($user, $project, $assignedBy);
+
+        // Notify the user
+        $this->notificationService->createProjectAssignmentNotification($project, $user, $assignedBy);
+
+        return ['success' => true, 'message' => 'Utilisateur assigné au projet.'];
+    }
 
     /**  
      * 🎯 NOUVELLE MÉTHODE - Récupère les données selon les droits de l'utilisateur  
@@ -228,12 +251,7 @@ class AdminKanbanService
             $this->entityManager->flush();
 
             // Log de l'activité  
-<<<<<<< HEAD
             $this->activityLogger->logTaskAssignment($user, $task, $assignedBy);
-=======
-            // Remplacez les valeurs null par les valeurs appropriées si nécessaire
-            $this->activityLogger->logTaskAssignment($task, $user->getId(), $assignedBy, null, null, null);
->>>>>>> 60f5e28b584492004a29962799d7523dfc77d1bc
 
             // Notification  
             $this->notificationService->createTaskAssignmentNotification($task, $user, $assignedBy);

@@ -27,7 +27,16 @@ class AdminKanbanController extends AbstractController
         private UserRepository $userRepository,
         private TaskListRepository $taskListRepository
     ) {}
-
+// Assigner un utilisateur à un projet
+#[Route('/project/assign/{userId}/{projectId}', name: 'assign_user_to_project')]
+public function assignUserToProject(int $userId, int $projectId): Response
+{
+    $user = $this->userRepository->find($userId);
+    $project = $this->projectRepository->find($projectId);
+    
+    $result = $this->adminKanbanService->assignUserToProject($user, $project, $this->getUser());
+    return $this->json($result);
+}
     /**
      * 🎯 PAGE PRINCIPALE - Vue Kanban Globale Admin
      */

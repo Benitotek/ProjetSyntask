@@ -8,6 +8,8 @@ enum ActivityType: string
     case PROJECT_CREATE = 'project_create';
     case PROJECT_UPDATE = 'project_update';
     case PROJECT_DELETE = 'project_delete';
+    case PROJECT_ASSIGN = 'project_assign';
+
 
     case TASK_CREATE = 'task_create';
     case TASK_UPDATE = 'task_update';
@@ -33,6 +35,7 @@ enum ActivityType: string
             self::PROJECT_CREATE => 'Création de project',
             self::PROJECT_UPDATE => 'Mise à jour de project',
             self::PROJECT_DELETE => 'Suppression de project',
+            self::PROJECT_ASSIGN => 'Affectation de project',
 
             self::TASK_CREATE => 'Création de tâche',
             self::TASK_UPDATE => 'Mise à jour de tâche',

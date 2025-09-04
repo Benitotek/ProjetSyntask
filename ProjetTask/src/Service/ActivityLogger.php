@@ -33,15 +33,25 @@ class ActivityLogger
     /**
      * Log the assignment of a user to a project.
  */
+// public function logProjectAssignment(User $user, Project $project, User $assignedBy): void
+// {
+//     // Code pour journaliser l'événement d'affectation
+//     $activity = new Activity();
+//     $activity->setUser($assignedBy);
+//     $activity->setMessage(sprintf("L'utilisateur %s a été assigné au projet %s.", $user->getUsername(), $project->getTitle()));
+    
+//     $this->entityManager->persist($activity);
+//     $this->entityManager->flush();
+// }
 public function logProjectAssignment(User $user, Project $project, User $assignedBy): void
 {
    
     $activity = new Activity();
-    $activity->setType(ActivityType::PROJECT_ASSIGNMENT);
+    $activity->setType(ActivityType::PROJECT_ASSIGN);
     $activity->setUser($user);
     $activity->setProject($project);
-    $activity->setPerformedBy($assignedBy);
-    $activity->setCreatedAt(new \DateTime());
+    $activity->setDescription(sprintf("L'utilisateur %s a été assigné au projet %s par %s.", $user->getUsername(), $project->getId(), $assignedBy->getUsername()));
+    $activity->setDateCreation(new \DateTimeImmutable());
     $this->entityManager->persist($activity);
     $this->entityManager->flush();
 }
