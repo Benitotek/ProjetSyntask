@@ -1,0 +1,218 @@
+{% extends 'kanban/base.html.twig' %}  
+
+{% block title %}Chef de Projet Dashboard - SynTask{% endblock %}  
+
+{% block body %}  
+<div class="chef-projet-dashboard">  
+    <!-- En-tête spécifique -->  
+    <div class="dashboard-header">  
+        <div class="header-title">  
+            <h1>📊 Dashboard Chef de Projet</h1>  
+            <p>Gérez vos projets et vos équipes</p>  
+        </div>  
+        
+        <div class="header-actions">  
+            <button class="btn btn-primary" onclick="openCreateTaskModal()">  
+                ➕ Nouvelle Tâche  
+            </button>  
+            <button class="btn btn-secondary" onclick="toggleTeamPanel()">  
+                👥 Mon Équipe  
+            </button>  
+        </div>  
+    </div>  
+
+    <!-- Statistiques Chef de Projet -->  
+    <div class="stats-grid chef-projet-stats">  
+        <div class="stat-card primary">  
+            <div class="stat-icon">🏗️</div>  
+            <div class="stat-content">  
+                <div class="stat-number">{{ data.managedProjects|length }}</div>  
+                <div class="stat-label">Projets Gérés</div>  
+                <div class="stat-detail">{{ data.projects|length }} total</div>  
+            </div>  
+        </div>  
+        
+        <div class="stat-card success">  
+            <div class="stat-icon">✅</div>  
+            <div class="stat-content">  
+                <div class="stat-number">{{ data.statistics.completedTasks }}</div>  
+                <div class="stat-label">Tâches Terminées</div>  
+                <div class="stat-detail">{{ data.statistics.completionRate }}% de réussite</div>  
+            </div>  
+        </div>  
+        
+        <div class="stat-card warning">  
+            <div class="stat-icon">⏰</div>  
+            <div class="stat-content">  
+                <div class="stat-number">{{ data.statistics.overdueTasks }}</div>  
+                <div class="stat-label">En Retard</div>  
+                <div class="stat-detail">Attention requise</div>  
+            </div>  
+        </div>  
+        
+        <div class="stat-card info">  
+            <div class="stat-icon">👥</div>  
+            <div class="stat-content">  
+                <div class="stat-number">{{ data.users|length }}</div>  
+                <div class="stat-label">Membres d'Équipe</div>  
+                <div class="stat-detail">{{ data.statistics.avgTasksPerUser }} tâches/personne</div>  
+            </div>  
+        </div>  
+    </div>  
+
+    <!-- Filtres simplifiés -->  
+    <div class="dashboard-controls chef-projet-controls">  
+        <div class="filters-container">  
+            <select id="projectFilter" class="filter-select">  
+                <option value="">🏗️ Tous mes projets</option>  
+                {% for project in data.managedProjects %}  
+                    <option value="{{ project.id }}">{{ project.titre }}</option>  
+                {% endfor %}  
+            </select>  
+            
+            <select id="userFilter" class="filter-select">  
+                <option value="">👤 Tous les membres</option>  
+                {% for user in data.users %}  
+                    <option value="{{ user.id }}">{{ user.prenom }} {{ user.nom }}</option>  
+                {% endfor %}  
+            </select>  
+            
+            <select id="statusFilter" class="filter-select">  
+                <option value="all">📊 Tous statuts</option>  
+                <option value="EN_ATTENTE">⏳ En attente</option>  
+                <option value="EN_COURS">🔄 En cours</option>  
+                <option value="TERMINER">✅ Terminé</option>  
+            </select>  
+            
+            <button class="btn btn-secondary" onclick="showMyTeam()">  
+                👥 Équipe  
+            </button>  
+        </div>  
+    </div>  
+
+    <!-- Vue Kanban -->  
+    <div class="kanban-view chef-projet-kanban">  
+        <div class="kanban-board" id="kanbanBoard">  
+            {% set tasksByList = {} %}  
+            {% for task in data.tasks %}  
+                {% set listId = task.taskList.id %}  
+                {% if tasksByList[listId] is not defined %}  
+                    {% set tasksByList = tasksByList|merge({(listId): []}) %}  
+                {% endif %}  
+                {% set tasksByList = tasksByList|merge({(listId): tasksByList[listId]|merge([task])}) %}  
+            {% endfor %}  
+
+            {% for taskList in data.taskLists %}  
+                {% set project = taskList.project %}  
+                {% set isManaged = project.chefproject and project.chefproject.id == app.user.id %}  
+                
+                <div class="kanban-column chef-projet-column {{ isManaged ? 'managed-project' : 'member-project' }}"   
+                     data-list-id="{{ taskList.id }}"   
+                     data-project-id="{{ project.id }}"  
+                     data-is-managed="{{ isManaged ? 'true' : 'false' }}">  
+                     
+                    <div class="column-header">  
+                        <div class="column-title-section">  
+                            <div class="column-title">{{ taskList.lastName }}</div>  
+                            <div class="column-project">  
+                                <span class="project-name">{{ project.titre }}</span>  
+                                {% if isManaged %}  
+                                    <span class="managed-badge">👑 Géré par vous</span>  
+                                {% else %}  
+                                    <span class="member-badge">👤 Membre</span>  
+                                {% endif %}  
+                            </div>  
+                        </div>  
+                        
+                        <div class="column-stats">  
+                            <div class="task-count">{{ tasksByList[taskList.id]|length ?? 0 }}</div>  
+                            {% if isManaged %}  
+                                <div class="column-actions">  
+                                    <button class="column-action" onclick="addTaskToColumn({{ taskList.id }})" title="Ajouter une tâche">  
+                                        ➕  
+                                    </button>  
+                                    <button class="column-action" onclick="manageColumnTeam({{ taskList.id }})" title="Gérer l'équipe">  
+                                        👥  
+                                    </button>  
+                                </div>  
+                            {% endif %}  
+                        </div>  
+                    </div>  
+                    
+                    <div class="tasks-container sortable chef-projet-sortable"   
+                         data-list-id="{{ taskList.id }}"  
+                         data-can-manage="{{ isManaged ? 'true' : 'false' }}">  
+                        {% if tasksByList[taskList.id] is defined %}  
+                            {% for task in tasksByList[taskList.id] %}  
+                                {{ include('kanban/_task_card_chef_projet.html.twig', {'task': task, 'isManaged': isManaged}) }}  
+                            {% endfor %}  
+                        {% endif %}  
+                    </div>  
+                    
+                    {% if isManaged %}  
+                        <!-- Zone de drop pour assigner des utilisateurs aux tâches -->  
+                        <div class="user-drop-zone" data-list-id="{{ taskList.id }}">  
+                            <div class="drop-zone-content">  
+                                <span class="drop-icon">👥</span>  
+                                <span class="drop-text">Glisser un membre pour l'assigner</span>  
+                            </div>  
+                        </div>  
+                    {% endif %}  
+                </div>  
+            {% endfor %}  
+        </div>  
+    </div>  
+
+    <!-- Panel équipe -->  
+    <div id="teamPanel" class="team-panel hidden">  
+        <div class="panel-header">  
+            <h3>👥 Mon Équipe</h3>  
+            <button class="panel-close" onclick="closeTeamPanel()">&times;</button>  
+        </div>  
+        <div class="panel-content">  
+            <div class="team-stats">  
+                <h4>📊 Performance de l'équipe</h4>  
+                <div id="teamPerformanceChart"></div>  
+            </div>  
+            
+            <div class="team-members">  
+                <h4>👤 Membres</h4>  
+                <div id="teamMembersList" class="members-list">  
+                    {% for user in data.users %}  
+                        <div class="member-item draggable-user" data-user-id="{{ user.id }}">  
+                            <div class="member-avatar">{{ user.prenom[:1] }}{{ user.nom[:1] }}</div>  
+                            <div class="member-info">  
+                                <div class="member-name">{{ user.prenom }} {{ user.nom }}</div>  
+                                <div class="member-role">{{ user.role.value }}</div>  
+                                <div class="member-tasks-count">  
+                                    {{ user.activeTasks ?? 0 }} tâches actives  
+                                </div>  
+                            </div>  
+                            <div class="member-actions">  
+                                <button class="btn btn-sm" onclick="viewMemberTasks({{ user.id }})">  
+                                    📋 Tâches  
+                                </button>  
+                            </div>  
+                        </div>  
+                    {% endfor %}  
+                </div>  
+            </div>  
+        </div>  
+    </div>  
+</div>  
+{% endblock %}  
+
+ 
+
+{% block page_javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    window.chefProjetKanban = new ChefProjetKanbanManager({
+        userRole: '{{ userPermissions.role }}',
+        permissions: {{ userPermissions|json_encode|raw }},
+        managedProjects: {{ data.managedProjects|map(p => p.id)|json_encode|raw }},
+        teamMembers: {{ data.users|json_encode|raw }}
+    });
+});
+</script>
+{% endblock %}

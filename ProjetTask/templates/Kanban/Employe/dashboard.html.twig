@@ -1,0 +1,253 @@
+{% extends 'kanban/base.html.twig' %}
+
+{% block title %}Mes Tâches - SynTask
+{% endblock %}
+
+{% block body %}
+	<div
+		class="employe-dashboard">
+		<!-- En-tête employé -->
+		<div class="dashboard-header employe-header">
+			<div class="header-title">
+				<h1>✅ Mes Tâches</h1>
+				<p>Gérez vos tâches et suivez votre progression</p>
+			</div>
+
+			<div class="header-actions">
+				<button class="btn btn-primary" onclick="filterMyTasks()">
+					📋 Mes tâches uniquement
+				</button>
+				<button class="btn btn-secondary" onclick="showMyProgress()">
+					📊 Ma progression
+				</button>
+			</div>
+		</div>
+
+		<!-- Statistiques personnelles -->
+		<div class="stats-grid employe-stats">
+			<div class="stat-card assigned">
+				<div class="stat-icon">📋</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.totalAssignedTasks }}</div>
+					<div class="stat-label">Tâches Assignées</div>
+					<div class="stat-detail">À moi personnellement</div>
+				</div>
+			</div>
+
+			<div class="stat-card progress">
+				<div class="stat-icon">🔄</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.inProgressTasks }}</div>
+					<div class="stat-label">En Cours</div>
+					<div class="stat-detail">En cours de traitement</div>
+				</div>
+			</div>
+
+			<div class="stat-card completed">
+				<div class="stat-icon">✅</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.completedTasks }}</div>
+					<div class="stat-label">Terminées</div>
+					<div class="stat-progress">
+						<div class="progress-bar" style="width: {{ data.statistics.completionRate }}%"></div>
+						<span class="progress-text">{{ data.statistics.completionRate }}%</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="stat-card urgent">
+				<div class="stat-icon">⚠️</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.overdueTasks }}</div>
+					<div class="stat-label">En Retard</div>
+					<div class="stat-detail">Attention requise</div>
+				</div>
+				{% if data.statistics.overdueTasks > 0 %}
+					<div class="stat-alert">🚨</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<!-- Filtres simplifiés pour employé -->
+		<div class="dashboard-controls employe-controls">
+			<div class="view-toggle">
+				<button class="toggle-btn active" data-view="kanban" onclick="switchEmployeView('kanban')">
+					📋 Vue Kanban
+				</button>
+				<button class="toggle-btn" data-view="my-tasks" onclick="switchEmployeView('my-tasks')">
+					✅ Mes tâches seulement
+				</button>
+				<button class="toggle-btn" data-view="calendar" onclick="switchEmployeView('calendar')">
+					📅 Calendrier
+				</button>
+			</div>
+
+			<div class="filters-container">
+				<select id="projectFilter" class="filter-select">
+					<option value="">🏗️ Tous les projets</option>
+					{% for project in data.projects %}
+						<option value="{{ project.id }}">{{ project.titre }}</option>
+					{% endfor %}
+				</select>
+
+				<select id="priorityFilter" class="filter-select">
+					<option value="all">🎯 Toutes priorités</option>
+					<option value="URGENT">🔴 Urgent</option>
+					<option value="NORMAL">🟡 Normal</option>
+					<option value="BAS">🟢 Basse</option>
+				</select>
+
+				<select id="deadlineFilter" class="filter-select">
+					<option value="all">📅 Toutes échéances</option>
+					<option value="overdue">⚠️ En retard</option>
+					<option value="today">📅 Aujourd'hui</option>
+					<option value="week">📅 Cette semaine</option>
+					<option value="month">📅 Ce mois</option>
+				</select>
+			</div>
+		</div>
+
+		<!-- Vue Kanban pour employé -->
+		<div id="kanbanView" class="kanban-view employe-kanban active">
+			<div class="kanban-board employe-board" id="kanbanBoard">
+				{% set tasksByList = {} %}
+				{% for task in data.tasks %}
+					{% set listId = task.taskList.id %}
+					{% if tasksByList[listId] is not defined %}
+						{% set tasksByList = tasksByList|merge({(listId): []}) %}
+					{% endif %}
+					{% set tasksByList = tasksByList|merge({(listId): tasksByList[listId]|merge([task])}) %}
+				{% endfor %}
+
+				{% for taskList in data.taskLists %}
+					<div class="kanban-column employe-column" data-list-id="{{ taskList.id }}" data-project-id="{{ taskList.project.id }}">
+
+						<div class="column-header employe-header">
+							<div class="column-title-section">
+								<div class="column-title">{{ taskList.lastName }}</div>
+								<div class="column-project">
+									<span class="project-name">{{ taskList.project.titre }}</span>
+									{% if taskList.project.chefproject %}
+										<span class="chef-info">👨‍💼
+											{{ taskList.project.chefproject.prenom }}
+											{{ taskList.project.chefproject.nom[:1] }}.</span>
+									{% endif %}
+								</div>
+							</div>
+
+							<div class="column-stats">
+								<div class="task-count">
+									<span class="total-tasks">{{ tasksByList[taskList.id]|length ?? 0 }}</span>
+									<span class="my-tasks-count" data-list="{{ taskList.id }}">0</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="tasks-container sortable employe-sortable" data-list-id="{{ taskList.id }}">
+							{% if tasksByList[taskList.id] is defined %}
+								{% for task in tasksByList[taskList.id] %}
+									{% set isMyTask = false %}
+									{% for taskUser in task.taskUsers %}
+										{% if taskUser.user.id == app.user.id %}
+											{% set isMyTask = true %}
+										{% endif %}
+									{% endfor %}
+									{{ include('kanban/_task_card_employe.html.twig', {'task': task, 'isMyTask': isMyTask}) }}
+								{% endfor %}
+							{% endif %}
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		<!-- Vue "Mes tâches seulement" -->
+		<div id="myTasksView" class="my-tasks-view hidden">
+			<div class="my-tasks-container">
+				<div class="my-tasks-header">
+					<h3>✅ Mes Tâches Personnelles</h3>
+					<div class="my-tasks-actions">
+						<button class="btn btn-sm btn-secondary" onclick="markAllAsViewed()">
+							👁️ Marquer comme vues
+						</button>
+					</div>
+				</div>
+
+				<div class="my-tasks-grid">
+					<div class="my-tasks-column" data-status="EN_ATTENTE">
+						<h4>⏳ À Faire</h4>
+						<div class="my-tasks-list" id="myTasksTodo"></div>
+					</div>
+
+					<div class="my-tasks-column" data-status="EN_COURS">
+						<h4>🔄 En Cours</h4>
+						<div class="my-tasks-list" id="myTasksInProgress"></div>
+					</div>
+
+					<div class="my-tasks-column" data-status="TERMINER">
+						<h4>✅ Terminées</h4>
+						<div class="my-tasks-list" id="myTasksCompleted"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Vue calendrier personnel -->
+		<div id="calendarView" class="calendar-view employe-calendar hidden">
+			<div class="calendar-header">
+				<h3>📅 Mon Calendrier de Tâches</h3>
+				<div class="calendar-legend">
+					<span class="legend-item urgent">🔴 Urgent</span>
+					<span class="legend-item normal">🟡 Normal</span>
+					<span class="legend-item low">🟢 Basse</span>
+					<span class="legend-item overdue">⚠️ En retard</span>
+				</div>
+			</div>
+			<div id="employeTaskCalendar" class="task-calendar"></div>
+		</div>
+
+		<!-- Quick Actions Floating Button -->
+		<div class="quick-actions-fab">
+			<button class="fab-main" onclick="toggleQuickActions()">⚡</button>
+			<div class="fab-actions hidden" id="fabActions">
+				<button class="fab-action" onclick="quickUpdateStatus()" title="Mettre à jour le statut">
+					🔄
+				</button>
+				<button class="fab-action" onclick="quickAddComment()" title="Ajouter un commentaire">
+					💬
+				</button>
+				<button class="fab-action" onclick="quickMarkComplete()" title="Marquer comme terminé">
+					✅
+				</button>
+				<button class="fab-action" onclick="quickRequestHelp()" title="Demander de l'aide">
+					🆘
+				</button>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block page_javascripts %}
+	 <script>
+	document.addEventListener('DOMContentLoaded', function() {
+	    window.employeKanban = new EmployeKanbanManager({
+	        userRole: '{{ userPermissions.role }}',
+	        permissions: {{ userPermissions|json_encode|raw }},
+	        assignedTasks: {{ data.assignedTasks|map(t => t.id)|json_encode|raw }},
+	        userId: {{ app.user.id }}
+	    });
+	    
+	    // Mettre à jour les compteurs de mes tâches
+	    updateMyTasksCounts();
+	});
+	
+	function updateMyTasksCounts() {
+	    document.querySelectorAll('.my-tasks-count').forEach(counter => {
+	        const listId = counter.dataset.list;
+	        const myTasksInList = document.querySelectorAll(`[data-list-id="${listId}"] .task-card.my-task`).length;
+	        counter.textContent = `(${myTasksInList} miennes)`;
+	        counter.style.display = myTasksInList > 0 ? 'inline' : 'none';
+	    });
+	}
+	</script>
+{% endblock %}
