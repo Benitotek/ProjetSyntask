@@ -31,6 +31,21 @@ class ActivityLogger
         $this->slugger = $slugger;
     }
     /**
+     * Log the assignment of a user to a project.
+ */
+public function logProjectAssignment(User $user, Project $project, User $assignedBy): void
+{
+   
+    $activity = new Activity();
+    $activity->setType(ActivityType::PROJECT_ASSIGNMENT);
+    $activity->setUser($user);
+    $activity->setProject($project);
+    $activity->setPerformedBy($assignedBy);
+    $activity->setCreatedAt(new \DateTime());
+    $this->entityManager->persist($activity);
+    $this->entityManager->flush();
+}
+    /**
      * Enregistre une activité dans un projet
      */
     public function logActivity(

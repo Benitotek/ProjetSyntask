@@ -204,7 +204,7 @@ class RegistrationController extends AbstractController
 
             $this->logger->info('Email vérifié avec succès', [
                 'user_id' => $user->getUserIdentifier(),
-                'email' => $user->getEmail()
+                'email' => method_exists($user, 'getEmail') ? $user->getEmail() : $user->getUserIdentifier()
             ]);
         } catch (VerifyEmailExceptionInterface $exception) {
             $this->logger->warning('Échec vérification email', [
@@ -226,7 +226,7 @@ class RegistrationController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($user->isVerified(
+        if ($user->getIsVerified()) {
             // Si l'utilisateur est actuellement verifié, ne renvoyer pas de nouveau email
 
             // Exemples de cas ou l'email serait renvoyé :
@@ -234,7 +234,6 @@ class RegistrationController extends AbstractController
             // 2. L'utilisateur a changé son adresse email
             // 3. L'utilisateur n'a jamais reçu l'email initial (problème de livraison)
 
-        )) {
             $this->addFlash('info', '✅ Votre email est déjà vérifié !');
             return $this->redirectToRoute('app_dashboard');
         }

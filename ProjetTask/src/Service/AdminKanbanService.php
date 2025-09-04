@@ -228,7 +228,12 @@ class AdminKanbanService
             $this->entityManager->flush();
 
             // Log de l'activité  
+<<<<<<< HEAD
             $this->activityLogger->logTaskAssignment($user, $task, $assignedBy);
+=======
+            // Remplacez les valeurs null par les valeurs appropriées si nécessaire
+            $this->activityLogger->logTaskAssignment($task, $user->getId(), $assignedBy, null, null, null);
+>>>>>>> 60f5e28b584492004a29962799d7523dfc77d1bc
 
             // Notification  
             $this->notificationService->createTaskAssignmentNotification($task, $user, $assignedBy);
