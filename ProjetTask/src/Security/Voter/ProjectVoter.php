@@ -46,7 +46,7 @@ class ProjectVoter extends Voter
             'project_id' => $subject->getId()
         ]);
 
-        // SOLUTION: Vérification correcte des rôles admin/directeur
+        // Vérification correcte des rôles admin/directeur
         $userRoles = $user->getRoles();
         if (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_DIRECTEUR', $userRoles)) {
             $this->logger->info('ProjectVoter: Accès accordé (ADMIN/DIRECTEUR)');

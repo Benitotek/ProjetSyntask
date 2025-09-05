@@ -40,8 +40,8 @@ class TaskVoter extends Voter
         ) {
             return true;
         }
-// AREVOIR ????
-// Vérification si la tâche est assignée à l'utilisateur et AUTRES ATTRIBUTE SWITCH A REVOIRS?
+
+// Vérification si la tâche est assignée à l'utilisateur 
         /** @var Task $task */
         $task = $subject;
         $project = $task->getTaskList()->getProject();
