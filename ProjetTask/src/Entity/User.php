@@ -59,7 +59,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $Mdp = null;
 
     #[ORM\Column]
-    private ?bool $estActif = true;
+    private ?bool $isActive = true;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
@@ -105,7 +105,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tachesAssignees = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->dateMaj = new \DateTime();
-        $this->estActif = true;
+        $this->isActive = true;
         $this->isVerified = false;
         $this->activities = new ArrayCollection();
     }
@@ -236,16 +236,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
-    public function getEstActif(): ?bool
-    {
-        return $this->estActif;
-    }
+    public function getIsActive(): ?bool
+{
+    return $this->isActive;
+}
 
-    public function setEstActif(bool $estActif): static
-    {
-        $this->estActif = $estActif;
-        return $this;
-    }
+public function setIsActive(?bool $isActive): self
+{
+    $this->isActive = $isActive;
+    return $this;
+}
 
     public function getDateCreation(): ?\DateTimeInterface
     {
@@ -422,5 +422,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->nom . ' ' . $this->prenom;
     }
-    
 }
