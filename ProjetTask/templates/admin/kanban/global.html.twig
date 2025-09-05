@@ -5,246 +5,280 @@
 
 {% block stylesheets %}
 	{{ parent() }}
-	<link href="{{ asset('css/admin-kanban-advanced.css') }}" rel="stylesheet">
+	<link href="{{ asset('styles/admin-kanban-advanced.css') }}" rel="stylesheet">
+
+{% endblock %}
+{% block content %}
+<!-- 🔧 Modales -->
+{{ include('admin/kanban/_modals.html.twig') }}
+
+{% endblock %}
+{% block javascripts %}
+	{{ parent() }}
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	 <script src="{{ asset('js/admin-kanban-advanced.js') }}"></script>
 {% endblock %}
 
-<!-- 🔧 Modales -->
-{{ include('admin/kanban/_modals.html.twig') }}{% endblock %}{% block javascripts %}
-{{ parent() }} <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
- <script src="{{ asset('js/admin-kanban-advanced.js') }}"></script>
- {% endblock %}
-
- {% block body %}<div
-class="admin-kanban-container">
-<!-- 🎛️ Barre de contrôle avancée -->
-<div class="control-panel">
-	<div class="control-left">
-		<h1 class="page-title">
-			<span class="icon">📋</span>
-			Kanban Global Admin
-			<span class="live-indicator"></span>
-		</h1>
-	</div>
-
+{% block body %}
 	<div
-		class="control-center">
-		<!-- Filtres avancés -->
-		<div class="filters-advanced">
-			<select id="projectFilter" class="filter-select">
-				<option value="">🏗️ Tous les projets</option>
-				{% for project in availableProjects %}
-					<option value="{{ project.id }}" {% if filters.project_id == project.id %} selected {% endif %}>
-						{{ project.titre }}
-					</option>
-				{% endfor %}
-			</select>
+		class="admin-kanban-container">
+		<!-- 🎛️ Barre de contrôle avancée -->
+		<div class="control-panel">
+			<div class="control-left">
+				<h1 class="page-title">
+					<span class="icon">📋</span>
+					Kanban Global Admin
+					<span class="live-indicator"></span>
+				</h1>
+			</div>
 
-			<select id="userFilter" class="filter-select">
-				<option value="">👤 Tous les utilisateurs</option>
-				{% for user in availableUsers %}
-					<option value="{{ user.id }}" {% if filters.assigned_user == user.id %} selected {% endif %}>
-						{{ user.prenom }}
-						{{ user.nom }}
-					</option>
-				{% endfor %}
-			</select>
+			<div
+				class="control-center">
+				<!-- Filtres avancés -->
+				<div class="filters-advanced">
+					<select id="projectFilter" class="filter-select">
+						<option value="">🏗️ Tous les projets</option>
+						{% for project in availableProjects %}
+							<option value="{{ project.id }}" {% if filters.project_id == project.id %} selected {% endif %}>
+								{{ project.titre }}
+							</option>
+						{% endfor %}
+					</select>
 
-			<select id="priorityFilter" class="filter-select">
-				<option value="all">🎯 Toutes priorités</option>
-				<option value="URGENT" {% if filters.priority == 'URGENT' %} selected {% endif %}>🔴 Urgent</option>
-				<option value="NORMAL" {% if filters.priority == 'NORMAL' %} selected {% endif %}>🟡 Normal</option>
-				<option value="EN_ATTENTE" {% if filters.priority == 'EN_ATTENTE' %} selected {% endif %}>🟢 En attente</option>
-			</select>
+					<select id="userFilter" class="filter-select">
+						<option value="">👤 Tous les utilisateurs</option>
+						{% for user in availableUsers %}
+							<option value="{{ user.id }}" {% if filters.assigned_user == user.id %} selected {% endif %}>
+								{{ user.prenom }}
+								{{ user.nom }}
+							</option>
+						{% endfor %}
+					</select>
 
-			<select id="statusFilter" class="filter-select">
-				<option value="all">📊 Tous statuts</option>
-				<option value="EN_ATTENTE" {% if filters.status == 'EN_ATTENTE' %} selected {% endif %}>⏳ En attente</option>
-				<option value="EN_COURS" {% if filters.status == 'EN_COURS' %} selected {% endif %}>🔄 En cours</option>
-				<option value="TERMINER" {% if filters.status == 'TERMINER' %} selected {% endif %}>✅ Terminé</option>
-			</select>
+					<select id="priorityFilter" class="filter-select">
+						<option value="all">🎯 Toutes priorités</option>
+						<option value="URGENT" {% if filters.priority == 'URGENT' %} selected {% endif %}>🔴 Urgent</option>
+						<option value="NORMAL" {% if filters.priority == 'NORMAL' %} selected {% endif %}>🟡 Normal</option>
+						<option value="EN_ATTENTE" {% if filters.priority == 'EN_ATTENTE' %} selected {% endif %}>🟢 En attente</option>
+					</select>
 
-			<button class="filter-toggle" id="toggleAdvancedFilters">
-				<span class="icon">⚙️</span>
-				Filtres avancés
-			</button>
-		</div>
+					<select id="statusFilter" class="filter-select">
+						<option value="all">📊 Tous statuts</option>
+						<option value="EN_ATTENTE" {% if filters.status == 'EN_ATTENTE' %} selected {% endif %}>⏳ En attente</option>
+						<option value="EN_COURS" {% if filters.status == 'EN_COURS' %} selected {% endif %}>🔄 En cours</option>
+						<option value="TERMINER" {% if filters.status == 'TERMINER' %} selected {% endif %}>✅ Terminé</option>
+					</select>
 
-		<!-- Barre de recherche -->
-		<div class="search-container">
-			<input type="text" id="globalSearch" placeholder="🔍 Rechercher projets, tâches, utilisateurs..." class="search-input">
-			<div id="searchResults" class="search-results hidden"></div>
-		</div>
-	</div>
+					<button class="filter-toggle" id="toggleAdvancedFilters">
+						<span class="icon">⚙️</span>
+						Filtres avancés
+					</button>
+				</div>
 
-	<div
-		class="control-right">
-		<!-- Actions rapides -->
-		<div class="quick-actions">
-			<button class="btn btn-primary" onclick="openQuickTaskModal()">
-				➕ Tâche rapide
-			</button>
-			<button class="btn btn-secondary" onclick="toggleViewMode()">
-				<span id="viewModeIcon">📋</span>
-				Vue
-			</button>
-			<button class="btn btn-secondary" onclick="refreshDashboard()">
-				🔄 Actualiser
-			</button>
-			<div class="dropdown">
-				<button class="btn btn-secondary dropdown-toggle">
-					📤 Exporter
-				</button>
-				<div class="dropdown-menu">
-					<a href="{{ path('admin_kanban_export', {format: 'csv'}) }}" class="dropdown-item">📄 CSV</a>
-					<a href="{{ path('admin_kanban_export', {format: 'json'}) }}" class="dropdown-item">🔗 JSON</a>
+				<!-- Barre de recherche -->
+				<div class="search-container">
+					<input type="text" id="globalSearch" placeholder="🔍 Rechercher projets, tâches, utilisateurs..." class="search-input">
+					<div id="searchResults" class="search-results hidden"></div>
 				</div>
 			</div>
-		</div>
-	</div>
-</div>
 
-<!-- 📊 Dashboard statistiques -->
-<div class="stats-dashboard">
-	<div class="stat-card primary">
-		<div class="stat-icon">🏗️</div>
-		<div class="stat-content">
-			<div class="stat-number">{{ data.statistics.totalProjects }}</div>
-			<div class="stat-label">Projets Total</div>
-			<div class="stat-change positive">+{{ data.statistics.activeProjects }}
-				actifs</div>
-		</div>
-	</div>
-
-	<div class="stat-card success">
-		<div class="stat-icon">✅</div>
-		<div class="stat-content">
-			<div class="stat-number">{{ data.statistics.completedTasks }}</div>
-			<div class="stat-label">Tâches Terminées</div>
-			<div class="stat-progress">
-				<div class="progress-bar" style="width: {{ data.statistics.completionRate }}%"></div>
-				<span class="progress-text">{{ data.statistics.completionRate }}%</span>
-			</div>
-		</div>
-	</div>
-
-	<div class="stat-card warning">
-		<div class="stat-icon">⚠️</div>
-		<div class="stat-content">
-			<div class="stat-number">{{ data.statistics.overdueTasks }}</div>
-			<div class="stat-label">En Retard</div>
-			<div class="stat-change negative">Attention requise</div>
-		</div>
-	</div>
-
-	<div class="stat-card info">
-		<div class="stat-icon">👥</div>
-		<div class="stat-content">
-			<div class="stat-number">{{ data.statistics.activeUsers }}</div>
-			<div class="stat-label">Utilisateurs Actifs</div>
-			<div class="stat-detail">{{ data.statistics.avgTasksPerUser }}
-				tâches/personne</div>
-		</div>
-	</div>
-
-	<div class="stat-card special">
-		<div class="stat-icon">⚡</div>
-		<div class="stat-content">
-			<div class="stat-number">{{ data.statistics.completedThisWeek }}</div>
-			<div class="stat-label">Cette Semaine</div>
-			<div class="stat-trend">📈 Productivité</div>
-		</div>
-	</div>
-</div>
-
-<!-- 🚨 Alertes -->
-<div id="alertsContainer" class="alerts-container hidden"></div>
-
-<!-- 📋 Tableau Kanban Global -->
-<div class="kanban-global-board" id="kanbanBoard">
-	{% set tasksByList = {} %}
-	{% for task in data.tasks %}
-		{% set listId = task.taskList.id %}
-		{% if tasksByList[listId] is not defined %}
-			{% set tasksByList = tasksByList|merge({(listId): []}) %}
-		{% endif %}
-		{% set tasksByList = tasksByList|merge({(listId): tasksByList[listId]|merge([task])}) %}
-	{% endfor %}
-
-	{% for taskList in data.taskLists %}
-		<div
-			class="kanban-column enhanced" data-list-id="{{ taskList.id }}" data-project-id="{{ taskList.project.id }}">
-			<!-- En-tête de colonne amélioré -->
-			<div class="column-header enhanced">
-				<div class="column-title-section">
-					<div class="column-title">{{ taskList.lastName }}</div>
-					<div class="column-project">{{ taskList.project.titre }}</div>
-				</div>
-				<div class="column-stats">
-					<div class="task-count">
-						{{ tasksByList[taskList.id]|length ?? 0 }}
+			<div
+				class="control-right">
+				<!-- Actions rapides -->
+				<div class="quick-actions">
+					<button class="btn btn-primary" onclick="openQuickTaskModal()">
+						➕ Tâche rapide
+					</button>
+					<button class="btn btn-secondary" onclick="toggleViewMode()">
+						<span id="viewModeIcon">📋</span>
+						Vue
+					</button>
+					<button class="btn btn-secondary" onclick="refreshDashboard()">
+						🔄 Actualiser
+					</button>
+					<div class="dropdown">
+						<button class="btn btn-secondary dropdown-toggle">
+							📤 Exporter
+						</button>
+						<div class="dropdown-menu">
+							<a href="{{ path('admin_kanban_export', {format: 'csv'}) }}" class="dropdown-item">📄 CSV</a>
+							<a href="{{ path('admin_kanban_export', {format: 'json'}) }}" class="dropdown-item">🔗 JSON</a>
+						</div>
 					</div>
-					<div class="column-actions">
-						<button class="column-action" onclick="addQuickTask({{ taskList.id }})">➕</button>
-						<button class="column-action" onclick="showColumnStats({{ taskList.id }})">📊</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- 📊 Dashboard statistiques -->
+		<div class="stats-dashboard">
+			<div class="stat-card primary">
+				<div class="stat-icon">🏗️</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.projectsTotal }}</div>
+					<div class="stat-label">Projets Total</div>
+					<div class="stat-change positive">+{{ data.statistics.activeProjects }}
+						actifs</div>
+				</div>
+			</div>
+
+			<div class="stat-card success">
+				<div class="stat-icon">✅</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.completedTasks }}</div>
+					<div class="stat-label">Tâches Terminées</div>
+					<div class="stat-progress">
+						<div class="progress-bar" style="width: {{ data.statistics.completionRate }}%"></div>
+						<span class="progress-text">{{ data.statistics.completionRate }}%</span>
 					</div>
 				</div>
 			</div>
 
-			<!-- Container des tâches -->
-			<div class="tasks-container sortable enhanced" data-list-id="{{ taskList.id }}">
-				{% if tasksByList[taskList.id] is defined %}
-					{% for task in tasksByList[taskList.id] %}
-						{{ include('admin/kanban/_task_card_enhanced.html.twig', {'task': task}) }}
-					{% endfor %}
+			<div class="stat-card warning">
+				<div class="stat-icon">⚠️</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.overdueTasks }}</div>
+					<div class="stat-label">En Retard</div>
+					<div class="stat-change negative">Attention requise</div>
+				</div>
+			</div>
+
+			<div class="stat-card info">
+				<div class="stat-icon">👥</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.activeUsers }}</div>
+					<div class="stat-label">Utilisateurs Actifs</div>
+					<div class="stat-detail">{{ data.statistics.avgTasksPerUser }}
+						tâches/personne</div>
+				</div>
+			</div>
+
+			<div class="stat-card special">
+				<div class="stat-icon">⚡</div>
+				<div class="stat-content">
+					<div class="stat-number">{{ data.statistics.completedThisWeek }}</div>
+					<div class="stat-label">Cette Semaine</div>
+					<div class="stat-trend">📈 Productivité</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 🚨 Alertes -->
+		<div id="alertsContainer" class="alerts-container hidden"></div>
+
+		<!-- 📋 Tableau Kanban Global -->
+		<div class="kanban-global-board" id="kanbanBoard">
+			{% set tasksByList = {} %}
+			{% for task in data.tasks %}
+				{% set listId = task.taskList.id %}
+				{% if tasksByList[listId] is not defined %}
+					{% set tasksByList = tasksByList|merge({(listId): []}) %}
 				{% endif %}
-			</div>
+				{% set tasksByList = tasksByList|merge({(listId): tasksByList[listId]|merge([task])}) %}
+			{% endfor %}
 
-			<!-- Zone de drop -->
-			<div class="drop-zone" data-list-id="{{ taskList.id }}">
-				<div class="drop-zone-content">
-					<span class="drop-icon">📥</span>
-					<span class="drop-text">Glissez une tâche ici</span>
-				</div>
-			</div>
-		</div>
-	{% endfor %}
-</div>
+			{% for taskList in data.taskLists %}
+				<div
+					class="kanban-column enhanced" data-list-id="{{ taskList.id }}" data-project-id="{{ taskList.project.id }}">
+					<!-- En-tête de colonne amélioré -->
+					<div class="column-header enhanced">
+						<div class="column-title-section">
+							<div class="column-title">{{ taskList.lastName }}</div>
+							<div class="column-project">{{ taskList.project.titre }}</div>
+						</div>
+						<div class="column-stats">
+							<div class="column-stats">
+								<div class="task-count">
+									{% if tasksByList[taskList.id] is defined %}
+										{% set taskCount = tasksByList[taskList.id]|length %}
+										{{ taskCount ?? 0 }}
+										Tâches
+									{% else %}
+										0 Tâches
+									{% endif %}
+								</div>
+								<div class="column-actions">
+									<button class="column-action" onclick="addQuickTask({{ taskList.id }})">➕</button>
+									<button class="column-action" onclick="showColumnStats({{ taskList.id }})">📊</button>
+								</div>
+							</div>
 
-<!-- 📈 Panel latéral Analytics -->
-<div class="side-panel" id="analyticsPanel">
-	<div class="panel-header">
-		<h3>📊 Analytics en Temps Réel</h3>
-		<button class="panel-close" onclick="closeSidePanel()">&times;</button>
-	</div>
+							<!-- Container des tâches -->
+							<div class="tasks-container sortable enhanced" data-list-id="{{ taskList.id }}">
+								{% if tasksByList[taskList.id] is defined %}
+									{% for task in tasksByList[taskList.id] %}
+										{{ include('admin/kanban/_task_card_enhanced.html.twig', {'task': task}) }}
+									{% endfor %}
+								{% endif %}
+							</div>
+						</div>
 
-	<div
-		class="panel-content">
-		<!-- Performance par utilisateur -->
-		<div class="analytics-section">
-			<h4>👥 Performance Équipe</h4>
-			<div id="userPerformanceChart"></div>
-		</div>
-
-		<!-- Répartition des tâches -->
-		<div class="analytics-section">
-			<h4>📊 Répartition des Tâches</h4>
-			<div id="taskDistributionChart"></div>
-		</div>
-
-		<!-- Activités récentes -->
-		<div class="analytics-section">
-			<h4>🕐 Activités Récentes</h4>
-			<div class="recent-activities">
-				{% for activity in data.recentActivities|slice(0, 10) %}
-					<div class="activity-item">
-						<div class="activity-icon">{{ activity.type == 'task_create' ? '➕' : (activity.type == 'task_complete' ? '✅' : '🔄') }}</div>
-						<div class="activity-content">
-							<div class="activity-text">{{ activity.description }}</div>
-							<div class="activity-time">{{ activity.dateCreation|date('H:i') }}</div>
+						<!-- Zone de drop -->
+						<div class="drop-zone" data-list-id="{{ taskList.id }}">
+							<div class="drop-zone-content">
+								<span class="drop-icon">📥</span>
+								<span class="drop-text">Glissez une tâche ici</span>
+							</div>
 						</div>
 					</div>
 				{% endfor %}
 			</div>
+
+			<!-- 📈 Panel latéral Analytics -->
+			<div class="side-panel" id="analyticsPanel">
+				<div class="panel-header">
+					<h3>📊 Analytics en Temps Réel</h3>
+					<button class="panel-close" onclick="closeSidePanel()">&times;</button>
+				</div>
+
+				<div
+					class="panel-content">
+					<!-- Performance par utilisateur -->
+					<div class="analytics-section">
+						<h4>👥 Performance Équipe</h4>
+						<div id="userPerformanceChart"></div>
+					</div>
+
+					<!-- Répartition des tâches -->
+					<div class="analytics-section">
+						<h4>📊 Répartition des Tâches</h4>
+						<div id="taskDistributionChart"></div>
+					</div>
+
+					<!-- Activités récentes -->
+					<div class="analytics-section">
+						<h4>🕐 Activités Récentes</h4>
+						<div class="recent-activities">
+							{% for activity in data.recentActivities|slice(0, 10) %}
+								<div class="activity-item">
+									<div class="activity-icon">
+										{{ activity.type == 'task_create' ? '➕' : (activity.type == 'task_complete' ? '✅' : '🔄') }}
+									</div>
+									<div class="activity-user">
+										{{ activity.user.prenom }}
+										{{ activity.user.nom }}
+									</div>
+									<div class="activity-content">
+										<div class="activity-text">{{ activity.description }}</div>
+										<div class="activity-time">{{ activity.dateCreation|date('H:i') }}</div>
+									</div>
+								</div>
+								<!-- fermeture de activity-item -->
+
+							{% else %}
+								<div class="no-activities">Aucune activité recente</div>
+							{% endfor %}
+
+							<div class="show-all-activities">
+								<a href="{{ path('admin_kanban_recent_activities') }}">Voir toutes les activités</a>
+							</div>
+						</div>
+					</div>
+					<!-- fermeture de recent-activities -->
+				</div>
+				<!-- fermeture de analytics-section -->
+			</div>
 		</div>
 	</div>
-</div></div>
+</div>
+	<!-- fermeture de side-panel -->
+{% endblock %}

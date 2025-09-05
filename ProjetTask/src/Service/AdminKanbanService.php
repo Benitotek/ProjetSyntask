@@ -203,7 +203,7 @@ public function getWorkloadDistribution(): array
             ],
             'taskList' => [
                 'id' => $task->getTaskList()->getId(),
-                'name' => $task->getTaskList()->getName()
+                'name' => $task->getTaskList()->getNom()
             ],
             'assignedUser' => $task->getAssignedUser() ? $this->formatUserForResponse($task->getAssignedUser()) : null
         ];

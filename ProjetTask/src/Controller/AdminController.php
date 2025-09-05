@@ -307,16 +307,16 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_index');
         }
 
-        $user->setEstActif(!$user->getEstActif());
+        $user->setIsActive(!$user->getIsActive());
         $entityManager->flush();
 
-        $status = $user->getEstActif() ? 'activé' : 'désactivé';
-        $icon = $user->getEstActif() ? '✅' : '❌';
+        $status = $user->getIsActive() ? 'activé' : 'désactivé';
+        $icon = $user->getIsActive() ? '✅' : '❌';
 
         $this->logger->info('Statut utilisateur modifié par admin', [
             'admin_id' => $this->getUser()->getUserIdentifier(),
             'target_user_id' => $user->getId(),
-            'new_status' => $user->getEstActif() ? 'active' : 'inactive'
+            'new_status' => $user->getIsActive() ? 'active' : 'inactive'
         ]);
 
         $this->addFlash('success', "$icon Compte de {$user->getPrenom()} {$user->getNom()} $status");
