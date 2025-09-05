@@ -27,7 +27,6 @@ class AdminKanbanService
         private ActivityRepository $activityRepository,
         private EntityManagerInterface $entityManager,
         private KanbanService $kanbanService,
-        private AdminKanbanService $adminKanbanService,
         private ActivityLogger $activityLogger,
         private NotificationService $notificationService,
         private Security $security,

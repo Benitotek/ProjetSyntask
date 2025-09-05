@@ -31,7 +31,6 @@ class AdminController extends AbstractController
     public function __construct(
         private EmailVerifier $emailVerifier,
         private LoggerInterface $logger,
-        private AdminKanbanService $kanbanService,
         private UserPasswordHasherInterface $passwordHasher,
         private MailerInterface $mailer,
         private EntityManagerInterface $entityManager,

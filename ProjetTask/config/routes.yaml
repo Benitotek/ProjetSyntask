@@ -8,7 +8,7 @@ controllers:
 
 admin_routes:
     resource: ../src/Controller/AdminController.php
-    type: annotation
+    type: attribute
     prefix: /admin
 
     

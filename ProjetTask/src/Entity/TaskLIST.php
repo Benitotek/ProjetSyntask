@@ -67,7 +67,7 @@ class TaskList
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getNom(): ?string
     {
         return $this->nom;
     }
