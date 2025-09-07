@@ -114,7 +114,6 @@ class AdminKanbanService
             foreach ($projectTaskLists as $taskList) {
                 $listTasks = $this->taskRepository->findBy(['liste' => $taskList]);
                 $tasks = array_merge($tasks, $listTasks);
-            }
         }
         
         // Appliquer les filtres
