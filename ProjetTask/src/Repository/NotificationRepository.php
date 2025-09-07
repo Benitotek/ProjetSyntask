@@ -25,7 +25,7 @@ class NotificationRepository extends ServiceEntityRepository
     /**
      * Trouve les notifications non lues pour un utilisateur
      */
-    public function findUnreadByUser(User $user, int $limit = null): array
+    public function findUnreadByUser(User $user, ?int $limit = null): array
     {
         $qb = $this->createQueryBuilder('n')
             ->andWhere('n.user = :user')

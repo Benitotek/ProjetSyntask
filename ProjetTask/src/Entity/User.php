@@ -61,6 +61,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $isActive = true;
 
+    #[ORM\Column]
+    private ?bool $isDeleted = false;
+
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $EstActif = true;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
 
@@ -107,6 +113,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->dateMaj = new \DateTime();
         $this->isActive = true;
         $this->isVerified = false;
+        $this->isDeleted = false;
+        $this->EstActif = true;
         $this->activities = new ArrayCollection();
     }
 
@@ -237,16 +245,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     public function getIsActive(): ?bool
-{
-    return $this->isActive;
-}
+    {
+        return $this->isActive;
+    }
 
-public function setIsActive(?bool $isActive): self
-{
-    $this->isActive = $isActive;
-    return $this;
-}
+    public function setIsActive(?bool $isActive): self
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
 
+    public function getEstActif(): ?bool
+    {
+        return $this->EstActif;
+    }
+
+    public function setEstActif(?bool $EstActif): self
+    {
+        $this->EstActif = $EstActif;
+        return $this;
+    }
     public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->dateCreation;
@@ -416,6 +434,55 @@ public function setIsActive(?bool $isActive): self
     public function isChefProjetOf(Project $project): bool
     {
         return $this->hasRole('ROLE_CHEF_PROJET') && $project->getMembres()->contains($this);
+    }
+
+    public function getChefProjetOf(Project $project): ?User
+    {
+        return $this->hasRole('ROLE_CHEF_PROJET') && $project->getMembres()->contains($this) ? $this : null;
+    }
+
+    public function getChefProjet(): ?User
+    {
+        return $this->hasRole('ROLE_CHEF_PROJET') ? $this : null;
+    }
+
+    public function getProjects(): Collection
+    {
+        return $this->projectsGeres;
+    }
+
+    public function getProjectsAssignes(): Collection
+    {
+        return $this->projectsAssignes;
+    }
+    public function addProjectsAssigne(Project $projectsAssigne): self
+    {
+        if (!$this->projectsAssignes->contains($projectsAssigne)) {
+            $this->projectsAssignes->add($projectsAssigne);
+            $projectsAssigne->addMembre($this);
+        }
+        return $this;
+    }
+
+    public function removeProjectsAssigne(Project $projectsAssigne): self
+    {
+        if ($this->projectsAssignes->removeElement($projectsAssigne) && $projectsAssigne->getMembres()->removeElement($this)) {
+            $projectsAssigne->removeMembre($this);
+        }
+        return $this;
+    }
+    public function getResetPasswordRequests(): Collection
+    {
+        return $this->resetPasswordRequests;
+    }
+
+    public function addResetPasswordRequest(ResetPasswordRequest $resetPasswordRequest): self
+    {
+        if (!$this->resetPasswordRequests->contains($resetPasswordRequest)) {
+            $this->resetPasswordRequests->add($resetPasswordRequest);
+            $resetPasswordRequest->setUser($this);
+        }
+        return $this;
     }
 
     public function __toString(): string

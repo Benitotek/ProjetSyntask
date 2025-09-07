@@ -358,10 +358,8 @@ class TaskRepository extends ServiceEntityRepository
             ->where('t.deadline < :now')
             ->andWhere('t.statut != :completed')
 
-            ->setParameters([
-                'now' => new \DateTime(),
-                'completed' => TaskStatut::TERMINER,
-            ])
+            ->setParameter('now', new \DateTime())
+            ->setParameter('completed', TaskStatut::TERMINER)
             ->getQuery()
             ->getSingleScalarResult();
     }

@@ -475,4 +475,10 @@ class Project
 
         return $this;
     }
+    public function removeComment(Comment $comment): self
+    {
+        $this->comments->removeElement($comment);
+        return $this;
+    }
+    
 }

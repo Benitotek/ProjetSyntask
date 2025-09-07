@@ -33,7 +33,7 @@ class RoleBasedKanbanController extends AbstractController
         $kanbanData = $this->adminKanbanService->getKanbanDataByRole($user, $filters);
 
         // Utilisateurs assignables selon le rôle  
-        $assignableUsers = $this->adminKanbanService->getAssignableUsers($user);
+        $assignableUsers = $this->adminKanbanService->getAssignableUsers($user, $kanbanData['project']);
 
         // Template selon le rôle  
         $template = $this->getTemplateByRole($user);
@@ -56,7 +56,7 @@ class RoleBasedKanbanController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $user = $this->getUser();
 
-        $result = $this->adminKanbanService->moveTaskWithRoleCheck(
+        $result = $this->adminKanbanService->moveTask(
             $data['taskId'],
             $data['newListId'],
             $data['newPosition'],
@@ -94,8 +94,10 @@ class RoleBasedKanbanController extends AbstractController
         $user = $this->getUser();
 
         $result = $this->adminKanbanService->assignUserToTask(
+            $data['projectId'],
             $data['userId'],
             $data['taskId'],
+            $data['assignable'],
             $user
         );
 
@@ -150,9 +152,10 @@ class RoleBasedKanbanController extends AbstractController
         $project = null;
 
         if ($projectId) {
-            $project = $this->assignUserToProject(
-                $request,
-                $projectId
+            $project = $this->adminKanbanService->assignUserToProject(
+                $request->get('userId'),
+                $projectId,
+                $this->getUser()
             );
         }
 

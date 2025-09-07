@@ -134,7 +134,6 @@ class Notification
         return $this;
     }
 
-
     /**
      * Marque la notification comme lue
      */

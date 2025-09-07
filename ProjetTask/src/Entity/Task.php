@@ -124,6 +124,8 @@ class Task
         $this->sousTask = new ArrayCollection();
         $this->dateCreation = new \DateTime();
         $this->assignedUsers = new ArrayCollection();
+        $this->nbSousTaches = 0;
+
     }
 
     /**
@@ -335,6 +337,16 @@ class Task
         $this->project = $project;
         return $this;
     }
+    public function getNbSousTaches(): ?int
+    {
+        return $this->nbSousTaches;
+    }
+    public function setNbSousTaches(?int $nbSousTaches): static
+    {
+        $this->nbSousTaches = $nbSousTaches;
+        return $this;
+    }
+    
 
     // Puis j'ajoute ces méthodes à la fin de la classe pour gérer les commentaires et les tags associés à la tâche:
 

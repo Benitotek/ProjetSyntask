@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6dea32b680542098483cf00e323d5c39",
+    "content-hash": "a587722e5e4e970ff57bff40b34b0f98",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -5224,16 +5224,16 @@
         },
         {
             "name": "symfony/security-core",
-            "version": "v7.2.6",
+            "version": "v7.2.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/security-core.git",
-                "reference": "340e120d26b3bf5eee5cea0782aebaa2f36b6722"
+                "reference": "28ec042a6aff580693cce7aa820778e6dfa5e5ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/security-core/zipball/340e120d26b3bf5eee5cea0782aebaa2f36b6722",
-                "reference": "340e120d26b3bf5eee5cea0782aebaa2f36b6722",
+                "url": "https://api.github.com/repos/symfony/security-core/zipball/28ec042a6aff580693cce7aa820778e6dfa5e5ef",
+                "reference": "28ec042a6aff580693cce7aa820778e6dfa5e5ef",
                 "shasum": ""
             },
             "require": {
@@ -5291,7 +5291,7 @@
             "description": "Symfony Security Component - Core Library",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/security-core/tree/v7.2.6"
+                "source": "https://github.com/symfony/security-core/tree/v7.2.9"
             },
             "funding": [
                 {
@@ -5303,11 +5303,15 @@
                     "type": "github"
                 },
                 {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
                     "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-04-17T08:47:02+00:00"
+            "time": "2025-07-22T08:39:58+00:00"
         },
         {
             "name": "symfony/security-csrf",

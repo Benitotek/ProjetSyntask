@@ -358,5 +358,4 @@ class TaskList
 
         return $delays;
     }
-    
 }

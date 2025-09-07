@@ -113,70 +113,19 @@ class NotificationService
     /**
      * Notifie l'assignation d'une tâche
      */
-    public function notifyTaskAssignment(Task $task, User $previousAssignee = null): void
+    public function notifyTaskAssignedByUser(Task $task, User $assignedUser, User $assignedBy): void
     {
-        $assignedUser = $task->getAssignedUser();
-        $creator = $task->getCreatedBy();
+        $taskUrl = $this->urlGenerator->generate('app_task_show', ['id' => $task->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        // Si la tâche est assignée à un utilisateur différent du créateur
-        if ($assignedUser && $assignedUser !== $creator) {
-            $taskUrl = $this->urlGenerator->generate('app_task_show', ['id' => $task->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-            $this->createNotification(
-                $assignedUser,
-                'Tâche assignée',
-                sprintf('La tâche "%s" vous a été assignée', $task->getTitle()),
-                'task_assigned',
-                $taskUrl,
-                'fa-user-check'
-            );
-        }
+        $this->createNotification(
+            $assignedUser,
+            'Tâche assignée',
+            sprintf('La tâche "%s" vous a été assignée par %s', $task->getTitle(), $assignedBy->getFullName()),
+            'task_assigned',
+            $taskUrl,
+            'fa-tasks'
+        );
     }
-    /**
-     * Notifie le changement de statut d'une tâche
-     */
-    // public function notifystatutChange(Task $task, string $oldstatut): void
-    // {
-    //     $assignedUser = $task->getAssignedUser();
-    //     $creator = $task->getCreatedBy();
-    //     // $changedBy = $task->getUpdatedBy(); // L'utilisateur qui a changé le statut
-
-    // Si la tâche est assignée et que l'utilisateur assigné n'est pas celui qui a changé le statut
-    // if ($assignedUser && $assignedUser !== $changedBy) {
-    //     $taskUrl = $this->urlGenerator->generate('app_task_show', ['id' => $task->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-    //     $this->createNotification(
-    //         $assignedUser,
-    //         'Statut de tâche modifié',
-    //         sprintf('Le statut de la tâche "%s" a été changé de "%s" à "%s"', 
-    //             $task->getTitle(), 
-    //             $this->getstatutLabel($oldstatut),
-    //             $task->getstatutLabel()
-    //         ),
-    //         'statut_change',
-    //         $taskUrl,
-    //         'fa-exchange-alt'
-    //     );
-    // }
-
-    // Si le créateur n'est pas celui qui a changé le statut et n'est pas l'assigné
-    // if ($creator !== $changedBy && $creator !== $assignedUser) {
-    //     $taskUrl = $this->urlGenerator->generate('app_task_show', ['id' => $task->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
-    //     $this->createNotification(
-    //         $creator,
-    //         'Statut de tâche modifié',
-    //         sprintf('Le statut de la tâche "%s" a été changé de "%s" à "%s"', 
-    //             $task->getTitle(), 
-    //             $this->getstatutLabel($oldstatut),
-    //             $task->getstatutLabel()
-    //         ),
-    //         'statut_change',
-    //         $taskUrl,
-    //         'fa-exchange-alt'
-    //     );
-    // }
-    // }
 
     /**
      * Notifie l'ajout d'un commentaire sur une tâche
@@ -423,11 +372,60 @@ class NotificationService
     {
         // Implémentez ici la logique de création de notification selon votre modèle.
         // Exemple basique :
-        // $notification = new Notification();
-        // $notification->setUser($assignedUser);
-        // $notification->setMessage(sprintf('Vous avez été assigné à la tâche "%s" par %s.', $task->getTitle(), $assignedBy->getNom()));
-        // $notification->setCreatedAt(new \DateTime());
-        // $this->entityManager->persist($notification);
-        // $this->entityManager->flush();
+        $notification = new Notification();
+        $notification->setUser($assignedUser);
+        $notification->setMessage(sprintf('Vous avez été assigné à la tâche "%s" par %s.', $task->getTitle(), $assignedBy->getNom()));
+        $notification->setDateCreation(new \DateTime());
+        $this->entityManager->persist($notification);
+        $this->entityManager->flush();
+    }
+    public function formatActivities(array $activities): array
+    {
+        return array_map(function ($a) {
+            return [
+                'id' => $a->getId(),
+                'type' => $a->getType(),
+                'message' => $a->getMessage(),
+                'dateCreation' => $a->getDateCreation()?->format(DATE_ATOM),
+                'user' => $a->getUser() ? ($a->getUser()->getPrenom() . ' ' . $a->getUser()->getNom()) : null,
+                'targetUrl' => method_exists($a, 'getTargetUrl') ? $a->getTargetUrl() : null,
+            ];
+        }, $activities);
+    }
+    public function notifyTaskMoved(Task $task, User $by): void
+    {
+        $assignedUser = $task->getAssignedUser();
+
+        if ($assignedUser && $assignedUser !== $by) {
+            $taskUrl = $this->urlGenerator->generate('app_task_show', ['id' => $task->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            $this->createNotification(
+                $assignedUser,
+                'Tâche déplacée',
+                sprintf('La tâche "%s" a été déplacée par %s', $task->getTitle(), $by->getFullName()),
+                'task_moved',
+                $taskUrl,
+                'fa-arrows-alt'
+            );
+        }
+    }
+    public function notifyTaskAssignmentChange(Task $task, ?User $previousAssignee = null): void
+    {
+        // Exemple de logique défensive
+        $newAssignee = $task->getAssignedUser();
+        $prev = $previousAssignee;
+
+        // Génération du message
+        $status = method_exists($task, 'getStatut') ? $task->getStatut() : $task->getStatusLabel();
+        $statusStr = is_object($status) && method_exists($status, 'value') ? $status->value
+            : (is_object($status) && method_exists($status, 'name') ? $status->name : (string)$status);
+
+        // Envoyer des notifications conditionnellement
+        if ($newAssignee && (!$prev || $prev->getId() !== $newAssignee->getId())) {
+            // ... envoyer notifs à $newAssignee
+        }
+        if ($prev && (!$newAssignee || $prev->getId() !== $newAssignee->getId())) {
+            // ... notifier le précédent si besoin
+        }
     }
 }
