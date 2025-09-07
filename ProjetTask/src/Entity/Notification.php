@@ -126,16 +126,15 @@ class Notification
 
     public function setType(string $type): static
     {
-        $validTypes = ['info', 'success', 'warning', 'danger'];
-
-        if (!in_array($type, $validTypes)) {
-            $type = 'info'; // Type par défaut
+        $valid = ['info', 'success', 'warning', 'danger', 'error'];
+        if (!in_array($type, $valid, true)) {
+            $type = 'info';
         }
-
         $this->type = $type;
-
         return $this;
     }
+
+
     /**
      * Marque la notification comme lue
      */
@@ -157,7 +156,7 @@ class Notification
             default => 'fa-info-circle' // info ou autre
         };
     }
-     /**
+    /**
      * @var Project|null
      */
     private $project;

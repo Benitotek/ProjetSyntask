@@ -95,6 +95,9 @@ class Project
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Tag::class, orphanRemoval: true)]
     private Collection $tags;
 
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Comment::class, orphanRemoval: true)]
+    private Collection $comments;
+
     public function __construct()
     {
         $this->activities = new ArrayCollection();
@@ -226,7 +229,7 @@ class Project
         return $this;
     }
 
-    public function getCreatedBy():?User
+    public function getCreatedBy(): ?User
     {
         return $this->createdBy;
     }
@@ -360,9 +363,9 @@ class Project
     {
         $tasks = $this->tasks->toArray();
         return [
-            'EN_ATTENTE' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN_ATTENTE'),
-            'EN_COURS' => array_filter($tasks, fn($t) => $t->getStatut() === 'EN_COURS'),
-            'TERMINER' => array_filter($tasks, fn($t) => $t->getStatut() === 'TERMINER'),
+            'EN_ATTENTE' => array_filter($tasks, fn(Task $t) => $t->getStatut() === \App\Enum\TaskStatut::EN_ATTENTE),
+            'EN_COURS'   => array_filter($tasks, fn(Task $t) => $t->getStatut() === \App\Enum\TaskStatut::EN_COURS),
+            'TERMINER'   => array_filter($tasks, fn(Task $t) => $t->getStatut() === \App\Enum\TaskStatut::TERMINER),
         ];
     }
 
@@ -416,14 +419,7 @@ class Project
 
     public function removeActivity(Activity $activity): self
     {
-        if ($this->activities->removeElement($activity)) {
-            // set the owning side to null (unless already changed)
-            if ($activity->getAction() === $this)
-                $activity->setAction('null', null);
-            // CORRECTION: Set action to null if removing activity
-        }
-
-
+        $this->activities->removeElement($activity);
         return $this;
     }
 
@@ -442,7 +438,7 @@ class Project
         $this->isArchived = $isArchived;
         return $this;
     }
-      public function getDateArchived(): ?\DateTimeImmutable
+    public function getDateArchived(): ?\DateTimeImmutable
     {
         return $this->dateArchived;
     }
@@ -452,8 +448,31 @@ class Project
         $this->dateArchived = $dateArchived;
         return $this;
     }
-    public function getTargetUrl(): ?string
+
+    public function getProgressColor(): string
     {
-        return $this->getTargetUrl();
+        if ($this->getProgress() >= 100) {
+            return 'green';
+        } elseif ($this->getProgress() >= 50) {
+            return 'yellow';
+        } else {
+            return 'red';
+        }
+    }
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+        }
+
+        return $this;
     }
 }

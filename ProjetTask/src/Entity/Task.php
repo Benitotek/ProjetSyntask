@@ -127,13 +127,13 @@ class Task
     }
 
     /**
- * Get the deadline of the task.
- */
-public function getDeadline(): ?\DateTimeInterface
-{
-    return $this->deadline ?? null;
-}
-
+     * Get the deadline of the task.
+     */
+    // Retourne la vraie date d'échéance (ancrée sur dateButoir)
+    public function getDeadline(): ?\DateTimeInterface
+    {
+        return $this->getDateButoir();
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -254,10 +254,9 @@ public function getDeadline(): ?\DateTimeInterface
      * @return bool true si la tâche est en retard, false sinon
      */
     public function isOverdue(): bool
-    { 
-            if (!$this->dateButoir) return false;
-            return $this->dateButoir < new \DateTime() && $this->getStatut() !== TaskStatut::TERMINER;
-        
+    {
+        if (!$this->dateButoir) return false;
+        return $this->dateButoir < new \DateTime() && $this->getStatut() !== TaskStatut::TERMINER;
     }
 
     public function getPosition(): int
@@ -441,30 +440,20 @@ public function getDeadline(): ?\DateTimeInterface
     {
         return $this->parent !== null;
     }
-    //ATTENTION fait doublon avec overdue() plus haut!!Voir si utilisé ailleur?
-    /**
-     * Vérifie si la tâche est en retard
-     */
-    // public function TaskisOverdue(): bool
-    // {
-    //     return $this->dateButoir !== null
-    //         && $this->dateButoir < new \DateTime()
-    //         && $this->statut !== TaskStatut::TERMINER;
-    // }
 
     /**
      * Vérifie si la tâche arrive à échéance bientôt (dans les 2 jours)
      */
+    // Corriger la comparaison avec l'enum pour "coming soon"
     public function isComingSoon(): bool
     {
-        if ($this->dateButoir === null || $this->statut === 'TERMINER') {
+        if ($this->getDateButoir() === null || $this->getStatut() === \App\Enum\TaskStatut::TERMINER) {
             return false;
         }
-
-        $today = new \DateTime();
-        $diff = $today->diff($this->dateButoir);
-
-        return $diff->days <= 2 && $diff->invert === 0; // invert = 0 signifie que dateLimite est dans le futur
+        $today = new \DateTimeImmutable('today');
+        $diff = $today->diff($this->getDateButoir());
+        // à venir dans 2 jours max et pas en retard
+        return $diff->invert === 0 && $diff->days <= 2;
     }
 
     /**

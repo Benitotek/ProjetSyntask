@@ -21,12 +21,10 @@
 
 {% block body %}
 	<div
-		class="admin-kanban-container"
-		data-user-role="{{ app.user ? app.user.roles|first : 'ROLE_USER' }}"
-		data-api-prefix="{{ path('admin_kanban_') }}"
-	>
+		class="admin-kanban-container" data-user-role="{{ app.user ? app.user.roles|first : 'ROLE_USER' }}" <div class="admin-kanban-container" data-user-role="{{ app.user ? app.user.roles|first : 'ROLE_USER' }}" data-export-csv="{{ apiEndpoints.exportCsv }}" data-export-json="{{ apiEndpoints.exportJson }}" data-recent-activities="{{ apiEndpoints.recentActivities }}" data-task-move-base="{{ apiEndpoints.taskMoveBase }}" >>
 		<!-- 🎛️ Barre de contrôle avancée -->
-		<div class="control-panel">
+		<div
+			class="control-panel">
 			<!-- Indicateur de chargement -->
 			<div id="loadingOverlay" class="loading-overlay">
 				<div class="spinner"></div>
@@ -182,7 +180,7 @@
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 		</div>
 	{% endfor %}
-	
+
 	{% for message in app.flashes('error') %}
 		<div class="alert alert-danger">
 			{{ message }}
@@ -301,33 +299,33 @@
 		<!-- Activités récentes -->
 	{# <div class="analytics-section"> #}
 		{# <h4>🕐 Activités Récentes</h4>
-							<div class="recent-activities">
-								{% for activity in data.recentActivities %}
-									{% if activity.type == 'task_create' or activity.type == 'task_complete' or activity.type == 'task_update' %} <div class="activity-item">
-										<div class="activity-icon">
-											{{ activity.type == 'task_create' ? '➕' : (activity.type == 'task_complete' ? '✅' : '🔄') }}
-										</div>
-										<div class="activity-user">
-											{{ activity.user.prenom }}
-											{{ activity.user.nom }}
-										</div>
-										<div class="activity-content">
-											<div class="activity-text">{{ activity.description }}</div>
-											<div class="activity-time">{{ activity.dateCreation|date('H:i') }}</div>
-										</div> 
+									<div class="recent-activities">
+										{% for activity in data.recentActivities %}
+											{% if activity.type == 'task_create' or activity.type == 'task_complete' or activity.type == 'task_update' %} <div class="activity-item">
+												<div class="activity-icon">
+													{{ activity.type == 'task_create' ? '➕' : (activity.type == 'task_complete' ? '✅' : '🔄') }}
+												</div>
+												<div class="activity-user">
+													{{ activity.user.prenom }}
+													{{ activity.user.nom }}
+												</div>
+												<div class="activity-content">
+													<div class="activity-text">{{ activity.description }}</div>
+													<div class="activity-time">{{ activity.dateCreation|date('H:i') }}</div>
+												</div> 
+											</div>
+										{% else %}
+											<div class="no-activities">Aucune activité récente</div>
+										{% endfor %}
 									</div>
-								{% else %}
-									<div class="no-activities">Aucune activité récente</div>
-								{% endfor %}
+									<div class="show-all-activities">
+										<a href="{{ path('admin_kanban_recent_activities') }}">Voir toutes les activités</a>
+									</div>
+								</div>
 							</div>
-							<div class="show-all-activities">
-								<a href="{{ path('admin_kanban_recent_activities') }}">Voir toutes les activités</a>
-							</div>
+							<!-- fermeture de panel-content -->
 						</div>
+						<!-- fermeture de side-panel -->
 					</div>
-					<!-- fermeture de panel-content -->
-				</div>
-				<!-- fermeture de side-panel -->
-			</div>
-			<!-- fermeture de admin-kanban-container --> #}
+					<!-- fermeture de admin-kanban-container --> #}
 	{% endblock %}

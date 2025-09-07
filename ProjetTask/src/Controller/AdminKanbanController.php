@@ -77,7 +77,7 @@ class AdminKanbanController extends AbstractController
         if (empty($data['projects'])) {
             $data['projects'] = $this->projectRepository->findAll();
         }
-        
+
         if (empty($data['users'])) {
             $data['users'] = $this->userRepository->findAll();
         }
@@ -85,50 +85,50 @@ class AdminKanbanController extends AbstractController
         // 6) Calculate any missing statistics
         if (empty($data['statistics']['not_started_tasks'])) {
             $data['statistics']['not_started_tasks'] = count(array_filter(
-                $data['tasks'], 
+                $data['tasks'],
                 fn($task) => $task->getStatus() === 'A_FAIRE' || $task->getStatus() === 'TODO'
             ));
         }
-        
+
         if (empty($data['statistics']['in_progress_tasks'])) {
             $data['statistics']['in_progress_tasks'] = count(array_filter(
-                $data['tasks'], 
+                $data['tasks'],
                 fn($task) => $task->getStatus() === 'EN_COURS' || $task->getStatus() === 'IN_PROGRESS'
             ));
         }
-        
+
         if (empty($data['statistics']['in_review_tasks'])) {
             $data['statistics']['in_review_tasks'] = count(array_filter(
-                $data['tasks'], 
+                $data['tasks'],
                 fn($task) => $task->getStatus() === 'REVIEW'
             ));
         }
-        
+
         if (empty($data['statistics']['completed_tasks'])) {
             $data['statistics']['completed_tasks'] = count(array_filter(
-                $data['tasks'], 
+                $data['tasks'],
                 fn($task) => $task->getStatus() === 'DONE'
             ));
         }
-        
+
         // 7) Calculate priority-based statistics if not already set
         if (empty($data['statistics']['high_priority_tasks'])) {
             $data['statistics']['high_priority_tasks'] = count(array_filter(
-                $data['tasks'], 
+                $data['tasks'],
                 fn($task) => $task->getPriority() === 'HIGH'
             ));
         }
-        
+
         if (empty($data['statistics']['medium_priority_tasks'])) {
             $data['statistics']['medium_priority_tasks'] = count(array_filter(
-                $data['tasks'], 
+                $data['tasks'],
                 fn($task) => $task->getPriority() === 'MEDIUM'
             ));
         }
-        
+
         if (empty($data['statistics']['low_priority_tasks'])) {
             $data['statistics']['low_priority_tasks'] = count(array_filter(
-                $data['tasks'], 
+                $data['tasks'],
                 fn($task) => $task->getPriority() === 'LOW'
             ));
         }
@@ -167,11 +167,11 @@ class AdminKanbanController extends AbstractController
         if ($format === 'csv') {
             return $this->exportToCsv($data);
         }
-        
+
         if ($format === 'json') {
             return $this->exportToJson($data);
         }
-        
+
         throw $this->createNotFoundException('Format d\'export non supporté.');
     }
 
@@ -184,7 +184,7 @@ class AdminKanbanController extends AbstractController
         }
 
         $activities = $this->adminKanbanService->getRecentActivitiesForAdmin();
-        
+
         return $this->json([
             'success' => true,
             'activities' => $activities
@@ -198,20 +198,20 @@ class AdminKanbanController extends AbstractController
     public function moveTask(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        
+
         if (!isset($data['taskId'], $data['newListId'], $data['newPosition'])) {
             return $this->json([
                 'success' => false,
                 'message' => 'Données de déplacement de tâche invalides.'
             ], 400);
         }
-        
+
         $success = $this->adminKanbanService->moveTask(
             (int)$data['taskId'],
             (int)$data['newListId'],
             (int)$data['newPosition']
         );
-        
+
         return $this->json([
             'success' => $success,
             'message' => $success ? 'Tâche déplacée avec succès.' : 'Échec du déplacement de la tâche.'
@@ -225,16 +225,16 @@ class AdminKanbanController extends AbstractController
     public function createTask(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        
+
         if (!isset($data['title'])) {
             return $this->json([
                 'success' => false,
                 'message' => 'Le titre de la tâche est requis.'
             ], 400);
         }
-        
+
         $result = $this->adminKanbanService->createQuickTask($data);
-        
+
         return $this->json($result, $result['success'] ? 201 : 400);
     }
 
@@ -245,59 +245,20 @@ class AdminKanbanController extends AbstractController
     public function search(Request $request): JsonResponse
     {
         $query = $request->query->get('q', '');
-        
+
         if (empty($query)) {
             return $this->json([
                 'success' => false,
                 'message' => 'La requête de recherche est vide.'
             ], 400);
         }
-        
+
         $results = $this->adminKanbanService->globalSearch($query);
-        
+
         return $this->json([
             'success' => true,
             'results' => $results
         ]);
-    }
-    /**
-     * Export data to CSV format
-     */
-    private function exportToCsv($data) // private function exportToCsv(array $data): Response
-    {
-        $response = new Response();
-        $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment; filename="kanban_export_' . date('Y-m-d') . '.csv"');
-        
-        $output = fopen('php://output', 'w');
-        
-        // En-têtes
-        fputcsv($output, [
-            'ID', 'Titre', 'Description', 'Statut', 'Priorité', 'Date d\'échéance',
-            'Projet', 'Liste de tâches', 'Assigné à', 'Créé le', 'Mis à jour le'
-        ]);
-        
-        // Données des tâches
-        foreach ($data['tasks'] as $task) {
-            fputcsv($output, [
-                $task->getId(),
-                $task->getTitre(),
-                substr($task->getDescription() ?? '', 0, 100), // Limite la description
-                $task->getStatut(),
-                $task->getPriorite(),
-                $task->getDateEcheance() ? $task->getDateEcheance()->format('Y-m-d') : '',
-                $task->getProjet() ? $task->getProjet()->getTitre() : '',
-                $task->getListeTaches() ? $task->getListeTaches()->getNom() : '',
-                $task->getUtilisateurAssignation() ? 
-                    $task->getUtilisateurAssignation()->getPrenom() . ' ' . 
-                    $task->getUtilisateurAssignation()->getNom() : '',
-                $task->getDateCreation() ? $task->getDateCreation()->format('Y-m-d H:i:s') : '',
-                $task->getDateMiseAJour() ? $task->getDateMiseAJour()->format('Y-m-d H:i:s') : ''
-            ]);
-        }
-        
-        fclose($output);
-        return $response;
     }
 
     /**
@@ -318,7 +279,7 @@ class AdminKanbanController extends AbstractController
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('Utilisateur non authentifié.');
         }
-        
+
         $data = $this->adminKanbanService->getKanbanDataByRole($user, $filters);
 
         switch ($format) {
@@ -343,7 +304,7 @@ class AdminKanbanController extends AbstractController
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('Utilisateur non authentifié.');
         }
-        
+
         $filters = $request->query->all();
         $data = $this->adminKanbanService->getKanbanDataByRole($user, $filters);
 
@@ -354,7 +315,7 @@ class AdminKanbanController extends AbstractController
         ]);
     }
 
-// ...
+    // ...
     /**
      * API - Récupération des alertes
      */
@@ -362,7 +323,10 @@ class AdminKanbanController extends AbstractController
     public function getAlerts(): JsonResponse
     {
         $overdueTasks = $this->adminKanbanService->getOverdueTasks();
-        $tasksDueSoon = $this->taskRepository->findTasksWithDeadlineApproaching();
+        $overdueTasks = is_array($overdueTasks) ? $overdueTasks : [];
+
+        $tasksDueSoon = $this->adminKanbanService->getOverdueTasks();
+        $tasksDueSoon = is_array($tasksDueSoon) ? $tasksDueSoon : [];
         $inactiveUsers = $this->userRepository->findInactiveUsers(); // À créer si nécessaire
 
         $alerts = [
@@ -401,10 +365,10 @@ class AdminKanbanController extends AbstractController
             // Utiliser la mémoire tampon de sortie pour de meilleures performances
             ob_start();
             $output = fopen('php://output', 'w');
-            
+
             // Ajouter le BOM pour l'UTF-8 (pour Excel)
             fwrite($output, "\xEF\xBB\xBF");
-            
+
             // En-têtes du CSV
             $headers = ['Projet', 'Tâche', 'Statut', 'Priorité', 'Assigné à', 'Date limite'];
             fputcsv($output, $headers, ';', '"', '\\');
@@ -449,7 +413,6 @@ class AdminKanbanController extends AbstractController
 
                     // Écrire la ligne avec échappement des caractères spéciaux
                     fputcsv($output, $rowData, ';', '"', '\\');
-                    
                 } catch (\Exception $e) {
                     // Logger l'erreur mais continuer avec les autres tâches
                     error_log(sprintf('Erreur lors du traitement d\'une tâche: %s', $e->getMessage()));
@@ -459,7 +422,7 @@ class AdminKanbanController extends AbstractController
 
             // Récupérer le contenu du tampon de sortie
             $csvContent = ob_get_clean();
-            
+
             if ($csvContent === false) {
                 throw new \RuntimeException('Erreur lors de la génération du contenu CSV');
             }
@@ -477,7 +440,6 @@ class AdminKanbanController extends AbstractController
             ]);
 
             return $response;
-            
         } catch (\Exception $e) {
             // Nettoyer le tampon de sortie en cas d'erreur
             if (ob_get_level() > 0) {
@@ -490,16 +452,5 @@ class AdminKanbanController extends AbstractController
                 fclose($output);
             }
         }
-    }
-
-    /**
-     * Échappe les valeurs pour le format CSV (conservée pour compatibilité)
-     * 
-     * @deprecated Cette méthode n'est plus utilisée car fputcsv gère automatiquement l'échappement
-     */
-    private function escapeCsvValue(string $value): string
-    {
-        // fputcsv s'occupe maintenant de l'échappement
-        return $value;
     }
 }

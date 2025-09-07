@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/kanban')]
+#[Route('/kanban/role-based/kanban', name: 'kanban_')]
 #[IsGranted('ROLE_USER')]
 class RoleBasedKanbanController extends AbstractController
 {

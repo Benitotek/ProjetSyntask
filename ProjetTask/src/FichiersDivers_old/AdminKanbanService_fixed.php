@@ -1,21 +1,22 @@
 <?php
 
-namespace App\Service;
+// namespace App\Service;
 
-use App\Entity\Project;
-use App\Entity\Task;
-use App\Entity\TaskList;
-use App\Entity\User;
-use App\Enum\TaskStatut;
-use App\Repository\ActivityRepository;
-use App\Repository\ProjectRepository;
-use App\Repository\TaskRepository;
-use App\Repository\UserRepository;
-use App\Repository\TaskListRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+// use App\Entity\Project;
+// use App\Entity\Task;
+// use App\Entity\TaskList;
+// use App\Entity\User;
+// use App\Enum\TaskStatut;
+// use App\Repository\ActivityRepository;
+// use App\Repository\ProjectRepository;
+// use App\Repository\TaskRepository;
+// use App\Repository\UserRepository;
+// use App\Repository\TaskListRepository;
+// use Doctrine\ORM\EntityManagerInterface;
+// use Knp\Component\Pager\PaginatorInterface;
+// use Symfony\Component\Security\Core\Security;
+// use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+
 
 class AdminKanbanService
 {
@@ -66,16 +67,16 @@ class AdminKanbanService
         $projects = $this->projectRepository->findAll();
         $taskLists = $this->taskListRepository->findAll();
         $tasks = $this->taskRepository->findAll();
-        
+
         // Appliquer les filtres
         $tasks = $this->applyFilters($tasks, $filters);
-        
+
         // Récupérer tous les utilisateurs
         $users = $this->userRepository->findAll();
 
         // Calculer les statistiques
         $statistics = $this->calculateStatistics($projects, $tasks);
-        
+
         // Récupérer les activités récentes
         $recentActivities = $this->getRecentActivitiesForProjects($projects);
 
@@ -102,24 +103,24 @@ class AdminKanbanService
     {
         // Récupérer les projets gérés par le chef de projet
         $projects = $this->projectRepository->findBy(['chefProject' => $user]);
-        
+
         // Récupérer les listes de tâches et tâches des projets gérés
         $taskLists = [];
         $tasks = [];
-        
+
         foreach ($projects as $project) {
             $projectTaskLists = $this->taskListRepository->findBy(['projet' => $project]);
             $taskLists = array_merge($taskLists, $projectTaskLists);
-            
+
             foreach ($projectTaskLists as $taskList) {
                 $listTasks = $this->taskRepository->findBy(['liste' => $taskList]);
                 $tasks = array_merge($tasks, $listTasks);
             }
         }
-        
+
         // Appliquer les filtres
         $tasks = $this->applyFilters($tasks, $filters);
-        
+
         // Récupérer les utilisateurs des projets gérés
         $users = [];
         foreach ($projects as $project) {
@@ -127,10 +128,10 @@ class AdminKanbanService
             $users = array_merge($users, $projectUsers);
         }
         $users = array_unique($users, SORT_REGULAR);
-        
+
         // Calculer les statistiques
         $statistics = $this->calculateStatistics($projects, $tasks);
-        
+
         // Récupérer les activités récentes
         $recentActivities = $this->getRecentActivitiesForProjects($projects);
 
@@ -207,7 +208,7 @@ class AdminKanbanService
             if (isset($filters['assigned_user']) && $filters['assigned_user'] !== 'all') {
                 $assignedUsers = $task->getTaskUsers();
                 $assignedUserIds = array_map(fn($tu) => $tu->getUser()->getId(), $assignedUsers);
-                
+
                 if (!in_array($filters['assigned_user'], $assignedUserIds)) {
                     return false;
                 }
@@ -271,7 +272,7 @@ class AdminKanbanService
     {
         $now = new \DateTime();
         $oneWeekAgo = (clone $now)->modify('-1 week');
-        
+
         $totalTasks = count($assignedTasks);
         $completedTasks = 0;
         $inProgressTasks = 0;
@@ -282,14 +283,14 @@ class AdminKanbanService
         foreach ($assignedTasks as $task) {
             if ($task->getStatut() === TaskStatut::TERMINE) {
                 $completedTasks++;
-                
+
                 if ($task->getDateFin() && $task->getDateFin() >= $oneWeekAgo) {
                     $completedThisWeek++;
                 }
             } elseif ($task->getStatut() === TaskStatut::EN_COURS) {
                 $inProgressTasks++;
             }
-            
+
             if ($task->getDateEcheance() && $task->getDateEcheance() < $now && $task->getStatut() !== TaskStatut::TERMINE) {
                 $overdueTasks++;
             }
@@ -361,7 +362,7 @@ class AdminKanbanService
         if (method_exists($task, 'getAssignedUser')) {
             return $task->getAssignedUser() && $task->getAssignedUser()->getId() === $user->getId();
         }
-        
+
         if (method_exists($task, 'getTaskUsers')) {
             foreach ($task->getTaskUsers() as $taskUser) {
                 if ($taskUser->getUser() && $taskUser->getUser()->getId() === $user->getId()) {
@@ -369,7 +370,7 @@ class AdminKanbanService
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -422,7 +423,7 @@ class AdminKanbanService
     {
         $taskList = $task->getTaskList();
         $project = $taskList ? $taskList->getProject() : null;
-        
+
         $formatted = [
             'id' => $task->getId(),
             'title' => $task->getTitle(),
@@ -463,27 +464,31 @@ class AdminKanbanService
     {
         return array_filter($tasks, function ($task) use ($filters) {
             // Filtre par statut
-            if (isset($filters['statut']) && $filters['statut'] !== 'all' && 
-                $task->getStatut() !== $filters['statut']) {
+            if (
+                isset($filters['statut']) && $filters['statut'] !== 'all' &&
+                $task->getStatut() !== $filters['statut']
+            ) {
                 return false;
             }
-            
+
             // Filtre par priorité
-            if (isset($filters['priority']) && $filters['priority'] !== 'all' && 
-                $task->getPriority() !== $filters['priority']) {
+            if (
+                isset($filters['priority']) && $filters['priority'] !== 'all' &&
+                $task->getPriority() !== $filters['priority']
+            ) {
                 return false;
             }
-            
+
             // Filtre par utilisateur assigné
             if (isset($filters['assigned_user']) && $filters['assigned_user'] !== 'all') {
                 $assignedUsers = $task->getTaskUsers();
                 $assignedUserIds = array_map(fn($tu) => $tu->getUser()->getId(), $assignedUsers);
-                
+
                 if (!in_array($filters['assigned_user'], $assignedUserIds)) {
                     return false;
                 }
             }
-            
+
             // Filtre par projet
             if (isset($filters['project_id']) && $filters['project_id'] !== 'all') {
                 $taskProject = $task->getTaskList() ? $task->getTaskList()->getProject() : null;
@@ -491,7 +496,7 @@ class AdminKanbanService
                     return false;
                 }
             }
-            
+
             return true;
         });
     }
@@ -533,7 +538,7 @@ class AdminKanbanService
     {
         $now = new \DateTime();
         $oneWeekAgo = (clone $now)->modify('-1 week');
-        
+
         $totalProjects = count($projects);
         $activeProjects = 0;
         $totalTasks = count($tasks);
@@ -541,19 +546,19 @@ class AdminKanbanService
         $inProgressTasks = 0;
         $overdueTasks = 0;
         $completedThisWeek = 0;
-        
+
         // Compter les projets actifs
         foreach ($projects as $project) {
             if ($project->getStatut() === 'en_cours') {
                 $activeProjects++;
             }
         }
-        
+
         // Analyser les tâches
         foreach ($tasks as $task) {
             if ($task->getStatut() === TaskStatut::TERMINE) {
                 $completedTasks++;
-                
+
                 // Vérifier si la tâche a été terminée cette semaine
                 if ($task->getDateFin() && $task->getDateFin() >= $oneWeekAgo) {
                     $completedThisWeek++;
@@ -561,24 +566,26 @@ class AdminKanbanService
             } elseif ($task->getStatut() === TaskStatut::EN_COURS) {
                 $inProgressTasks++;
             }
-            
+
             // Vérifier les tâches en retard
-            if ($task->getDateEcheance() && $task->getDateEcheance() < $now && 
-                $task->getStatut() !== TaskStatut::TERMINE) {
+            if (
+                $task->getDateEcheance() && $task->getDateEcheance() < $now &&
+                $task->getStatut() !== TaskStatut::TERMINE
+            ) {
                 $overdueTasks++;
             }
         }
-        
+
         // Calculer les taux
         $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
-        
+
         // Compter les utilisateurs actifs (ayant au moins une tâche)
         $activeUsers = [];
         foreach ($tasks as $task) {
             if (method_exists($task, 'getAssignedUser') && $task->getAssignedUser()) {
                 $activeUsers[$task->getAssignedUser()->getId()] = true;
             }
-            
+
             if (method_exists($task, 'getTaskUsers')) {
                 foreach ($task->getTaskUsers() as $taskUser) {
                     if ($taskUser->getUser()) {
@@ -587,10 +594,10 @@ class AdminKanbanService
                 }
             }
         }
-        
+
         $activeUsersCount = count($activeUsers);
         $avgTasksPerUser = $activeUsersCount > 0 ? round($totalTasks / $activeUsersCount, 1) : 0;
-        
+
         // Compter les tâches par statut
         $statusCounts = [
             'not_started' => 0,
@@ -598,7 +605,7 @@ class AdminKanbanService
             'in_review' => 0,
             'completed' => 0
         ];
-        
+
         foreach ($tasks as $task) {
             switch ($task->getStatut()) {
                 case TaskStatut::A_FAIRE:
@@ -615,14 +622,14 @@ class AdminKanbanService
                     break;
             }
         }
-        
+
         // Compter les tâches par priorité
         $priorityCounts = [
             'high' => 0,
             'medium' => 0,
             'low' => 0
         ];
-        
+
         foreach ($tasks as $task) {
             if (method_exists($task, 'getPriorite')) {
                 $priority = strtolower($task->getPriorite());
@@ -631,7 +638,7 @@ class AdminKanbanService
                 }
             }
         }
-        
+
         return [
             'projectsTotal' => $totalProjects,
             'activeProjects' => $activeProjects,
@@ -659,9 +666,9 @@ class AdminKanbanService
         if (empty($projects)) {
             return [];
         }
-        
+
         $projectIds = array_map(fn($project) => $project->getId(), $projects);
-        
+
         try {
             if (method_exists($this->activityRepository, 'findRecentByProjectIds')) {
                 $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
@@ -676,12 +683,12 @@ class AdminKanbanService
                     );
                     $activities = array_merge($activities, $projectActivities);
                 }
-                
+
                 // Trier par date décroissante et limiter
                 usort($activities, fn($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt());
                 $activities = array_slice($activities, 0, $limit);
             }
-            
+
             // Formater les activités pour la réponse
             return array_map(function ($activity) {
                 return [
@@ -721,7 +728,7 @@ class AdminKanbanService
                 $projects = $this->projectRepository->findByMembre($user);
                 return $this->getRecentActivitiesForProjects($projects, $limit);
             }
-            
+
             // Formater les activités pour la réponse
             return array_map(function ($activity) {
                 return [
@@ -765,7 +772,7 @@ class AdminKanbanService
                 $totalCompleted++;
                 $deadline = $task->getDateEcheance();
                 $completedAt = $task->getDateFin();
-                
+
                 if ($deadline && $completedAt && $completedAt <= $deadline) {
                     $onTimeCompletions++;
                 }
@@ -786,28 +793,28 @@ class AdminKanbanService
         if (empty($projects)) {
             return 0.0;
         }
-        
+
         $totalTaskLists = 0;
         $completedTaskLists = 0;
-        
+
         foreach ($projects as $project) {
             $projectTaskLists = $project->getTaskLists();
-            
+
             foreach ($projectTaskLists as $taskList) {
                 $totalTasks = $taskList->getTasks()->count();
                 $completedTasks = $taskList->getTasks()->filter(
                     fn($task) => $task->getStatut() === TaskStatut::TERMINE
                 )->count();
-                
+
                 // Si toutes les tâches sont terminées, on compte la liste comme complétée
                 if ($completedTasks >= $totalTasks) {
                     $completedTaskLists++;
                 }
-                
+
                 $totalTaskLists++;
             }
         }
-        
+
         return $totalTaskLists > 0 ? round(($completedTaskLists / $totalTaskLists) * 100, 1) : 0.0;
     }
 
@@ -849,7 +856,7 @@ class AdminKanbanService
             ];
         } catch (\Exception $e) {
             error_log('Erreur lors du déplacement de la tâche: ' . $e->getMessage());
-            
+
             return [
                 'success' => false,
                 'error' => 'Une erreur est survenue lors du déplacement de la tâche.',
@@ -869,10 +876,10 @@ class AdminKanbanService
     {
         // Récupérer les tâches assignées à l'employé
         $assignedTasks = $this->taskRepository->findByAssignedUser($employe);
-        
+
         // Appliquer les filtres
         $assignedTasks = $this->applyFilters($assignedTasks, $filters);
-        
+
         // Récupérer les projets des tâches assignées
         $projectIds = [];
         foreach ($assignedTasks as $task) {
@@ -881,22 +888,22 @@ class AdminKanbanService
                 $projectIds[$taskList->getProject()->getId()] = true;
             }
         }
-        
+
         $projects = [];
         if (!empty($projectIds)) {
             $projects = $this->projectRepository->findBy(['id' => array_keys($projectIds)]);
         }
-        
+
         // Récupérer les listes de tâches des projets
         $taskLists = [];
         foreach ($projects as $project) {
             $projectTaskLists = $this->taskListRepository->findBy(['projet' => $project]);
             $taskLists = array_merge($taskLists, $projectTaskLists);
         }
-        
+
         // Calculer les statistiques spécifiques à l'employé
         $statistics = $this->calculateEmployeStatistics($employe, $assignedTasks);
-        
+
         // Récupérer les activités récentes de l'employé
         $recentActivities = $this->getRecentActivitiesForUser($employe);
 

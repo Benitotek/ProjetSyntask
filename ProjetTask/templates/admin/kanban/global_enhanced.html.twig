@@ -123,7 +123,15 @@
 {% block body %}
     <div class="admin-kanban-container" 
          data-user-role="{{ app.user ? app.user.roles|first : 'ROLE_USER' }}"
-         data-api-prefix="{{ path('admin_kanban_') }}">
+      <div
+  class="admin-kanban-container"
+  data-user-role="{{ app.user ? app.user.roles|first : 'ROLE_USER' }}"
+  data-export-csv="{{ apiEndpoints.exportCsv }}"
+  data-export-json="{{ apiEndpoints.exportJson }}"
+  data-recent-activities="{{ apiEndpoints.recentActivities }}"
+  data-task-move-base="{{ apiEndpoints.taskMoveBase }}"
+>
+
         
         <!-- 🎛️ Control Panel -->
         <div class="control-panel">

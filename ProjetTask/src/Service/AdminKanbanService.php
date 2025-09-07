@@ -115,7 +115,7 @@ class AdminKanbanService
                 $listTasks = $this->taskRepository->findBy(['liste' => $taskList]);
                 $tasks = array_merge($tasks, $listTasks);
         }
-        
+    }        
         // Appliquer les filtres
         $tasks = $this->applyFilters($tasks, $filters);
         
@@ -365,11 +365,12 @@ class AdminKanbanService
      * 
      * @return array Activités récentes / Recent activities
      */
-    public function getRecentActivitiesForAdmin(): array
-    {
-        return $this->getRecentActivitiesForProjects($this->projectRepository->findAll());
-    }
-
+// public function getRecentActivitiesForAdmin(int $page = 1, int $limit = 10): array
+// {
+//     $projects = $this->projectRepository->findAll();
+//     $projects = array_slice($projects, ($page - 1) * $limit, $limit);
+//     return $this->getRecentActivitiesForProjects($projects);
+// }
     private function getEmployeKanbanData(User $employe, array $filters = []): array
     {
         // Projets où l'employé est membre
@@ -740,7 +741,7 @@ class AdminKanbanService
     //     if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
     //         return true;
     //     }
-}
+
 
     /**
      * Vérifie si un utilisateur peut déplacer une tâche vers une autre liste
@@ -804,28 +805,28 @@ class AdminKanbanService
      * @param array $assignedTasks Les tâches assignées à l'employé
      * @return array Les statistiques calculées
      */
-    private function calculateEmployeStatistics(User $employe, array $assignedTasks): array
-    {
-        $completedTasks = array_filter($assignedTasks, fn($t) => $t->getStatut() === 'TERMINER');
-        $overdueTasks = array_filter($assignedTasks, function ($t) {
-            return $t->getDeadline() &&
-                $t->getDeadline() < new \DateTime() &&
-                $t->getStatut() !== 'TERMINER';
-        });
+    // private function calculateEmployeStatistics(User $employe, array $assignedTasks): array
+    // {
+    //     $completedTasks = array_filter($assignedTasks, fn($t) => $t->getStatut() === 'TERMINER');
+    //     $overdueTasks = array_filter($assignedTasks, function ($t) {
+    //         return $t->getDeadline() &&
+    //             $t->getDeadline() < new \DateTime() &&
+    //             $t->getStatut() !== 'TERMINER';
+    //     });
 
-        $totalTasks = count($assignedTasks);
-        $completedCount = count($completedTasks);
+    //     $totalTasks = count($assignedTasks);
+    //     $completedCount = count($completedTasks);
 
-        return [
-            'totalAssignedTasks' => $totalTasks,
-            'totalCompletedTasks' => $completedCount,
-            'completedTasks' => $completedCount,
-            'inProgressTasks' => count(array_filter($assignedTasks, fn($t) => $t->getStatut() === 'EN_COURS')),
-            'overdueTasks' => count($overdueTasks),
-            'completionRate' => $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100, 1) : 0,
-            'efficiency' => $this->calculateUserEfficiency($employe)
-        ];
-    }
+    //     return [
+    //         'totalAssignedTasks' => $totalTasks,
+    //         'totalCompletedTasks' => $completedCount,
+    //         'completedTasks' => $completedCount,
+    //         'inProgressTasks' => count(array_filter($assignedTasks, fn($t) => $t->getStatut() === 'EN_COURS')),
+    //         'overdueTasks' => count($overdueTasks),
+    //         'completionRate' => $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100, 1) : 0,
+    //         'efficiency' => $this->calculateUserEfficiency($employe)
+    //     ];
+    // }
 
     /**
      * Récupère les utilisateurs des projets gérés par un chef de projet
@@ -1462,27 +1463,24 @@ class AdminKanbanService
                 $oldProject,
                 $newProject
             );
-//             } else {
-//                 $this->activityLogger->logTaskMove(
-//                     $task,
-//                     $user,
-//                     $task->getTaskList()->getLastName(),
-//                     $newList->getLastName()
-//                 );
-//             }
 
-//             $this->entityManager->flush();
+            $this->activityLogger->logTaskTransfer(
+                $task->getAssignedUser(),
+                $oldProject,
+                $newProject
+            );
+        }
 
-//             return [
-//                 'success' => true,
-//                 'message' => 'Tâche déplacée avec succès',
-//                 'task' => $this->formatTaskForResponse($task),
-//                 'crossProject' => $oldProject->getId() !== $newProject->getId()
-//             ];
-//         } catch (\Exception $e) {
-//             return [
-//                 'success' => false,
-//                 'message' => 'Erreur lors du déplacement: ' . $e->getMessage()
-//             ];
-//         }
-//     }
+        return [
+            'success' => true,
+            'message' => 'Tâche déplacée avec succès',
+            'task' => $this->formatTaskForResponse($task),
+            'crossProject' => $oldProject->getId() !== $newProject->getId()
+        ];
+    // } catch (\Exception $e) {
+    //     return [
+    //         'success' => false,
+    //         'message' => 'Erreur lors du déplacement: ' . $e->getMessage()
+    //     ];
+    }
+}}

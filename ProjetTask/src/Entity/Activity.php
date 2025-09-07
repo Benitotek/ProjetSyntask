@@ -33,6 +33,7 @@ class Activity
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $targetUrl = null;
 
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateCreation = null;
 
@@ -139,6 +140,24 @@ class Activity
     public function setTargetUrl(?string $targetUrl): static
     {
         $this->targetUrl = $targetUrl;
+        switch ($this->getType()) {
+            case \App\Enum\ActivityType::TASK_CREATE:
+            case \App\Enum\ActivityType::TASK_UPDATE:
+                break;
+            case \App\Enum\ActivityType::TASK_ASSIGN:
+                $this->setTargetUrl('/task/' . $this->getTarget());
+                break;
+            case \App\Enum\ActivityType::TASK_COMMENT:
+                $this->setTargetUrl('/task/' . $this->getTarget());
+
+                break;
+            case \App\Enum\ActivityType::PROJECT_CREATE:
+            case \App\Enum\ActivityType::PROJECT_UPDATE:
+            case \App\Enum\ActivityType::PROJECT_DELETE:
+                $this->setTargetUrl('/project/' . $this->getTarget());
+                break;
+                // ...
+        }
         return $this;
     }
 
@@ -188,21 +207,20 @@ class Activity
     }
     private ?User $performedBy = null;
 
-/**
- * Set the user who performed the activity.
- */
-public function setPerformedBy(?User $user): self
-{
-    $this->performedBy = $user;
-    return $this;
-}
+    /**
+     * Set the user who performed the activity.
+     */
+    public function setPerformedBy(?User $user): self
+    {
+        $this->performedBy = $user;
+        return $this;
+    }
 
-/**
- * Get the user who performed the activity.
- */
-public function getPerformedBy(): ?User
-{
-    return $this->performedBy;
-}
-
+    /**
+     * Get the user who performed the activity.
+     */
+    public function getPerformedBy(): ?User
+    {
+        return $this->performedBy;
+    }
 }

@@ -39,15 +39,14 @@ class TaskList
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateTime = null;
 
-    // // Correction du mapping de l'enum
-    // #[ORM\Column(type: 'string', length: 10, nullable: true)]
-    // private ?string $couleur = null;
+    #[ORM\ManyToOne(inversedBy: 'taskLists')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $createdBy = null;
 
     #[ORM\Column(enumType: TaskListColor::class)]
     private ?TaskListColor $couleur = null;
 
-    // #[ORM\Column(type: 'string', enumType: EnumTaskListColor::class, nullable: true)]
-    // private ?EnumTaskListColor $couleur = null
+
     /**
      * @var Collection<int, Task>
      */
@@ -148,6 +147,18 @@ class TaskList
 
         return $this;
     }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
 
     /**
      * @return Collection<int, Task>
@@ -331,7 +342,7 @@ class TaskList
                 continue;
             }
 
-            $diff = $now->diff($task->getdateButoir());
+            $diff = $now->diff($task->getDateButoir());
             $delayDays = $diff->invert ? $diff->days : 0;
 
             if ($delayDays === 0) {
@@ -347,4 +358,5 @@ class TaskList
 
         return $delays;
     }
+    
 }

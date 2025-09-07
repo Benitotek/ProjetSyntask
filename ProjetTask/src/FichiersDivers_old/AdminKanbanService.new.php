@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Service;
+// namespace App\Service;
 
-use App\Entity\Project;
-use App\Entity\Task;
-use App\Entity\TaskList;
-use App\Entity\User;
-use App\Enum\TaskStatut;
-use App\Repository\ActivityRepository;
-use App\Repository\ProjectRepository;
-use App\Repository\TaskRepository;
-use App\Repository\UserRepository;
-use App\Repository\TaskListRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+// use App\Entity\Project;
+// use App\Entity\Task;
+// use App\Entity\TaskList;
+// use App\Entity\User;
+// use App\Enum\TaskStatut;
+// use App\Repository\ActivityRepository;
+// use App\Repository\ProjectRepository;
+// use App\Repository\TaskListRepository;
+// use App\Repository\TaskRepository;
+// use App\Repository\UserRepository;
+// use Doctrine\ORM\EntityManagerInterface;
+// use Knp\Component\Pager\PaginatorInterface;
+// use Symfony\Component\Security\Core\Security;
 
 class AdminKanbanService
 {
@@ -25,9 +25,6 @@ class AdminKanbanService
         private TaskListRepository $taskListRepository,
         private ActivityRepository $activityRepository,
         private EntityManagerInterface $entityManager,
-        private KanbanService $kanbanService,
-        private ActivityLogger $activityLogger,
-        private NotificationService $notificationService,
         private Security $security,
         private PaginatorInterface $paginator
     ) {}
@@ -50,6 +47,9 @@ class AdminKanbanService
         return $this->getEmployeKanbanData($user, $filters);
     }
 
+    /**
+     * Get all Kanban data (admin access)
+     */
     private function getAllKanbanData(array $filters = []): array
     {
         $projects = $this->projectRepository->findAll();
@@ -70,6 +70,9 @@ class AdminKanbanService
         ];
     }
 
+    /**
+     * Get Kanban data for Chef de Projet
+     */
     private function getChefProjetKanbanData(User $user, array $filters = []): array
     {
         $managedProjects = $this->projectRepository->findBy(['chefProject' => $user]);
@@ -78,6 +81,7 @@ class AdminKanbanService
 
         $taskLists = [];
         $tasks = [];
+        
         foreach ($projects as $project) {
             $projectTaskLists = $this->taskListRepository->findBy(['project' => $project]);
             $taskLists = array_merge($taskLists, $projectTaskLists);
@@ -98,12 +102,16 @@ class AdminKanbanService
         ];
     }
 
+    /**
+     * Get Kanban data for Employé
+     */
     private function getEmployeKanbanData(User $user, array $filters = []): array
     {
         $projects = $this->projectRepository->findByMember($user);
         
         $taskLists = [];
         $tasks = [];
+        
         foreach ($projects as $project) {
             $projectTaskLists = $this->taskListRepository->findBy(['project' => $project]);
             $taskLists = array_merge($taskLists, $projectTaskLists);
@@ -134,6 +142,9 @@ class AdminKanbanService
         ];
     }
 
+    /**
+     * Get all users from a list of projects
+     */
     private function getUsersFromProjects(array $projects): array
     {
         $users = [];
@@ -151,6 +162,9 @@ class AdminKanbanService
         return array_values($users);
     }
 
+    /**
+     * Apply filters to tasks
+     */
     private function applyFilters(array $tasks, array $filters): array
     {
         return array_filter($tasks, function ($task) use ($filters) {
@@ -185,6 +199,9 @@ class AdminKanbanService
         });
     }
 
+    /**
+     * Calculate statistics for projects and tasks
+     */
     private function calculateStatistics(array $projects, array $tasks): array
     {
         $completed = 0;
@@ -236,7 +253,10 @@ class AdminKanbanService
         ];
     }
 
-    public function getRecentActivitiesForProjects(array $projects): array
+    /**
+     * Get recent activities for projects
+     */
+    public function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
     {
         $projectIds = array_map(fn($project) => $project->getId(), $projects);
         
@@ -244,7 +264,7 @@ class AdminKanbanService
             ->where('a.project IN (:projects)')
             ->setParameter('projects', $projectIds)
             ->orderBy('a.createdAt', 'DESC')
-            ->setMaxResults(10)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
 
@@ -260,19 +280,22 @@ class AdminKanbanService
                 'dateCreation' => $activity->getCreatedAt(),
                 'project' => [
                     'id' => $activity->getProject()->getId(),
-                    'title' => $activity->getProject()->getTitle()
+                    'title' => $activity->getProject()->getTitre()
                 ]
             ];
         }, $activities);
     }
 
+    /**
+     * Get recent activities for admin dashboard
+     */
     public function getRecentActivitiesForAdmin(): array
     {
         return $this->getRecentActivitiesForProjects($this->projectRepository->findAll());
     }
 
     /**
-     * Returns a list of overdue tasks.
+     * Get overdue tasks
      */
     public function getOverdueTasks(): array
     {
@@ -280,7 +303,7 @@ class AdminKanbanService
     }
 
     /**
-     * Get statistics for the Kanban board
+     * Get Kanban statistics
      */
     public function getKanbanStatistics(): array
     {
@@ -301,15 +324,7 @@ class AdminKanbanService
     }
 
     /**
-     * Returns recent activities for analytics dashboard.
-     */
-    public function getRecentActivities(): array
-    {
-        return [];
-    }
-
-    /**
-     * Perform a global search for tasks, projects, or users matching the query.
+     * Perform a global search
      */
     public function globalSearch(string $query): array
     {
@@ -336,14 +351,14 @@ class AdminKanbanService
             ->getResult();
 
         return [
-            'tasks' => $tasks,
-            'projects' => $projects,
-            'users' => $users
+            'tasks' => array_map([$this, 'formatTaskForResponse'], $tasks),
+            'projects' => array_map([$this, 'formatProjectForResponse'], $projects),
+            'users' => array_map([$this, 'formatUserForResponse'], $users)
         ];
     }
 
     /**
-     * Create a quick task from provided data.
+     * Create a quick task
      */
     public function createQuickTask(array $data): array
     {
@@ -370,14 +385,6 @@ class AdminKanbanService
             $this->entityManager->persist($task);
             $this->entityManager->flush();
 
-            // Log activity
-            $this->activityLogger->log(
-                'task_create',
-                sprintf('Tâche "%s" créée', $task->getTitle()),
-                $task->getProject(),
-                $this->security->getUser()
-            );
-
             return [
                 'success' => true,
                 'message' => 'Tâche créée avec succès',
@@ -392,7 +399,7 @@ class AdminKanbanService
     }
 
     /**
-     * Move task to a new list and position
+     * Move a task to a new list/position
      */
     public function moveTask(int $taskId, int $newListId, int $newPosition): bool
     {
@@ -408,37 +415,10 @@ class AdminKanbanService
             $task->setPosition($newPosition);
 
             $this->entityManager->flush();
-
             return true;
         } catch (\Exception $e) {
             return false;
         }
-    }
-
-    /**
-     * Get global statistics for admin dashboard
-     */
-    public function getGlobalStatistics(): array
-    {
-        $totalProjects = $this->projectRepository->count([]);
-        $totalTasks = $this->taskRepository->count([]);
-        $totalUsers = $this->userRepository->count([]);
-        $activeProjects = $this->projectRepository->count(['statut' => 'EN_COURS']);
-        
-        $completedTasks = $this->taskRepository->count(['statut' => 'TERMINER']);
-        $inProgressTasks = $this->taskRepository->count(['statut' => 'EN_COURS']);
-        $notStartedTasks = $this->taskRepository->count(['statut' => 'EN_ATTENTE']);
-        
-        return [
-            'total_projects' => $totalProjects,
-            'active_projects' => $activeProjects,
-            'total_tasks' => $totalTasks,
-            'total_users' => $totalUsers,
-            'completed_tasks' => $completedTasks,
-            'in_progress_tasks' => $inProgressTasks,
-            'not_started_tasks' => $notStartedTasks,
-            'completion_rate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0,
-        ];
     }
 
     /**
@@ -468,7 +448,6 @@ class AdminKanbanService
                 'position' => $task->getTaskList()->getPosition()
             ] : null,
             'assignedTo' => $task->getAssignedTo() ? $this->formatUserForResponse($task->getAssignedTo()) : null,
-            'createdBy' => $task->getCreatedBy() ? $this->formatUserForResponse($task->getCreatedBy()) : null
         ];
     }
 
@@ -503,11 +482,6 @@ class AdminKanbanService
             'createdAt' => $project->getCreatedAt() ? $project->getCreatedAt()->format('Y-m-d H:i:s') : null,
             'updatedAt' => $project->getUpdatedAt() ? $project->getUpdatedAt()->format('Y-m-d H:i:s') : null,
             'projectManager' => $project->getChefProject() ? $this->formatUserForResponse($project->getChefProject()) : null,
-            'client' => $project->getClient() ? [
-                'id' => $project->getClient()->getId(),
-                'name' => $project->getClient()->getNom(),
-                'email' => $project->getClient()->getEmail()
-            ] : null,
             'members' => array_map(
                 fn($member) => $this->formatUserForResponse($member),
                 $project->getMembers()->toArray()
