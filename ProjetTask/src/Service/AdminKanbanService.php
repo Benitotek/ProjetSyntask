@@ -81,9 +81,9 @@ class AdminKanbanService
         $this->kanbanService->moveTask($task, $list, $position);
         $this->em->flush();
 
+        // Journaliser7
+        $this->activityLogger->logTaskstatutChange($by, $task->getTitle(), $task->getId(), $task->getTaskList(), $task->getStatut(), $task->getStatut(), $task->getTaskList());
         // Journaliser + notifier (optionnel/selon vos besoins)
-
-        $this->activityLogger->logTaskMove($task, $by, $list->getProject());
         // $this->notificationService->notifyTaskMove($task, $by);
 
         return ['success' => true];
@@ -116,7 +116,7 @@ class AdminKanbanService
             }
             // Filtre status
             if (!empty($filters['status']) && $filters['status'] !== 'all') {
-                $s = method_exists($t, 'getStatus') ? $t->getStatus() : $t->getStatut();
+                $s = method_exists($t, 'getStatus') ? $t->getStatut() : $t->getStatut();
                 // Comparaison enum vs string: convertir en string
                 $sv = \is_object($s) && method_exists($s, 'value') ? $s->value : (string)$s;
                 if ($sv !== (string)$filters['status']) {
