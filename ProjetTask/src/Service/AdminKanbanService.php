@@ -109,7 +109,7 @@ class AdminKanbanService
             // Filtre priority
             if (!empty($filters['priority']) && $filters['priority'] !== 'all') {
                 // Adapter selon votre enum/champ
-                $p = method_exists($t, 'getPriorite') ? $t->getPriorite() : (method_exists($t, 'getPriority') ? $t->getPriority() : null);
+                $p = method_exists($t, 'getPriorite') ? $t->getPriorite() : (method_exists($t, 'getPriority') ? $t->getPriorite() : null);
                 if ((string)$p !== (string)$filters['priority']) {
                     return false;
                 }
