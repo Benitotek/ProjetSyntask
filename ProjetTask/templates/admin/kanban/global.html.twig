@@ -21,9 +21,17 @@
 
 {% block body %}
 	<div
-		class="admin-kanban-container">
+		class="admin-kanban-container"
+		data-user-role="{{ app.user ? app.user.roles|first : 'ROLE_USER' }}"
+		data-api-prefix="{{ path('admin_kanban_') }}"
+	>
 		<!-- 🎛️ Barre de contrôle avancée -->
 		<div class="control-panel">
+			<!-- Indicateur de chargement -->
+			<div id="loadingOverlay" class="loading-overlay">
+				<div class="spinner"></div>
+				<div class="loading-text">Chargement en cours...</div>
+			</div>
 			<div class="control-left">
 				<h1 class="page-title">
 					<span class="icon">📋</span>
@@ -167,7 +175,21 @@
 </div>
 
 <!-- 🚨 Alertes -->
-<div id="alertsContainer" class="alerts-container hidden"></div>
+<div id="alertsContainer" class="alerts-container">
+	{% for message in app.flashes('success') %}
+		<div class="alert alert-success">
+			{{ message }}
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+		</div>
+	{% endfor %}
+	
+	{% for message in app.flashes('error') %}
+		<div class="alert alert-danger">
+			{{ message }}
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+		</div>
+	{% endfor %}
+</div>
 
 <!-- 📋 Tableau Kanban Global -->
 <div class="kanban-global-board" id="kanbanBoard">

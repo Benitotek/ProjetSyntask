@@ -4,17 +4,30 @@ class AdminKanbanAdvanced {
         this.filters = {};
         this.searchTimeout = null;
         this.autoRefreshInterval = null;
-
+        this.isLoading = false;
+        this.apiBaseUrl = document.querySelector('.admin-kanban-container')?.dataset?.apiPrefix || '/api/kanban/';
+        this.currentUserRole = document.querySelector('.admin-kanban-container')?.dataset?.userRole || 'ROLE_USER';
+        
+        // Initialisation
         this.init();
     }
 
-    init() {
-        this.initializeKanban();
-        this.initializeFilters();
-        this.initializeSearch();
-        this.initializeRealTimeUpdates();
-        this.initializeKeyboardShortcuts();
-        this.loadAlerts();
+    async init() {
+        try {
+            this.showLoading();
+            await this.initializeKanban();
+            this.initializeEventListeners();
+            this.initializeFilters();
+            this.initializeSearch();
+            this.initializeRealTimeUpdates();
+            this.initializeKeyboardShortcuts();
+            await this.loadInitialData();
+            this.hideLoading();
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation du Kanban:', error);
+            this.showNotification('Erreur lors du chargement du tableau de bord', 'error');
+            this.hideLoading();
+        }
     }
 
     /**
@@ -92,6 +105,7 @@ class AdminKanbanAdvanced {
         // Vérifier si la position a changé
         if (newListId !== this.dragData.originalListId || newPosition !== this.dragData.originalPosition) {
             try {
+                this.showLoading();
                 await this.moveTask(this.dragData.taskId, newListId, newPosition);
                 this.showNotification('Tâche déplacée avec succès', 'success');
             } catch (error) {

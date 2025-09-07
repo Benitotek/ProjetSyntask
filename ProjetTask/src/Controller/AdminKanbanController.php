@@ -43,7 +43,10 @@ public function assignUserToProject(int $userId, int $projectId): Response
     #[Route('/', name: 'admin_kanban_global', methods: ['GET'])]
     public function globalKanbanView(Request $request): Response
     {
-        // Récupération des filtres
+        // Vérification des autorisations
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // Récupération des filtres avec des valeurs par défaut
         $filters = [
             'project_id' => $request->query->get('project_id'),
             'assigned_user' => $request->query->get('assigned_user'),
@@ -52,14 +55,50 @@ public function assignUserToProject(int $userId, int $projectId): Response
             'due_soon' => $request->query->get('due_soon', false)
         ];
 
+        // Vérification si c'est une requête AJAX
+        if ($request->isXmlHttpRequest()) {
+            try {
+                $kanbanData = $this->adminKanbanService->getAllKanbanDatas($filters);
+                
+                return $this->json([
+                    'success' => true,
+                    'data' => $kanbanData
+                ]);
+            } catch (\Exception $e) {
+                return $this->json([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        // Récupération des données pour le chargement initial
         $kanbanData = $this->adminKanbanService->getAllKanbanDatas($filters);
 
         return $this->render('admin/kanban/global.html.twig', [
             'data' => $kanbanData,
             'filters' => $filters,
             'availableProjects' => $this->projectRepository->findAll(),
-            'availableUsers' => $this->userRepository->findActiveUsers()
+            'availableUsers' => $this->userRepository->findActiveUsers(),
+            'user_permissions' => $this->getUserPermissions()
         ]);
+    }
+
+    /**
+     * Récupère les permissions de l'utilisateur connecté
+     */
+    private function getUserPermissions(): array
+    {
+        $user = $this->getUser();
+        $permissions = [];
+
+        // Exemple de permissions basées sur les rôles
+        $permissions['can_edit'] = $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_CHEF_PROJET');
+        $permissions['can_delete'] = $this->isGranted('ROLE_ADMIN');
+        $permissions['can_manage_users'] = $this->isGranted('ROLE_ADMIN');
+        $permissions['can_export'] = true;
+
+        return $permissions;
     }
 
     /**
@@ -68,15 +107,36 @@ public function assignUserToProject(int $userId, int $projectId): Response
     #[Route('/move-task', name: 'admin_kanban_move_task', methods: ['POST'])]
     public function moveTask(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true);
 
-        $result = $this->adminKanbanService->moveTask(
-            $data['taskId'],
-            $data['newListId'],
-            $data['newPosition']
-        );
+            // Validation des données
+            if (!isset($data['taskId'], $data['newListId'], $data['newPosition'])) {
+                throw new \InvalidArgumentException('Données de déplacement invalides');
+            }
 
-        return $this->json($result);
+            $result = $this->adminKanbanService->moveTask(
+                (int) $data['taskId'],
+                (int) $data['newListId'],
+                (int) $data['newPosition'],
+                $this->getUser()
+            );
+
+            // Ajout des statistiques mises à jour
+            $result['statistics'] = $this->adminKanbanService->getKanbanStatistics();
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Tâche déplacée avec succès',
+                'data' => $result
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode() ?: 500
+            ], $e->getCode() >= 400 ? $e->getCode() : 500);
+        }
     }
 
     /**
@@ -85,11 +145,68 @@ public function assignUserToProject(int $userId, int $projectId): Response
     #[Route('/quick-task', name: 'admin_kanban_quick_task', methods: ['POST'])]
     public function createQuickTask(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+            if (!$data) {
+                throw new \InvalidArgumentException('Données invalides', 400);
+            }
 
-        $result = $this->adminKanbanService->createQuickTask($data);
+            // Validation des champs obligatoires
+            $requiredFields = ['title', 'listId'];
+            foreach ($requiredFields as $field) {
+                if (empty($data[$field])) {
+                    throw new \InvalidArgumentException(sprintf('Le champ %s est requis', $field), 400);
+                }
+            }
 
-        return $this->json($result);
+            $result = $this->adminKanbanService->createQuickTask($data, $this->getUser());
+            
+            // Ajout des statistiques mises à jour
+            $result['statistics'] = $this->adminKanbanService->getKanbanStatistics();
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Tâche créée avec succès',
+                'data' => $result
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode() ?: 500
+            ], $e->getCode() >= 400 ? $e->getCode() : 500);
+        }
+    }
+    
+    /**
+     * 🔍 API - Recherche globale
+     */
+    #[Route('/search', name: 'admin_kanban_search', methods: ['GET'])]
+    public function search(Request $request): JsonResponse
+    {
+        try {
+            $query = $request->query->get('q', '');
+            
+            if (strlen($query) < 2) {
+                throw new \InvalidArgumentException('La requête de recherche doit contenir au moins 2 caractères', 400);
+            }
+            
+            $results = $this->adminKanbanService->globalSearch($query);
+            
+            return $this->json([
+                'success' => true,
+                'results' => $results
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode() ?: 500
+            ], $e->getCode() >= 400 ? $e->getCode() : 500);
+        }
     }
 
     /**

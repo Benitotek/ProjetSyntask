@@ -97,11 +97,6 @@
 /* Main Content */
 .admin-main {
     padding: var(--spacing-lg);
-}
-
-/* Kanban Container */
-.kanban-container {
-    max-width: 100%;
     margin: 0 auto;
 }
 

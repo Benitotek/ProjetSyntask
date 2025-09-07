@@ -11,30 +11,34 @@
 			<div class="stat-card primary">
 				<div class="stat-icon">🏗️</div>
 				<div class="stat-content">
-					<div class="stat-number">{{ data.statistics.totalProjects }}</div>
+					<div class="stat-number">{{ stats.totalProjects ?? 0 }}</div>
 					<div class="stat-label">Projets Total</div>
-					<div class="stat-detail">{{ data.statistics.activeProjects }}
-						actifs</div>
+					<div class="stat-detail">
+						{{ (projects|filter(p => p.statut == 'en_cours')|length) ?? 0 }} actifs
+					</div>
 				</div>
-				<div class="stat-trend positive">+{{ data.statistics.projectsThisMonth ?? 0 }}</div>
+				<div class="stat-trend positive">+{{ stats.projectsThisMonth ?? 0 }}</div>
 			</div>
 
 			<div class="stat-card success">
 				<div class="stat-icon">✅</div>
 				<div class="stat-content">
-					<div class="stat-number">{{ data.statistics.completedTasks }}</div>
+					<div class="stat-number">{{ stats.completedTasks ?? 0 }}</div>
 					<div class="stat-label">Tâches Terminées</div>
-					<div class="stat-detail">{{ data.statistics.completionRate }}% de réussite</div>
+					<div class="stat-detail">{{ (stats.completionRate ?? 0)|number_format(1) }}% de réussite</div>
 				</div>
 				<div class="stat-progress">
-					<div class="progress-bar" style="width: {{ data.statistics.completionRate }}%"></div>
+					<div class="progress-bar" style="width: {{ (stats.completionRate ?? 0) }}%"></div>
 				</div>
 			</div>
 
 			<div class="stat-card warning">
 				<div class="stat-icon">⚠️</div>
 				<div class="stat-content">
-					<div class="stat-number">{{ data.statistics.overdueTasks }}</div>
+					<div class="stat-number">
+						{% set overdueTasks = tasks|filter(t => t.dateButoir is not null and t.dateButoir < date() and t.statut != 'TERMINER') %}
+						{{ overdueTasks|length }}
+					</div>
 					<div class="stat-label">En Retard</div>
 					<div class="stat-detail">Attention requise</div>
 				</div>
@@ -44,10 +48,9 @@
 			<div class="stat-card info">
 				<div class="stat-icon">👥</div>
 				<div class="stat-content">
-					<div class="stat-number">{{ data.statistics.activeUsers }}</div>
+					<div class="stat-number">{{ users|filter(u => u.isActive ?? true)|length }}</div>
 					<div class="stat-label">Utilisateurs Actifs</div>
-					<div class="stat-detail">{{ data.statistics.totalUsers }}
-						total</div>
+					<div class="stat-detail">{{ users|length }} total</div>
 				</div>
 				<button class="stat-action" onclick="showUsersPanel()">Gérer</button>
 			</div>
@@ -55,10 +58,15 @@
 			<div class="stat-card special">
 				<div class="stat-icon">⚡</div>
 				<div class="stat-content">
-					<div class="stat-number">{{ data.statistics.completedThisWeek }}</div>
+					<div class="stat-number">
+						{% set oneWeekAgo = date('-1 week') %}
+						{{ tasks|filter(t => t.dateCreation >= oneWeekAgo and t.statut == 'TERMINER')|length }}
+					</div>
 					<div class="stat-label">Cette Semaine</div>
-					<div class="stat-detail">{{ data.statistics.avgTasksPerUser }}
-						tâches/personne</div>
+					<div class="stat-detail">
+						{% set avgTasks = users|length > 0 ? (tasks|length / users|length)|round(1) : 0 %}
+						{{ avgTasks }} tâches/personne
+					</div>
 				</div>
 			</div>
 		</div>
@@ -83,14 +91,14 @@
 				<div class="filters-container">
 					<select id="projectFilter" class="filter-select">
 						<option value="">🏗️ Tous les projets</option>
-						{% for project in data.projects %}
+						{% for project in projects %}
 							<option value="{{ project.id }}">{{ project.titre }}</option>
 						{% endfor %}
 					</select>
 
 					<select id="userFilter" class="filter-select">
 						<option value="">👤 Tous les utilisateurs</option>
-						{% for user in data.users %}
+						{% for user in users %}
 							<option value="{{ user.id }}">{{ user.prenom }}
 								{{ user.nom }}</option>
 						{% endfor %}
