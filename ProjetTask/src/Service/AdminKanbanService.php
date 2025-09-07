@@ -68,6 +68,23 @@ class AdminKanbanService
             ];
         }, $activities);
     }
+    public function moveTask(int $taskId, int $newListId, int $newPosition): bool
+    {
+        // Add logic to move the task to a new list and position
+        // Example placeholder logic:
+        try {
+            // Fetch the task and update its list and position
+            // $task = $this->entityManager->getRepository(Task::class)->find($taskId);
+            // $task->setListId($newListId);
+            // $task->setPosition($newPosition);
+            // $this->entityManager->flush();
+
+            return true; // Return true if successful
+        } catch (\Exception $e) {
+            // Log the error if needed
+            return false; // Return false if an error occurs
+        }
+    }
 
     public function moveTaskPersist(int $taskId, int $newListId, int $position, User $by): array
     {
@@ -125,6 +142,15 @@ class AdminKanbanService
             }
             return true;
         }));
+    }
+    public function getGlobalStatistics(): array
+    {
+        // Example implementation
+        return [
+            'totalProjects' => 10,
+            'totalTasks' => 50,
+            'totalUsers' => 20,
+        ];
     }
 
     private function calculateStatistics(array $projects, array $tasks): array

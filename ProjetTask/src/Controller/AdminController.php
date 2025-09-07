@@ -46,7 +46,6 @@ class AdminController extends AbstractController
         $this->denyAccessUnlessGranted(AdminVoter::VIEW_ALL_KANBAN);
 
         $statistics = $this->adminKanbanService->getGlobalStatistics();
-
         return $this->render('admin/dashboard.html.twig', [
             'statistics' => $statistics
         ]);
@@ -60,7 +59,7 @@ class AdminController extends AbstractController
     {
         $this->denyAccessUnlessGranted(AdminVoter::MANAGE_ALL_PROJECTS, null, AdminVoter::VIEW_ALL_KANBAN);
 
-        $kanbanData = $this->adminKanbanService->getAllKanbanDatas();
+        $kanbanData = $this->adminKanbanService->getKanbanDataByRole($this->getUser()); // $this->getUser();
 
         return $this->render('admin/kanban/index.html.twig', [
             'projects' => $kanbanData['projects'],
