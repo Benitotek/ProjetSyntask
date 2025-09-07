@@ -1,0 +1,658 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Tableau de bord Kanban - SynTask{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('styles/admin-kanban-advanced.css') }}" rel="stylesheet">
+    <style>
+        /* Add any additional styles here */
+        .kanban-board {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            overflow-x: auto;
+            min-height: 70vh;
+        }
+        .kanban-column {
+            background: #f5f7fa;
+            border-radius: 8px;
+            min-width: 300px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .kanban-column-header {
+            font-weight: 600;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e1e4e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .kanban-tasks {
+            min-height: 100px;
+        }
+        .task-card {
+            background: white;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: move;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .task-priority {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .priority-high { background-color: #ffebee; color: #c62828; }
+        .priority-medium { background-color: #fff8e1; color: #ff8f00; }
+        .priority-low { background-color: #e8f5e9; color: #2e7d32; }
+        .task-assignee {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #546e7a;
+        }
+        .assignee-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            object-fit: cover;
+        }
+        .task-due-date {
+            font-size: 0.8rem;
+            color: #78909c;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+        .task-due-date.overdue {
+            color: #d32f2f;
+            font-weight: 500;
+        }
+        .task-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+            gap: 0.5rem;
+        }
+        .task-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #78909c;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .task-actions button:hover {
+            background-color: #f5f7fa;
+        }
+        .add-task-btn {
+            width: 100%;
+            padding: 0.5rem;
+            background: #f5f7fa;
+            border: 1px dashed #cfd8dc;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #78909c;
+            margin-top: 0.5rem;
+            transition: all 0.2s;
+        }
+        .add-task-btn:hover {
+            background: #e3f2fd;
+            border-color: #90caf9;
+            color: #1976d2;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="admin-kanban-container" 
+         data-user-role="{{ app.user ? app.user.roles|first : 'ROLE_USER' }}"
+         data-api-prefix="{{ path('admin_kanban_') }}">
+        
+        <!-- 🎛️ Control Panel -->
+        <div class="control-panel">
+            <!-- Loading Indicator -->
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="spinner"></div>
+                <div class="loading-text">Chargement en cours...</div>
+            </div>
+            
+            <div class="control-left">
+                <h1 class="page-title">
+                    <span class="icon">📋</span>
+                    Tableau de bord Kanban
+                    <span class="live-indicator"></span>
+                </h1>
+            </div>
+
+            <div class="control-center">
+                <!-- Advanced Filters -->
+                <div class="filters-advanced">
+                    <select id="projectFilter" class="filter-select">
+                        <option value="">🏗️ Tous les projets</option>
+                        {% for project in data.projects %}
+                            <option value="{{ project.id }}" {% if filters.project_id == project.id|default('') %}selected{% endif %}>
+                                {{ project.titre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <select id="userFilter" class="filter-select">
+                        <option value="">👤 Tous les utilisateurs</option>
+                        {% for user in data.users %}
+                            <option value="{{ user.id }}" {% if filters.assigned_user == user.id|default('') %}selected{% endif %}>
+                                {{ user.fullName }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <select id="priorityFilter" class="filter-select">
+                        <option value="all" {% if filters.priority == 'all' %}selected{% endif %}>🔝 Toutes les priorités</option>
+                        <option value="HIGH" {% if filters.priority == 'HIGH' %}selected{% endif %}>🔴 Haute</option>
+                        <option value="MEDIUM" {% if filters.priority == 'MEDIUM' %}selected{% endif %}>🟠 Moyenne</option>
+                        <option value="LOW" {% if filters.priority == 'LOW' %}selected{% endif %}>🟢 Basse</option>
+                    </select>
+
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all" {% if filters.status == 'all' %}selected{% endif %}>🔄 Tous les statuts</option>
+                        <option value="TODO" {% if filters.status == 'TODO' %}selected{% endif %}>📋 À faire</option>
+                        <option value="IN_PROGRESS" {% if filters.status == 'IN_PROGRESS' %}selected{% endif %}>🔄 En cours</option>
+                        <option value="REVIEW" {% if filters.status == 'REVIEW' %}selected{% endif %}>🔍 En révision</option>
+                        <option value="DONE" {% if filters.status == 'DONE' %}selected{% endif %}>✅ Terminé</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-right">
+                <button id="refreshBtn" class="btn btn-icon" title="Rafraîchir">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="exportBtn" class="btn btn-icon" title="Exporter">
+                    <i class="fas fa-file-export"></i>
+                </button>
+                <button id="analyticsBtn" class="btn btn-icon" title="Analytiques">
+                    <i class="fas fa-chart-line"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 📊 Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ data.statistics.projectsTotal }}</div>
+                    <div class="stat-label">Projets</div>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ data.statistics.completedTasks }}</div>
+                    <div class="stat-label">Tâches terminées</div>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ data.statistics.overdueTasks }}</div>
+                    <div class="stat-label">En retard</div>
+                </div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ data.statistics.activeUsers }}</div>
+                    <div class="stat-label">Membres actifs</div>
+                </div>
+            </div>
+            <div class="stat-card special">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ data.statistics.completedThisWeek }}</div>
+                    <div class="stat-label">Cette semaine</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🚨 Alerts -->
+        <div id="alertsContainer" class="alerts-container">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 🏗️ Kanban Board -->
+        <div class="kanban-board">
+            {% for taskList in data.taskLists %}
+                <div class="kanban-column" data-list-id="{{ taskList.id }}">
+                    <div class="kanban-column-header">
+                        <span>{{ taskList.nom }}</span>
+                        <span class="badge">
+                            {{ data.tasks|filter(task => task.taskList and task.taskList.id == taskList.id)|length }}
+                        </span>
+                    </div>
+                    <div class="kanban-tasks" data-list-id="{{ taskList.id }}">
+                        {% for task in data.tasks|filter(task => task.taskList and task.taskList.id == taskList.id) %}
+                            <div class="task-card" 
+                                 data-task-id="{{ task.id }}" 
+                                 draggable="true"
+                                 data-priority="{{ task.priority|lower }}"
+                                 data-status="{{ task.status|lower }}">
+                                
+                                <div class="task-priority priority-{{ task.priority|lower }}">
+                                    {{ task.priority|trans }}
+                                </div>
+                                
+                                <h4 class="task-title">{{ task.title }}</h4>
+                                
+                                {% if task.description %}
+                                    <p class="task-description">
+                                        {{ task.description|length > 100 ? task.description|slice(0, 100) ~ '...' : task.description }}
+                                    </p>
+                                {% endif %}
+                                
+                                {% if task.dueDate %}
+                                    {% set isOverdue = date(task.dueDate) < date() and task.status != 'DONE' %}
+                                    <div class="task-due-date {% if isOverdue %}overdue{% endif %}">
+                                        <i class="far fa-calendar-alt"></i>
+                                        {{ task.dueDate|date('d M Y') }}
+                                        {% if isOverdue %}<span class="overdue-badge">En retard</span>{% endif %}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if task.assignedTo %}
+                                    <div class="task-assignee">
+                                        <img src="{{ task.assignedTo.avatar ? asset('uploads/avatars/' ~ task.assignedTo.avatar) : asset('img/default-avatar.png') }}" 
+                                             alt="{{ task.assignedTo.fullName }}" 
+                                             class="assignee-avatar"
+                                             title="{{ task.assignedTo.fullName }}">
+                                        <span>{{ task.assignedTo.fullName }}</span>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if user_permissions.can_edit_tasks %}
+                                    <div class="task-actions">
+                                        <button class="edit-task" data-task-id="{{ task.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="delete-task" data-task-id="{{ task.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        
+                        {% if user_permissions.can_create_tasks %}
+                            <button class="add-task-btn" data-list-id="{{ taskList.id }}">
+                                <i class="fas fa-plus"></i> Ajouter une tâche
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- 📊 Analytics Panel (Hidden by default) -->
+        <div class="side-panel" id="analyticsPanel">
+            <div class="panel-header">
+                <h3>📊 Analytics en Temps Réel</h3>
+                <button class="panel-close" onclick="closeSidePanel()">&times;</button>
+            </div>
+            <div class="panel-content">
+                <div class="chart-container">
+                    <canvas id="tasksByStatusChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tasksByPriorityChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="completionTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/admin-kanban-advanced.js') }}"></script>
+    <script>
+        // Initialize the Kanban board with the data from the server
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize drag and drop
+            initDragAndDrop();
+            
+            // Initialize charts
+            initCharts();
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        function initDragAndDrop() {
+            const tasks = document.querySelectorAll('.task-card');
+            const columns = document.querySelectorAll('.kanban-tasks');
+            
+            tasks.forEach(task => {
+                task.addEventListener('dragstart', handleDragStart);
+                task.addEventListener('dragend', handleDragEnd);
+            });
+            
+            columns.forEach(column => {
+                column.addEventListener('dragover', handleDragOver);
+                column.addEventListener('dragenter', handleDragEnter);
+                column.addEventListener('dragleave', handleDragLeave);
+                column.addEventListener('drop', handleDrop);
+            });
+        }
+        
+        function handleDragStart(e) {
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.taskId);
+        }
+        
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+        
+        function handleDragEnter(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        }
+        
+        function handleDragLeave() {
+            this.classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            const taskId = e.dataTransfer.getData('text/plain');
+            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+            const newListId = this.closest('.kanban-column').dataset.listId;
+            
+            if (taskElement) {
+                // Move the task in the DOM
+                this.insertBefore(taskElement, null);
+                
+                // Get the new position
+                const newPosition = Array.from(this.children).indexOf(taskElement);
+                
+                // Send update to server
+                updateTaskPosition(taskId, newListId, newPosition);
+            }
+        }
+        
+        function updateTaskPosition(taskId, newListId, newPosition) {
+            fetch('{{ path('admin_kanban_move_task') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    taskId: parseInt(taskId),
+                    newListId: parseInt(newListId),
+                    newPosition: newPosition
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    showAlert('Erreur lors du déplacement de la tâche', 'error');
+                    // TODO: Revert the UI change
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Une erreur est survenue', 'error');
+                // TODO: Revert the UI change
+            });
+        }
+        
+        function initCharts() {
+            // Tasks by Status
+            const statusCtx = document.getElementById('tasksByStatusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['À faire', 'En cours', 'En révision', 'Terminé'],
+                    datasets: [{
+                        data: [
+                            {{ data.statistics.not_started_tasks ?? 0 }},
+                            {{ data.statistics.in_progress_tasks ?? 0 }},
+                            {{ data.statistics.in_review_tasks ?? 0 }},
+                            {{ data.statistics.completed_tasks ?? 0 }}
+                        ],
+                        backgroundColor: [
+                            '#ff9800',
+                            '#2196f3',
+                            '#9c27b0',
+                            '#4caf50'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Répartition des tâches par statut'
+                        }
+                    }
+                }
+            });
+            
+            // Tasks by Priority
+            const priorityCtx = document.getElementById('tasksByPriorityChart').getContext('2d');
+            new Chart(priorityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Haute', 'Moyenne', 'Basse'],
+                    datasets: [{
+                        label: 'Tâches par priorité',
+                        data: [
+                            {{ data.statistics.high_priority_tasks ?? 0 }},
+                            {{ data.statistics.medium_priority_tasks ?? 0 }},
+                            {{ data.statistics.low_priority_tasks ?? 0 }}
+                        ],
+                        backgroundColor: [
+                            '#f44336',
+                            '#ff9800',
+                            '#4caf50'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tâches par priorité'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function setupEventListeners() {
+            // Filter changes
+            document.querySelectorAll('.filter-select').forEach(select => {
+                select.addEventListener('change', applyFilters);
+            });
+            
+            // Add task button
+            document.querySelectorAll('.add-task-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const listId = this.dataset.listId;
+                    // TODO: Show add task modal with listId pre-selected
+                    showAddTaskModal(listId);
+                });
+            });
+            
+            // Edit task button
+            document.querySelectorAll('.edit-task').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    // TODO: Show edit task modal with taskId
+                    showEditTaskModal(taskId);
+                });
+            });
+            
+            // Delete task button
+            document.querySelectorAll('.delete-task').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+                        deleteTask(taskId);
+                    }
+                });
+            });
+            
+            // Analytics button
+            document.getElementById('analyticsBtn').addEventListener('click', function() {
+                document.getElementById('analyticsPanel').classList.add('show');
+            });
+            
+            // Close panel button
+            document.querySelector('.panel-close').addEventListener('click', function() {
+                document.getElementById('analyticsPanel').classList.remove('show');
+            });
+            
+            // Refresh button
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                window.location.reload();
+            });
+            
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                const format = prompt('Choisissez le format d\'export (csv ou json):', 'csv');
+                if (format === 'csv' || format === 'json') {
+                    window.location.href = `{{ path('admin_kanban_export') }}/${format}`;
+                } else {
+                    showAlert('Format non supporté. Veuillez choisir entre csv et json.', 'error');
+                }
+            });
+        }
+        
+        function applyFilters() {
+            const projectId = document.getElementById('projectFilter').value;
+            const userId = document.getElementById('userFilter').value;
+            const priority = document.getElementById('priorityFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            
+            // Build query string
+            const params = new URLSearchParams();
+            if (projectId) params.append('project_id', projectId);
+            if (userId) params.append('assigned_user', userId);
+            if (priority !== 'all') params.append('priority', priority);
+            if (status !== 'all') params.append('status', status);
+            
+            // Reload with new filters
+            window.location.href = `?${params.toString()}`;
+        }
+        
+        function showAddTaskModal(listId) {
+            // TODO: Implement add task modal
+            alert(`Ajouter une tâche à la liste ${listId}`);
+        }
+        
+        function showEditTaskModal(taskId) {
+            // TODO: Implement edit task modal
+            alert(`Modifier la tâche ${taskId}`);
+        }
+        
+        function deleteTask(taskId) {
+            fetch(`/admin/kanban/tasks/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector(`[data-task-id="${taskId}"]`).remove();
+                    showAlert('Tâche supprimée avec succès', 'success');
+                } else {
+                    showAlert('Erreur lors de la suppression de la tâche', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Une erreur est survenue', 'error');
+            });
+        }
+        
+        function showAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'close';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = () => alert.remove();
+            
+            alert.appendChild(closeBtn);
+            document.getElementById('alertsContainer').appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        
+        // Close panel when clicking outside
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('analyticsPanel');
+            const btn = document.getElementById('analyticsBtn');
+            
+            if (!panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                panel.classList.remove('show');
+            }
+        });
+    </script>
+{% endblock %}

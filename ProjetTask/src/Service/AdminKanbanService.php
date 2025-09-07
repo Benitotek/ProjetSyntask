@@ -14,10 +14,10 @@ use App\Repository\UserRepository;
 use App\Repository\TaskListRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class AdminKanbanService
-
 {
     public function __construct(
         private ProjectRepository $projectRepository,
@@ -26,460 +26,357 @@ class AdminKanbanService
         private TaskListRepository $taskListRepository,
         private ActivityRepository $activityRepository,
         private EntityManagerInterface $entityManager,
-        private KanbanService $kanbanService,
-        private ActivityLogger $activityLogger,
-        private NotificationService $notificationService,
         private Security $security,
         private PaginatorInterface $paginator
     ) {}
 
     /**
-     * Returns a list of overdue tasks.
-     */
-    public function getOverdueTasks(): array
-    {
-        // Assuming you have access to TaskRepository via DI or service locator
-        // Replace $this->taskRepository with your actual repository instance
-        return $this->taskRepository->findTasksOverdue();
-    }
-
-    /**
-     * Get statistics for the Kanban board
-     */
-    public function getKanbanStatistics(): array
-    {
-        $totalTasks = $this->taskRepository->count([]);
-        $completedTasks = $this->taskRepository->count(['statut' => TaskStatut::TERMINER]);
-        $inProgressTasks = $this->taskRepository->count(['statut' => TaskStatut::EN_COURS]);
-        $notStartedTasks = $this->taskRepository->count(['statut' => TaskStatut::EN_ATTENTE]);
-        $overdueTasks = count($this->getOverdueTasks());
-
-        return [
-            'total_tasks' => $totalTasks,
-            'completed_tasks' => $completedTasks,
-            'in_progress_tasks' => $inProgressTasks,
-            'not_started_tasks' => $notStartedTasks,
-            'overdue_tasks' => $overdueTasks,
-            'completion_rate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0,
-        ];
-    }
-
-    /**
-     * Returns recent activities for analytics dashboard.
-     */
-    public function getRecentActivities(): array
-    {
-        // Example implementation, replace with actual logic as needed
-        return [];
-    }
-
-    /**
-     * Perform a global search for tasks, projects, or users matching the query.
-     *
-     * @param string $query
-     * @return array
-     */
-    public function globalSearch(string $query): array
-    {
-        // Example implementation, adapt as needed
-        // Search tasks by title
-        $tasks = $this->taskRepository->findByTitleLike($query);
-
-        // Search projects by title
-        $projects = $this->projectRepository->findByTitleLike($query);
-
-        // Search users by name
-        $users = $this->userRepository->findByNameLike($query);
-
-        return [
-            'tasks' => $tasks,
-            'projects' => $projects,
-            'users' => $users
-        ];
-    }
-
-    /**
-     * Returns workload distribution data for admin kanban.
-     */
-    public function getWorkloadDistribution(): array
-    {
-        // Example implementation, adjust as needed
-        // You may want to fetch tasks and group by assigned user, etc.
-        $tasks = $this->taskRepository->findAll();
-        $distribution = [];
-
-        foreach ($tasks as $task) {
-            foreach ($task->getTaskUsers() as $taskUser) {
-                $user = $taskUser->getUser();
-                $userId = $user->getId();
-                if (!isset($distribution[$userId])) {
-                    $distribution[$userId] = [
-                        'user' => $user,
-                        'taskCount' => 0
-                    ];
-                }
-                $distribution[$userId]['taskCount']++;
-            }
-        }
-
-        return array_values($distribution);
-    }
-
-    /**
-     * Returns performance metrics for admin kanban dashboard.
-     */
-    public function getPerformanceMetrics(): array
-    {
-        // Example implementation, replace with actual logic as needed
-        return [
-            'tasksCompleted' => 0,
-            'tasksInProgress' => 0,
-            'averageCompletionTime' => 0,
-        ];
-    }
-
-    /**
-     * Create a quick task from provided data.
-     */
-    public function createQuickTask(array $data): array
-    {
-        // Implement your logic to create a quick task here.
-        // Example stub:
-        // $task = new Task();
-        // $task->setTitle($data['title'] ?? 'Quick Task');
-        // ... set other properties ...
-        // $this->entityManager->persist($task);
-        // $this->entityManager->flush();
-
-        // Return a result array (customize as needed)
-        return [
-            'success' => true,
-            'message' => 'Quick task created successfully',
-            // 'taskId' => $task->getId(),
-        ];
-    }
-
-    /**
-     * Déplace une tâche dans une nouvelle liste et position.
-     *
-     * @param int $taskId
-     * @param int $newListId
-     * @param int $newPosition
-     * @return bool
-     */
-    public function moveTask(int $taskId, int $newListId, int $newPosition): bool
-    {
-        // Implémentation de la logique de déplacement de tâche
-        // Exemple basique, à adapter selon votre modèle
-        try {
-            $task = $this->entityManager->getRepository(Task::class)->find($taskId);
-            $newList = $this->entityManager->getRepository(TaskList::class)->find($newListId);
-
-            if (!$task || !$newList) {
-                return false;
-            }
-
-            $task->setTaskList($newList);
-            $task->setPosition($newPosition);
-
-            $this->entityManager->flush();
-
-            return true;
-        } catch (\Exception $e) {
-            // Optionnel : logger l'erreur
-            return false;
-        }
-    }
-
-    /**
-     * Retourne les statistiques globales pour le dashboard admin.
-     */
-    public function getGlobalStatistics(): array
-    {
-        // Exemple de statistiques, à adapter selon vos besoins
-        return [
-            'total_projects' => 0,
-            'total_tasks' => 0,
-            'total_users' => 0,
-            // Ajoutez d'autres statistiques ici
-        ];
-    }
-
-    /**
-     * Format a Task entity for response.
-     */
-    private function formatTaskForResponse(Task $task): array
-    {
-        return [
-            'id' => $task->getId(),
-            'title' => $task->getTitle(),
-            'description' => $task->getDescription(),
-            'statut' => $task->getStatut(),
-            'priority' => $task->getPriorite(),
-            'deadline' => $task->getDeadline()?->format('Y-m-d H:i:s'),
-            'position' => $task->getPosition(),
-            'project' => [
-                'id' => $task->getTaskList()->getProject()->getId(),
-                'name' => $task->getTaskList()->getProject()->getTitre()
-            ],
-            'taskList' => [
-                'id' => $task->getTaskList()->getId(),
-                'name' => $task->getTaskList()->getNom()
-            ],
-            'assignedUser' => $task->getAssignedUser() ? $this->formatUserForResponse($task->getAssignedUser()) : null
-        ];
-    }
-
-    /**
-     * Format a Project entity for response.
-     */
-    private function formatProjectForResponse(Project $project): array
-    {
-        return [
-            'id' => $project->getId(),
-            'titre' => $project->getTitre(),
-            'description' => $project->getDescription(),
-            'statut' => $project->getStatut(),
-            'chefProjet' => $project->getChefproject() ?
-                $this->formatUserForResponse($project->getChefproject()) : null,
-            'membresCount' => $project->getMembres()->count()
-        ];
-    }
-
-    /**
-     * Format a User entity for response.
-     */
-    private function formatUserForResponse(User $user): array
-    {
-        return [
-            'id' => $user->getId(),
-            'nom' => $user->getNom(),
-            'prenom' => $user->getPrenom(),
-            'email' => $user->getEmail(),
-            'roles' => $user->getRoles(),
-            'statut' => $user->getStatut(),
-            'avatar' => $user->getAvatar() ?? null
-        ];
-    }
-
-    /**
-     * 🕑 Récupérer les activités récentes pour un utilisateur (employé)
-     */
-    private function getRecentActivitiesForUser(User $user, int $limit = 10): array
-    {
-        // Suppose que le repository a une méthode pour cela, sinon à implémenter
-        if (method_exists($this->activityRepository, 'findRecentByUser')) {
-            return $this->activityRepository->findRecentByUser($user, $limit);
-        }
-        // Fallback: récupérer les projets de l'utilisateur et utiliser la méthode existante
-        $projects = $this->projectRepository->findByMembre($user);
-        return $this->getRecentActivitiesForProjects($projects, $limit);
-    }
-
-    /**
-     * 🕑 Récupérer les activités récentes pour une liste de projets
-     */
-    private function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
-    {
-        $projectIds = array_map(fn($project) => $project->getId(), $projects);
-        if (empty($projectIds)) {
-            return [];
-        }
-        $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
-        // Vous pouvez formater les activités ici si besoin
-        return $activities;
-    }
-
-    /**
-     * Calcule les statistiques globales pour les projets et tâches donnés
-     */
-    private function calculateStatistics(array $projects, array $tasks): array
-    {
-        $totalProjects = count($projects);
-        $totalTasks = count($tasks);
-        $completedTasks = 0;
-        $inProgressTasks = 0;
-        $overdueTasks = 0;
-
-        foreach ($tasks as $task) {
-            if ($task->getStatut() === 'TERMINER') {
-                $completedTasks++;
-            } elseif ($task->getStatut() === 'EN_COURS') {
-                $inProgressTasks++;
-            }
-            if ($task->getDeadline() && $task->getDeadline() < new \DateTime() && $task->getStatut() !== 'TERMINER') {
-                $overdueTasks++;
-            }
-        }
-
-        return [
-            'totalProjects' => $totalProjects,
-            'totalTasks' => $totalTasks,
-            'completedTasks' => $completedTasks,
-            'inProgressTasks' => $inProgressTasks,
-            'overdueTasks' => $overdueTasks,
-            'completionRate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0
-        ];
-    }
-
-    /**
-     * Filtre les tâches selon les filtres fournis (statut, priorité, etc.)
-     */
-    private function applyFilters(array $tasks, array $filters = []): array
-    {
-        return array_filter($tasks, function ($task) use ($filters) {
-            if (isset($filters['statut']) && $task->getStatut() !== $filters['statut']) {
-                return false;
-            }
-            if (isset($filters['priority']) && $task->getPriority() !== $filters['priority']) {
-                return false;
-            }
-            if (isset($filters['assignedUser']) && method_exists($task, 'getAssignedUser')) {
-                $assignedUser = $task->getAssignedUser();
-                if (!$assignedUser || $assignedUser->getId() !== $filters['assignedUser']) {
-                    return false;
-                }
-            }
-            // Ajoutez d'autres filtres ici si nécessaire
-            return true;
-        });
-    }
-    public function getAllKanbanDatas(): array
-    {
-        // Replace the following with actual logic to fetch projects, tasks, users, taskLists, and statistics
-        return [
-            'projects' => [],      // Fetch projects from repository
-            'tasks' => [],         // Fetch tasks from repository
-            'users' => [],         // Fetch users from repository
-            'taskLists' => [],     // Fetch task lists from repository
-            'statistics' => []     // Compute statistics as needed
-        ];
-    }
-    /**
-     * 📊 Données Kanban pour Admin et Directeur (accès total)
-     */
-    private function getAllKanbanData(array $filters = []): array
-    {
-        $projects = $this->projectRepository->findAll();
-        $tasks = [];
-        $taskLists = [];
-
-        foreach ($projects as $project) {
-            $projectTasks = $this->taskRepository->findByProject($project);
-            $projectTaskLists = $this->taskListRepository->findByProjectWithTasksOrdered($project);
-
-            $tasks = array_merge($tasks, $projectTasks);
-            $taskLists = array_merge($taskLists, $projectTaskLists);
-        }
-
-        $users = $this->userRepository->findActiveUsers();
-
-        return [
-            'projects' => $projects,
-            'tasks' => $this->applyFilters($tasks, $filters),
-            'users' => $users,
-            'taskLists' => $taskLists,
-            'statistics' => $this->calculateStatistics($projects, $tasks),
-            'recentActivities' => $this->getRecentActivitiesForProjects($projects),
-            'userRole' => 'ADMIN'
-        ];
-    }
-
-
-
-    /**  
-     * 🎯 NOUVELLE MÉTHODE - Récupère les données selon les droits de l'utilisateur  
+     * Récupère les données Kanban en fonction du rôle de l'utilisateur
+     * Get Kanban data based on user role
+     * 
+     * @param User $user L'utilisateur connecté / The logged-in user
+     * @param array $filters Filtres à appliquer / Filters to apply
+     * @return array Données formatées pour le Kanban / Formatted Kanban data
      */
     public function getKanbanDataByRole(User $user, array $filters = []): array
     {
-        $userRoles = $user->getRoles();
+        $roles = $user->getRoles();
 
-        // Admin et Directeur : Accès total  
-        if (in_array('ROLE_ADMIN', $userRoles) || in_array('ROLE_DIRECTEUR', $userRoles)) {
-            return $this->getAllKanbanData($filters);
+        if (in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_DIRECTEUR', $roles, true)) {
+            return $this->getAdminKanbanData($filters);
         }
 
-        // Chef de projet : Ses projets uniquement  
-        if (in_array('ROLE_CHEF_PROJET', $userRoles)) {
+        if (in_array('ROLE_CHEF_PROJET', $roles, true)) {
             return $this->getChefProjetKanbanData($user, $filters);
         }
 
-        // Employé : Projets où il est membre + ses tâches  
-        if (in_array('ROLE_EMPLOYE', $userRoles)) {
-            return $this->getEmployeKanbanData($user, $filters);
-        }
-
-        return ['projects' => [], 'tasks' => [], 'users' => [], 'taskLists' => []];
+        return $this->getEmployeKanbanData($user, $filters);
     }
 
-    /**  
-     * 📊 Données Kanban pour Chef de Projet  
+    /**
+     * Récupère toutes les données Kanban (accès admin)
+     * Get all Kanban data (admin access)
+     * 
+     * @param array $filters Filtres à appliquer / Filters to apply
+     * @return array Données formatées / Formatted data
      */
-    private function getChefProjetKanbanData(User $chefProjet, array $filters = []): array
+    private function getAdminKanbanData(array $filters = []): array
     {
-        // Projets gérés par le chef  
-        $managedProjects = $this->projectRepository->findByChefDeproject($chefProjet);
+        // Récupérer tous les projets, listes de tâches et tâches
+        $projects = $this->projectRepository->findAll();
+        $taskLists = $this->taskListRepository->findAll();
+        $tasks = $this->taskRepository->findAll();
+        
+        // Appliquer les filtres
+        $tasks = $this->applyFilters($tasks, $filters);
+        
+        // Récupérer tous les utilisateurs
+        $users = $this->userRepository->findAll();
 
-        // Projets où il est membre  
-        $memberProjects = $this->projectRepository->findByMembre($chefProjet);
-
-        // Fusionner et dédoublonner  
-        $allProjects = array_unique(array_merge($managedProjects, $memberProjects), SORT_REGULAR);
-
-        $tasks = [];
-        $taskLists = [];
-
-        foreach ($allProjects as $project) {
-            $projectTasks = $this->taskRepository->findByProject($project);
-            $projectTaskLists = $this->taskListRepository->findByProjectWithTasksOrdered($project);
-
-            $tasks = array_merge($tasks, $projectTasks);
-            $taskLists = array_merge($taskLists, $projectTaskLists);
-        }
-
-        // Utilisateurs des projets gérés  
-        $users = $this->getUsersFromProjects($managedProjects);
+        // Calculer les statistiques
+        $statistics = $this->calculateStatistics($projects, $tasks);
+        
+        // Récupérer les activités récentes
+        $recentActivities = $this->getRecentActivitiesForProjects($projects);
 
         return [
-            'projects' => $allProjects,
-            'tasks' => $this->applyFilters($tasks, $filters),
-            'users' => $users,
+            'projects' => $projects,
             'taskLists' => $taskLists,
-            'statistics' => $this->calculateStatistics($allProjects, $tasks),
-            'recentActivities' => $this->getRecentActivitiesForProjects($allProjects),
-            'userRole' => 'CHEF_PROJET',
-            'managedProjects' => $managedProjects  // Projets où il peut assigner  
+            'tasks' => $tasks,
+            'users' => $users,
+            'statistics' => $statistics,
+            'recentActivities' => $recentActivities,
+            'userRole' => 'ADMIN',
         ];
     }
 
     /**
-     * 👥 Récupérer tous les utilisateurs des projets donnés
+     * Récupère les données Kanban pour un chef de projet
+     * Get Kanban data for a project manager
+     * 
+     * @param User $user L'utilisateur connecté / The logged-in user
+     * @param array $filters Filtres à appliquer / Filters to apply
+     * @return array Données formatées / Formatted data
+     */
+    private function getChefProjetKanbanData(User $user, array $filters = []): array
+    {
+        // Récupérer les projets gérés par le chef de projet
+        $projects = $this->projectRepository->findBy(['chefProject' => $user]);
+        
+        // Récupérer les listes de tâches et tâches des projets gérés
+        $taskLists = [];
+        $tasks = [];
+        
+        foreach ($projects as $project) {
+            $projectTaskLists = $this->taskListRepository->findBy(['projet' => $project]);
+            $taskLists = array_merge($taskLists, $projectTaskLists);
+            
+            foreach ($projectTaskLists as $taskList) {
+                $listTasks = $this->taskRepository->findBy(['liste' => $taskList]);
+                $tasks = array_merge($tasks, $listTasks);
+            }
+        }
+        
+        // Appliquer les filtres
+        $tasks = $this->applyFilters($tasks, $filters);
+        
+        // Récupérer les utilisateurs des projets gérés
+        $users = [];
+        foreach ($projects as $project) {
+            $projectUsers = $project->getMembres()->toArray();
+            $users = array_merge($users, $projectUsers);
+        }
+        $users = array_unique($users, SORT_REGULAR);
+        
+        // Calculer les statistiques
+        $statistics = $this->calculateStatistics($projects, $tasks);
+        
+        // Récupérer les activités récentes
+        $recentActivities = $this->getRecentActivitiesForProjects($projects);
+
+        return [
+            'projects' => $projects,
+            'taskLists' => $taskLists,
+            'tasks' => $tasks,
+            'users' => array_values($users),
+            'statistics' => $statistics,
+            'recentActivities' => $recentActivities,
+            'userRole' => 'CHEF_PROJET',
+        ];
+    }
+
+
+    /**
+     * Récupère les utilisateurs à partir d'une liste de projets
+     * Get users from a list of projects
+     * 
+     * @param array $projects Liste des projets / List of projects
+     * @return array Utilisateurs uniques / Unique users
      */
     private function getUsersFromProjects(array $projects): array
     {
         $users = [];
-        foreach ($projects as $project) {
-            $projectMembers = $project->getMembres()->toArray();
-            $users = array_merge($users, $projectMembers);
+        $userIds = [];
 
-            // Ajouter le chef de projet
-            if ($project->getChefproject()) {
-                $users[] = $project->getChefproject();
+        foreach ($projects as $project) {
+            if (method_exists($project, 'getMembres')) {
+                foreach ($project->getMembres() as $user) {
+                    if (!in_array($user->getId(), $userIds, true)) {
+                        $userIds[] = $user->getId();
+                        $users[] = $user;
+                    }
+                }
             }
         }
 
-        return array_unique($users, SORT_REGULAR);
+        return array_values($users);
     }
 
-    /**  
-     * 👨‍💼 Données Kanban pour Employé  
+    /**
+     * Applique les filtres aux tâches
+     * Apply filters to tasks
+     * 
+     * @param array $tasks Liste des tâches à filtrer / Tasks to filter
+     * @param array $filters Filtres à appliquer / Filters to apply
+     * @return array Tâches filtrées / Filtered tasks
      */
+    private function applyFilters(array $tasks, array $filters = []): array
+    {
+        if (empty($filters)) {
+            return $tasks;
+        }
+
+        return array_values(array_filter($tasks, function ($task) use ($filters) {
+            if (isset($filters['project_id']) && $filters['project_id'] !== 'all') {
+                if (method_exists($task, 'getProjet') && $task->getProjet()?->getId() != $filters['project_id']) {
+                    return false;
+                }
+            }
+
+            if (isset($filters['status']) && $filters['status'] !== 'all') {
+                if (method_exists($task, 'getStatut') && $task->getStatut() !== $filters['status']) {
+                    return false;
+                }
+            }
+
+            if (isset($filters['priority']) && $filters['priority'] !== 'all') {
+                if (method_exists($task, 'getPriorite') && $task->getPriorite() !== $filters['priority']) {
+                    return false;
+                }
+            }
+
+            if (isset($filters['assignedUser']) && $filters['assignedUser'] !== 'all') {
+                if (method_exists($task, 'getUtilisateurAssignation')) {
+                    $assignedUser = $task->getUtilisateurAssignation();
+                    if ($assignedUser === null || $assignedUser->getId() != $filters['assignedUser']) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+    }
+
+    /**
+     * Calcule les statistiques pour les projets et tâches
+     * Calculate statistics for projects and tasks
+     * 
+     * @param array $projects Liste des projets / List of projects
+     * @param array $tasks Liste des tâches / List of tasks
+     * @return array Statistiques calculées / Calculated statistics
+     */
+    private function calculateStatistics(array $projects, array $tasks): array
+    {
+        $completed = 0;
+        $overdue = 0;
+        $users = [];
+        $now = new \DateTimeImmutable();
+        $oneWeekAgo = (new \DateTimeImmutable())->modify('-1 week');
+        $completedThisWeek = 0;
+
+        foreach ($tasks as $task) {
+            // Vérification des tâches terminées
+            if (method_exists($task, 'getStatut') && $task->getStatut() === 'TERMINER') {
+                $completed++;
+                
+                // Vérification des tâches terminées cette semaine
+                if (method_exists($task, 'getDateMiseAJour') && 
+                    $task->getDateMiseAJour() instanceof \DateTimeInterface &&
+                    $task->getDateMiseAJour() >= $oneWeekAgo) {
+                    $completedThisWeek++;
+                }
+            }
+            
+            // Vérification des tâches en retard
+            if (method_exists($task, 'getDateEcheance') && 
+                $task->getDateEcheance() instanceof \DateTimeInterface && 
+                $task->getDateEcheance() < $now && 
+                method_exists($task, 'getStatut') && 
+                $task->getStatut() !== 'TERMINER') {
+                $overdue++;
+            }
+            
+            // Suivi des utilisateurs uniques avec des tâches assignées
+            if (method_exists($task, 'getUtilisateurAssignation') && $task->getUtilisateurAssignation()) {
+                $users[$task->getUtilisateurAssignation()->getId()] = true;
+            }
+        }
+
+        $totalTasks = count($tasks);
+        $completionRate = $totalTasks > 0 ? (int)round(($completed / $totalTasks) * 100) : 0;
+        $uniqueUsersCount = count($users);
+
+        return [
+            'projectsTotal' => count($projects),
+            'activeProjects' => count($projects),
+            'completedTasks' => $completed,
+            'completionRate' => $completionRate,
+            'overdueTasks' => $overdue,
+            'activeUsers' => $uniqueUsersCount,
+            'avgTasksPerUser' => $uniqueUsersCount > 0 ? round($totalTasks / $uniqueUsersCount, 1) : 0,
+            'completedThisWeek' => $completedThisWeek,
+            'not_started_tasks' => count(array_filter($tasks, fn($t) => method_exists($t, 'getStatut') && $t->getStatut() === 'A_FAIRE')),
+            'in_progress_tasks' => count(array_filter($tasks, fn($t) => method_exists($t, 'getStatut') && $t->getStatut() === 'EN_COURS')),
+            'in_review_tasks' => count(array_filter($tasks, fn($t) => method_exists($t, 'getStatut') && $t->getStatut() === 'EN_REVUE')),
+            'completed_tasks' => $completed,
+            'high_priority_tasks' => count(array_filter($tasks, fn($t) => method_exists($t, 'getPriorite') && $t->getPriorite() === 'HAUTE')),
+            'medium_priority_tasks' => count(array_filter($tasks, fn($t) => method_exists($t, 'getPriorite') && $t->getPriorite() === 'MOYENNE')),
+            'low_priority_tasks' => count(array_filter($tasks, fn($t) => method_exists($t, 'getPriorite') && $t->getPriorite() === 'BASSE')),
+        ];
+    }
+
+    /**
+     * Récupère les activités récentes pour une liste de projets
+     * Get recent activities for a list of projects
+     * 
+     * @param array $projects Liste des projets / List of projects
+     * @return array Activités formatées / Formatted activities
+     */
+    private function getRecentActivitiesForProjects(array $projects): array
+    {
+        try {
+            $projectIds = array_map(fn($project) => $project->getId(), $projects);
+            $activities = $this->activityRepository->findRecentForProjects($projectIds, 10);
+            
+            return array_map(function($activity) {
+                $user = $activity->getUtilisateur();
+                return [
+                    'id' => $activity->getId(),
+                    'type' => $activity->getType(),
+                    'description' => $activity->getDescription(),
+                    'dateCreation' => $activity->getDateCreation() ? $activity->getDateCreation()->format('Y-m-d H:i:s') : null,
+                    'user' => $user ? [
+                        'id' => $user->getId(),
+                        'prenom' => $user->getPrenom(),
+                        'nom' => $user->getNom(),
+                        'avatar' => $user->getAvatar()
+                    ] : null,
+                    'entityType' => $activity->getEntityType(),
+                    'entityId' => $activity->getEntityId()
+                ];
+            }, $activities);
+        } catch (\Exception $e) {
+            // Log l'erreur et retourne un tableau vide en cas d'échec
+            error_log('Erreur lors de la récupération des activités: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Récupère les activités récentes pour l'administrateur
+     * Get recent activities for admin
+     * 
+     * @return array Activités récentes / Recent activities
+     */
+    public function getRecentActivitiesForAdmin(): array
+    {
+        try {
+            $activities = $this->activityRepository->findRecent(15);
+            
+            return array_map(function($activity) {
+                $user = $activity->getUtilisateur();
+                return [
+                    'id' => $activity->getId(),
+                    'type' => $activity->getType(),
+                    'description' => $activity->getDescription(),
+                    'dateCreation' => $activity->getDateCreation() ? $activity->getDateCreation()->format('Y-m-d H:i:s') : null,
+                    'user' => $user ? [
+                        'id' => $user->getId(),
+                        'prenom' => $user->getPrenom(),
+                        'nom' => $user->getNom(),
+                        'avatar' => $user->getAvatar()
+                    ] : null,
+                    'entityType' => $activity->getEntityType(),
+                    'entityId' => $activity->getEntityId()
+                ];
+            }, $activities);
+        } catch (\Exception $e) {
+            // Log l'erreur et retourne un tableau vide en cas d'échec
+            error_log('Erreur lors de la récupération des activités admin: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Récupère les activités récentes pour l'administrateur
+     * Get recent activities for admin
+     * 
+     * @return array Activités récentes / Recent activities
+     */
+    public function getRecentActivitiesForAdmin(): array
+    {
+        return $this->getRecentActivitiesForProjects($this->projectRepository->findAll());
+    }
+
     private function getEmployeKanbanData(User $employe, array $filters = []): array
     {
-        // Projets où l'employé est membre  
+        // Projets où l'employé est membre
         $projects = $this->projectRepository->findByMembre($employe);
 
-        // Tâches assignées à l'employé  
+        // Tâches assignées à l'employé
         $assignedTasks = $this->taskRepository->findByAssignedUser($employe);
 
         // Toutes les tâches des projets (pour contexte)  
@@ -759,7 +656,6 @@ class AdminKanbanService
                 return array_unique(array_merge($projectMembers, $availableUsers), SORT_REGULAR);
             }
             // Seulement les membres de ses projets
-            // Si le projet n'est pas fourni ou l'utilisateur n'est pas chef du projet, retourner les membres des projets qu'il gère
             // Si la méthode getUsersFromManagedProjects existe, décommentez la ligne suivante :
             // return $this->getUsersFromManagedProjects($currentUser);
             // Sinon, retournez un tableau vide
@@ -847,305 +743,726 @@ class AdminKanbanService
     //     }
 }
 
-//     // Chef de projet peut déplacer dans ses projets
-//     if (in_array('ROLE_CHEF_PROJET', $roles)) {
-//         return ($currentProject->getChefproject() === $user) ||
-//             ($targetProject->getChefproject() === $user);
-//     }
+    /**
+     * Vérifie si un utilisateur peut déplacer une tâche vers une autre liste
+     * 
+     * @param User $user L'utilisateur qui effectue le déplacement
+     * @param Task $task La tâche à déplacer
+     * @param TaskList $targetList La liste de destination
+     * @return bool True si l'utilisateur peut effectuer le déplacement
+     */
+    /**
+     * Vérifie si un utilisateur peut déplacer une tâche vers une autre liste
+     * 
+     * @param User $user L'utilisateur qui effectue le déplacement
+     * @param Task $task La tâche à déplacer
+     * @param TaskList $targetList La liste de destination
+     * @return bool Vrai si l'utilisateur peut déplacer la tâche
+     */
+    /**
+     * Vérifie si un utilisateur peut déplacer une tâche vers une autre liste
+     * 
+     * @param User $user L'utilisateur qui effectue le déplacement
+     * @param Task $task La tâche à déplacer
+     * @param TaskList $targetList La liste de destination
+     * @return bool Vrai si l'utilisateur peut effectuer le déplacement
+     */
+    public function canMoveTask(User $user, Task $task, TaskList $targetList): bool
+    {
+        $roles = $user->getRoles();
+        $currentProject = $task->getTaskList() ? $task->getTaskList()->getProject() : null;
+        $targetProject = $targetList->getProject();
 
-//     // Employé peut déplacer ses propres tâches dans le même projet
-//     if (in_array('ROLE_EMPLOYE', $roles)) {
-//         // Vérifier si c'est sa tâche et même projet
-//         $isAssigned = $this->isTaskAssignedToUser($task, $user);
-//         $sameProject = $currentProject->getId() === $targetProject->getId();
+        if (!$currentProject || !$targetProject) {
+            return false;
+        }
 
-//         return $isAssigned && $sameProject;
-//     }
-// }
+        // Admin et Directeur peuvent tout déplacer
+        if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
+            return true;
+        }
 
-/**
- * 📊 Statistiques spécifiques pour employé
- */
-// private function calculateEmployeStatistics(User $employe, array $assignedTasks): array
-// {
-//     $completedTasks = array_filter($assignedTasks, fn($t) => $t->getStatut() === 'TERMINER');
-//     $overdueTasks = array_filter($assignedTasks, function ($t) {
-//         return $t->getDeadline() &&
-//             $t->getDeadline() < new \DateTime() &&
-//             $t->getStatut() !== 'TERMINER';
-//     });
+        // Chef de projet peut déplacer dans ses projets
+        if (in_array('ROLE_CHEF_PROJET', $roles)) {
+            return ($currentProject->getChefproject() === $user) ||
+                ($targetProject->getChefproject() === $user);
+        }
 
-//     return [
-//         'totalAssignedTasks' => count($assignedTasks),
-//         'totalCompletedTasks' => count($completedTasks),
-//         'completedTasks' => count($completedTasks),
-//         'inProgressTasks' => count(array_filter($assignedTasks, fn($t) => $t->getStatut() === 'EN_COURS')),
-//         'overdueTasks' => count($overdueTasks),
-//         'completionRate' => count($assignedTasks) > 0 ?
-//             round((count($completedTasks) / count($assignedTasks)) * 100, 1) : 0,
-//         'efficiency' => $this->calculateUserEfficiency($employe)
-//     ];
-// }
+        // Employé peut déplacer ses propres tâches dans le même projet
+        if (in_array('ROLE_EMPLOYE', $roles)) {
+            $isAssigned = $this->isTaskAssignedToUser($task, $user);
+            $sameProject = $currentProject->getId() === $targetProject->getId();
+            return $isAssigned && $sameProject;
+        }
 
-// /**
-//  * 👥 Récupérer les utilisateurs des projets gérés
-//  */
-// private function getUsersFromManagedProjects(User $chefProjet): array
-// {
-//     $managedProjects = $this->projectRepository->findByChefDeproject($chefProjet);
-//     return $this->getUsersFromProjects($managedProjects);
-// }
+        return false;
+    }
 
-// /**
-//  * 👥 Récupérer tous les utilisateurs des projets donnés
-//  */
-// private function getUsersFromProjects(array $projects): array
-// {
-//     $users = [];
-//     foreach ($projects as $project) {
-//         $projectMembers = $project->getMembres()->toArray();
-//         $users = array_merge($users, $projectMembers);
+    /**
+     * Calcule les statistiques spécifiques pour un employé
+     * 
+     * @param User $employe L'employé pour lequel calculer les statistiques
+     * @param array $assignedTasks Les tâches assignées à l'employé
+     * @return array Les statistiques calculées
+     */
+    private function calculateEmployeStatistics(User $employe, array $assignedTasks): array
+    {
+        $completedTasks = array_filter($assignedTasks, fn($t) => $t->getStatut() === 'TERMINER');
+        $overdueTasks = array_filter($assignedTasks, function ($t) {
+            return $t->getDeadline() &&
+                $t->getDeadline() < new \DateTime() &&
+                $t->getStatut() !== 'TERMINER';
+        });
 
-//         // Ajouter le chef de projet
-//         if ($project->getChefproject()) {
-//             $users[] = $project->getChefproject();
-//         }
-//     }
+        $totalTasks = count($assignedTasks);
+        $completedCount = count($completedTasks);
 
-//     return array_unique($users, SORT_REGULAR);
-// }
+        return [
+            'totalAssignedTasks' => $totalTasks,
+            'totalCompletedTasks' => $completedCount,
+            'completedTasks' => $completedCount,
+            'inProgressTasks' => count(array_filter($assignedTasks, fn($t) => $t->getStatut() === 'EN_COURS')),
+            'overdueTasks' => count($overdueTasks),
+            'completionRate' => $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100, 1) : 0,
+            'efficiency' => $this->calculateUserEfficiency($employe)
+        ];
+    }
 
-/**
- * 🔍 Vérifier si une tâche est assignée à un utilisateur
- */
+    /**
+     * Récupère les utilisateurs des projets gérés par un chef de projet
+     * 
+     * @param User $chefProjet Le chef de projet
+     * @return array Les utilisateurs des projets gérés
+     */
+    /**
+     * Récupère les utilisateurs des projets gérés par un chef de projet
+     * 
+     * @param User $chefProjet Le chef de projet
+     * @return array Liste des utilisateurs
+     */
+    /**
+     * Récupère les utilisateurs des projets gérés par un chef de projet
+     * 
+     * @param User $chefProjet Le chef de projet
+     * @return array Liste des utilisateurs
+     */
+    private function getUsersFromManagedProjects(User $chefProjet): array
+    {
+        $managedProjects = $this->projectRepository->findByChefDeproject($chefProjet);
+        return $this->getUsersFromProjects($managedProjects);
+    }
 
-//     private function isTaskAssignedToUser(Task $task, User $user): bool
-//     {
-//         // Selon votre modèle de données
-//         foreach ($task->getTaskUsers() as $taskUser) {
-//             if ($taskUser->getUser()->getId() === $user->getId()) {
-//                 return true;
-//             }
-//         }
-//         return false;
-//     }
+    /**
+     * Récupère tous les utilisateurs des projets donnés (membres + chefs de projet)
+     * 
+     * @param array $projects Les projets à analyser
+     * @return array Les utilisateurs uniques
+     */
+    private function getUsersFromProjects(array $projects): array
+    {
+        $users = [];
+        foreach ($projects as $project) {
+            // Ajouter les membres du projet
+            $projectMembers = $project->getMembres()->toArray();
+            $users = array_merge($users, $projectMembers);
 
-//     /**
-//      * 📤 Formater les réponses
-//      */
-//     private function formatUserForResponse(User $user): array
-//     {
-//         return [
-//             'id' => $user->getId(),
-//             'nom' => $user->getNom(),
-//             'prenom' => $user->getPrenom(),
-//             'email' => $user->getEmail(),
-//             'roles' => $user->getRoles(),
-//             'statut' => $user->getStatut(),
-//             'avatar' => $user->getAvatar() ?? null
-//         ];
-//     }
+            // Ajouter le chef de projet s'il existe
+            if ($project->getChefproject()) {
+                $users[] = $project->getChefproject();
+            }
+        }
 
-//     private function formatProjectForResponse(Project $project): array
-//     {
-//         return [
-//             'id' => $project->getId(),
-//             'titre' => $project->getTitre(),
-//             'description' => $project->getDescription(),
-//             'statut' => $project->getStatut(),
-//             'chefProjet' => $project->getChefproject() ?
-//                 $this->formatUserForResponse($project->getChefproject()) : null,
-//             'membresCount' => $project->getMembres()->count()
-//         ];
-//     }
+        // Retourner les utilisateurs uniques
+        return array_values(array_unique($users, SORT_REGULAR));
+    }
 
-//     private function formatTaskForResponse(Task $task): array
-//     {
-//         return [
-//             'id' => $task->getId(),
-//             'title' => $task->getTitle(),
-//             'description' => $task->getDescription(),
-//             'statut' => $task->getStatut(),
-//             'priority' => $task->getPriority(),
-//             'deadline' => $task->getDeadline()?->format('Y-m-d H:i:s'),
-//             'position' => $task->getPosition(),
-//             'project' => [
-//                 'id' => $task->getTaskList()->getProject()->getId(),
-//                 'name' => $task->getTaskList()->getProject()->getTitre()
-//             ],
-//             'taskList' => [
-//                 'id' => $task->getTaskList()->getId(),
-//                 'name' => $task->getTaskList()->getLastName()
-//             ],
-//             'assignedUsers' => array_map(
-//                 fn($tu) => $this->formatUserForResponse($tu->getUser()),
-//                 $task->getTaskUsers()->toArray()
-//             )
-//         ];
-//     }
+    /**
+     * Vérifie si une tâche est assignée à un utilisateur spécifique
+     * 
+     * @param Task $task La tâche à vérifier
+     * @param User $user L'utilisateur à vérifier
+     * @return bool True si la tâche est assignée à l'utilisateur
+     */
+    /**
+     * Vérifie si une tâche est assignée à un utilisateur
+     * 
+     * @param Task $task La tâche à vérifier
+     * @param User $user L'utilisateur à vérifier
+     * @return bool Vrai si la tâche est assignée à l'utilisateur
+     */
+    /**
+     * Vérifie si une tâche est assignée à un utilisateur
+     * 
+     * @param Task $task La tâche à vérifier
+     * @param User $user L'utilisateur à vérifier
+     * @return bool Vrai si la tâche est assignée à l'utilisateur
+     */
+    private function isTaskAssignedToUser(Task $task, User $user): bool
+    {
+        if (method_exists($task, 'getAssignedUser')) {
+            return $task->getAssignedUser() && $task->getAssignedUser()->getId() === $user->getId();
+        }
+        
+        if (method_exists($task, 'getTaskUsers')) {
+            foreach ($task->getTaskUsers() as $taskUser) {
+                if ($taskUser->getUser() && $taskUser->getUser()->getId() === $user->getId()) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
 
-//     // Méthodes utilitaires supplémentaires...
+    /**
+     * Formate un utilisateur pour la réponse API
+     * 
+     * @param User $user L'utilisateur à formater
+     * @return array Les données formatées de l'utilisateur
+     */
+    /**
+     * Formate un utilisateur pour la réponse API
+     * 
+     * @param User $user L'utilisateur à formater
+     * @return array Données formatées de l'utilisateur
+     */
+    /**
+     * Formate un utilisateur pour la réponse API
+     * 
+     * @param User $user L'utilisateur à formater
+     * @return array Données formatées de l'utilisateur
+     */
+    private function formatUserForResponse(User $user): array
+    {
+        return [
+            'id' => $user->getId(),
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+            'statut' => $user->getStatut(),
+            'avatar' => $user->getAvatar() ?? null
+        ];
+    }
 
-//     /**
-//      * Filtre les tâches selon les filtres fournis (statut, priorité, etc.)
-//      */
-//     private function applyFilters(array $tasks, array $filters = []): array
-//     {
-//         return array_filter($tasks, function ($task) use ($filters) {
-//             if (isset($filters['statut']) && $task->getStatut() !== $filters['statut']) {
-//                 return false;
-//             }
-//             if (isset($filters['priority']) && $task->getPriority() !== $filters['priority']) {
-//                 return false;
-//             }
-//             if (isset($filters['assignedUser']) && method_exists($task, 'getAssignedUser')) {
-//                 $assignedUser = $task->getAssignedUser();
-//                 if (!$assignedUser || $assignedUser->getId() !== $filters['assignedUser']) {
-//                     return false;
-//                 }
-//             }
-//             // Ajoutez d'autres filtres ici si nécessaire
-//             return true;
-//         });
-//     }
+    /**
+     * Formate un projet pour la réponse API
+     * 
+     * @param Project $project Le projet à formater
+     * @return array Les données formatées du projet
+     */
+    /**
+     * Formate un projet pour la réponse API
+     * 
+     * @param Project $project Le projet à formater
+     * @return array Données formatées du projet
+     */
+    /**
+     * Formate un projet pour la réponse API
+     * 
+     * @param Project $project Le projet à formater
+     * @return array Données formatées du projet
+     */
+    private function formatProjectForResponse(Project $project): array
+    {
+        return [
+            'id' => $project->getId(),
+            'titre' => $project->getTitre(),
+            'description' => $project->getDescription(),
+            'statut' => $project->getStatut(),
+            'dateDebut' => $project->getDateDebut() ? $project->getDateDebut()->format('Y-m-d H:i:s') : null,
+            'dateFin' => $project->getDateFin() ? $project->getDateFin()->format('Y-m-d H:i:s') : null,
+            'chefProjet' => $project->getChefproject() ? 
+                $this->formatUserForResponse($project->getChefproject()) : null,
+            'membresCount' => $project->getMembres()->count(),
+            'createdAt' => $project->getCreatedAt() ? $project->getCreatedAt()->format('Y-m-d H:i:s') : null,
+            'updatedAt' => $project->getUpdatedAt() ? $project->getUpdatedAt()->format('Y-m-d H:i:s') : null
+        ];
+    }
 
-//     public function getProjectsByRole(User $user): array
-//     {
-//         $roles = $user->getRoles();
+    /**
+     * Formate une tâche pour la réponse API
+     * 
+     * @param Task $task La tâche à formater
+     * @return array Les données formatées de la tâche
+     */
+    /**
+     * Formate une tâche pour la réponse API
+     * 
+     * @param Task $task La tâche à formater
+     * @return array Données formatées de la tâche
+     */
+    /**
+     * Formate une tâche pour la réponse API
+     * 
+     * @param Task $task La tâche à formater
+     * @return array Données formatées de la tâche
+     */
+    private function formatTaskForResponse(Task $task): array
+    {
+        $taskList = $task->getTaskList();
+        $project = $taskList ? $taskList->getProject() : null;
+        
+        $formatted = [
+            'id' => $task->getId(),
+            'title' => $task->getTitle(),
+            'description' => $task->getDescription(),
+            'statut' => $task->getStatut(),
+            'priority' => $task->getPriority(),
+            'deadline' => $task->getDeadline() ? $task->getDeadline()->format('Y-m-d H:i:s') : null,
+            'position' => $task->getPosition(),
+            'createdAt' => $task->getCreatedAt() ? $task->getCreatedAt()->format('Y-m-d H:i:s') : null,
+            'updatedAt' => $task->getUpdatedAt() ? $task->getUpdatedAt()->format('Y-m-d H:i:s') : null
+        ];
+        
+        if ($project) {
+            $formatted['project'] = [
+                'id' => $project->getId(),
+                'name' => $project->getTitre()
+            ];
+        }
+        
+        if ($taskList) {
+            $formatted['taskList'] = [
+                'id' => $taskList->getId(),
+                'name' => $taskList->getNom()
+            ];
+        }
+        
+        if (method_exists($task, 'getTaskUsers')) {
+            $formatted['assignedUsers'] = array_map(
+                function($taskUser) {
+                    return $this->formatUserForResponse($taskUser->getUser());
+                },
+                $task->getTaskUsers()->toArray()
+            );
+        } else {
+            $formatted['assignedUsers'] = [];
+        }
+        
+        return $formatted;
+    }
 
-//         if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
-//             return $this->projectRepository->findAll();
-//         }
+    /**
+     * Applique les filtres aux tâches
+     * 
+     * @param array $tasks Les tâches à filtrer
+     * @param array $filters Les filtres à appliquer
+     * @return array Les tâches filtrées
+     */
+    private function applyFilters(array $tasks, array $filters = []): array
+    {
+        return $this->filterTasks($tasks, $filters);
+    }
 
-//         if (in_array('ROLE_CHEF_PROJET', $roles)) {
-//             $managed = $this->projectRepository->findByChefDeproject($user);
-//             $member = $this->projectRepository->findByMembre($user);
-//             return array_unique(array_merge($managed, $member), SORT_REGULAR);
-//         }
+    /**
+     * Filtre les tâches selon les critères fournis
+     * 
+     * @param array $tasks Les tâches à filtrer
+     * @param array $filters Les critères de filtrage
+     * @return array Les tâches filtrées
+     */
+    private function filterTasks(array $tasks, array $filters): array
+    {
+        return array_filter($tasks, function ($task) use ($filters) {
+            // Filtre par statut
+            if (isset($filters['statut']) && $filters['statut'] !== 'all' && 
+                $task->getStatut() !== $filters['statut']) {
+                return false;
+            }
+            
+            // Filtre par priorité
+            if (isset($filters['priority']) && $filters['priority'] !== 'all' && 
+                $task->getPriority() !== $filters['priority']) {
+                return false;
+            }
+            
+            // Filtre par utilisateur assigné
+            if (isset($filters['assignedUser']) && $filters['assignedUser'] !== 'all') {
+                if (method_exists($task, 'getAssignedUser')) {
+                    $assignedUser = $task->getAssignedUser();
+                    if (!$assignedUser || $assignedUser->getId() != $filters['assignedUser']) {
+                        return false;
+                    }
+                } elseif (method_exists($task, 'getTaskUsers')) {
+                    $assigned = false;
+                    foreach ($task->getTaskUsers() as $taskUser) {
+                        if ($taskUser->getUser() && $taskUser->getUser()->getId() == $filters['assignedUser']) {
+                            $assigned = true;
+                            break;
+                        }
+                    }
+                    if (!$assigned) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            
+            // Filtre par projet
+            if (isset($filters['project_id']) && $filters['project_id'] !== 'all') {
+                $taskProject = $task->getTaskList() ? $task->getTaskList()->getProject() : null;
+                if (!$taskProject || $taskProject->getId() != $filters['project_id']) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+    }
 
-//         return $this->projectRepository->findByMembre($user);
-//     }
+    /**
+     * Récupère les projets accessibles par un utilisateur selon son rôle
+     * 
+     * @param User $user L'utilisateur
+     * @return array Liste des projets accessibles
+     */
+    protected function getProjectsByRole(User $user): array
+    {
+        $roles = $user->getRoles();
 
-//     /**
-//      * 📊 Calcule les statistiques globales pour les projets et tâches donnés
-//      */
-//     private function calculateStatistics(array $projects, array $tasks): array
-//     {
-//         $totalProjects = count($projects);
-//         $totalTasks = count($tasks);
-//         $completedTasks = 0;
-//         $inProgressTasks = 0;
-//         $overdueTasks = 0;
+        // Admin et directeur voient tous les projets
+        if (in_array('ROLE_ADMIN', $roles) || in_array('ROLE_DIRECTEUR', $roles)) {
+            return $this->projectRepository->findAll();
+        }
 
-//         foreach ($tasks as $task) {
-//             if ($task->getStatut() === 'TERMINER') {
-//                 $completedTasks++;
-//             } elseif ($task->getStatut() === 'EN_COURS') {
-//                 $inProgressTasks++;
-//             }
-//             if ($task->getDeadline() && $task->getDeadline() < new \DateTime() && $task->getStatut() !== 'TERMINER') {
-//                 $overdueTasks++;
-//             }
-//         }
+        // Chef de projet voit les projets qu'il gère et ceux dont il est membre
+        if (in_array('ROLE_CHEF_PROJET', $roles)) {
+            $managed = $this->projectRepository->findByChefDeproject($user);
+            $member = $this->projectRepository->findByMembre($user);
+            return array_values(array_unique(array_merge($managed, $member), SORT_REGULAR));
+        }
 
-//         return [
-//             'totalProjects' => $totalProjects,
-//             'totalTasks' => $totalTasks,
-//             'completedTasks' => $completedTasks,
-//             'inProgressTasks' => $inProgressTasks,
-//             'overdueTasks' => $overdueTasks,
-//             'completionRate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0
-//         ];
-//     }
+        // Employé ne voit que les projets dont il est membre
+        return $this->projectRepository->findByMembre($user);
+    }
 
-//     /**
-//      * 🕑 Récupérer les activités récentes pour une liste de projets
-//      */
-//     private function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
-//     {
-//         $projectIds = array_map(fn($project) => $project->getId(), $projects);
-//         if (empty($projectIds)) {
-//             return [];
-//         }
-//         $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
-//         // Vous pouvez formater les activités ici si besoin
-//         return $activities;
-//     }
+    /**
+     * Calcule les statistiques pour les projets et tâches fournis
+     * 
+     * @param array $projects Les projets à analyser
+     * @param array $tasks Les tâches à analyser
+     * @return array Les statistiques calculées
+     */
+    protected function calculateStatistics(array $projects, array $tasks): array
+    {
+        $now = new \DateTime();
+        $oneWeekAgo = (clone $now)->modify('-1 week');
+        
+        $totalProjects = count($projects);
+        $totalTasks = count($tasks);
+        $completedTasks = 0;
+        $inProgressTasks = 0;
+        $overdueTasks = 0;
+        $completedThisWeek = 0;
+    
+        // Compter les tâches par statut et priorité
+        $statusCounts = [
+            'A_FAIRE' => 0,
+            'EN_COURS' => 0,
+            'EN_REVUE' => 0,
+            'TERMINE' => 0
+        ];
+        
+        $priorityCounts = [
+            'HAUTE' => 0,
+            'MOYENNE' => 0,
+            'BASSE' => 0
+        ];
 
-//     /**
-//      * 🕑 Récupérer les activités récentes pour un utilisateur (employé)
-//      */
-//     private function getRecentActivitiesForUser(User $user, int $limit = 10): array
-//     {
-//         // Suppose que le repository a une méthode pour cela, sinon à implémenter
-//         if (method_exists($this->activityRepository, 'findRecentByUser')) {
-//             return $this->activityRepository->findRecentByUser($user, $limit);
-//         }
-//         // Fallback: récupérer les projets de l'utilisateur et utiliser la méthode existante
-//         $projects = $this->projectRepository->findByMembre($user);
-//         return $this->getRecentActivitiesForProjects($projects, $limit);
-//     }
-// }
+        // Parcourir toutes les tâches pour calculer les statistiques
+        foreach ($tasks as $task) {
+            // Compter par statut
+            $status = $task->getStatut();
+            if (isset($statusCounts[$status])) {
+                $statusCounts[$status]++;
+            }
+            
+            // Compter par priorité
+            $priority = $task->getPriority();
+            if (isset($priorityCounts[$priority])) {
+                $priorityCounts[$priority]++;
+            }
+            
+            // Tâches terminées
+            if ($status === 'TERMINE') {
+                $completedTasks++;
+                
+                // Tâches terminées cette semaine
+                $updatedAt = $task->getUpdatedAt();
+                if ($updatedAt && $updatedAt >= $oneWeekAgo) {
+                    $completedThisWeek++;
+                }
+            } elseif ($status === 'EN_COURS') {
+                $inProgressTasks++;
+            }
+            
+            // Tâches en retard
+            $deadline = $task->getDeadline();
+            if ($deadline && $deadline < $now && $status !== 'TERMINE') {
+                $overdueTasks++;
+            }
+        }
+        
+        // Calculer le taux de complétion
+        $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0;
+        
+        // Nombre d'utilisateurs actifs (ayant au moins une tâche assignée)
+        $activeUsers = [];
+        foreach ($tasks as $task) {
+            if (method_exists($task, 'getTaskUsers')) {
+                foreach ($task->getTaskUsers() as $taskUser) {
+                    if ($user = $taskUser->getUser()) {
+                        $activeUsers[$user->getId()] = $user;
+                    }
+                }
+            }
+        }
+        $activeUsersCount = count($activeUsers);
+        
+        // Nombre moyen de tâches par utilisateur
+        $avgTasksPerUser = $activeUsersCount > 0 ? round($totalTasks / $activeUsersCount, 1) : 0;
+        
+        // Compter les projets actifs
+        $activeProjects = 0;
+        foreach ($projects as $project) {
+            if ($project->getStatut() === 'EN_COURS') {
+                $activeProjects++;
+            }
+        }
 
-//     /**
-//      * 📊 Calcule l'efficacité d'un utilisateur basé sur les tâches terminées à temps
-//      */
-//     private function calculateUserEfficiency(User $user): float
-//     {
-//         $tasks = $this->taskRepository->findByAssignedUser($user);
-//         if (empty($tasks)) {
-//             return 0.0;
-//         }
+        return [
+            'totalProjects' => $totalProjects,
+            'activeProjects' => $activeProjects,
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
+            'inProgressTasks' => $inProgressTasks,
+            'overdueTasks' => $overdueTasks,
+            'completionRate' => $completionRate,
+            'activeUsers' => $activeUsersCount,
+            'avgTasksPerUser' => $avgTasksPerUser,
+            'completedThisWeek' => $completedThisWeek,
+            'statusCounts' => $statusCounts,
+            'priorityCounts' => $priorityCounts
+        ];
+    }
 
-//         $onTimeCompletions = 0;
-//         $totalCompleted = 0;
+    /**
+     * Récupère les activités récentes pour une liste de projets
+     * 
+     * @param array $projects Les projets pour lesquels récupérer les activités
+     * @param int $limit Nombre maximum d'activités à retourner
+     * @return array Les activités récentes formatées
+     */
+    private function getRecentActivitiesForProjects(array $projects, int $limit = 10): array
+    {
+        if (empty($projects)) {
+            return [];
+        }
+    
+        $projectIds = array_map(fn($project) => $project->getId(), $projects);
+        
+        try {
+            if (method_exists($this->activityRepository, 'findRecentByProjectIds')) {
+                $activities = $this->activityRepository->findRecentByProjectIds($projectIds, $limit);
+            } else {
+                // Fallback si la méthode n'existe pas
+                $activities = $this->activityRepository->findBy(
+                    ['project' => $projectIds],
+                    ['createdAt' => 'DESC'],
+                    $limit
+                );
+            }
+            
+            // Formater les activités pour la réponse
+            return array_map(function($activity) {
+                $user = $activity->getUser();
+                $project = $activity->getProject();
+                
+                return [
+                    'id' => $activity->getId(),
+                    'type' => $activity->getType(),
+                    'description' => $activity->getDescription(),
+                    'createdAt' => $activity->getCreatedAt() ? $activity->getCreatedAt()->format('Y-m-d H:i:s') : null,
+                    'user' => $user ? [
+                        'id' => $user->getId(),
+                        'fullName' => trim($user->getPrenom() . ' ' . $user->getNom()),
+                        'avatar' => $user->getAvatar()
+                    ] : null,
+                    'project' => $project ? [
+                        'id' => $project->getId(),
+                        'name' => $project->getTitre()
+                    ] : null,
+                    'entityType' => $activity->getEntityType(),
+                    'entityId' => $activity->getEntityId()
+                ];
+            }, $activities);
+        } catch (\Exception $e) {
+            error_log('Erreur lors de la récupération des activités: ' . $e->getMessage());
+            return [];
+        }
+    }
 
-//         foreach ($tasks as $task) {
-//             if ($task->getStatut() === 'TERMINER') {
-//                 $totalCompleted++;
-//                 if ($task->getDeadline() && $task->getDeadline() >= $task->getUpdatedAt()) {
-//                     $onTimeCompletions++;
-//                 }
-//             }
-//         }
+    /**
+     * Récupère les activités récentes pour un utilisateur spécifique
+     * 
+     * @param User $user L'utilisateur pour lequel récupérer les activités
+     * @param int $limit Nombre maximum d'activités à retourner
+     * @return array Les activités récentes formatées
+     */
+    private function getRecentActivitiesForUser(User $user, int $limit = 10): array
+    {
+        try {
+            if (method_exists($this->activityRepository, 'findRecentByUser')) {
+                $activities = $this->activityRepository->findRecentByUser($user, $limit);
+            } else {
+                // Fallback: récupérer les projets de l'utilisateur et utiliser la méthode existante
+                $projects = $this->projectRepository->findByMembre($user);
+                return $this->getRecentActivitiesForProjects($projects, $limit);
+            }
+            
+            // Formater les activités pour la réponse
+            return array_map(function($activity) use ($user) {
+                $project = $activity->getProject();
+                $actor = $activity->getUser();
+            
+                return [
+                    'id' => $activity->getId(),
+                    'type' => $activity->getType(),
+                    'description' => $activity->getDescription(),
+                    'createdAt' => $activity->getCreatedAt() ? $activity->getCreatedAt()->format('Y-m-d H:i:s') : null,
+                    'project' => $project ? [
+                        'id' => $project->getId(),
+                        'name' => $project->getTitre()
+                    ] : null,
+                    'actor' => $actor ? [
+                        'id' => $actor->getId(),
+                        'fullName' => trim($actor->getPrenom() . ' ' . $actor->getNom()),
+                        'avatar' => $actor->getAvatar()
+                    ] : null,
+                    'entityType' => $activity->getEntityType(),
+                    'entityId' => $activity->getEntityId()
+                ];
+            }, $activities);
+        } catch (\Exception $e) {
+        error_log('Erreur lors de la récupération des activités utilisateur: ' . $e->getMessage());
+        return [];
+    }
+}
 
-//         return $totalCompleted > 0 ? round(($onTimeCompletions / $totalCompleted) * 100, 1) : 0.0;
-//     }
+    /**
+     * Calcule l'efficacité d'un utilisateur basée sur les tâches terminées à temps
+     * 
+     * @param User $user L'utilisateur à évaluer
+     * @return float Le taux d'efficacité en pourcentage (0-100)
+     */
+    private function calculateUserEfficiency(User $user): float
+{
+    $tasks = $this->taskRepository->findByAssignedUser($user);
+    if (empty($tasks)) {
+        return 0.0;
+    }
 
-//     /**
-//      * 📊 Calcule le taux de remplissage d'une liste de projets
-//      */
-//     private function calculateProjectFillRate(array $projects): float
-//     {
-//         $totalTasks = 0;
-//         $completedTasks = 0;
+    $onTimeCompletions = 0;
+    $totalCompleted = 0;
 
-//         foreach ($projects as $project) {
-//             $totalTasks += $project->getTaskLists()->count();
-//             $completedTasks += count($project->getTasks()->filter(fn($task) => $task->getStatut() === 'TERMINER'));
-//         }
+    foreach ($tasks as $task) {
+        if ($task->getStatut() === 'TERMINE') {
+            $totalCompleted++;
+            
+            // Vérifier si la tâche a été terminée à temps
+            $deadline = $task->getDeadline();
+            $completedAt = $task->getUpdatedAt();
+            
+            if ($deadline && $completedAt && $completedAt <= $deadline) {
+                $onTimeCompletions++;
+            }
+        }
+    }
 
-//         return $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0.0;
-//     }
-// }
-//         $this->kanbanService->moveTask($task, $newList, $newPosition);
+    return $totalCompleted > 0 ? round(($onTimeCompletions / $totalCompleted) * 100, 1) : 0.0;
+}
 
-//             // Log spécifique selon le changement de projet
-//             if ($oldProject->getId() !== $newProject->getId()) {
-//                 $this->activityLogger->logTaskTransfer(
-//                     $task,
-//                     $user,
-//                     $oldProject,
-//                     $newProject
-//                 );
+    /**
+     * Calcule le taux de remplissage des listes de tâches pour des projets donnés
+     * 
+     * @param array $projects Les projets à analyser
+     * @return float Le taux de remplissage en pourcentage (0-100)
+     */
+    /**
+     * Calcule le taux de remplissage des listes de tâches pour des projets donnés
+     * 
+     * @param array $projects Les projets à analyser
+     * @return float Le taux de remplissage en pourcentage (0-100)
+     */
+    private function calculateProjectFillRate(array $projects): float
+{
+    if (empty($projects)) {
+        return 0.0;
+    }
+    
+    $totalTaskLists = 0;
+    $completedTaskLists = 0;
+    
+    foreach ($projects as $project) {
+        $projectTaskLists = $project->getTaskLists();
+        $totalTaskLists += $projectTaskLists->count();
+        
+        foreach ($projectTaskLists as $taskList) {
+            $tasks = $taskList->getTasks();
+            $totalTasks = $tasks->count();
+            
+            if ($totalTasks === 0) {
+                continue; // Liste vide, on ne la compte pas
+            }
+            
+            $completedTasks = $tasks->filter(fn($task) => $task->getStatut() === 'TERMINE')->count();
+            
+            // Si toutes les tâches sont terminées, on compte la liste comme complétée
+            if ($completedTasks >= $totalTasks) {
+                $completedTaskLists++;
+            }
+        }
+    }
+    
+    return $totalTaskLists > 0 ? round(($completedTaskLists / $totalTaskLists) * 100, 1) : 0.0;
+}
 
-//                 // Notification aux chefs de projets concernés
-//                 $this->notificationService->createTaskTransferNotification(
-//                     $task,
-//                     $oldProject,
-//                     $newProject,
-//                     $user
-//                 );
+    /**
+     * Déplace une tâche vers une nouvelle liste et position
+     * 
+     * @param Task $task La tâche à déplacer
+     * @param TaskList $newList La nouvelle liste de la tâche
+     * @param int $newPosition La nouvelle position de la tâche dans la liste
+     * @param User $user L'utilisateur qui effectue le déplacement
+     * @param Project $oldProject Le projet d'origine de la tâche
+     * @param Project $newProject Le nouveau projet de la tâche
+     * @return array Réponse avec le succès du déplacement et les informations de la tâche
+     */
+    /**
+     * Déplace une tâche vers une nouvelle liste et position
+     * 
+     * @param Task $task La tâche à déplacer
+     * @param TaskList $newList La nouvelle liste de la tâche
+     * @param int $newPosition La nouvelle position de la tâche dans la liste
+     * @param User $user L'utilisateur qui effectue le déplacement
+     * @param Project $oldProject Le projet d'origine de la tâche
+     * @param Project $newProject Le nouveau projet de la tâche
+     * @return array Réponse avec le succès du déplacement et les informations de la tâche
+     */
+    public function moveTask(Task $task, TaskList $newList, int $newPosition, User $user, Project $oldProject, Project $newProject): array
+{
+    try {
+        $this->kanbanService->moveTask($task, $newList, $newPosition);
+
+        // Log spécifique selon le changement de projet
+        if ($oldProject->getId() !== $newProject->getId()) {
+            $this->activityLogger->logTaskTransfer(
+                $user,
+                $oldProject,
+                $newProject
+            );
 //             } else {
 //                 $this->activityLogger->logTaskMove(
 //                     $task,
