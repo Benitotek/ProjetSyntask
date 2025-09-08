@@ -8,6 +8,7 @@ enum Userstatut: string
     case INACTIF = 'INACTIF';
     case EN_CONGE = 'EN_CONGE';
     case ABSENT = 'ABSENT';
+    case SYSTEM = 'SYSTEM';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum Userstatut: string
             Userstatut::INACTIF => 'Inactif',
             Userstatut::EN_CONGE => 'En congé',
             Userstatut::ABSENT => 'Absent',
+            Userstatut::SYSTEM => 'System',
             default => 'Statut inconnu',
         };
     }

@@ -16,6 +16,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Notification;
+use App\Entity\Activity;
+use App\Entity\TaskList;
+use App\Entity\Tag;
 
 #[ORM\Table(name: 'user')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -61,7 +65,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $isActive = true;
 
-    #[ORM\Column]
+
+    #[ORM\Column(name: 'is_deleted', type: 'boolean', options: ['default' => 0])]
     private ?bool $isDeleted = false;
 
     #[ORM\Column(type: 'boolean')]
@@ -101,6 +106,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "user", targetEntity: Activity::class)]
     private Collection $activities;
 
+    #[ORM\OneToMany(mappedBy: 'createdBy', targetEntity: TaskList::class)]
+    private Collection $taskLists;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Tag::class)]
+    private Collection $tags;
+
+
     public function __construct()
     {
 
@@ -116,6 +128,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isDeleted = false;
         $this->EstActif = true;
         $this->activities = new ArrayCollection();
+        $this->taskLists = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -183,6 +197,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 case UserRole::MEMBRE:
                 case UserRole::EMPLOYE:
                     $roles[] = 'ROLE_EMPLOYE';
+                case UserRole::SYSTEM:
+                    $roles[] = 'ROLE_SYSTEM';
                     break;
             }
         }
@@ -265,6 +281,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->EstActif = $EstActif;
         return $this;
     }
+    public function is_Deleted(): bool
+    {
+        return $this->isDeleted;
+    }
+    public function setIsDeleted(bool $deleted): self
+    {
+        $this->isDeleted = $deleted;
+        return $this;
+    }
+
     public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->dateCreation;
@@ -488,5 +514,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString(): string
     {
         return $this->nom . ' ' . $this->prenom;
+    }
+    public function getTaskLists(): Collection
+    {
+        return $this->taskLists;
+    }
+
+    public function getTags(): Collection
+    {
+        return $this->tags;
     }
 }

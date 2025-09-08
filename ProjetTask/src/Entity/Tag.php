@@ -7,6 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Entity\Task;
+use App\Entity\Project;
+use App\Entity\User;
 
 #[ORM\Table(name: 'tags')]
 #[ORM\Entity(repositoryClass: TagRepository::class)]
@@ -36,17 +39,16 @@ class Tag
     private ?Project $project = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tags')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
 
-    #[ORM\ManyToMany(targetEntity: TaskList::class, mappedBy: 'tags')]
-    private Collection $taskLists;
+
 
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
         $this->couleur = '#' . substr(md5(rand()), 0, 6); // Couleur aléatoire par défaut
-        $this->taskLists = new ArrayCollection();
+
         $this->user = null; // Par défaut, le tag n'est pas associé à un utilisateur
         $this->project = null; // Par défaut, le tag n'est pas associé à un projet
     }
@@ -149,30 +151,4 @@ class Tag
         $this->user = $user;
         return $this;
     }
-    /**
-     * @return Collection<int, TaskList>
-     */
-    public function getTaskLists(): Collection
-    {
-        return $this->taskLists;
-    }
-    // public function addTaskList(TaskList $taskList): static
-    // {
-    //     if (!$this->taskLists->contains($taskList)) {
-    //         $this->taskLists->add($taskList);
-    //         $taskList->addTag($this);
-    //     }
-
-    //     return $this;
-    // }
-
-    // public function removeTaskList(TaskList $taskList): static
-    // {
-    //     if ($this->taskLists->removeElement($taskList)) {
-    //         $taskList->removeTag($this);
-    //     }
-
-    //     return $this;
-    // }
-
 }

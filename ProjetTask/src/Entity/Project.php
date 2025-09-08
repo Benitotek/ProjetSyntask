@@ -9,6 +9,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Activity;
+use App\Entity\TaskList;
+use App\Entity\Task;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 class Project
@@ -94,9 +97,6 @@ class Project
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Tag::class, orphanRemoval: true)]
     private Collection $tags;
-
-    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Comment::class, orphanRemoval: true)]
-    private Collection $comments;
 
     public function __construct()
     {
@@ -459,26 +459,4 @@ class Project
             return 'red';
         }
     }
-    /**
-     * @return Collection<int, Comment>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comment $comment): self
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-        }
-
-        return $this;
-    }
-    public function removeComment(Comment $comment): self
-    {
-        $this->comments->removeElement($comment);
-        return $this;
-    }
-    
 }

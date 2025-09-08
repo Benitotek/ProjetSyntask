@@ -10,7 +10,8 @@ enum UserRole: string
     case EMPLOYE = 'ROLE_EMPLOYE';
     case MEMBRE = 'ROLE_MEMBRE';
     case USER = 'ROLE_USER';
-    
+    case SYSTEM = 'ROLE_SYSTEM';
+
     public function label(): string
     {
         return match ($this) {
@@ -20,6 +21,7 @@ enum UserRole: string
             self::EMPLOYE => 'Employé',
             self::MEMBRE => 'Membre',
             self::USER => 'Utilisateur',
+            self::SYSTEM => 'System',
         };
     }
 }

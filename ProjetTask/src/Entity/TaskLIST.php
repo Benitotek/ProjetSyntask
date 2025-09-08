@@ -39,9 +39,10 @@ class TaskList
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateTime = null;
 
-    #[ORM\ManyToOne(inversedBy: 'taskLists')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'taskLists', targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'created_by_id', referencedColumnName: 'id', nullable: false)]
     private ?User $createdBy = null;
+
 
     #[ORM\Column(enumType: TaskListColor::class)]
     private ?TaskListColor $couleur = null;
@@ -59,6 +60,8 @@ class TaskList
         $this->tasks = new ArrayCollection();
         $this->dateTime = new \DateTime();
         $this->couleur = TaskListColor::VERT; // Couleur par défaut
+        $this->positionColumn = 0; // Position par défaut
+
     }
 
     public function getId(): ?int

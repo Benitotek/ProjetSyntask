@@ -193,6 +193,32 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->remove($user);
         $this->getEntityManager()->flush();
     }
+    public function is_deleted(User $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+    public function assignProject(User $user, Project $project): void
+    {
+        $user->addProjectGere($project);
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+    }
+    public function removeProject(User $user, Project $project): void
+    {
+        $user->removeProjectGere($project);
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+    }
+    public function assignTask(User $user,  $assignedTasks,): void
+    {
+        $user->addTachesAssignee($assignedTasks);
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+    }
 
     public function updatePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
