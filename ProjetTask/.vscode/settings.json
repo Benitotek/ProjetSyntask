@@ -1,3 +1,4 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "symfony-vscode.phpExecutablePath": "C:\\PHP\\php.exe"
 }
